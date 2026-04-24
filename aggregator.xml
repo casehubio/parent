@@ -29,6 +29,8 @@
 
   <modules>
     <!-- Ordered by dependency — reactor will enforce this regardless of list order -->
+    <!-- quarkus-langchain4j: casehubio fork, publishes 999-SNAPSHOT with unreleased fixes -->
+    <module>quarkus-langchain4j</module>
     <module>quarkus-ledger</module>
     <module>quarkus-work</module>
     <module>quarkus-qhorus</module>

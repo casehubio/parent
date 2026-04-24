@@ -31,14 +31,18 @@ LOG_FILE="$LOG_DIR/$TIMESTAMP.shas"
 # walking the graph — if a dep is in BUILD state, all consumers are at least
 # in TEST state.
 declare -A DEPS
+DEPS[quarkus-langchain4j]=""
 DEPS[quarkus-ledger]=""
 DEPS[quarkus-work]="quarkus-ledger"
 DEPS[quarkus-qhorus]="quarkus-ledger quarkus-work"
-DEPS[casehub-engine]="quarkus-ledger quarkus-work"
+DEPS[casehub-engine]="quarkus-langchain4j quarkus-ledger quarkus-work"
 DEPS[claudony]="quarkus-ledger quarkus-work quarkus-qhorus"
 
 # Build order — topological from the dependency graph
+# quarkus-langchain4j: fork of upstream, publishes 999-SNAPSHOT to GitHub Packages.
+# No casehub deps, so it builds first alongside quarkus-ledger.
 REPOS=(
+  quarkus-langchain4j
   quarkus-ledger
   quarkus-work
   quarkus-qhorus

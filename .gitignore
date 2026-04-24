@@ -1,4 +1,5 @@
 # Cloned ecosystem repos — managed by build-all.sh, not tracked by git
+quarkus-langchain4j/
 quarkus-ledger/
 quarkus-work/
 quarkus-qhorus/
