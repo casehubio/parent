@@ -43,59 +43,137 @@ jobs:
             ${{ runner.os }}-maven-fullstack-
             ${{ runner.os }}-maven-
 
-      - name: Build
-        id: build
+      - name: Clone repositories
+        run: |
+          mkdir -p .build-times
+          for repo in quarkus-langchain4j quarkus-ledger quarkus-work quarkus-qhorus casehub-engine claudony; do
+            git clone --quiet "https://github.com/casehubio/$repo.git"
+          done
+
+      - name: "Build: quarkus-langchain4j"
+        id: langchain4j
         env:
+          SKIP_TESTS: ${{ inputs.skip_tests }}
+          MAVEN_EXTRA: ${{ inputs.maven_args }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          FLAGS="--no-cache"
-          ${{ inputs.skip_tests }} && FLAGS="$FLAGS --skip-tests"
+          FLAGS=""; [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
+          START=$SECONDS
+          mvn install -f aggregator.xml -pl quarkus-langchain4j --batch-mode $FLAGS $MAVEN_EXTRA
+          echo $((SECONDS - START)) > .build-times/quarkus-langchain4j
 
-          EXTRA="${{ inputs.maven_args }}"
+      - name: "Build: quarkus-ledger"
+        id: ledger
+        env:
+          SKIP_TESTS: ${{ inputs.skip_tests }}
+          MAVEN_EXTRA: ${{ inputs.maven_args }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          FLAGS=""; [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
+          START=$SECONDS
+          mvn install -f aggregator.xml -pl quarkus-ledger --batch-mode $FLAGS $MAVEN_EXTRA
+          echo $((SECONDS - START)) > .build-times/quarkus-ledger
 
-          set +e
-          if [ -n "$EXTRA" ]; then
-            ./build-all.sh $FLAGS $EXTRA 2>&1 | tee build-output.txt
-          else
-            ./build-all.sh $FLAGS 2>&1 | tee build-output.txt
-          fi
-          BUILD_RC=${PIPESTATUS[0]}
-          set -e
+      - name: "Build: quarkus-work"
+        id: work
+        env:
+          SKIP_TESTS: ${{ inputs.skip_tests }}
+          MAVEN_EXTRA: ${{ inputs.maven_args }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          FLAGS=""; [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
+          START=$SECONDS
+          mvn install -f aggregator.xml -pl quarkus-work --batch-mode $FLAGS $MAVEN_EXTRA
+          echo $((SECONDS - START)) > .build-times/quarkus-work
 
-          echo "exit_code=$BUILD_RC" >> "$GITHUB_OUTPUT"
+      - name: "Build: quarkus-qhorus"
+        id: qhorus
+        env:
+          SKIP_TESTS: ${{ inputs.skip_tests }}
+          MAVEN_EXTRA: ${{ inputs.maven_args }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          FLAGS=""; [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
+          START=$SECONDS
+          mvn install -f aggregator.xml -pl quarkus-qhorus --batch-mode $FLAGS $MAVEN_EXTRA
+          echo $((SECONDS - START)) > .build-times/quarkus-qhorus
 
-          # ── Job Summary ─────────────────────────────────────────────────────
+      - name: "Build: casehub-engine"
+        id: engine
+        env:
+          SKIP_TESTS: ${{ inputs.skip_tests }}
+          MAVEN_EXTRA: ${{ inputs.maven_args }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          FLAGS=""; [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
+          START=$SECONDS
+          mvn install -f aggregator.xml -pl casehub-engine --batch-mode $FLAGS $MAVEN_EXTRA
+          echo $((SECONDS - START)) > .build-times/casehub-engine
+
+      - name: "Build: claudony"
+        id: claudony
+        env:
+          SKIP_TESTS: ${{ inputs.skip_tests }}
+          MAVEN_EXTRA: ${{ inputs.maven_args }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          FLAGS=""; [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
+          START=$SECONDS
+          mvn install -f aggregator.xml -pl claudony --batch-mode $FLAGS $MAVEN_EXTRA
+          echo $((SECONDS - START)) > .build-times/claudony
+
+      - name: Build summary
+        if: always()
+        env:
+          ACTOR: ${{ github.actor }}
+          OUTCOME_LANGCHAIN4J: ${{ steps.langchain4j.outcome }}
+          OUTCOME_LEDGER: ${{ steps.ledger.outcome }}
+          OUTCOME_WORK: ${{ steps.work.outcome }}
+          OUTCOME_QHORUS: ${{ steps.qhorus.outcome }}
+          OUTCOME_ENGINE: ${{ steps.engine.outcome }}
+          OUTCOME_CLAUDONY: ${{ steps.claudony.outcome }}
+        run: |
+          MODULES=(quarkus-langchain4j quarkus-ledger quarkus-work quarkus-qhorus casehub-engine claudony)
+          declare -A OUTCOMES=(
+            [quarkus-langchain4j]="$OUTCOME_LANGCHAIN4J"
+            [quarkus-ledger]="$OUTCOME_LEDGER"
+            [quarkus-work]="$OUTCOME_WORK"
+            [quarkus-qhorus]="$OUTCOME_QHORUS"
+            [casehub-engine]="$OUTCOME_ENGINE"
+            [claudony]="$OUTCOME_CLAUDONY"
+          )
+
           {
-            if [ "$BUILD_RC" -eq 0 ]; then
-              echo "# ✅ Full Stack Build — passed"
-            else
-              echo "# ❌ Full Stack Build — failed"
-            fi
+            echo "# Full Stack Build"
             echo ""
-            echo "_Triggered by @${{ github.actor }} &nbsp;|&nbsp; $(date -u '+%Y-%m-%d %H:%M UTC')_"
+            echo "_Triggered by @${ACTOR} &nbsp;|&nbsp; $(date -u '+%Y-%m-%d %H:%M UTC')_"
             echo ""
-
-            # Extract the per-module state table from the script output
-            echo "## Module states"
-            echo ""
-            echo "| Module | State |"
-            echo "|:-------|:-----:|"
-            grep -E '^\s+(BUILD|TEST|SKIP)' build-output.txt | \
-              sed 's/^\s\+//' | \
-              awk '{
-                mod=$1; state=$2
-                if (state=="BUILD") icon="🔨"
-                else if (state=="TEST") icon="🧪"
-                else icon="⏭️"
-                printf "| %s | %s %s |\n", mod, icon, state
-              }' || true
-
-            echo ""
-            echo "## Build log"
-            echo ""
-            echo '```'
-            cat build-output.txt
-            echo '```'
+            echo "| Module | Result | Duration |"
+            echo "|:-------|:------:|:--------:|"
           } >> "$GITHUB_STEP_SUMMARY"
 
-          exit "$BUILD_RC"
+          FAIL_COUNT=0
+          for module in "${MODULES[@]}"; do
+            outcome="${OUTCOMES[$module]}"
+            duration=$(cat ".build-times/$module" 2>/dev/null || true)
+            [ -n "$duration" ] && duration="${duration}s" || duration="—"
+
+            case "$outcome" in
+              success)  icon="✅" ;;
+              failure)  icon="❌"; FAIL_COUNT=$((FAIL_COUNT + 1)) ;;
+              skipped)  icon="⏭️" ;;
+              *)        icon="⚠️"; FAIL_COUNT=$((FAIL_COUNT + 1)) ;;
+            esac
+
+            echo "| [$module](https://github.com/casehubio/$module) | $icon $outcome | $duration |" \
+              >> "$GITHUB_STEP_SUMMARY"
+          done
+
+          {
+            echo ""
+            if [ "$FAIL_COUNT" -eq 0 ]; then
+              echo "✅ **All modules built successfully.**"
+            else
+              echo "❌ **$FAIL_COUNT module(s) failed.**"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
