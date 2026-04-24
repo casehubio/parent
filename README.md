@@ -2,6 +2,20 @@
 
 Org-level parent POM and BOM for the [casehubio](https://github.com/casehubio) ecosystem, plus tooling for full-stack local builds and CI/CD.
 
+## Build status
+
+| Repository | Status |
+|:-----------|:------:|
+| [casehub-parent](https://github.com/casehubio/casehub-parent) | [![casehub-parent](https://github.com/casehubio/casehub-parent/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/casehub-parent/actions/workflows/publish.yml) |
+| [quarkus-ledger](https://github.com/casehubio/quarkus-ledger) | [![quarkus-ledger](https://github.com/casehubio/quarkus-ledger/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/quarkus-ledger/actions/workflows/publish.yml) |
+| [quarkus-work](https://github.com/casehubio/quarkus-work) | [![quarkus-work](https://github.com/casehubio/quarkus-work/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/quarkus-work/actions/workflows/publish.yml) |
+| [quarkus-qhorus](https://github.com/casehubio/quarkus-qhorus) | [![quarkus-qhorus](https://github.com/casehubio/quarkus-qhorus/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/quarkus-qhorus/actions/workflows/publish.yml) |
+| [casehub-engine](https://github.com/casehubio/casehub-engine) | [![casehub-engine](https://github.com/casehubio/casehub-engine/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/casehub-engine/actions/workflows/publish.yml) |
+| [claudony](https://github.com/casehubio/claudony) | [![claudony](https://github.com/casehubio/claudony/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/claudony/actions/workflows/publish.yml) |
+| [quarkus-langchain4j](https://github.com/casehubio/quarkus-langchain4j) | [![quarkus-langchain4j](https://github.com/casehubio/quarkus-langchain4j/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/quarkus-langchain4j/actions/workflows/publish.yml) |
+
+> Full detail (timestamps, SHAs, all org repos): [Build Status Dashboard workflow](https://github.com/casehubio/casehub-parent/actions/workflows/dashboard.yml)
+
 ---
 
 ## Contents

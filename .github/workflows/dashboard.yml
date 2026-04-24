@@ -1,0 +1,97 @@
+name: Build Status Dashboard
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+jobs:
+  dashboard:
+    name: Ecosystem Build Status
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Generate dashboard
+        env:
+          # A fine-grained PAT with "Actions: read" across the org is recommended.
+          # Falls back to GITHUB_TOKEN for public repos.
+          GH_TOKEN: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
+          ORG: casehubio
+          WORKFLOW: publish.yml
+        run: |
+          set -euo pipefail
+
+          # Fetch all non-archived, non-fork repos in the org (paginated)
+          REPOS=$(gh api "/orgs/$ORG/repos" \
+            --paginate \
+            --jq '[.[] | select(.archived == false) | .name] | sort | .[]' \
+            2>/dev/null)
+
+          if [ -z "$REPOS" ]; then
+            echo "::error::Could not list repos for org $ORG. Set the GH_PAT secret with Actions read permission."
+            exit 1
+          fi
+
+          {
+            echo "# Build Status Dashboard"
+            echo ""
+            echo "_Org: **$ORG** &nbsp;|&nbsp; Workflow: \`$WORKFLOW\` &nbsp;|&nbsp; Updated: $(date -u '+%Y-%m-%d %H:%M UTC')_"
+            echo ""
+            echo "| Repository | Status | Branch | Last run | Commit |"
+            echo "|:-----------|:------:|:------:|:--------:|:------:|"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          FAIL_COUNT=0
+          SKIP_COUNT=0
+          PASS_COUNT=0
+
+          while IFS= read -r repo; do
+            RUN=$(gh api "/repos/$ORG/$repo/actions/workflows/$WORKFLOW/runs?per_page=1" \
+              --jq '.workflow_runs[0] // empty' 2>/dev/null || true)
+
+            if [ -z "$RUN" ]; then
+              # No publish.yml or no runs yet
+              SKIP_COUNT=$((SKIP_COUNT + 1))
+              continue
+            fi
+
+            conclusion=$(echo "$RUN" | jq -r '.conclusion // "in_progress"')
+            status=$(echo "$RUN"    | jq -r '.status // "unknown"')
+            branch=$(echo "$RUN"    | jq -r '.head_branch // "?"')
+            updated=$(echo "$RUN"   | jq -r '.updated_at // ""' | sed 's/T/ /; s/Z/ UTC/')
+            sha=$(echo "$RUN"       | jq -r '.head_sha // ""' | cut -c1-7)
+            run_url=$(echo "$RUN"   | jq -r '.html_url // ""')
+
+            if [ "$conclusion" = "success" ]; then
+              icon="✅"
+              PASS_COUNT=$((PASS_COUNT + 1))
+            elif [ "$conclusion" = "failure" ] || [ "$conclusion" = "timed_out" ]; then
+              icon="❌"
+              FAIL_COUNT=$((FAIL_COUNT + 1))
+            elif [ "$status" = "in_progress" ] || [ "$status" = "queued" ]; then
+              icon="🔄"
+            else
+              icon="⚠️"
+              FAIL_COUNT=$((FAIL_COUNT + 1))
+            fi
+
+            echo "| [$repo](https://github.com/$ORG/$repo) | [$icon $conclusion]($run_url) | \`$branch\` | $updated | \`$sha\` |" \
+              >> "$GITHUB_STEP_SUMMARY"
+          done <<< "$REPOS"
+
+          {
+            echo ""
+            if [ "$FAIL_COUNT" -eq 0 ]; then
+              echo "**All $PASS_COUNT monitored builds are passing.** $SKIP_COUNT repos have no \`$WORKFLOW\` runs."
+            else
+              echo "**$FAIL_COUNT build(s) failing, $PASS_COUNT passing.** $SKIP_COUNT repos have no \`$WORKFLOW\` runs."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          # Surface failures as a workflow-level error so the dashboard run goes red
+          if [ "$FAIL_COUNT" -gt 0 ]; then
+            echo "::error::$FAIL_COUNT build(s) in the $ORG org are failing."
+            exit 1
+          fi
