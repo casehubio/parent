@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Full-stack aggregator — NOT a parent pom, not published, not a dependency.
+  Used only to drive a local or CI reactor build across all ecosystem repos.
+
+  Usage:
+    mvn install -f aggregator.xml          # build and install all
+    mvn install -f aggregator.xml -T 1C    # parallel build (safe for independent modules)
+
+  Requires all repos to be cloned alongside this file (run build-all.sh first).
+  Maven's reactor resolves build order automatically from declared dependencies.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>io.casehubio</groupId>
+  <artifactId>casehub-aggregator</artifactId>
+  <version>0.2-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <name>CaseHub :: Full Stack Aggregator</name>
+  <description>
+    Aggregator-only POM. Lists all ecosystem repos as Maven reactor modules so the
+    full stack can be built with a single mvn command. Each module retains its own
+    parent pom — this aggregator adds no inheritance, only reactor coordination.
+  </description>
+
+  <modules>
+    <!-- Ordered by dependency — reactor will enforce this regardless of list order -->
+    <module>quarkus-ledger</module>
+    <module>quarkus-work</module>
+    <module>quarkus-qhorus</module>
+    <module>casehub-engine</module>
+    <module>claudony</module>
+  </modules>
+
+</project>

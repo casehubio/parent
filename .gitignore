@@ -1,0 +1,12 @@
+# Cloned ecosystem repos — managed by build-all.sh, not tracked by git
+quarkus-ledger/
+quarkus-work/
+quarkus-qhorus/
+casehub-engine/
+claudony/
+
+# Build logs are kept for audit/replay
+# build-logs/  ← intentionally NOT ignored
+
+# Maven
+target/
