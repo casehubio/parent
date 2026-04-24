@@ -1,0 +1,101 @@
+name: Full Stack Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      skip_tests:
+        description: Skip tests
+        required: false
+        default: false
+        type: boolean
+      maven_args:
+        description: Extra Maven args (e.g. -T 1C)
+        required: false
+        default: ''
+        type: string
+
+jobs:
+  build:
+    name: Full Stack Build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          server-id: github
+          server-username: GITHUB_ACTOR
+          server-password: GITHUB_TOKEN
+
+      - name: Cache Maven repository
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-fullstack-${{ hashFiles('pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-fullstack-
+            ${{ runner.os }}-maven-
+
+      - name: Build
+        id: build
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          FLAGS="--no-cache"
+          ${{ inputs.skip_tests }} && FLAGS="$FLAGS --skip-tests"
+
+          EXTRA="${{ inputs.maven_args }}"
+
+          set +e
+          if [ -n "$EXTRA" ]; then
+            ./build-all.sh $FLAGS $EXTRA 2>&1 | tee build-output.txt
+          else
+            ./build-all.sh $FLAGS 2>&1 | tee build-output.txt
+          fi
+          BUILD_RC=${PIPESTATUS[0]}
+          set -e
+
+          echo "exit_code=$BUILD_RC" >> "$GITHUB_OUTPUT"
+
+          # ── Job Summary ─────────────────────────────────────────────────────
+          {
+            if [ "$BUILD_RC" -eq 0 ]; then
+              echo "# ✅ Full Stack Build — passed"
+            else
+              echo "# ❌ Full Stack Build — failed"
+            fi
+            echo ""
+            echo "_Triggered by @${{ github.actor }} &nbsp;|&nbsp; $(date -u '+%Y-%m-%d %H:%M UTC')_"
+            echo ""
+
+            # Extract the per-module state table from the script output
+            echo "## Module states"
+            echo ""
+            echo "| Module | State |"
+            echo "|:-------|:-----:|"
+            grep -E '^\s+(BUILD|TEST|SKIP)' build-output.txt | \
+              sed 's/^\s\+//' | \
+              awk '{
+                mod=$1; state=$2
+                if (state=="BUILD") icon="🔨"
+                else if (state=="TEST") icon="🧪"
+                else icon="⏭️"
+                printf "| %s | %s %s |\n", mod, icon, state
+              }' || true
+
+            echo ""
+            echo "## Build log"
+            echo ""
+            echo '```'
+            cat build-output.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          exit "$BUILD_RC"

@@ -14,7 +14,7 @@ Org-level parent POM and BOM for the [casehubio](https://github.com/casehubio) e
 | [claudony](https://github.com/casehubio/claudony) | [![claudony](https://github.com/casehubio/claudony/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/claudony/actions/workflows/publish.yml) |
 | [quarkus-langchain4j](https://github.com/casehubio/quarkus-langchain4j) | [![quarkus-langchain4j](https://github.com/casehubio/quarkus-langchain4j/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/quarkus-langchain4j/actions/workflows/publish.yml) |
 
-> Full detail (timestamps, SHAs, all org repos): [Build Status Dashboard workflow](https://github.com/casehubio/casehub-parent/actions/workflows/dashboard.yml)
+> Full detail: [Build Status Dashboard](https://github.com/casehubio/casehub-parent/actions/workflows/dashboard.yml) &nbsp;|&nbsp; [PR Dashboard](https://github.com/casehubio/casehub-parent/actions/workflows/pr-dashboard.yml) &nbsp;|&nbsp; [▶ Run Full Stack Build](https://github.com/casehubio/casehub-parent/actions/workflows/full-stack-build.yml)
 
 ---
 

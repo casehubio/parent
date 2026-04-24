@@ -1,0 +1,117 @@
+name: PR Status Dashboard
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+jobs:
+  pr-dashboard:
+    name: Ecosystem PR Status
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Generate PR dashboard
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ORG: casehubio
+        run: |
+          set -euo pipefail
+
+          REPOS=$(gh api "/orgs/$ORG/repos" \
+            --paginate \
+            --jq '[.[] | select(.archived == false) | .name] | sort | .[]' \
+            2>/dev/null)
+
+          if [ -z "$REPOS" ]; then
+            echo "::error::Could not list repos for org $ORG."
+            exit 1
+          fi
+
+          {
+            echo "# PR Status Dashboard"
+            echo ""
+            echo "_Org: **$ORG** &nbsp;|&nbsp; Updated: $(date -u '+%Y-%m-%d %H:%M UTC')_"
+            echo ""
+            echo "| Repository | Pull Request | Author | CI | Checks |"
+            echo "|:-----------|:-------------|:------:|:--:|:------:|"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          TOTAL_PRS=0
+          FAILING_PRS=0
+
+          while IFS= read -r repo; do
+            PRS=$(gh api "/repos/$ORG/$repo/pulls?state=open&per_page=100" \
+              --jq '.[] | @base64' 2>/dev/null || true)
+
+            [ -z "$PRS" ] && continue
+
+            while IFS= read -r pr_b64; do
+              [ -z "$pr_b64" ] && continue
+              PR=$(echo "$pr_b64" | base64 --decode)
+
+              pr_number=$(echo "$PR" | jq -r '.number')
+              pr_title=$(echo "$PR"  | jq -r '.title')
+              pr_author=$(echo "$PR" | jq -r '.user.login')
+              pr_sha=$(echo "$PR"    | jq -r '.head.sha')
+              pr_url=$(echo "$PR"    | jq -r '.html_url')
+
+              TOTAL_PRS=$((TOTAL_PRS + 1))
+
+              # Aggregate check-runs for the PR head commit
+              CHECKS=$(gh api "/repos/$ORG/$repo/commits/$pr_sha/check-runs?per_page=100" \
+                --jq '.check_runs' 2>/dev/null || echo "[]")
+
+              check_count=$(echo "$CHECKS" | jq 'length')
+
+              if [ "$check_count" -eq 0 ]; then
+                ci_icon="⚪"
+                ci_label="no checks"
+                check_summary="—"
+              else
+                n_fail=$(echo "$CHECKS" | jq '[.[] | select(.conclusion == "failure" or .conclusion == "timed_out" or .conclusion == "cancelled")] | length')
+                n_pend=$(echo "$CHECKS" | jq '[.[] | select(.status == "in_progress" or .status == "queued")] | length')
+                n_pass=$(echo "$CHECKS" | jq '[.[] | select(.conclusion == "success")] | length')
+
+                if [ "$n_fail" -gt 0 ]; then
+                  ci_icon="❌"
+                  ci_label="failing"
+                  FAILING_PRS=$((FAILING_PRS + 1))
+                elif [ "$n_pend" -gt 0 ]; then
+                  ci_icon="🔄"
+                  ci_label="pending"
+                else
+                  ci_icon="✅"
+                  ci_label="passing"
+                fi
+
+                check_summary="${n_pass} ✅ / ${n_fail} ❌ / ${n_pend} 🔄"
+              fi
+
+              # Truncate long titles
+              if [ "${#pr_title}" -gt 55 ]; then
+                pr_title="${pr_title:0:52}..."
+              fi
+
+              echo "| [$repo](https://github.com/$ORG/$repo) | [#${pr_number} ${pr_title}](${pr_url}) | @${pr_author} | ${ci_icon} ${ci_label} | ${check_summary} |" \
+                >> "$GITHUB_STEP_SUMMARY"
+            done <<< "$PRS"
+          done <<< "$REPOS"
+
+          {
+            echo ""
+            if [ "$TOTAL_PRS" -eq 0 ]; then
+              echo "No open pull requests across the **$ORG** org."
+            elif [ "$FAILING_PRS" -eq 0 ]; then
+              echo "**$TOTAL_PRS open PR(s) — all CI checks passing.**"
+            else
+              echo "**$TOTAL_PRS open PR(s) — $FAILING_PRS with failing CI.**"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$FAILING_PRS" -gt 0 ]; then
+            echo "::error::$FAILING_PRS PR(s) in the $ORG org have failing CI."
+            exit 1
+          fi

@@ -88,6 +88,10 @@ jobs:
             else
               echo "**$FAIL_COUNT build(s) failing, $PASS_COUNT passing.** $SKIP_COUNT repos have no \`$WORKFLOW\` runs."
             fi
+            echo ""
+            echo "---"
+            echo ""
+            echo "[▶ Run Full Stack Build](https://github.com/$ORG/casehub-parent/actions/workflows/full-stack-build.yml) — clones and builds the entire platform in dependency order."
           } >> "$GITHUB_STEP_SUMMARY"
 
           # Surface failures as a workflow-level error so the dashboard run goes red
