@@ -38,8 +38,8 @@ Requires all repos cloned in the same parent directory as `casehub-parent`.
 ## CI Dashboards
 
 Three GitHub Actions workflows:
-- **`dashboard.yml`** — build status across all ecosystem repos (runs every 30 min, checks latest push-to-main run per repo)
-- **`pr-dashboard.yml`** — open PRs and their CI status across all ecosystem repos (runs every 30 min)
+- **`dashboard.yml`** — build status across all ecosystem repos (runs every 15 min, checks latest push-to-main run per repo)
+- **`pr-dashboard.yml`** — open PRs and their CI status across all ecosystem repos (runs every 15 min)
 - **`full-stack-build.yml`** — builds all repos in dependency order (manual trigger via `workflow_dispatch`)
 
 Trigger manually: GitHub Actions → select workflow → "Run workflow".
@@ -52,5 +52,5 @@ Trigger manually: GitHub Actions → select workflow → "Run workflow".
 | `quarkus-ledger` | Immutable audit ledger extension |
 | `quarkus-work` | Work routing and WorkBroker SPI |
 | `quarkus-qhorus` | Agent communication mesh |
-| `casehub-engine` | Hybrid choreography+orchestration engine |
+| `engine` | Hybrid choreography+orchestration engine (GitHub repo name is `casehubio/engine`; rename to `casehub-engine` pending) |
 | `claudony` | Session management and Claudony dashboard |
