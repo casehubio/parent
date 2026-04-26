@@ -32,6 +32,7 @@
     <!-- quarkus-langchain4j: casehubio fork, publishes 999-SNAPSHOT with unreleased fixes -->
     <module>quarkus-langchain4j</module>
     <module>quarkus-ledger</module>
+    <module>casehub-connectors</module>
     <module>quarkus-work</module>
     <module>quarkus-qhorus</module>
     <module>casehub-engine</module>

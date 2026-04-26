@@ -33,7 +33,8 @@ LOG_FILE="$LOG_DIR/$TIMESTAMP.shas"
 declare -A DEPS
 DEPS[quarkus-langchain4j]=""
 DEPS[quarkus-ledger]=""
-DEPS[quarkus-work]="quarkus-ledger"
+DEPS[casehub-connectors]=""
+DEPS[quarkus-work]="quarkus-ledger casehub-connectors"
 DEPS[quarkus-qhorus]="quarkus-ledger quarkus-work"
 DEPS[casehub-engine]="quarkus-langchain4j quarkus-ledger quarkus-work"
 DEPS[claudony]="quarkus-ledger quarkus-work quarkus-qhorus"
@@ -44,6 +45,7 @@ DEPS[claudony]="quarkus-ledger quarkus-work quarkus-qhorus"
 REPOS=(
   quarkus-langchain4j
   quarkus-ledger
+  casehub-connectors
   quarkus-work
   quarkus-qhorus
   casehub-engine
