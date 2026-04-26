@@ -22,14 +22,8 @@ jobs:
         run: |
           set -euo pipefail
 
-          # The ecosystem repos — explicit list avoids picking up demo/scratch repos
-          # that happen to be in the org and would otherwise pollute the dashboard.
-          REPOS="casehub-parent
-casehub-engine
-quarkus-ledger
-quarkus-work
-quarkus-qhorus
-claudony"
+          # Explicit ecosystem repo list — avoids demo/scratch repos polluting the dashboard
+          REPOS=$(printf '%s\n' casehub-parent casehub-engine quarkus-ledger quarkus-work quarkus-qhorus claudony)
 
           if [ -z "$REPOS" ]; then
             echo "::error::REPOS list is empty — check workflow configuration."
