@@ -259,9 +259,17 @@
 </section>
 
 <script>
-  const ORG      = 'casehubio';
-  const WORKFLOW = 'publish.yml';
-  const API      = 'https://api.github.com';
+  const ORG   = 'casehubio';
+  const API   = 'https://api.github.com';
+  const REPOS = [
+    'quarkus-langchain4j',
+    'quarkus-ledger',
+    'quarkus-work',
+    'quarkus-qhorus',
+    'engine',
+    'claudony',
+    'casehub-parent',
+  ];
   const REFRESH_MS = 5 * 60 * 1000; // 5 minutes
 
   let refreshTimer = null;
@@ -312,17 +320,11 @@
       .replace(/"/g, '&quot;');
   }
 
-  // ── Fetch all org repos ─────────────────────────────────────────────────────
+  // ── Fetch ecosystem repos ────────────────────────────────────────────────────
 
   async function fetchRepos() {
-    const all = [];
-    for (let page = 1; ; page++) {
-      const data = await get(`/orgs/${ORG}/repos?per_page=100&page=${page}`);
-      if (!data || data.length === 0) break;
-      all.push(...data.filter(r => !r.archived));
-      if (data.length < 100) break;
-    }
-    return all.sort((a, b) => a.name.localeCompare(b.name));
+    const results = await Promise.all(REPOS.map(name => get(`/repos/${ORG}/${name}`)));
+    return results.filter(Boolean);
   }
 
   // ── Build status ────────────────────────────────────────────────────────────
@@ -332,7 +334,7 @@
     tbody.innerHTML = '<tr class="state-row"><td colspan="5">Loading…</td></tr>';
 
     const rows = await Promise.all(repos.map(async repo => {
-      const data = await get(`/repos/${ORG}/${repo.name}/actions/workflows/${WORKFLOW}/runs?per_page=1`);
+      const data = await get(`/repos/${ORG}/${repo.name}/actions/runs?branch=main&event=push&per_page=1`);
       const run  = data?.workflow_runs?.[0];
       if (!run) return null;
 
