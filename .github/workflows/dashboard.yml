@@ -19,14 +19,13 @@ jobs:
           # Falls back to GITHUB_TOKEN for public repos.
           GH_TOKEN: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
           ORG: casehubio
-          WORKFLOW: publish.yml
         run: |
           set -euo pipefail
 
           # Fetch all non-archived, non-fork repos in the org (paginated)
           REPOS=$(gh api "/orgs/$ORG/repos" \
             --paginate \
-            --jq '[.[] | select(.archived == false) | .name] | sort | .[]' \
+            --jq '[.[] | select(.archived == false and .fork == false) | .name] | sort | .[]' \
             2>/dev/null)
 
           if [ -z "$REPOS" ]; then
@@ -37,32 +36,39 @@ jobs:
           {
             echo "# Build Status Dashboard"
             echo ""
-            echo "_Org: **$ORG** &nbsp;|&nbsp; Workflow: \`$WORKFLOW\` &nbsp;|&nbsp; Updated: $(date -u '+%Y-%m-%d %H:%M UTC')_"
+            echo "_Org: **$ORG** &nbsp;|&nbsp; Updated: $(date -u '+%Y-%m-%d %H:%M UTC')_"
             echo ""
-            echo "| Repository | Status | Branch | Last run | Commit |"
-            echo "|:-----------|:------:|:------:|:--------:|:------:|"
+            echo "| Repository | Status | Workflow | Branch | Last run | Commit |"
+            echo "|:-----------|:------:|:--------:|:------:|:--------:|:------:|"
           } >> "$GITHUB_STEP_SUMMARY"
 
           FAIL_COUNT=0
-          SKIP_COUNT=0
+          NO_RUNS_COUNT=0
           PASS_COUNT=0
 
           while IFS= read -r repo; do
-            RUN=$(gh api "/repos/$ORG/$repo/actions/workflows/$WORKFLOW/runs?per_page=1" \
+            # Check latest push-triggered run on main regardless of workflow name.
+            # Filtering by workflow name misses repos that use different filenames
+            # (e.g. casehub-engine uses maven.yml, not publish.yml).
+            RUN=$(gh api "/repos/$ORG/$repo/actions/runs?branch=main&event=push&per_page=1" \
               --jq '.workflow_runs[0] // empty' 2>/dev/null || true)
 
             if [ -z "$RUN" ]; then
-              # No publish.yml or no runs yet
-              SKIP_COUNT=$((SKIP_COUNT + 1))
+              # No push runs on main yet — flag as warning, not silent skip
+              NO_RUNS_COUNT=$((NO_RUNS_COUNT + 1))
+              FAIL_COUNT=$((FAIL_COUNT + 1))
+              echo "| [$repo](https://github.com/$ORG/$repo) | ⚠️ no runs | — | \`main\` | — | — |" \
+                >> "$GITHUB_STEP_SUMMARY"
               continue
             fi
 
-            conclusion=$(echo "$RUN" | jq -r '.conclusion // "in_progress"')
-            status=$(echo "$RUN"    | jq -r '.status // "unknown"')
-            branch=$(echo "$RUN"    | jq -r '.head_branch // "?"')
-            updated=$(echo "$RUN"   | jq -r '.updated_at // ""' | sed 's/T/ /; s/Z/ UTC/')
-            sha=$(echo "$RUN"       | jq -r '.head_sha // ""' | cut -c1-7)
-            run_url=$(echo "$RUN"   | jq -r '.html_url // ""')
+            conclusion=$(echo "$RUN"    | jq -r '.conclusion // "in_progress"')
+            status=$(echo "$RUN"        | jq -r '.status // "unknown"')
+            branch=$(echo "$RUN"        | jq -r '.head_branch // "?"')
+            updated=$(echo "$RUN"       | jq -r '.updated_at // ""' | sed 's/T/ /; s/Z/ UTC/')
+            sha=$(echo "$RUN"           | jq -r '.head_sha // ""' | cut -c1-7)
+            run_url=$(echo "$RUN"       | jq -r '.html_url // ""')
+            wf_name=$(echo "$RUN"       | jq -r '.name // "—"')
 
             if [ "$conclusion" = "success" ]; then
               icon="✅"
@@ -77,16 +83,17 @@ jobs:
               FAIL_COUNT=$((FAIL_COUNT + 1))
             fi
 
-            echo "| [$repo](https://github.com/$ORG/$repo) | [$icon $conclusion]($run_url) | \`$branch\` | $updated | \`$sha\` |" \
+            echo "| [$repo](https://github.com/$ORG/$repo) | [$icon $conclusion]($run_url) | $wf_name | \`$branch\` | $updated | \`$sha\` |" \
               >> "$GITHUB_STEP_SUMMARY"
           done <<< "$REPOS"
 
           {
             echo ""
             if [ "$FAIL_COUNT" -eq 0 ]; then
-              echo "**All $PASS_COUNT monitored builds are passing.** $SKIP_COUNT repos have no \`$WORKFLOW\` runs."
+              echo "✅ **All $PASS_COUNT monitored builds are passing.**"
             else
-              echo "**$FAIL_COUNT build(s) failing, $PASS_COUNT passing.** $SKIP_COUNT repos have no \`$WORKFLOW\` runs."
+              echo "❌ **$FAIL_COUNT build(s) failing or missing, $PASS_COUNT passing.**"
+              [ "$NO_RUNS_COUNT" -gt 0 ] && echo "_($NO_RUNS_COUNT repo(s) have no push runs on main yet.)_"
             fi
             echo ""
             echo "---"
@@ -96,6 +103,6 @@ jobs:
 
           # Surface failures as a workflow-level error so the dashboard run goes red
           if [ "$FAIL_COUNT" -gt 0 ]; then
-            echo "::error::$FAIL_COUNT build(s) in the $ORG org are failing."
+            echo "::error::$FAIL_COUNT build(s) in the $ORG org are failing or have no runs."
             exit 1
           fi

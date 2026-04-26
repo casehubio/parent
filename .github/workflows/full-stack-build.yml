@@ -50,8 +50,14 @@ jobs:
             git clone --quiet "https://github.com/casehubio/$repo.git"
           done
 
+      # continue-on-error: true on each build step ensures:
+      # 1. Later steps always run (no silent skips that masquerade as passing)
+      # 2. step.outcome is "failure" not "skipped", so the summary shows ❌ not ⏭️
+      # 3. The job fails at the end via the summary step's exit 1, not mid-way
+
       - name: "Build: quarkus-langchain4j"
         id: langchain4j
+        continue-on-error: true
         env:
           SKIP_TESTS: ${{ inputs.skip_tests }}
           MAVEN_EXTRA: ${{ inputs.maven_args }}
@@ -64,6 +70,7 @@ jobs:
 
       - name: "Build: quarkus-ledger"
         id: ledger
+        continue-on-error: true
         env:
           SKIP_TESTS: ${{ inputs.skip_tests }}
           MAVEN_EXTRA: ${{ inputs.maven_args }}
@@ -76,6 +83,7 @@ jobs:
 
       - name: "Build: quarkus-work"
         id: work
+        continue-on-error: true
         env:
           SKIP_TESTS: ${{ inputs.skip_tests }}
           MAVEN_EXTRA: ${{ inputs.maven_args }}
@@ -88,6 +96,7 @@ jobs:
 
       - name: "Build: quarkus-qhorus"
         id: qhorus
+        continue-on-error: true
         env:
           SKIP_TESTS: ${{ inputs.skip_tests }}
           MAVEN_EXTRA: ${{ inputs.maven_args }}
@@ -100,6 +109,7 @@ jobs:
 
       - name: "Build: casehub-engine"
         id: engine
+        continue-on-error: true
         env:
           SKIP_TESTS: ${{ inputs.skip_tests }}
           MAVEN_EXTRA: ${{ inputs.maven_args }}
@@ -112,6 +122,7 @@ jobs:
 
       - name: "Build: claudony"
         id: claudony
+        continue-on-error: true
         env:
           SKIP_TESTS: ${{ inputs.skip_tests }}
           MAVEN_EXTRA: ${{ inputs.maven_args }}
@@ -161,7 +172,7 @@ jobs:
             case "$outcome" in
               success)  icon="✅" ;;
               failure)  icon="❌"; FAIL_COUNT=$((FAIL_COUNT + 1)) ;;
-              skipped)  icon="⏭️" ;;
+              skipped)  icon="⏭️ skipped (prior step failed)"; FAIL_COUNT=$((FAIL_COUNT + 1)) ;;
               *)        icon="⚠️"; FAIL_COUNT=$((FAIL_COUNT + 1)) ;;
             esac
 
@@ -174,6 +185,14 @@ jobs:
             if [ "$FAIL_COUNT" -eq 0 ]; then
               echo "✅ **All modules built successfully.**"
             else
-              echo "❌ **$FAIL_COUNT module(s) failed.**"
+              echo "❌ **$FAIL_COUNT module(s) failed or were skipped due to upstream failure.**"
             fi
           } >> "$GITHUB_STEP_SUMMARY"
+
+          # Exit non-zero so the workflow run turns red — without this the job
+          # appears green even when modules have failed (continue-on-error absorbs
+          # individual step failures but we still want the overall job to fail).
+          if [ "$FAIL_COUNT" -gt 0 ]; then
+            echo "::error::$FAIL_COUNT module(s) failed in the full stack build."
+            exit 1
+          fi

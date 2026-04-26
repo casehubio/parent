@@ -67,9 +67,12 @@ jobs:
               check_count=$(echo "$CHECKS" | jq 'length')
 
               if [ "$check_count" -eq 0 ]; then
+                # A non-draft PR with no CI checks is suspicious — flag it so
+                # PRs that never triggered CI don't silently appear green.
                 ci_icon="⚪"
                 ci_label="no checks"
                 check_summary="—"
+                FAILING_PRS=$((FAILING_PRS + 1))
               else
                 n_fail=$(echo "$CHECKS" | jq '[.[] | select(.conclusion == "failure" or .conclusion == "timed_out" or .conclusion == "cancelled")] | length')
                 n_pend=$(echo "$CHECKS" | jq '[.[] | select(.status == "in_progress" or .status == "queued")] | length')
