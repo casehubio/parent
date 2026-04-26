@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CaseHub Dashboard</title>
+  <style>
+    :root {
+      --bg:           #0d1117;
+      --surface:      #161b22;
+      --surface-alt:  #1c2128;
+      --border:       #30363d;
+      --text:         #e6edf3;
+      --muted:        #8b949e;
+      --green:        #3fb950;
+      --red:          #f85149;
+      --yellow:       #d29922;
+      --blue:         #58a6ff;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      padding: 32px 24px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    /* ── Header ─────────────────────────────────────────────────────────── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 36px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand svg { opacity: 0.8; }
+
+    h1 { font-size: 18px; font-weight: 600; }
+
+    .header-right { display: flex; align-items: center; gap: 12px; }
+
+    #updated { color: var(--muted); font-size: 12px; }
+
+    .btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 5px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      font-family: inherit;
+      transition: background 0.15s;
+    }
+    .btn:hover { background: var(--border); }
+    .btn:disabled { opacity: 0.5; cursor: default; }
+
+    /* ── Sections ───────────────────────────────────────────────────────── */
+    section { margin-bottom: 44px; }
+
+    .section-header {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    h2 { font-size: 15px; font-weight: 600; }
+
+    .count {
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 1px 7px;
+      border-radius: 10px;
+    }
+
+    /* ── Tables ─────────────────────────────────────────────────────────── */
+    .table-wrap {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    table { width: 100%; border-collapse: collapse; }
+
+    thead tr { background: var(--surface-alt); }
+
+    th {
+      padding: 8px 14px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr { background: var(--surface); }
+    tbody tr:hover { background: var(--surface-alt); }
+
+    a { color: var(--blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    code {
+      font-family: 'SFMono-Regular', Consolas, monospace;
+      font-size: 12px;
+      background: rgba(110,118,129,0.15);
+      padding: 1px 5px;
+      border-radius: 4px;
+    }
+
+    /* ── Status badges ──────────────────────────────────────────────────── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 2px 9px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .badge-success { background: rgba(63,185,80,0.15);  color: var(--green); }
+    .badge-failure { background: rgba(248,81,73,0.15);  color: var(--red); }
+    .badge-pending { background: rgba(210,153,34,0.15); color: var(--yellow); }
+    .badge-unknown { background: rgba(139,148,158,0.1); color: var(--muted); }
+
+    .dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .badge-success .dot { background: var(--green); }
+    .badge-failure .dot { background: var(--red); }
+    .badge-pending .dot { background: var(--yellow); animation: pulse 1.4s ease-in-out infinite; }
+    .badge-unknown .dot { background: var(--muted); }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.3; }
+    }
+
+    /* ── Checks summary ─────────────────────────────────────────────────── */
+    .checks { font-size: 12px; color: var(--muted); white-space: nowrap; }
+
+    /* ── Timestamp ──────────────────────────────────────────────────────── */
+    .ts { color: var(--muted); font-size: 12px; white-space: nowrap; }
+
+    /* ── Empty / loading states ─────────────────────────────────────────── */
+    .state-row td {
+      text-align: center;
+      padding: 28px;
+      color: var(--muted);
+    }
+
+    /* ── Error banner ───────────────────────────────────────────────────── */
+    #error-banner {
+      display: none;
+      background: rgba(248,81,73,0.1);
+      border: 1px solid rgba(248,81,73,0.3);
+      color: var(--red);
+      padding: 10px 16px;
+      border-radius: 6px;
+      margin-bottom: 24px;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <svg width="24" height="24" viewBox="0 0 16 16" fill="var(--blue)">
+      <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38
+               0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13
+               -.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66
+               .07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15
+               -.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27
+               .68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12
+               .51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48
+               0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+    </svg>
+    <h1>CaseHub Dashboard</h1>
+  </div>
+  <div class="header-right">
+    <span id="updated">Loading…</span>
+    <button class="btn" id="refresh-btn" onclick="load()">↺ Refresh</button>
+  </div>
+</header>
+
+<div id="error-banner"></div>
+
+<section>
+  <div class="section-header">
+    <h2>Build Status</h2>
+    <span class="count" id="builds-count">—</span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Repository</th>
+          <th>Status</th>
+          <th>Branch</th>
+          <th>Last run</th>
+          <th>Commit</th>
+        </tr>
+      </thead>
+      <tbody id="builds-body">
+        <tr class="state-row"><td colspan="5">Loading…</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="section-header">
+    <h2>Open Pull Requests</h2>
+    <span class="count" id="prs-count">—</span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Repository</th>
+          <th>Pull Request</th>
+          <th>Author</th>
+          <th>CI</th>
+          <th>Checks</th>
+        </tr>
+      </thead>
+      <tbody id="prs-body">
+        <tr class="state-row"><td colspan="5">Loading…</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<script>
+  const ORG      = 'casehubio';
+  const WORKFLOW = 'publish.yml';
+  const API      = 'https://api.github.com';
+  const REFRESH_MS = 5 * 60 * 1000; // 5 minutes
+
+  let refreshTimer = null;
+
+  // ── API helper ──────────────────────────────────────────────────────────────
+
+  async function get(path) {
+    const res = await fetch(`${API}${path}`, {
+      headers: { Accept: 'application/vnd.github+json' }
+    });
+    if (!res.ok) return null;
+    return res.json();
+  }
+
+  // ── Utilities ───────────────────────────────────────────────────────────────
+
+  function timeAgo(iso) {
+    if (!iso) return '—';
+    const m = Math.round((Date.now() - new Date(iso)) / 60000);
+    if (m < 1)   return 'just now';
+    if (m < 60)  return `${m}m ago`;
+    if (m < 1440) return `${Math.floor(m / 60)}h ago`;
+    return `${Math.floor(m / 1440)}d ago`;
+  }
+
+  function badgeClass(conclusion, status) {
+    if (conclusion === 'success')                                    return 'success';
+    if (conclusion === 'failure' || conclusion === 'timed_out')      return 'failure';
+    if (status === 'in_progress' || status === 'queued')             return 'pending';
+    return 'unknown';
+  }
+
+  function badgeLabel(conclusion, status) {
+    if (status === 'in_progress') return 'running';
+    if (status === 'queued')      return 'queued';
+    return conclusion || status || 'unknown';
+  }
+
+  function badge(cls, label) {
+    return `<span class="badge badge-${cls}"><span class="dot"></span>${label}</span>`;
+  }
+
+  function esc(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  // ── Fetch all org repos ─────────────────────────────────────────────────────
+
+  async function fetchRepos() {
+    const all = [];
+    for (let page = 1; ; page++) {
+      const data = await get(`/orgs/${ORG}/repos?per_page=100&page=${page}`);
+      if (!data || data.length === 0) break;
+      all.push(...data.filter(r => !r.archived));
+      if (data.length < 100) break;
+    }
+    return all.sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  // ── Build status ────────────────────────────────────────────────────────────
+
+  async function renderBuilds(repos) {
+    const tbody = document.getElementById('builds-body');
+    tbody.innerHTML = '<tr class="state-row"><td colspan="5">Loading…</td></tr>';
+
+    const rows = await Promise.all(repos.map(async repo => {
+      const data = await get(`/repos/${ORG}/${repo.name}/actions/workflows/${WORKFLOW}/runs?per_page=1`);
+      const run  = data?.workflow_runs?.[0];
+      if (!run) return null;
+
+      const cls   = badgeClass(run.conclusion, run.status);
+      const label = badgeLabel(run.conclusion, run.status);
+      const sha   = run.head_sha.slice(0, 7);
+
+      return `
+        <tr>
+          <td><a href="${esc(repo.html_url)}">${esc(repo.name)}</a></td>
+          <td><a href="${esc(run.html_url)}" style="text-decoration:none">${badge(cls, label)}</a></td>
+          <td><code>${esc(run.head_branch)}</code></td>
+          <td class="ts">${timeAgo(run.updated_at)}</td>
+          <td><a href="${esc(run.html_url)}"><code>${sha}</code></a></td>
+        </tr>`;
+    }));
+
+    const valid = rows.filter(Boolean);
+    document.getElementById('builds-count').textContent = valid.length;
+
+    tbody.innerHTML = valid.length
+      ? valid.join('')
+      : '<tr class="state-row"><td colspan="5">No build runs found.</td></tr>';
+  }
+
+  // ── PR status ───────────────────────────────────────────────────────────────
+
+  async function renderPRs(repos) {
+    const tbody = document.getElementById('prs-body');
+    tbody.innerHTML = '<tr class="state-row"><td colspan="5">Loading…</td></tr>';
+
+    const perRepo = await Promise.all(repos.map(async repo => {
+      const prs = await get(`/repos/${ORG}/${repo.name}/pulls?state=open&per_page=100`);
+      if (!prs || prs.length === 0) return [];
+
+      return Promise.all(prs.map(async pr => {
+        const checks = await get(`/repos/${ORG}/${repo.name}/commits/${pr.head.sha}/check-runs?per_page=100`);
+        const runs   = checks?.check_runs ?? [];
+
+        const nFail = runs.filter(c => c.conclusion === 'failure' || c.conclusion === 'timed_out').length;
+        const nPend = runs.filter(c => c.status === 'in_progress' || c.status === 'queued').length;
+        const nPass = runs.filter(c => c.conclusion === 'success').length;
+
+        let cls, label;
+        if (runs.length === 0) { cls = 'unknown'; label = 'no checks'; }
+        else if (nFail > 0)    { cls = 'failure'; label = 'failing'; }
+        else if (nPend > 0)    { cls = 'pending'; label = 'pending'; }
+        else                   { cls = 'success'; label = 'passing'; }
+
+        const checks_summary = runs.length > 0
+          ? `<span class="checks">${nPass} ✅&nbsp; ${nFail} ❌&nbsp; ${nPend} 🔄</span>`
+          : '<span class="checks">—</span>';
+
+        const title = pr.title.length > 58 ? pr.title.slice(0, 55) + '…' : pr.title;
+
+        return `
+          <tr>
+            <td><a href="${esc(repo.html_url)}">${esc(repo.name)}</a></td>
+            <td><a href="${esc(pr.html_url)}">#${pr.number} ${esc(title)}</a></td>
+            <td><a href="https://github.com/${esc(pr.user.login)}">@${esc(pr.user.login)}</a></td>
+            <td>${badge(cls, label)}</td>
+            <td>${checks_summary}</td>
+          </tr>`;
+      }));
+    }));
+
+    const flat = perRepo.flat();
+    document.getElementById('prs-count').textContent = flat.length;
+
+    tbody.innerHTML = flat.length
+      ? flat.join('')
+      : '<tr class="state-row"><td colspan="5">No open pull requests across the org.</td></tr>';
+  }
+
+  // ── Main load ────────────────────────────────────────────────────────────────
+
+  async function load() {
+    const btn    = document.getElementById('refresh-btn');
+    const banner = document.getElementById('error-banner');
+
+    btn.disabled = true;
+    btn.textContent = '↺ Refreshing…';
+    banner.style.display = 'none';
+
+    clearTimeout(refreshTimer);
+
+    try {
+      const repos = await fetchRepos();
+
+      if (!repos.length) {
+        banner.textContent = `Could not load repos for org "${ORG}". GitHub API rate limit may have been hit.`;
+        banner.style.display = 'block';
+        return;
+      }
+
+      await Promise.all([
+        renderBuilds(repos),
+        renderPRs(repos),
+      ]);
+
+      document.getElementById('updated').textContent =
+        `Updated ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    } catch (err) {
+      banner.textContent = `Error loading dashboard: ${err.message}`;
+      banner.style.display = 'block';
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '↺ Refresh';
+      refreshTimer = setTimeout(load, REFRESH_MS);
+    }
+  }
+
+  load();
+</script>
+</body>
+</html>
