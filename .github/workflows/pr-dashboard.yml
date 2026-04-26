@@ -21,7 +21,7 @@ jobs:
           set -euo pipefail
 
           # Explicit ecosystem repo list — avoids demo/scratch repos polluting the dashboard
-          REPOS=$(printf '%s\n' casehub-parent casehub-engine quarkus-ledger quarkus-work quarkus-qhorus claudony)
+          REPOS=$(printf '%s\n' casehub-parent engine quarkus-ledger quarkus-work quarkus-qhorus claudony)
 
           if [ -z "$REPOS" ]; then
             echo "::error::REPOS list is empty."
@@ -42,19 +42,13 @@ jobs:
 
           while IFS= read -r repo; do
             PRS=$(gh api "/repos/$ORG/$repo/pulls?state=open&per_page=100" \
-              --jq '.[] | @base64' 2>/dev/null || true)
+              --jq '.[] | [.number, .title, .user.login, .head.sha, .html_url] | @tsv' \
+              2>/dev/null | tr -d '\000-\010\013-\037\177' || true)
 
             [ -z "$PRS" ] && continue
 
-            while IFS= read -r pr_b64; do
-              [ -z "$pr_b64" ] && continue
-              PR=$(echo "$pr_b64" | base64 --decode)
-
-              pr_number=$(echo "$PR" | jq -r '.number')
-              pr_title=$(echo "$PR"  | jq -r '.title')
-              pr_author=$(echo "$PR" | jq -r '.user.login')
-              pr_sha=$(echo "$PR"    | jq -r '.head.sha')
-              pr_url=$(echo "$PR"    | jq -r '.html_url')
+            while IFS=$'\t' read -r pr_number pr_title pr_author pr_sha pr_url; do
+              [ -z "$pr_number" ] && continue
 
               TOTAL_PRS=$((TOTAL_PRS + 1))
 
