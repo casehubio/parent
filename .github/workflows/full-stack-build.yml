@@ -48,9 +48,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mkdir -p .build-times
-          for repo in quarkus-langchain4j quarkus-ledger quarkus-work quarkus-qhorus casehub-engine claudony; do
+          for repo in quarkus-langchain4j quarkus-ledger quarkus-work quarkus-qhorus claudony; do
             git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/$repo.git"
           done
+          # engine's GitHub repo is named 'engine'; clone into 'casehub-engine' to match aggregator.xml
+          git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/engine.git" casehub-engine
 
       # continue-on-error: true on each build step ensures:
       # 1. Later steps always run (no silent skips that masquerade as passing)
@@ -178,7 +180,8 @@ jobs:
               *)        icon="⚠️"; FAIL_COUNT=$((FAIL_COUNT + 1)) ;;
             esac
 
-            echo "| [$module](https://github.com/casehubio/$module) | $icon $outcome | $duration |" \
+            repo_name="$module"; [ "$module" = "casehub-engine" ] && repo_name="engine"
+            echo "| [$module](https://github.com/casehubio/$repo_name) | $icon $outcome | $duration |" \
               >> "$GITHUB_STEP_SUMMARY"
           done
 
