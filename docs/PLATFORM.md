@@ -81,6 +81,7 @@ Three tiers, always kept separate:
 | `casehub-connectors` | [casehubio/casehub-connectors](https://github.com/casehubio/casehub-connectors) | Outbound message connectors (Slack, Teams, SMS, email) | Foundation |
 | `casehub-engine` | [casehubio/engine](https://github.com/casehubio/engine) | Hybrid choreography+blackboard orchestration engine | Orchestration |
 | `claudony` | [casehubio/claudony](https://github.com/casehubio/claudony) | Remote Claude CLI sessions + unified ecosystem dashboard | Integration |
+| `casehub-assisteddev` | [casehubio/casehub-assisteddev](https://github.com/casehubio/casehub-assisteddev) | AI-assisted development application (placeholder name) — first application layer built on CaseHub foundation | Application |
 | `casehub` | [casehubio/casehub](https://github.com/casehubio/casehub) | **Retiring** — original POC; no new features | — |
 
 ---
@@ -162,7 +163,7 @@ casehub-parent              (BOM — publish first; all others import it)
 ### Observability
 
 - OTel trace → ledger: `LedgerTraceListener` in quarkus-ledger auto-populates `traceId` at `@PrePersist`
-- Agent telemetry: `AgentMessageLedgerEntry` (EVENT type) in quarkus-qhorus; queryable via `list_events` / `get_channel_timeline` MCP tools
+- Agent interactions: `MessageLedgerEntry` in quarkus-qhorus records all 9 message types; queryable via `list_ledger_entries`, `get_channel_timeline`, `get_telemetry_summary`
 - WorkItem audit: `AuditEntry` entity (always present) + optional tamper-evident `WorkItemLedgerEntry`
 - Case decisions: `EventLog` (engine-internal, restart-safe) + optional `CaseLedgerEntry` (external, tamper-evident)
 
