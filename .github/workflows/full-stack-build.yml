@@ -48,7 +48,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mkdir -p .build-times
-          for repo in quarkus-langchain4j quarkus-ledger quarkus-work quarkus-qhorus claudony; do
+          for repo in quarkus-langchain4j quarkus-ledger casehub-connectors quarkus-work quarkus-qhorus claudony; do
             git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/$repo.git"
           done
           # engine's GitHub repo is named 'engine'; clone into 'casehub-engine' to match aggregator.xml
@@ -84,6 +84,20 @@ jobs:
           START=$SECONDS
           mvn install -f aggregator.xml -pl quarkus-ledger --batch-mode $FLAGS $MAVEN_EXTRA
           echo $((SECONDS - START)) > .build-times/quarkus-ledger
+
+
+      - name: "Build: casehub-connectors"
+        id: connectors
+        continue-on-error: true
+        env:
+          SKIP_TESTS: ${{ inputs.skip_tests }}
+          MAVEN_EXTRA: ${{ inputs.maven_args }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          FLAGS=""; [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
+          START=$SECONDS
+          mvn install -f aggregator.xml -pl casehub-connectors --batch-mode $FLAGS $MAVEN_EXTRA
+          echo $((SECONDS - START)) > .build-times/casehub-connectors
 
       - name: "Build: quarkus-work"
         id: work
@@ -141,6 +155,7 @@ jobs:
         if: always()
         env:
           ACTOR: ${{ github.actor }}
+          OUTCOME_CONNECTORS: ${{ steps.connectors.outcome }}
           OUTCOME_LANGCHAIN4J: ${{ steps.langchain4j.outcome }}
           OUTCOME_LEDGER: ${{ steps.ledger.outcome }}
           OUTCOME_WORK: ${{ steps.work.outcome }}
@@ -148,10 +163,11 @@ jobs:
           OUTCOME_ENGINE: ${{ steps.engine.outcome }}
           OUTCOME_CLAUDONY: ${{ steps.claudony.outcome }}
         run: |
-          MODULES=(quarkus-langchain4j quarkus-ledger quarkus-work quarkus-qhorus casehub-engine claudony)
+          MODULES=(quarkus-langchain4j quarkus-ledger casehub-connectors quarkus-work quarkus-qhorus casehub-engine claudony)
           declare -A OUTCOMES=(
             [quarkus-langchain4j]="$OUTCOME_LANGCHAIN4J"
             [quarkus-ledger]="$OUTCOME_LEDGER"
+            [casehub-connectors]="$OUTCOME_CONNECTORS"
             [quarkus-work]="$OUTCOME_WORK"
             [quarkus-qhorus]="$OUTCOME_QHORUS"
             [casehub-engine]="$OUTCOME_ENGINE"
