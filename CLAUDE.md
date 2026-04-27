@@ -1,5 +1,21 @@
 # CLAUDE.md — casehub-parent
 
+## Platform Architecture Documents
+
+This repo hosts the canonical platform architecture documentation for the entire casehubio ecosystem.
+
+**When updating platform docs (any `docs/PLATFORM.md` or `docs/repos/*.md` change):**
+- Ensure the Capability Ownership table is accurate and complete
+- Ensure boundary rules reflect current architectural decisions
+- Ensure per-repo deep-dives match what is actually in those repos
+- Commit and push so raw GitHub URLs resolve correctly for other repos
+
+**Platform document locations:**
+- Master: `docs/PLATFORM.md` ([raw](https://raw.githubusercontent.com/casehubio/casehub-parent/main/docs/PLATFORM.md))
+- Per-repo deep-dives: `docs/repos/` ([directory](https://github.com/casehubio/casehub-parent/tree/main/docs/repos))
+
+---
+
 ## Project Type
 
 type: custom
@@ -46,11 +62,13 @@ Trigger manually: GitHub Actions → select workflow → "Run workflow".
 
 ## Repo List
 
-| Repo | Purpose |
-|------|---------|
-| `quarkus-langchain4j` | Casehubio fork with unreleased fixes (999-SNAPSHOT) |
-| `quarkus-ledger` | Immutable audit ledger extension |
-| `quarkus-work` | Work routing and WorkBroker SPI |
-| `quarkus-qhorus` | Agent communication mesh |
-| `engine` | Hybrid choreography+orchestration engine (GitHub repo name is `casehubio/engine`; rename to `casehub-engine` pending) |
-| `claudony` | Session management and Claudony dashboard |
+| Repo | GitHub | Purpose |
+|------|--------|---------|
+| `quarkus-langchain4j` | casehubio/quarkus-langchain4j | Casehubio fork with unreleased fixes (999-SNAPSHOT) — temporary, not in BOM |
+| `quarkus-ledger` | casehubio/quarkus-ledger | Immutable audit ledger + trust scoring |
+| `quarkus-work` | casehubio/quarkus-work | Human task lifecycle (WorkItem inbox, SLA, routing) |
+| `quarkus-qhorus` | casehubio/quarkus-qhorus | Agent communication mesh |
+| `engine` | casehubio/engine | Hybrid choreography+orchestration engine (local dir: `casehub-engine`) |
+| `claudony` | casehubio/claudony | Remote Claude CLI sessions + ecosystem dashboard |
+| `casehub-connectors` | casehubio/casehub-connectors | Outbound message connectors (Slack, Teams, SMS, email) |
+| `casehub` | casehubio/casehub | **Retiring** — original POC, no new features |
