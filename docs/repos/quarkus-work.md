@@ -1,0 +1,113 @@
+# quarkus-work — Platform Deep Dive
+
+**GitHub:** [casehubio/quarkus-work](https://github.com/casehubio/quarkus-work)  
+**Platform doc:** [PLATFORM.md](https://raw.githubusercontent.com/casehubio/casehub-parent/main/docs/PLATFORM.md)
+
+---
+
+## Purpose
+
+Human task lifecycle management extension. Provides a human task inbox (WorkItem) with status lifecycle, SLA, delegation, escalation, spawn, and audit trail. Usable standalone or integrated with CaseHub and Qhorus.
+
+A `WorkItem` is deliberately NOT called `Task` — CNCF Serverless Workflow and CaseHub both have `Task` concepts with different semantics.
+
+---
+
+## Module Structure
+
+| Module | Type | Purpose |
+|---|---|---|
+| `quarkus-work-api` | Pure-Java SPI (no Quarkus) | All SPIs: `WorkerSelectionStrategy`, `WorkerRegistry`, `WorkloadProvider`, `EscalationPolicy`, `SpawnPort`, `SkillProfile*`, `NotificationChannel` |
+| `quarkus-work-core` | Jandex library (no JPA) | `WorkBroker`, `LeastLoadedStrategy`, `ClaimFirstStrategy`, `NoOpWorkerRegistry` — used directly by casehub-engine |
+| `runtime` | Full Quarkus extension | `WorkItem` entity, services, REST API, filter engine |
+| `quarkus-work-ledger` | Optional module | Attaches quarkus-ledger for `WorkItemLedgerEntry` |
+| `quarkus-work-queues` | Optional module | Label-based queue views |
+| `quarkus-work-ai` | Optional module | `SemanticWorkerSelectionStrategy`, `LowConfidenceFilterProducer` |
+| `quarkus-work-notifications` | Optional module | Slack/Teams/webhook outbound notifications |
+| `work-flow` | Optional module | Quarkus-Flow CDI bridge |
+| `quarkus-work-testing` | Test utilities | `InMemoryWorkItemStore`, `InMemoryAuditEntryStore` |
+
+---
+
+## Key Abstractions
+
+### WorkItem Entity
+
+10 statuses: PENDING → ASSIGNED → IN_PROGRESS → COMPLETED / CANCELLED / EXPIRED / DELEGATED / REJECTED / ON_HOLD / CLAIM_EXPIRED
+
+Key fields: `title`, `description`, `assigneeId`, `candidateUsers`, `candidateGroups`, `priority`, `category`, `deadline`, `claimDeadline`, `labels`, `callerRef` (opaque — CaseHub stores `case:{id}/pi:{planItemId}` here), `formSchemaId`, `formPayload`
+
+### Core Services
+
+| Bean | Purpose |
+|---|---|
+| `WorkItemService` | Lifecycle management: create, start, complete, cancel, delegate, expire |
+| `WorkItemAssignmentService` | Routing via `WorkBroker` → `WorkerSelectionStrategy` |
+| `WorkItemSpawnService` | Child spawning with idempotency key; implements `SpawnPort` |
+| `FilterRegistryEngine` | JEXL/JQ condition evaluation for label-based routing |
+
+### REST API
+
+- `GET/POST /workitems` — inbox + creation
+- `POST /workitems/{id}/start|complete|cancel|delegate`
+- `GET /workitems/{id}/audit` — audit history
+- `GET /workitems/reports` — SLA compliance reporting
+- `GET/POST /filter-rules` — dynamic filter rules
+- `POST /workitems/{id}/spawn` — child WorkItem creation
+
+### CDI Events
+
+`WorkItemLifecycleEvent` fired on every status transition. Carries `callerRef` opaquely — CaseHub uses it to route completions back to the right `PlanItem`.
+
+---
+
+## Depends On
+
+- `quarkus-ledger` — optional only, via `quarkus-work-ledger` module. Core has zero casehubio deps.
+
+## Depended On By
+
+| Repo | How |
+|---|---|
+| `casehub-engine` | `quarkus-work-core` only — `WorkBroker` for worker selection. NOT the full runtime. |
+| `claudony` | Future, via `quarkus-work-casehub` adapter (currently blocked on CaseHub stability) |
+
+---
+
+## What This Repo Explicitly Does NOT Do
+
+- Orchestrate — it fires events and provides primitives. It does not decide what completing a WorkItem means.
+- Roll up child completions to a parent (that is CaseHub).
+- Interpret `callerRef` — stored and echoed opaquely.
+- Provision or manage AI agents (that is CaseHub/Claudony).
+- Know when to spawn child WorkItems (callers drive spawn via `SpawnPort`).
+
+---
+
+## The Core/Runtime Split (Critical for casehub-engine)
+
+`quarkus-work-core` is a Jandex library (not a Quarkus extension) containing only `WorkBroker` and selection strategies. casehub-engine depends on this module — it gets worker routing without pulling in WorkItem entities, Flyway migrations, REST resources, or datasource requirements.
+
+The `WorkBroker` is generic: it routes any work unit, not just WorkItems.
+
+---
+
+## Notification Concern
+
+`quarkus-work-notifications` currently ships Slack/Teams/webhook directly. This overlaps with `casehub-connectors`. Future direction: delegate to `casehub-connectors` `Connector` SPI rather than maintaining a parallel implementation.
+
+---
+
+## Current State
+
+- 1019+ tests passing; native image validated at 0.084s startup
+- Active epics: Business-Hours Deadlines (#101), SLA Compliance Reporting (#104)
+- Pending: `quarkus-work-qhorus` adapter (MCP tools for agent-driven approval flows)
+
+---
+
+## Design Documents
+
+- [docs/DESIGN.md](https://raw.githubusercontent.com/casehubio/quarkus-work/main/docs/DESIGN.md) — implementation-tracking design doc
+- [docs/architecture/LAYERING.md](https://raw.githubusercontent.com/casehubio/quarkus-work/main/docs/architecture/LAYERING.md) — definitive boundary statement between quarkus-work and CaseHub
+- [adr/INDEX.md](https://raw.githubusercontent.com/casehubio/quarkus-work/main/adr/INDEX.md) — architectural decision records
