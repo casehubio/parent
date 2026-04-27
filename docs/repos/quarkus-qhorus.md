@@ -64,7 +64,7 @@ Key parameter name: messages use `sender` (not `agent_id`).
 
 ## Depends On
 
-- `quarkus-ledger` — mandatory (for `AgentMessageLedgerEntry` and ledger observability)
+- `quarkus-ledger` — mandatory (for `MessageLedgerEntry` subclass and ledger observability)
 
 ## Depended On By
 

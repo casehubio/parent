@@ -23,7 +23,7 @@ jobs:
           set -euo pipefail
 
           # Explicit ecosystem repo list — avoids demo/scratch repos polluting the dashboard
-          REPOS=$(printf '%s\n' casehub-parent casehub-connectors engine quarkus-ledger quarkus-work quarkus-qhorus claudony)
+          REPOS=$(printf '%s\n' casehub-parent casehub-connectors engine quarkus-ledger quarkus-work quarkus-qhorus claudony casehub-assisteddev)
 
           if [ -z "$REPOS" ]; then
             echo "::error::REPOS list is empty — check workflow configuration."
