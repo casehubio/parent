@@ -116,7 +116,7 @@ casehub-parent              (BOM — publish first; all others import it)
 | Outbound notifications (Slack, Teams, SMS, email) | `casehub-connectors` | `Connector` SPI; `quarkus-work-notifications` must delegate here |
 | Agent-to-agent messaging (typed channels + messages) | `quarkus-qhorus` | 9 speech-act types, 5 channel semantics, 39 MCP tools |
 | Agent commitment/obligation tracking | `quarkus-qhorus` | `Commitment` with 7-state lifecycle |
-| Structured agent telemetry (EVENT observability) | `quarkus-qhorus` | `AgentMessageLedgerEntry` extends `LedgerEntry` |
+| Normative audit of all agent interactions | `quarkus-qhorus` | `MessageLedgerEntry` extends `LedgerEntry`; all 9 speech-act types recorded |
 | Case/process orchestration (choreography + WAITING) | `casehub-engine` | `CaseInstance`, `EventLog`, `WorkOrchestrator` |
 | Worker provisioner SPIs (provision, lifecycle, context) | `casehub-engine` (defines) / `claudony` (implements) | `WorkerProvisioner`, `CaseChannelProvider`, `WorkerContextProvider`, `WorkerStatusListener` |
 | Remote Claude CLI sessions | `claudony` | `TmuxService`, `SessionRegistry`, WebSocket streaming |

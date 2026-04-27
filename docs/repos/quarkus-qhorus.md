@@ -7,9 +7,9 @@
 
 ## Purpose
 
-Peer-to-peer agent communication mesh. The coordination layer for multi-agent AI systems — typed channels, typed messages (speech-act taxonomy), commitment/obligation tracking, shared artefact store, and structured observability. Independently embeddable in any Quarkus app. Designed for Quarkiverse submission.
+Agent communication mesh and governance methodology for multi-agent AI systems. Gives every agent interaction the formal status of an accountable act — grounded in speech act theory, deontic logic, defeasible reasoning, and social commitment semantics. The LLM reasons; Qhorus enforces, records, and derives. Independently embeddable in any Quarkus app. Designed for Quarkiverse submission.
 
-Grounded in speech act theory and deontic logic (see `docs/normative-layer.md`). Designed after research into A2A, AutoGen, LangGraph, OpenAI Swarm, Letta, and CrewAI.
+Designed after research into A2A, AutoGen, LangGraph, OpenAI Swarm, Letta, and CrewAI. See [docs/normative-layer.md](https://raw.githubusercontent.com/casehubio/quarkus-qhorus/main/docs/normative-layer.md) for the theoretical framing.
 
 ---
 
@@ -31,21 +31,24 @@ Grounded in speech act theory and deontic logic (see `docs/normative-layer.md`).
 
 | Class | Purpose |
 |---|---|
-| `AgentMessageLedgerEntry` | `LedgerEntry` subclass (JOINED inheritance) for structured EVENT telemetry |
-| `LedgerWriteService` | Writes ledger entry on every structured EVENT message (non-fatal, `REQUIRES_NEW`) |
+| `MessageLedgerEntry` | `LedgerEntry` subclass (JOINED inheritance). Records **all 9 message types** as tamper-evident entries. |
+| `LedgerWriteService` | Writes `MessageLedgerEntry` on every message send (all types, non-fatal, `REQUIRES_NEW`) |
+| `MessageLedgerEntryRepository` | Queries: `listEntries` (7 filters), `findLatestByCorrelationId`, causal chain traversal, stalled detection, telemetry aggregation |
 
-Ledger entries only created for EVENT type messages with valid JSON containing `tool_name` (String) and `duration_ms` (Long).
+All 9 message types are recorded. For EVENT messages with structured JSON, `tool_name` and `duration_ms` are extracted as telemetry fields.
 
 ### MCP Tool Surface
 
-39 `@Tool` methods in `QhorusMcpTools` (blocking) / `ReactiveQhorusMcpTools` (reactive):
+`@Tool` methods in `QhorusMcpTools` (blocking) / `ReactiveQhorusMcpTools` (reactive):
 - Instance management: `register_instance`, `deregister_instance`, `list_instances`, `get_instance`
-- Channel management: `create_channel`, `list_channels`, `get_channel`, `delete_channel`, `add_writer`, `remove_writer`
+- Channel management: `create_channel`, `list_channels`, `get_channel`, `delete_channel`, `get_channel_digest`, `add_writer`, `remove_writer`
 - Messaging: `send_message`, `check_messages`, `read_messages`, `get_message`, `wait_for_reply`
 - Observers: `register_observer`, `read_observer_events`, `clear_observer`, `list_observers`
 - Shared data: `store_data`, `get_data`, `list_data`, `claim_artefact`, `release_artefact`
 - Commitments: `open_commitment`, `acknowledge_commitment`, `fulfill_commitment`, `decline_commitment`, `fail_commitment`, `delegate_commitment`, `list_commitments`, `get_commitment`, `list_stalled_obligations`
-- Observability: `list_events`, `get_channel_timeline`
+- Ledger queries (normative): `list_ledger_entries` (with `type_filter`, `sender`, `correlation_id`, `sort`), `get_obligation_chain`, `get_causal_chain`, `get_obligation_stats`, `get_telemetry_summary`, `get_channel_timeline`
+
+Key parameter name: messages use `sender` (not `agent_id`).
 
 ### Store SPIs
 
@@ -95,15 +98,13 @@ quarkus.hibernate-orm.qhorus.packages=io.quarkiverse.qhorus.runtime,io.quarkiver
 
 ---
 
-## EVENT Message Telemetry Pattern
+## Normative Ledger — All 9 Types Recorded
 
-Agent tool calls record telemetry as EVENT messages with structured JSON:
-```json
-{ "tool_name": "create_channel", "duration_ms": 42, "result": "ok" }
-```
-`LedgerWriteService` writes a `AgentMessageLedgerEntry` for each such EVENT. Events without valid JSON or missing mandatory fields are silently skipped with a WARN log.
+Every message of all 9 types (`QUERY`, `COMMAND`, `RESPONSE`, `STATUS`, `DECLINE`, `HANDOFF`, `DONE`, `FAILURE`, `EVENT`) creates a `MessageLedgerEntry`. The ledger is the complete, immutable, tamper-evident channel history.
 
-`check_messages` excludes EVENT messages by design. Use `read_observer_events` to assert EVENT delivery in tests.
+For EVENT messages with structured telemetry JSON, `tool_name` and `duration_ms` are extracted as indexed fields for `get_telemetry_summary`.
+
+`check_messages` excludes EVENT messages by design. Use `read_observer_events` for EVENT delivery assertions in tests. Use `list_ledger_entries` to query the full history.
 
 ---
 
