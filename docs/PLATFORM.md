@@ -162,7 +162,7 @@ casehub-parent              (BOM — publish first; all others import it)
 ### Observability
 
 - OTel trace → ledger: `LedgerTraceListener` in quarkus-ledger auto-populates `traceId` at `@PrePersist`
-- Agent telemetry: `AgentMessageLedgerEntry` (EVENT type) in quarkus-qhorus; queryable via `list_events` / `get_channel_timeline` MCP tools
+- Agent interactions: `MessageLedgerEntry` in quarkus-qhorus records all 9 message types; queryable via `list_ledger_entries`, `get_channel_timeline`, `get_telemetry_summary`
 - WorkItem audit: `AuditEntry` entity (always present) + optional tamper-evident `WorkItemLedgerEntry`
 - Case decisions: `EventLog` (engine-internal, restart-safe) + optional `CaseLedgerEntry` (external, tamper-evident)
 
