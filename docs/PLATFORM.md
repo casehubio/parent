@@ -12,6 +12,10 @@
 
 Run this before implementing any feature, API, abstraction, SPI, or data model change in any casehubio repo. This is not a bureaucratic gate — it is the practice that keeps the platform orthogonal, intuitive, and free of duplication.
 
+> **These protocols are living documents.** When you discover a non-obvious pattern, a corrected architectural understanding, or a gotcha that would have been avoided if a protocol existed — update the protocol immediately, in the same session. Do not defer it to a cleanup pass that never happens. A discovery that isn't captured becomes a repeated mistake. When in doubt, ask: "would a future Claude session avoid this problem if it were written down?" If yes, write it down.
+
+The conventions index is at [`docs/conventions/INDEX.md`](conventions/INDEX.md). One file per rule, self-contained and retrievable independently. Add new entries there; link from PLATFORM.md when a capability ownership entry needs it.
+
 ### Step 1 — Does this already exist?
 
 Check the Capability Ownership table below. Then check the per-repo deep-dive for the repos most likely to already have it.
@@ -56,6 +60,12 @@ Check how the same concern is handled in the two or three most similar places in
 ### Step 5 — Does this need a platform-level doc update?
 
 If the capability ownership table, boundary rules, or deep-dive docs need updating after this implementation, update `casehub-parent/docs/PLATFORM.md` and/or the relevant `docs/repos/*.md` file.
+
+Also ask: **did this session surface a non-obvious pattern, a corrected rule, or a gotcha?** If yes — add it to `docs/conventions/` now, before the session ends. Patterns worth capturing include:
+- A solution that required research or multiple failed attempts to find
+- A rule in this document that turned out to be wrong or too coarse (update it)
+- A concurrency, boundary, or schema decision that would otherwise be re-discovered independently
+- An architectural boundary that was refined through analysis (update the relevant LAYERING or deep-dive doc)
 
 ### Step 6 — After implementing: propagate to existing consumers
 
