@@ -57,6 +57,20 @@ Check how the same concern is handled in the two or three most similar places in
 
 If the capability ownership table, boundary rules, or deep-dive docs need updating after this implementation, update `casehub-parent/docs/PLATFORM.md` and/or the relevant `docs/repos/*.md` file.
 
+### Step 6 — After implementing: propagate to existing consumers
+
+This step runs **after** the implementation is complete, not before. When you ship a new shared abstraction — a utility, SPI, service, or pattern — immediately search all repos for existing code that does the same thing differently and update it to use the new abstraction.
+
+Do not leave parallel implementations in place. Parallel implementations rot: they diverge over time, create inconsistency in the audit record, produce different behaviour for the same conceptual operation, and make the codebase harder for LLMs to reason about consistently.
+
+**The propagation checklist:**
+1. `grep -r` across all repos for the pattern the new abstraction replaces
+2. For each hit: replace with the new abstraction or open a tracked issue if the update requires a separate session
+3. If a consumer repo needs the new abstraction and it isn't published yet: open the issue, link it to the implementation issue, don't leave it undocumented
+4. Update the capability ownership table in this document if a capability has moved or consolidated
+
+**Why this matters:** the goal is orthogonal, non-duplicated architecture where each concept has exactly one implementation. New abstractions are only valuable if old ones are retired. An abstraction that coexists with its predecessor creates two sources of truth, not one.
+
 ---
 
 ## What We're Building
