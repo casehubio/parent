@@ -189,6 +189,19 @@ Format: `{model-family}:{persona}@{major}` — e.g. `"claude:tarkus-reviewer@v1"
 Defined and owned by `quarkus-ledger` (ADR 0004). Major version bump resets trust baseline (Beta(1,1) prior).  
 See [quarkus-ledger DESIGN.md §Agent Identity Model](https://raw.githubusercontent.com/casehubio/quarkus-ledger/main/docs/DESIGN.md).
 
+### Implementation Conventions
+
+Rules that apply across all casehubio modules — one file per rule, each self-contained for focused retrieval:
+
+| Convention | Rule |
+|---|---|
+| [SQL type portability](conventions/sql-type-portability.md) | Use `DOUBLE PRECISION` not `DOUBLE`; `SMALLINT` not `TINYINT`; `TIMESTAMP` not `DATETIME` |
+| [Flyway migration rules](conventions/flyway-migration-rules.md) | Version namespace ranges per module; `MODE=PostgreSQL` in all H2 test URLs |
+| [Optional module pattern](conventions/optional-module-pattern.md) | Jandex library module; `jandex-maven-plugin` required; zero cost when absent |
+| [Quarkus test database](conventions/quarkus-test-database.md) | H2 `MODE=PostgreSQL`; PostgreSQL Testcontainers for dialect validation |
+
+Full index: [docs/conventions/](conventions/INDEX.md)
+
 ---
 
 ## Known Overlap Risks
