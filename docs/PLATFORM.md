@@ -81,6 +81,7 @@ Three tiers, always kept separate:
 | `casehub-connectors` | [casehubio/casehub-connectors](https://github.com/casehubio/casehub-connectors) | Outbound message connectors (Slack, Teams, SMS, email) | Foundation |
 | `casehub-engine` | [casehubio/engine](https://github.com/casehubio/engine) | Hybrid choreography+blackboard orchestration engine | Orchestration |
 | `claudony` | [casehubio/claudony](https://github.com/casehubio/claudony) | Remote Claude CLI sessions + unified ecosystem dashboard | Integration |
+| `casehub-assisteddev` | [casehubio/casehub-assisteddev](https://github.com/casehubio/casehub-assisteddev) | AI-assisted development application (placeholder name) — first application layer built on CaseHub foundation | Application |
 | `casehub` | [casehubio/casehub](https://github.com/casehubio/casehub) | **Retiring** — original POC; no new features | — |
 
 ---

@@ -71,4 +71,5 @@ Trigger manually: GitHub Actions → select workflow → "Run workflow".
 | `engine` | casehubio/engine | Hybrid choreography+orchestration engine (local dir: `casehub-engine`) |
 | `claudony` | casehubio/claudony | Remote Claude CLI sessions + ecosystem dashboard |
 | `casehub-connectors` | casehubio/casehub-connectors | Outbound message connectors (Slack, Teams, SMS, email) |
+| `casehub-assisteddev` | casehubio/casehub-assisteddev | AI-assisted development application (placeholder name) — first app layer built on CaseHub foundation |
 | `casehub` | casehubio/casehub | **Retiring** — original POC, no new features |
