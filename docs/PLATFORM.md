@@ -135,6 +135,7 @@ casehub-parent              (BOM — publish first; all others import it)
 | W3C PROV-DM lineage export | `quarkus-ledger` | `LedgerProvExportService` |
 | OTel trace linkage to audit entries | `quarkus-ledger` | `LedgerTraceListener` auto-populates `traceId` from active OTel span |
 | Human task inbox (WorkItem lifecycle) | `quarkus-work` | 10 statuses, SLA, delegation, escalation, spawn |
+| M-of-N parallel WorkItem completion (group policy primitive) | `quarkus-work` | `MultiInstanceCoordinator`; `WorkItemGroupLifecycleEvent`; see LAYERING.md |
 | Worker routing / selection strategies | `quarkus-work-core` | `WorkBroker`, `WorkerSelectionStrategy` SPI — also used by casehub-engine |
 | Label-based queue views | `quarkus-work-queues` | Optional module on quarkus-work |
 | Semantic (embedding) worker matching | `quarkus-work-ai` | Optional module; `SemanticWorkerSelectionStrategy` |
@@ -152,7 +153,7 @@ casehub-parent              (BOM — publish first; all others import it)
 
 ## Key Boundary Rules
 
-**Do not add orchestration logic to `quarkus-work`.** When a WorkItem completes, quarkus-work fires a CDI event and stops. CaseHub decides what completing a WorkItem *means* in a case context. "Complete the parent when all children complete" is CaseHub. "Mark the WorkItem EXPIRED when its deadline passes" is quarkus-work.
+**Do not add orchestration logic to `quarkus-work`.** When a WorkItem completes, quarkus-work fires a CDI event and stops. CaseHub decides what completing a WorkItem *means* in a case context. Homogeneous M-of-N group completion (all instances of the same template) is quarkus-work (`MultiInstanceCoordinator`). Heterogeneous plan-level completion (named plan items A, B, and C gate a Stage) is CaseHub. "Mark the WorkItem EXPIRED when its deadline passes" is quarkus-work.
 
 **Do not add WorkItem inbox management to `casehub-engine`.** casehub-engine depends on `quarkus-work-core` (`WorkBroker`) only. WorkItem entities, Flyway migrations, REST endpoints, and audit stores must not flow into the engine.
 
