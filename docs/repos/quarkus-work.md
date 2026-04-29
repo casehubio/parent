@@ -24,6 +24,7 @@ A `WorkItem` is deliberately NOT called `Task` — CNCF Serverless Workflow and 
 | `quarkus-work-queues` | Optional module | Label-based queue views |
 | `quarkus-work-ai` | Optional module | `SemanticWorkerSelectionStrategy`, `LowConfidenceFilterProducer` |
 | `quarkus-work-notifications` | Optional module | Slack/Teams/webhook outbound notifications |
+| `quarkus-work-reports` | Optional module | SLA compliance reporting (`/workitems/reports/*`) |
 | `work-flow` | Optional module | Quarkus-Flow CDI bridge |
 | `quarkus-work-testing` | Test utilities | `InMemoryWorkItemStore`, `InMemoryAuditEntryStore` |
 
@@ -45,12 +46,17 @@ Key fields: `title`, `description`, `assigneeId`, `candidateUsers`, `candidateGr
 | `WorkItemAssignmentService` | Routing via `WorkBroker` → `WorkerSelectionStrategy` |
 | `WorkItemSpawnService` | Child spawning with idempotency key; implements `SpawnPort` |
 | `FilterRegistryEngine` | JEXL/JQ condition evaluation for label-based routing |
+| `MultiInstanceSpawnService` | Creates parent + spawn group + N children for M-of-N templates |
+| `MultiInstanceCoordinator` | `@ObservesAsync` — drives group policy on child terminal events |
+| `MultiInstanceGroupPolicy` | OCC M-of-N counter update and parent transition |
 
 ### REST API
 
 - `GET/POST /workitems` — inbox + creation
+- `GET /workitems/inbox` — always returns thread roots (`parentId IS NULL`) with aggregate stats; coordinator parents visible via descendant assignment
 - `POST /workitems/{id}/start|complete|cancel|delegate`
 - `GET /workitems/{id}/audit` — audit history
+- `GET /workitems/{id}/instances` — child instances with group summary (M-of-N progress)
 - `GET /workitems/reports` — SLA compliance reporting
 - `GET/POST /filter-rules` — dynamic filter rules
 - `POST /workitems/{id}/spawn` — child WorkItem creation
@@ -77,7 +83,7 @@ Key fields: `title`, `description`, `assigneeId`, `candidateUsers`, `candidateGr
 ## What This Repo Explicitly Does NOT Do
 
 - Orchestrate — it fires events and provides primitives. It does not decide what completing a WorkItem means.
-- Roll up child completions to a parent (that is CaseHub).
+- **Heterogeneous plan-item completion** — whether named plan items A, B, and C have all completed to advance a Stage; that is CaseHub (see LAYERING.md). Homogeneous M-of-N group completion IS quarkus-work (`MultiInstanceCoordinator`).
 - Interpret `callerRef` — stored and echoed opaquely.
 - Provision or manage AI agents (that is CaseHub/Claudony).
 - Know when to spawn child WorkItems (callers drive spawn via `SpawnPort`).
@@ -100,8 +106,8 @@ The `WorkBroker` is generic: it routes any work unit, not just WorkItems.
 
 ## Current State
 
-- 1019+ tests passing; native image validated at 0.084s startup
-- Active epics: Business-Hours Deadlines (#101), SLA Compliance Reporting (#104)
+- 637+ tests passing in runtime module; native image validated at 0.084s startup
+- All major epics complete: Business-Hours Deadlines (#101), SLA Compliance Reporting (#104), Multi-Instance Tasks (#106)
 - Pending: `quarkus-work-qhorus` adapter (MCP tools for agent-driven approval flows)
 
 ---
