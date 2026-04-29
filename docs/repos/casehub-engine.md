@@ -3,7 +3,7 @@
 **GitHub:** [casehubio/engine](https://github.com/casehubio/engine) (local: `casehub-engine`)  
 **Platform doc:** [PLATFORM.md](https://raw.githubusercontent.com/casehubio/casehub-parent/main/docs/PLATFORM.md)
 
-> **Note:** The original `casehub` repo (local: `~/claude/casehub`) is retiring. Do not add features there. All active development is in `casehub-engine`.
+> **Note:** The original `casehub` repo (local: `~/claude/casehub-poc`) is retiring. Do not add features there. All active development is in `casehub-engine`.
 
 ---
 

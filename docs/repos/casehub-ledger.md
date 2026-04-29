@@ -1,6 +1,6 @@
-# quarkus-ledger — Platform Deep Dive
+# casehub-ledger — Platform Deep Dive
 
-**GitHub:** [casehubio/quarkus-ledger](https://github.com/casehubio/quarkus-ledger)  
+**GitHub:** [casehubio/casehub-ledger](https://github.com/casehubio/casehub-ledger)  
 **Platform doc:** [PLATFORM.md](https://raw.githubusercontent.com/casehubio/casehub-parent/main/docs/PLATFORM.md)
 
 ---
@@ -122,6 +122,6 @@ Bump criteria: model family change, persona behaviour change, scope change. Do N
 
 ## Design Documents
 
-- [docs/DESIGN.md](https://raw.githubusercontent.com/casehubio/quarkus-ledger/main/docs/DESIGN.md) — full architecture, agent identity model, mesh topology decisions
-- [docs/CAPABILITIES.md](https://raw.githubusercontent.com/casehubio/quarkus-ledger/main/docs/CAPABILITIES.md) — capability applicability ratings and selection matrix
-- [adr/INDEX.md](https://raw.githubusercontent.com/casehubio/quarkus-ledger/main/adr/INDEX.md) — architectural decision records
+- [docs/DESIGN.md](https://raw.githubusercontent.com/casehubio/casehub-ledger/main/docs/DESIGN.md) — full architecture, agent identity model, mesh topology decisions
+- [docs/CAPABILITIES.md](https://raw.githubusercontent.com/casehubio/casehub-ledger/main/docs/CAPABILITIES.md) — capability applicability ratings and selection matrix
+- [adr/INDEX.md](https://raw.githubusercontent.com/casehubio/casehub-ledger/main/adr/INDEX.md) — architectural decision records
