@@ -4,7 +4,12 @@ on:
   workflow_dispatch:
     inputs:
       skip_tests:
-        description: Skip tests
+        description: "Skip all tests (compile check only)"
+        required: false
+        default: false
+        type: boolean
+      skip_integration_tests:
+        description: "Skip integration tests only (unit tests still run)"
         required: false
         default: false
         type: boolean
@@ -64,97 +69,119 @@ jobs:
         continue-on-error: true
         env:
           SKIP_TESTS: ${{ inputs.skip_tests }}
+          SKIP_ITS: ${{ inputs.skip_integration_tests }}
           MAVEN_EXTRA: ${{ inputs.maven_args }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          FLAGS=""; [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
+          FLAGS=""
+          [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
+          [ "$SKIP_ITS" = "true" ] && FLAGS="$FLAGS -DskipITs"
           START=$SECONDS
-          mvn install -f aggregator.xml -pl quarkus-langchain4j --batch-mode $FLAGS $MAVEN_EXTRA
-          echo $((SECONDS - START)) > .build-times/quarkus-langchain4j
+          cd quarkus-langchain4j && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
+          echo $((SECONDS - START)) > ../.build-times/quarkus-langchain4j
 
       - name: "Build: quarkus-ledger"
         id: ledger
         continue-on-error: true
         env:
           SKIP_TESTS: ${{ inputs.skip_tests }}
+          SKIP_ITS: ${{ inputs.skip_integration_tests }}
           MAVEN_EXTRA: ${{ inputs.maven_args }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          FLAGS=""; [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
+          FLAGS=""
+          [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
+          [ "$SKIP_ITS" = "true" ] && FLAGS="$FLAGS -DskipITs"
           START=$SECONDS
-          mvn install -f aggregator.xml -pl quarkus-ledger --batch-mode $FLAGS $MAVEN_EXTRA
-          echo $((SECONDS - START)) > .build-times/quarkus-ledger
-
+          cd quarkus-ledger && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
+          echo $((SECONDS - START)) > ../.build-times/quarkus-ledger
 
       - name: "Build: casehub-connectors"
         id: connectors
         continue-on-error: true
         env:
           SKIP_TESTS: ${{ inputs.skip_tests }}
+          SKIP_ITS: ${{ inputs.skip_integration_tests }}
           MAVEN_EXTRA: ${{ inputs.maven_args }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          FLAGS=""; [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
+          FLAGS=""
+          [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
+          [ "$SKIP_ITS" = "true" ] && FLAGS="$FLAGS -DskipITs"
           START=$SECONDS
-          mvn install -f aggregator.xml -pl casehub-connectors --batch-mode $FLAGS $MAVEN_EXTRA
-          echo $((SECONDS - START)) > .build-times/casehub-connectors
+          cd casehub-connectors && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
+          echo $((SECONDS - START)) > ../.build-times/casehub-connectors
 
       - name: "Build: quarkus-work"
         id: work
         continue-on-error: true
         env:
           SKIP_TESTS: ${{ inputs.skip_tests }}
+          SKIP_ITS: ${{ inputs.skip_integration_tests }}
           MAVEN_EXTRA: ${{ inputs.maven_args }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          FLAGS=""; [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
+          FLAGS=""
+          [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
+          [ "$SKIP_ITS" = "true" ] && FLAGS="$FLAGS -DskipITs"
           START=$SECONDS
-          mvn install -f aggregator.xml -pl quarkus-work --batch-mode $FLAGS $MAVEN_EXTRA
-          echo $((SECONDS - START)) > .build-times/quarkus-work
+          cd quarkus-work && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
+          echo $((SECONDS - START)) > ../.build-times/quarkus-work
 
       - name: "Build: quarkus-qhorus"
         id: qhorus
         continue-on-error: true
         env:
           SKIP_TESTS: ${{ inputs.skip_tests }}
+          SKIP_ITS: ${{ inputs.skip_integration_tests }}
           MAVEN_EXTRA: ${{ inputs.maven_args }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          FLAGS=""; [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
+          FLAGS=""
+          [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
+          [ "$SKIP_ITS" = "true" ] && FLAGS="$FLAGS -DskipITs"
           START=$SECONDS
-          mvn install -f aggregator.xml -pl quarkus-qhorus --batch-mode $FLAGS $MAVEN_EXTRA
-          echo $((SECONDS - START)) > .build-times/quarkus-qhorus
+          cd quarkus-qhorus && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
+          echo $((SECONDS - START)) > ../.build-times/quarkus-qhorus
 
       - name: "Build: casehub-engine"
         id: engine
         continue-on-error: true
         env:
           SKIP_TESTS: ${{ inputs.skip_tests }}
+          SKIP_ITS: ${{ inputs.skip_integration_tests }}
           MAVEN_EXTRA: ${{ inputs.maven_args }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          FLAGS=""; [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
+          FLAGS=""
+          [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
+          [ "$SKIP_ITS" = "true" ] && FLAGS="$FLAGS -DskipITs"
           START=$SECONDS
-          mvn install -f aggregator.xml -pl casehub-engine --batch-mode $FLAGS $MAVEN_EXTRA
-          echo $((SECONDS - START)) > .build-times/casehub-engine
+          cd casehub-engine && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
+          echo $((SECONDS - START)) > ../.build-times/casehub-engine
 
       - name: "Build: claudony"
         id: claudony
         continue-on-error: true
         env:
           SKIP_TESTS: ${{ inputs.skip_tests }}
+          SKIP_ITS: ${{ inputs.skip_integration_tests }}
           MAVEN_EXTRA: ${{ inputs.maven_args }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          FLAGS=""; [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
+          FLAGS=""
+          [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
+          [ "$SKIP_ITS" = "true" ] && FLAGS="$FLAGS -DskipITs"
           START=$SECONDS
-          mvn install -f aggregator.xml -pl claudony --batch-mode $FLAGS $MAVEN_EXTRA
-          echo $((SECONDS - START)) > .build-times/claudony
+          cd claudony && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
+          echo $((SECONDS - START)) > ../.build-times/claudony
 
       - name: Build summary
         if: always()
         env:
           ACTOR: ${{ github.actor }}
+          SKIP_TESTS: ${{ inputs.skip_tests }}
+          SKIP_ITS: ${{ inputs.skip_integration_tests }}
           OUTCOME_CONNECTORS: ${{ steps.connectors.outcome }}
           OUTCOME_LANGCHAIN4J: ${{ steps.langchain4j.outcome }}
           OUTCOME_LEDGER: ${{ steps.ledger.outcome }}
@@ -163,6 +190,14 @@ jobs:
           OUTCOME_ENGINE: ${{ steps.engine.outcome }}
           OUTCOME_CLAUDONY: ${{ steps.claudony.outcome }}
         run: |
+          if [ "$SKIP_TESTS" = "true" ]; then
+            TEST_MODE="compile check only (all tests skipped)"
+          elif [ "$SKIP_ITS" = "true" ]; then
+            TEST_MODE="unit tests only (integration tests skipped)"
+          else
+            TEST_MODE="full test suite"
+          fi
+
           MODULES=(quarkus-langchain4j quarkus-ledger casehub-connectors quarkus-work quarkus-qhorus casehub-engine claudony)
           declare -A OUTCOMES=(
             [quarkus-langchain4j]="$OUTCOME_LANGCHAIN4J"
@@ -177,7 +212,7 @@ jobs:
           {
             echo "# Full Stack Build"
             echo ""
-            echo "_Triggered by @${ACTOR} &nbsp;|&nbsp; $(date -u '+%Y-%m-%d %H:%M UTC')_"
+            echo "_Triggered by @${ACTOR} &nbsp;|&nbsp; $(date -u '+%Y-%m-%d %H:%M UTC') &nbsp;|&nbsp; ${TEST_MODE}_"
             echo ""
             echo "| Module | Result | Duration |"
             echo "|:-------|:------:|:--------:|"
