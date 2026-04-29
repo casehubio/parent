@@ -558,6 +558,13 @@ These are direct infrastructure advantages — not minimised, not framed as futu
 
 Ordered by when each becomes a hard blocker. Gastown hit all of these in production — that is why it built Witness/Deacon/Boot, the Scheduler, and Wasteland.
 
+### Prerequisite Refactors — ✅ Both DONE 2026-04-29
+
+| Prereq | Status | What shipped |
+|--------|--------|-------------|
+| **#67 — LedgerEntryEnricher pipeline** | ✅ DONE | `LedgerEntryEnricher` SPI, `TraceIdEnricher` extracted from `LedgerTraceListener`, non-fatal pipeline runner. ADR 0005 documenting decision. |
+| **#68 — ActorTrustScore discriminator model** | ✅ DONE | `ScoreType` enum (GLOBAL/CAPABILITY/DIMENSION), `scope_key` column, UUID PK, V1001 migration rewritten. Foundation for capability-scoped and multi-dimensional scores. |
+
 ### P0 — Breaks Immediately with Multiple Agents
 
 Wiring issues in the existing design. Not new features — completion of designed capabilities. Must be resolved before anything else has value.
@@ -588,15 +595,32 @@ Wiring issues in the existing design. Not new features — completion of designe
 
 **Root cause:** Qhorus `LedgerWriteService` writes `actorId = message.sender` (raw instance ID like `claudony-worker-abc123`). Persona format (`claude:analyst@v1`) never reaches the ledger from Qhorus interactions.
 
-~~**Fix 1:** Add `ActorTypeResolver` utility to quarkus-ledger — single canonical `actorId` derivation for all consumers. ([ledger#47](https://github.com/casehubio/quarkus-ledger/issues/47))~~ **✅ DONE 2026-04-28** — `ActorTypeResolver` created in `runtime/model/`. 9/9 tests passing. Consumers in quarkus-qhorus, casehub-engine, quarkus-work still need updating.
+~~**Fix 1:** Add `ActorTypeResolver` utility to quarkus-ledger — single canonical `actorId` derivation for all consumers. ([ledger#47](https://github.com/casehubio/quarkus-ledger/issues/47))~~ **✅ DONE 2026-04-28** — utility created. **Consumer updates ✅ DONE 2026-04-29** — quarkus-qhorus (`3cb5749`), quarkus-work (`dcad49b`), claudony (`434d7df`) all now use `ActorTypeResolver.resolve()`.
 
-**Fix 2:** Add `InstanceActorIdProvider` SPI to quarkus-qhorus — maps Qhorus instance IDs to ledger persona IDs. claudony-casehub implements it. ([qhorus#124](https://github.com/casehubio/quarkus-qhorus/issues/124)) — *pending*
+~~**Fix 2:** Add `InstanceActorIdProvider` SPI to quarkus-qhorus — maps Qhorus instance IDs to ledger persona IDs. claudony-casehub implements it. ([qhorus#124](https://github.com/casehubio/quarkus-qhorus/issues/124)) — *pending*~~ **✅ SPI DONE 2026-04-29** — `InstanceActorIdProvider` + `DefaultInstanceActorIdProvider` (no-op identity) shipped. `CommitmentAttestationPolicy` SPI also shipped. claudony-casehub session→persona mapping implementation still pending — trust accumulation per persona not yet active.
 
 **Repos:** quarkus-ledger, quarkus-qhorus, claudony-casehub
 
 ### P1 — Breaks at Scale (10+ Concurrent Cases / Agents)
 
 New capabilities, but hard blockers before CaseHub can operate at meaningful agent counts.
+
+### Group A — Independent Foundational Improvements (Partial — 2026-04-29)
+
+| Issue | Status | What shipped |
+|-------|--------|-------------|
+| **#55 — DecayFunction SPI + valence multiplier** | ✅ DONE | `DecayFunction` SPI extracted from `TrustScoreComputer`, `ExponentialDecayFunction` with configurable `flaggedPersistenceMultiplier`. ADR 0007. TrustScoreComputer now delegates to injected strategy. |
+| **#54 — TrustGateService** | ✅ DONE | `TrustGateService` CDI bean: `meetsThreshold(actorId, minTrust)` Phase 1 shipped. Phase 2 (capability-scoped) ready for wiring once #61 completes. |
+| **#53 — ActorTypeResolver consumers** | ✅ DONE | All three consumers updated (see P0.3 above). |
+| **Attestation confidence** | ✅ DONE (bonus) | Bayesian Beta score now incorporates attestation confidence values, not just verdict polarity. |
+| #56 — Ledger health checks | Pending | |
+| #57 — Multi-attestation aggregation | Pending | |
+| #58 — Compliance report API | Pending | |
+| #59 — ProvenanceSupplement enricher | Pending (needs #67 ✅) | |
+
+---
+
+### P1 — Breaks at Scale (10+ Concurrent Cases / Agents)
 
 #### P1.1 — Agent concurrency throttling
 
@@ -678,15 +702,26 @@ public enum RecoveryAction { REPROVISION, ESCALATE_TO_HUMAN, CANCEL_CASE, WAIT }
 
 **Fix:** `ClaudonyWorkerProvisioner.provision()` captures the active `MessageLedgerEntry.id` and passes it as `causedByEntryId` for the first `CaseLedgerEntry`. Requires `CaseLineageQuery` JPA implementation (currently `EmptyCaseLineageQuery`).
 
+**✅ Partial progress 2026-04-29:** `CaseLineageQuery` JPA implementation shipped in claudony (`JpaCaseLineageQuery`). CaseEngine event→ledger→lineage round-trip verified end-to-end (commits `318f64b`, closes #92 and #86). `SessionRegistry.findByCaseId()` and `caseId + roleName` on `Session` also shipped — Worker↔Session correlation now stored. Remaining: passing `causedByEntryId` at provisioning time to complete the full cross-repo chain.
+
 **Repos:** claudony-casehub, casehub-engine
+
+### Additional completions 2026-04-29 (not P0-P2 tracked items)
+
+| Item | Status | Notes |
+|------|--------|-------|
+| **quarkus-work Epic #106 — Multi-instance WorkItems** | ✅ DONE | `MultiInstanceCoordinator`, `MultiInstanceGroupPolicy`, M-of-N completion, threaded inbox, claim guard, `GET /workitems/{id}/instances`. Full group policy boundary clarified in LAYERING.md. |
+| **casehub-engine WorkerContextProvider + WorkerProvisioner wiring** | ✅ DONE | Wired into execution path (commit `f5a96e6`). Workers now receive lineage context at startup. |
+| **claudony case worker panel (#76)** | ✅ DONE | Terminal.js case worker panel — fetch, poll, render, switch. E2E tests. Closes the Worker↔Session dashboard gap. |
+| **casehub-engine WorkerContextProvider + WorkerProvisioner wiring** | ✅ DONE | Closes part of the end-to-end provisioner wiring (ADR-0006 path). |
 
 ### Phase-Gate Summary
 
 | Phase | Items | Gate to next phase |
 |-------|-------|-------------------|
-| **P0 — Wiring** | [engine#186](https://github.com/casehubio/engine/issues/186), [qhorus#123](https://github.com/casehubio/quarkus-qhorus/issues/123), [ledger#47](https://github.com/casehubio/quarkus-ledger/issues/47), [qhorus#124](https://github.com/casehubio/quarkus-qhorus/issues/124) | Normative layer functional end-to-end; trust accumulates from real behaviour |
+| **P0 — Wiring** | ~~ledger#47~~ ✅ ~~qhorus#123~~ ✅ ~~qhorus#124 SPI~~ ✅ · **engine#186 still open** | Normative layer functional end-to-end; trust accumulates from real behaviour |
 | **P1 — Scale** | Concurrency throttle, RecoveryPolicy SPI, trust routing wired, CaseLedgerEntry merged | Can run 10+ agents; trust actually drives routing; case events in ledger |
-| **P2 — Quality** | OTel alignment, causal chain complete, trust federation | Full observability; audit trail complete; cross-deployment trust |
+| **P2 — Quality** | ~~OTel alignment~~ ✅ · causal chain (partial ✅) · trust federation | Full observability; audit trail complete; cross-deployment trust |
 
 ---
 
