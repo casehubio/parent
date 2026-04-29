@@ -35,7 +35,7 @@
     <module>casehub-connectors</module>
     <module>quarkus-work</module>
     <module>quarkus-qhorus</module>
-    <module>casehub-engine</module>
+    <module>casehub/engine</module>
     <module>claudony</module>
   </modules>
 
