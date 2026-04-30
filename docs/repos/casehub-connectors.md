@@ -92,7 +92,7 @@ Nothing in the casehubio ecosystem. Pure Java (`java.net.http.HttpClient`) + opt
 - Lightweight and early-stage — no `CLAUDE.md` or `docs/DESIGN.md` yet
 - Recently added to the ecosystem CI dashboards
 - Published to GitHub Packages at `0.2-SNAPSHOT`
-- GroupId: `io.casehubio` (not yet `io.quarkiverse.*`)
+- GroupId: `io.casehub`
 - Not yet wired into casehub-engine or casehub-work escalation paths
 
 ---

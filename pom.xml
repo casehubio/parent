@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>io.casehubio</groupId>
+  <groupId>io.casehub</groupId>
   <artifactId>casehub-parent</artifactId>
   <version>0.2-SNAPSHOT</version>
   <packaging>pom</packaging>
@@ -97,21 +97,21 @@
       </dependency>
 
       <!-- ================================================================ -->
-      <!-- quarkus-qhorus                                                   -->
+      <!-- casehub-qhorus                                                   -->
       <!-- ================================================================ -->
       <dependency>
-        <groupId>io.quarkiverse.qhorus</groupId>
-        <artifactId>quarkus-qhorus</artifactId>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-qhorus</artifactId>
         <version>${casehub.version}</version>
       </dependency>
       <dependency>
-        <groupId>io.quarkiverse.qhorus</groupId>
-        <artifactId>quarkus-qhorus-deployment</artifactId>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-qhorus-deployment</artifactId>
         <version>${casehub.version}</version>
       </dependency>
       <dependency>
-        <groupId>io.quarkiverse.qhorus</groupId>
-        <artifactId>quarkus-qhorus-testing</artifactId>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-qhorus-testing</artifactId>
         <version>${casehub.version}</version>
       </dependency>
 

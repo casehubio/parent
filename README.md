@@ -9,7 +9,7 @@ Org-level parent POM and BOM for the [casehubio](https://github.com/casehubio) e
 | [casehub-parent](https://github.com/casehubio/casehub-parent) | [![casehub-parent](https://github.com/casehubio/casehub-parent/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/casehub-parent/actions/workflows/publish.yml) |
 | [quarkus-ledger](https://github.com/casehubio/quarkus-ledger) | [![quarkus-ledger](https://github.com/casehubio/quarkus-ledger/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/quarkus-ledger/actions/workflows/publish.yml) |
 | [casehub-work](https://github.com/casehubio/work) | [![casehub-work](https://github.com/casehubio/work/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/work/actions/workflows/publish.yml) |
-| [quarkus-qhorus](https://github.com/casehubio/quarkus-qhorus) | [![quarkus-qhorus](https://github.com/casehubio/quarkus-qhorus/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/quarkus-qhorus/actions/workflows/publish.yml) |
+| [casehub-qhorus](https://github.com/casehubio/qhorus) | [![casehub-qhorus](https://github.com/casehubio/qhorus/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/qhorus/actions/workflows/publish.yml) |
 | [casehub-engine](https://github.com/casehubio/engine) | [![casehub-engine](https://github.com/casehubio/engine/actions/workflows/maven.yml/badge.svg?branch=main)](https://github.com/casehubio/engine/actions/workflows/maven.yml) |
 | [claudony](https://github.com/casehubio/claudony) | [![claudony](https://github.com/casehubio/claudony/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/casehubio/claudony/actions/workflows/ci.yml) |
 | [quarkus-langchain4j](https://github.com/casehubio/quarkus-langchain4j) | [![quarkus-langchain4j](https://github.com/casehubio/quarkus-langchain4j/actions/workflows/casehub-publish.yml/badge.svg?branch=main)](https://github.com/casehubio/quarkus-langchain4j/actions/workflows/casehub-publish.yml) |
@@ -47,9 +47,9 @@ Org-level parent POM and BOM for the [casehubio](https://github.com/casehubio) e
 | `casehub-work` | `io.casehub` | Work item runtime |
 | `casehub-work-deployment` | `io.casehub` | Work item deployment |
 | `casehub-work-ledger` | `io.casehub` | Optional ledger integration for work items |
-| `quarkus-qhorus` | `io.quarkiverse.qhorus` | AI agent communication mesh |
-| `quarkus-qhorus-deployment` | `io.quarkiverse.qhorus` | Qhorus deployment module |
-| `quarkus-qhorus-testing` | `io.quarkiverse.qhorus` | Test utilities for Qhorus consumers |
+| `casehub-qhorus` | `io.casehub` | AI agent communication mesh |
+| `casehub-qhorus-deployment` | `io.casehub` | Qhorus deployment module |
+| `casehub-qhorus-testing` | `io.casehub` | Test utilities for Qhorus consumers |
 | `casehub-ledger` | `io.casehub` | CaseHub audit ledger integration |
 
 All are managed at the same version (`${casehub.version}`, currently `0.2-SNAPSHOT`).
@@ -64,7 +64,7 @@ Add to your project's `<dependencyManagement>` section:
 <dependencyManagement>
   <dependencies>
     <dependency>
-      <groupId>io.casehubio</groupId>
+      <groupId>io.casehub</groupId>
       <artifactId>casehub-parent</artifactId>
       <version>0.2-SNAPSHOT</version>
       <type>pom</type>
@@ -82,8 +82,8 @@ Then declare casehubio dependencies without versions:
   <artifactId>quarkus-ledger</artifactId>
 </dependency>
 <dependency>
-  <groupId>io.quarkiverse.qhorus</groupId>
-  <artifactId>quarkus-qhorus</artifactId>
+  <groupId>io.casehub</groupId>
+  <artifactId>casehub-qhorus</artifactId>
 </dependency>
 ```
 
@@ -99,7 +99,7 @@ Each project in the ecosystem has a different Maven parent (`quarkiverse-parent`
 |---|---|---|
 | `quarkus-ledger` | `io.quarkiverse.ledger` | `casehubio/quarkus-ledger` |
 | `casehub-work` | `io.casehub` | `casehubio/work` |
-| `quarkus-qhorus` | `io.quarkiverse.qhorus` | `casehubio/quarkus-qhorus` |
+| `casehub-qhorus` | `io.casehub` | `casehubio/qhorus` |
 | `casehub-engine` | `io.casehub` | `casehubio/casehub-engine` |
 | `claudony` | `dev.claudony` | `casehubio/claudony` |
 | `quarkus-langchain4j` | (upstream fork) | `casehubio/quarkus-langchain4j` |
@@ -111,7 +111,7 @@ quarkus-ledger
     ↑
 casehub-work
     ↑
-quarkus-qhorus    casehub-engine
+casehub-qhorus    casehub-engine
     ↑                   ↑
          claudony
 ```
@@ -161,9 +161,9 @@ The dependency graph used for propagation:
 ```
 quarkus-ledger      → (no casehub deps)
 casehub-work        → quarkus-ledger
-quarkus-qhorus      → quarkus-ledger, casehub-work
+casehub-qhorus      → quarkus-ledger, casehub-work
 casehub-engine      → quarkus-ledger, casehub-work
-claudony            → quarkus-ledger, casehub-work, quarkus-qhorus
+claudony            → quarkus-ledger, casehub-work, casehub-qhorus
 ```
 
 Example output:
@@ -172,12 +172,12 @@ Example output:
 ==> Incremental analysis...
     quarkus-ledger       BUILD   (own SHA changed)
     casehub-work         TEST    (dep changed, rerun tests against new artifacts)
-    quarkus-qhorus       TEST    (dep changed, rerun tests against new artifacts)
+    casehub-qhorus       TEST    (dep changed, rerun tests against new artifacts)
     casehub-engine       TEST    (dep changed, rerun tests against new artifacts)
     claudony             SKIP    (SHA and all deps unchanged)
 
 ==> Installing: quarkus-ledger
-==> Retesting against updated deps: casehub-work,quarkus-qhorus,casehub-engine
+==> Retesting against updated deps: casehub-work,casehub-qhorus,casehub-engine
 ```
 
 ### SHA logs and the build cache
@@ -200,7 +200,7 @@ Each log records the exact HEAD SHA of every repo at build time:
 
 quarkus-ledger=a2636e132b43bc0faad66cf587ab5b30996ff3df
 casehub-work=e085d64c1f2a93b7d0f4e89a3c12d45e678f901a
-quarkus-qhorus=ef89aaa3b7c1d20f4e5a67b89c0d12e3f456789a
+casehub-qhorus=ef89aaa3b7c1d20f4e5a67b89c0d12e3f456789a
 casehub-engine=fccb647d8e2f31a05b6c78d90e1f23a4b5678901
 claudony=3fbeac7e9f0a12b34c56d78e90f1a2b3c4567890
 ```
@@ -270,7 +270,7 @@ Every ecosystem repo contains:
 
 ### casehub-parent publish
 
-`casehub-parent` publishes its BOM on every push to `main`. This must be published before any other project can resolve `io.casehubio:casehub-parent:0.2-SNAPSHOT` in CI.
+`casehub-parent` publishes its BOM on every push to `main`. This must be published before any other project can resolve `io.casehub:casehub-parent:0.2-SNAPSHOT` in CI.
 
 ### Build order in CI
 
@@ -279,9 +279,9 @@ Because each project publishes independently, upstream artifacts must be availab
 1. `casehub-parent` → publishes BOM
 2. `quarkus-ledger` → depends on BOM
 3. `casehub-work` → depends on BOM + `quarkus-ledger`
-4. `quarkus-qhorus` → depends on BOM + `quarkus-ledger` + `casehub-work`
+4. `casehub-qhorus` → depends on BOM + `quarkus-ledger` + `casehub-work`
 5. `casehub-engine` → depends on BOM + `quarkus-ledger` + `casehub-work`
-6. `claudony` → depends on BOM + `quarkus-qhorus`
+6. `claudony` → depends on BOM + `casehub-qhorus`
 
 If `quarkus-ledger` CI hasn't published yet when `casehub-work` CI runs, `casehub-work` will fail with `Could not resolve io.quarkiverse.ledger:quarkus-ledger:0.2-SNAPSHOT`. Re-running the failing job after the upstream publish completes resolves this.
 
