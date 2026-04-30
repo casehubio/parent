@@ -53,11 +53,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mkdir -p .build-times
-          for repo in quarkus-langchain4j quarkus-ledger casehub-connectors quarkus-work quarkus-qhorus claudony; do
+          for repo in quarkus-langchain4j casehub-connectors quarkus-work quarkus-qhorus claudony; do
             git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/$repo.git"
           done
-          # engine lives under casehub/ to match local layout and aggregator.xml
+          # ledger and engine live under casehub/ to match local layout and aggregator.xml
           mkdir -p casehub
+          git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/ledger.git" casehub/ledger
           git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/engine.git" casehub/engine
 
       # continue-on-error: true on each build step ensures:
@@ -81,7 +82,7 @@ jobs:
           cd quarkus-langchain4j && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
           echo $((SECONDS - START)) > ../.build-times/quarkus-langchain4j
 
-      - name: "Build: quarkus-ledger"
+      - name: "Build: casehub-ledger"
         id: ledger
         continue-on-error: true
         env:
@@ -94,8 +95,8 @@ jobs:
           [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
           [ "$SKIP_ITS" = "true" ] && FLAGS="$FLAGS -DskipITs"
           START=$SECONDS
-          cd quarkus-ledger && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
-          echo $((SECONDS - START)) > ../.build-times/quarkus-ledger
+          cd casehub/ledger && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
+          echo $((SECONDS - START)) > ../.build-times/casehub-ledger
 
       - name: "Build: casehub-connectors"
         id: connectors
@@ -199,10 +200,10 @@ jobs:
             TEST_MODE="full test suite"
           fi
 
-          MODULES=(quarkus-langchain4j quarkus-ledger casehub-connectors quarkus-work quarkus-qhorus casehub-engine claudony)
+          MODULES=(quarkus-langchain4j casehub-ledger casehub-connectors quarkus-work quarkus-qhorus casehub-engine claudony)
           declare -A OUTCOMES=(
             [quarkus-langchain4j]="$OUTCOME_LANGCHAIN4J"
-            [quarkus-ledger]="$OUTCOME_LEDGER"
+            [casehub-ledger]="$OUTCOME_LEDGER"
             [casehub-connectors]="$OUTCOME_CONNECTORS"
             [quarkus-work]="$OUTCOME_WORK"
             [quarkus-qhorus]="$OUTCOME_QHORUS"
@@ -232,7 +233,9 @@ jobs:
               *)        icon="⚠️"; FAIL_COUNT=$((FAIL_COUNT + 1)) ;;
             esac
 
-            repo_name="$module"; [ "$module" = "casehub-engine" ] && repo_name="engine"
+            repo_name="$module"
+            [ "$module" = "casehub-engine" ] && repo_name="engine"
+            [ "$module" = "casehub-ledger" ] && repo_name="ledger"
             echo "| [$module](https://github.com/casehubio/$repo_name) | $icon $outcome | $duration |" \
               >> "$GITHUB_STEP_SUMMARY"
           done

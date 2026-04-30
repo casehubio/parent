@@ -49,16 +49,21 @@
       </dependency>
 
       <!-- ================================================================ -->
-      <!-- quarkus-ledger                                                   -->
+      <!-- casehub-ledger                                                   -->
       <!-- ================================================================ -->
       <dependency>
-        <groupId>io.quarkiverse.ledger</groupId>
-        <artifactId>quarkus-ledger</artifactId>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-ledger</artifactId>
         <version>${casehub.version}</version>
       </dependency>
       <dependency>
-        <groupId>io.quarkiverse.ledger</groupId>
-        <artifactId>quarkus-ledger-deployment</artifactId>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-ledger-deployment</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-ledger-api</artifactId>
         <version>${casehub.version}</version>
       </dependency>
 
