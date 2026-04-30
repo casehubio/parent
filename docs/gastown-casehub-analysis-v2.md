@@ -45,7 +45,7 @@ CaseHub is explicitly two-tiered:
 ├──────────────────────────────────────────────────────────────────────────────────┤
 │                              Foundation Layer                                     │
 │                                                                                   │
-│  casehub-engine          quarkus-qhorus           quarkus-ledger                │
+│  casehub-engine          casehub-qhorus           casehub-ledger                │
 │  (ACM engine, binding    (agent mesh, speech       (Merkle audit, Bayesian       │
 │   system, blackboard,    acts, commitments,        trust, GDPR, PROV-DM)         │
 │   plans, LLM planning    typed channels)                                          │
@@ -83,8 +83,8 @@ Gastown's merge queue is not an application built on a foundation — it is infr
 |------|---------|------|
 | `casehub-parent` | BOM, CI dashboards, full-stack build | — |
 | `casehub-engine` | Hybrid choreography+blackboard ACM engine | Foundation |
-| `quarkus-qhorus` | Agent communication mesh (speech acts, commitments, typed channels) | Foundation |
-| `quarkus-ledger` | Immutable tamper-evident audit ledger, Bayesian trust scoring, GDPR compliance | Foundation |
+| `casehub-qhorus` | Agent communication mesh (speech acts, commitments, typed channels) | Foundation |
+| `casehub-ledger` | Immutable tamper-evident audit ledger, Bayesian trust scoring, GDPR compliance | Foundation |
 | `casehub-work` | Human task lifecycle (WorkItem inbox, SLA, delegation, escalation) | Foundation |
 | `casehub-connectors` | Outbound message connectors (Slack, Teams, SMS, email) | Foundation |
 | `claudony` | Remote Claude CLI sessions, CaseHub SPI implementations, dashboard | Integration |
@@ -308,7 +308,7 @@ When a new engineer joins a team using CaseHub, "what does a COMMAND mean?" has 
 
 | Dimension | Gastown Foundation | CaseHub Foundation | Notes |
 |-----------|-------------------|--------------------|-------|
-| Audit mechanism | Dolt git-for-SQL history | Merkle Mountain Range (quarkus-ledger) | Fundamentally different trust models |
+| Audit mechanism | Dolt git-for-SQL history | Merkle Mountain Range (casehub-ledger) | Fundamentally different trust models |
 | Trust model | Admin-trusted (trust the Dolt server) | Cryptographic (inclusion proofs, no server trust required) | |
 | Tamper evidence | Git history (rewritable by admin) | Merkle proof (independently verifiable, Ed25519 signed checkpoints) | |
 | Inclusion proofs | No | Yes — checkpoints publishable to external transparency log | |
@@ -503,7 +503,7 @@ The pattern for all application domains: a separate repo, uses foundation primit
 
 **W3C PROV-DM.** LedgerProvExportService provides JSON-LD lineage export. Every ledger entry carries `causedByEntryId` for explicit causal chain reconstruction.
 
-**Three-layer actor identity.** quarkus-ledger defines: persistent identity (stable trust key, persona format `{model-family}:{persona}@{major}`), configuration binding (agentConfigHash for forensic config drift detection), session correlation (ephemeral trace ID). Structured identity at a level Gastown's model does not match.
+**Three-layer actor identity.** casehub-ledger defines: persistent identity (stable trust key, persona format `{model-family}:{persona}@{major}`), configuration binding (agentConfigHash for forensic config drift detection), session correlation (ephemeral trace ID). Structured identity at a level Gastown's model does not match.
 
 ### 6.4 Extensibility
 
@@ -525,8 +525,8 @@ Once P0.1, P0.2, and P1.3 are resolved, CaseHub closes a loop that no existing m
 
 ```
 Prescriptive (casehub-engine)  → assigns work to agent via COMMAND
-Normative (quarkus-qhorus)     → agent acknowledges (OPEN→ACKNOWLEDGED) and fulfills (→FULFILLED)
-Evaluative (quarkus-ledger)    → FULFILLED writes LedgerAttestation (SOUND) → TrustScoreJob updates Beta model
+Normative (casehub-qhorus)     → agent acknowledges (OPEN→ACKNOWLEDGED) and fulfills (→FULFILLED)
+Evaluative (casehub-ledger)    → FULFILLED writes LedgerAttestation (SOUND) → TrustScoreJob updates Beta model
 Prescriptive (casehub-engine)  → updated trust score drives next assignment via TrustWeightedSelectionStrategy
 ```
 
@@ -577,7 +577,7 @@ Wiring issues in the existing design. Not new features — completion of designe
 
 **Fix:** In `CaseContextChangedEventHandler` / `WorkOrchestrator.submit()`, after provisioning, call `channelProvider.postMessage(COMMAND)`. The agent's DONE/FAILURE response then drives the full normative lifecycle automatically.
 
-**Repos:** casehub-engine, claudony-casehub, quarkus-qhorus
+**Repos:** casehub-engine, claudony-casehub, casehub-qhorus
 
 #### ~~P0.2 — Commitment outcomes→trust scoring ([qhorus#123](https://github.com/casehubio/qhorus/issues/123))~~ ✅ DONE 2026-04-28
 
@@ -587,7 +587,7 @@ Wiring issues in the existing design. Not new features — completion of designe
 
 ~~**Fix:** In `LedgerWriteService.record()`, on terminal commitment message (DONE/FAILURE/DECLINE), write a `LedgerAttestation` against the originating COMMAND entry. DONE → SOUND (confidence 0.7), FAILURE → FLAGGED (confidence 0.6), DECLINE → FLAGGED (confidence 0.4). Confidence values config-driven.~~
 
-**Closed:** `LedgerWriteService.record()` now writes `LedgerAttestation` on DONE (SOUND, 0.7), FAILURE (FLAGGED, 0.6), DECLINE (FLAGGED, 0.4). Confidence values config-driven via `quarkus.qhorus.attestation.*`. 899 tests passing. Commit `17556e0`.
+**Closed:** `LedgerWriteService.record()` now writes `LedgerAttestation` on DONE (SOUND, 0.7), FAILURE (FLAGGED, 0.6), DECLINE (FLAGGED, 0.4). Confidence values config-driven via `casehub.ledger.attestations.*`. 899 tests passing. Commit `17556e0`.
 
 #### P0.3 — Actor identity fragmentation ([ledger#47](https://github.com/casehubio/ledger/issues/47), [qhorus#124](https://github.com/casehubio/qhorus/issues/124))
 
@@ -595,11 +595,11 @@ Wiring issues in the existing design. Not new features — completion of designe
 
 **Root cause:** Qhorus `LedgerWriteService` writes `actorId = message.sender` (raw instance ID like `claudony-worker-abc123`). Persona format (`claude:analyst@v1`) never reaches the ledger from Qhorus interactions.
 
-~~**Fix 1:** Add `ActorTypeResolver` utility to quarkus-ledger — single canonical `actorId` derivation for all consumers. ([ledger#47](https://github.com/casehubio/ledger/issues/47))~~ **✅ DONE 2026-04-28** — utility created. **Consumer updates ✅ DONE 2026-04-29** — quarkus-qhorus (`3cb5749`), casehub-work (`dcad49b`), claudony (`434d7df`) all now use `ActorTypeResolver.resolve()`.
+~~**Fix 1:** Add `ActorTypeResolver` utility to casehub-ledger — single canonical `actorId` derivation for all consumers. ([ledger#47](https://github.com/casehubio/ledger/issues/47))~~ **✅ DONE 2026-04-28** — utility created. **Consumer updates ✅ DONE 2026-04-29** — casehub-qhorus (`3cb5749`), casehub-work (`dcad49b`), claudony (`434d7df`) all now use `ActorTypeResolver.resolve()`.
 
-~~**Fix 2:** Add `InstanceActorIdProvider` SPI to quarkus-qhorus — maps Qhorus instance IDs to ledger persona IDs. claudony-casehub implements it. ([qhorus#124](https://github.com/casehubio/qhorus/issues/124)) — *pending*~~ **✅ SPI DONE 2026-04-29** — `InstanceActorIdProvider` + `DefaultInstanceActorIdProvider` (no-op identity) shipped. `CommitmentAttestationPolicy` SPI also shipped. claudony-casehub session→persona mapping implementation still pending — trust accumulation per persona not yet active.
+~~**Fix 2:** Add `InstanceActorIdProvider` SPI to casehub-qhorus — maps Qhorus instance IDs to ledger persona IDs. claudony-casehub implements it. ([qhorus#124](https://github.com/casehubio/qhorus/issues/124)) — *pending*~~ **✅ SPI DONE 2026-04-29** — `InstanceActorIdProvider` + `DefaultInstanceActorIdProvider` (no-op identity) shipped. `CommitmentAttestationPolicy` SPI also shipped. claudony-casehub session→persona mapping implementation still pending — trust accumulation per persona not yet active.
 
-**Repos:** quarkus-ledger, quarkus-qhorus, claudony-casehub
+**Repos:** casehub-ledger, casehub-qhorus, claudony-casehub
 
 ### P1 — Breaks at Scale (10+ Concurrent Cases / Agents)
 
@@ -666,7 +666,7 @@ public enum RecoveryAction { REPROVISION, ESCALATE_TO_HUMAN, CANCEL_CASE, WAIT }
 2. Add `TrustWeightedSelectionStrategy` that observes `TrustScoreFullPayload` CDI events and applies trust score as a multiplier over workload count
 3. `SemanticWorkerSelectionStrategy` (already in casehub-work-ai) becomes usable by casehub-engine for the first time
 
-**Repos:** casehub-engine (CaseContextChangedEventHandler, TrustWeightedSelectionStrategy), quarkus-ledger (TrustScoreRoutingPublisher already exists)
+**Repos:** casehub-engine (CaseContextChangedEventHandler, TrustWeightedSelectionStrategy), casehub-ledger (TrustScoreRoutingPublisher already exists)
 
 #### P1.4 — Merge CaseLedgerEntry branch
 
@@ -684,9 +684,9 @@ public enum RecoveryAction { REPROVISION, ESCALATE_TO_HUMAN, CANCEL_CASE, WAIT }
 
 **Symptom:** Trust built by an agent in one CaseHub deployment is invisible to another.
 
-**Fix:** Add to quarkus-ledger: `TrustExportService` (publishes `ActorTrustScore` deltas in canonical format) and `TrustImportService` SPI (consumes trust deltas from external source, seeds Bayesian priors). Seeding Beta(α, β) from an external source rather than Beta(1,1) is a one-line change in `TrustScoreJob`. The work is the data exchange format and transport.
+**Fix:** Add to casehub-ledger: `TrustExportService` (publishes `ActorTrustScore` deltas in canonical format) and `TrustImportService` SPI (consumes trust deltas from external source, seeds Bayesian priors). Seeding Beta(α, β) from an external source rather than Beta(1,1) is a one-line change in `TrustScoreJob`. The work is the data exchange format and transport.
 
-**Repos:** quarkus-ledger
+**Repos:** casehub-ledger
 
 #### ~~P2.2 — OTel trace alignment ([engine#185](https://github.com/casehubio/engine/issues/185))~~ ✅ DONE 2026-04-28
 
@@ -777,7 +777,7 @@ Individual issues exist for the top 8:
 | # | Finding | Repos | Issue | Phase |
 |---|---------|-------|-------|-------|
 | ~~1~~ | ~~Commitment terminal states don't write LedgerAttestation — trust scoring has no normative signal~~ **✅ DONE 2026-04-28** | qhorus, ledger | [qhorus#123](https://github.com/casehubio/qhorus/issues/123) | ~~P0.2~~ |
-| 2 | ActorType derivation uses 4 different logics — same actor gets different ActorType across repos. **Partial:** `ActorTypeResolver` utility created in quarkus-ledger; consumers in qhorus/engine/work still pending. | ledger, work, qhorus, engine | [ledger#47](https://github.com/casehubio/ledger/issues/47) | P0.3 |
+| 2 | ActorType derivation uses 4 different logics — same actor gets different ActorType across repos. **Partial:** `ActorTypeResolver` utility created in casehub-ledger; consumers in qhorus/engine/work still pending. | ledger, work, qhorus, engine | [ledger#47](https://github.com/casehubio/ledger/issues/47) | P0.3 |
 | 3 | Two parallel delivery SPIs (casehub-connectors + casehub-work-notifications) with overlapping Slack/Teams | connectors, work | [parent#5](https://github.com/casehubio/parent/issues/5) | A2 |
 | 4 | Qhorus instanceId and ledger actorId unjoined — trust doesn't accumulate across sessions of same persona | qhorus, ledger, claudony | [qhorus#124](https://github.com/casehubio/qhorus/issues/124) | P0.3 |
 | 5 | Cross-repo causal chain broken — no causedByEntryId linking MessageLedgerEntry → CaseLedgerEntry → WorkItemLedgerEntry | claudony, engine, qhorus | [claudony#94](https://github.com/casehubio/claudony/issues/94) | P2.3 |

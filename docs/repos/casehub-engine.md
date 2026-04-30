@@ -1,7 +1,7 @@
 # casehub-engine — Platform Deep Dive
 
 **GitHub:** [casehubio/engine](https://github.com/casehubio/engine) (local: `casehub-engine`)  
-**Platform doc:** [PLATFORM.md](https://raw.githubusercontent.com/casehubio/casehub-parent/main/docs/PLATFORM.md)
+**Platform doc:** [PLATFORM.md](https://raw.githubusercontent.com/casehubio/parent/main/docs/PLATFORM.md)
 
 > **Note:** The original `casehub` repo (local: `~/claude/casehub-poc`) is retiring. Do not add features there. All active development is in `casehub-engine`.
 
@@ -85,7 +85,7 @@ Bridges `WorkItemLifecycleEvent` CDI events to `PlanItem` transitions via `Black
 | Repo | How |
 |---|---|
 | `casehub-work-core` | `WorkBroker` and selection strategies — NOT the casehub-work runtime |
-| `quarkus-ledger` | Optional, via `casehub-ledger` module |
+| `casehub-ledger` | Optional, via `casehub-ledger` module |
 
 ## Depended On By
 

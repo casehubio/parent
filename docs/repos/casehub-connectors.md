@@ -1,7 +1,7 @@
 # casehub-connectors — Platform Deep Dive
 
-**GitHub:** [casehubio/casehub-connectors](https://github.com/casehubio/casehub-connectors)  
-**Platform doc:** [PLATFORM.md](https://raw.githubusercontent.com/casehubio/casehub-parent/main/docs/PLATFORM.md)
+**GitHub:** [casehubio/connectors](https://github.com/casehubio/connectors)  
+**Platform doc:** [PLATFORM.md](https://raw.githubusercontent.com/casehubio/parent/main/docs/PLATFORM.md)
 
 ---
 
@@ -75,7 +75,7 @@ Nothing in the casehubio ecosystem. Pure Java (`java.net.http.HttpClient`) + opt
 - Provide domain logic — purely delivery infrastructure
 - Route or schedule notifications — callers decide when and what to send
 - Implement inbound message handling
-- Depend on casehub-work, quarkus-ledger, or casehub-engine
+- Depend on casehub-work, casehub-ledger, or casehub-engine
 
 ---
 

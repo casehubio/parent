@@ -31,7 +31,7 @@
     <!-- Ordered by dependency — reactor will enforce this regardless of list order -->
     <!-- All repos are siblings of this parent inside ~/claude/casehub/ -->
     <!-- quarkus-langchain4j: casehubio fork, publishes 999-SNAPSHOT with unreleased fixes -->
-    <module>../quarkus-langchain4j</module>
+    <module>../../quarkus-langchain4j</module>
     <module>../ledger</module>
     <module>../connectors</module>
     <module>../work</module>
