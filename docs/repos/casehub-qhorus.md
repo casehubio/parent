@@ -1,7 +1,7 @@
 # casehub-qhorus — Platform Deep Dive
 
 **GitHub:** [casehubio/qhorus](https://github.com/casehubio/qhorus)  
-**Platform doc:** [PLATFORM.md](https://raw.githubusercontent.com/casehubio/casehub-parent/main/docs/PLATFORM.md)
+**Platform doc:** [PLATFORM.md](https://raw.githubusercontent.com/casehubio/parent/main/docs/PLATFORM.md)
 
 ---
 
@@ -64,7 +64,7 @@ Key parameter name: messages use `sender` (not `agent_id`).
 
 ## Depends On
 
-- `quarkus-ledger` — mandatory (for `MessageLedgerEntry` subclass and ledger observability)
+- `casehub-ledger` — mandatory (for `MessageLedgerEntry` subclass and ledger observability)
 
 ## Depended On By
 

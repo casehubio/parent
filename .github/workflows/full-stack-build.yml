@@ -52,21 +52,16 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          mkdir -p .build-times
+          mkdir -p .build-times casehub
           git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/quarkus-langchain4j.git" quarkus-langchain4j
-          git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/connectors.git" casehub/connectors
-          git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/claudony.git" casehub/claudony
-          # ledger, engine, work, and qhorus live under casehub/ to match local layout and aggregator.xml
-          mkdir -p casehub
           git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/ledger.git" casehub/ledger
-          git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/engine.git" casehub/engine
+          git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/connectors.git" casehub/connectors
           git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/work.git" casehub/work
           git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/qhorus.git" casehub/qhorus
+          git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/engine.git" casehub/engine
+          git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/claudony.git" casehub/claudony
 
-      # continue-on-error: true on each build step ensures:
-      # 1. Later steps always run (no silent skips that masquerade as passing)
-      # 2. step.outcome is "failure" not "skipped", so the summary shows ❌ not ⏭️
-      # 3. The job fails at the end via the summary step's exit 1, not mid-way
+      # continue-on-error: true ensures all steps run and we get per-module outcomes
 
       - name: "Build: quarkus-langchain4j"
         id: langchain4j
@@ -84,7 +79,7 @@ jobs:
           cd quarkus-langchain4j && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
           echo $((SECONDS - START)) > ../.build-times/quarkus-langchain4j
 
-      - name: "Build: casehub-ledger"
+      - name: "Build: ledger"
         id: ledger
         continue-on-error: true
         env:
@@ -98,7 +93,7 @@ jobs:
           [ "$SKIP_ITS" = "true" ] && FLAGS="$FLAGS -DskipITs"
           START=$SECONDS
           cd casehub/ledger && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
-          echo $((SECONDS - START)) > ../.build-times/casehub-ledger
+          echo $((SECONDS - START)) > ../../.build-times/ledger
 
       - name: "Build: connectors"
         id: connectors
@@ -114,9 +109,9 @@ jobs:
           [ "$SKIP_ITS" = "true" ] && FLAGS="$FLAGS -DskipITs"
           START=$SECONDS
           cd casehub/connectors && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
-          echo $((SECONDS - START)) > ../.build-times/connectors
+          echo $((SECONDS - START)) > ../../.build-times/connectors
 
-      - name: "Build: casehub-work"
+      - name: "Build: work"
         id: work
         continue-on-error: true
         env:
@@ -130,9 +125,9 @@ jobs:
           [ "$SKIP_ITS" = "true" ] && FLAGS="$FLAGS -DskipITs"
           START=$SECONDS
           cd casehub/work && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
-          echo $((SECONDS - START)) > ../.build-times/casehub-work
+          echo $((SECONDS - START)) > ../../.build-times/work
 
-      - name: "Build: casehub-qhorus"
+      - name: "Build: qhorus"
         id: qhorus
         continue-on-error: true
         env:
@@ -146,9 +141,9 @@ jobs:
           [ "$SKIP_ITS" = "true" ] && FLAGS="$FLAGS -DskipITs"
           START=$SECONDS
           cd casehub/qhorus && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
-          echo $((SECONDS - START)) > ../../.build-times/casehub-qhorus
+          echo $((SECONDS - START)) > ../../.build-times/qhorus
 
-      - name: "Build: casehub-engine (engine)"
+      - name: "Build: engine"
         id: engine
         continue-on-error: true
         env:
@@ -162,7 +157,7 @@ jobs:
           [ "$SKIP_ITS" = "true" ] && FLAGS="$FLAGS -DskipITs"
           START=$SECONDS
           cd casehub/engine && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
-          echo $((SECONDS - START)) > ../.build-times/engine
+          echo $((SECONDS - START)) > ../../.build-times/engine
 
       - name: "Build: claudony"
         id: claudony
@@ -178,7 +173,7 @@ jobs:
           [ "$SKIP_ITS" = "true" ] && FLAGS="$FLAGS -DskipITs"
           START=$SECONDS
           cd casehub/claudony && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
-          echo $((SECONDS - START)) > ../.build-times/claudony
+          echo $((SECONDS - START)) > ../../.build-times/claudony
 
       - name: Build summary
         if: always()
@@ -186,9 +181,9 @@ jobs:
           ACTOR: ${{ github.actor }}
           SKIP_TESTS: ${{ inputs.skip_tests }}
           SKIP_ITS: ${{ inputs.skip_integration_tests }}
-          OUTCOME_CONNECTORS: ${{ steps.connectors.outcome }}
           OUTCOME_LANGCHAIN4J: ${{ steps.langchain4j.outcome }}
           OUTCOME_LEDGER: ${{ steps.ledger.outcome }}
+          OUTCOME_CONNECTORS: ${{ steps.connectors.outcome }}
           OUTCOME_WORK: ${{ steps.work.outcome }}
           OUTCOME_QHORUS: ${{ steps.qhorus.outcome }}
           OUTCOME_ENGINE: ${{ steps.engine.outcome }}
@@ -212,6 +207,15 @@ jobs:
             [engine]="$OUTCOME_ENGINE"
             [claudony]="$OUTCOME_CLAUDONY"
           )
+          declare -A GH_REPO=(
+            [quarkus-langchain4j]="quarkus-langchain4j"
+            [ledger]="ledger"
+            [connectors]="connectors"
+            [work]="work"
+            [qhorus]="qhorus"
+            [engine]="engine"
+            [claudony]="claudony"
+          )
 
           {
             echo "# Full Stack Build"
@@ -225,20 +229,17 @@ jobs:
           FAIL_COUNT=0
           for module in "${MODULES[@]}"; do
             outcome="${OUTCOMES[$module]}"
+            repo_name="${GH_REPO[$module]}"
             duration=$(cat ".build-times/$module" 2>/dev/null || true)
             [ -n "$duration" ] && duration="${duration}s" || duration="—"
 
             case "$outcome" in
               success)  icon="✅" ;;
               failure)  icon="❌"; FAIL_COUNT=$((FAIL_COUNT + 1)) ;;
-              skipped)  icon="⏭️ skipped (prior step failed)"; FAIL_COUNT=$((FAIL_COUNT + 1)) ;;
+              skipped)  icon="⏭️ skipped"; FAIL_COUNT=$((FAIL_COUNT + 1)) ;;
               *)        icon="⚠️"; FAIL_COUNT=$((FAIL_COUNT + 1)) ;;
             esac
 
-            repo_name="$module"
-            
-            [ "$module" = "casehub-ledger" ] && repo_name="ledger"
-            [ "$module" = "casehub-qhorus" ] && repo_name="qhorus"
             echo "| [$module](https://github.com/casehubio/$repo_name) | $icon $outcome | $duration |" \
               >> "$GITHUB_STEP_SUMMARY"
           done
@@ -248,13 +249,10 @@ jobs:
             if [ "$FAIL_COUNT" -eq 0 ]; then
               echo "✅ **All modules built successfully.**"
             else
-              echo "❌ **$FAIL_COUNT module(s) failed or were skipped due to upstream failure.**"
+              echo "❌ **$FAIL_COUNT module(s) failed or were skipped.**"
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 
-          # Exit non-zero so the workflow run turns red — without this the job
-          # appears green even when modules have failed (continue-on-error absorbs
-          # individual step failures but we still want the overall job to fail).
           if [ "$FAIL_COUNT" -gt 0 ]; then
             echo "::error::$FAIL_COUNT module(s) failed in the full stack build."
             exit 1

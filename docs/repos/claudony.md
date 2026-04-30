@@ -1,7 +1,7 @@
 # claudony — Platform Deep Dive
 
 **GitHub:** [casehubio/claudony](https://github.com/casehubio/claudony)  
-**Platform doc:** [PLATFORM.md](https://raw.githubusercontent.com/casehubio/casehub-parent/main/docs/PLATFORM.md)
+**Platform doc:** [PLATFORM.md](https://raw.githubusercontent.com/casehubio/parent/main/docs/PLATFORM.md)
 
 ---
 
@@ -64,7 +64,7 @@ Two modes from one binary: **server** (owns sessions, WebSocket streaming, dashb
 |---|---|
 | `casehub-qhorus` | Embedded directly; named `qhorus` datasource |
 | `casehub-engine` | Implements its 4 worker provisioner SPIs |
-| `quarkus-ledger` | Transitively via Qhorus (`AgentMessageLedgerEntry`) and casehub-ledger |
+| `casehub-ledger` | Transitively via Qhorus (`AgentMessageLedgerEntry`) and casehub-ledger |
 
 ## Depended On By
 
@@ -76,7 +76,7 @@ Nothing — Claudony is the integration terminus.
 
 - Define orchestration rules (that is casehub-engine)
 - Define agent messaging protocols (that is casehub-qhorus)
-- Own audit ledger logic (that is quarkus-ledger)
+- Own audit ledger logic (that is casehub-ledger)
 - Manage human task inboxes (that is casehub-work)
 - Reimplement channel, message, or commitment logic — Qhorus handles all of that
 

@@ -21,7 +21,7 @@ jobs:
           set -euo pipefail
 
           # Explicit ecosystem repo list — avoids demo/scratch repos polluting the dashboard
-          REPOS=$(printf '%s\n' parent connectors engine ledger work qhorus claudony casehub-assisteddev)
+          REPOS=$(printf '%s\n' parent connectors engine ledger work qhorus claudony assisteddev)
 
           if [ -z "$REPOS" ]; then
             echo "::error::REPOS list is empty."

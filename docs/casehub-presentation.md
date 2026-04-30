@@ -144,7 +144,7 @@ Two agents from different providers, given the normative layer as their protocol
 │  [compliance automation] | [any consequential AI process]    │
 ├──────────────────────────────────────────────────────────────┤
 │                     Foundation Layer                          │
-│  quarkus-ledger    │  casehub-qhorus   │  casehub-work       │
+│  casehub-ledger    │  casehub-qhorus   │  casehub-work       │
 │  (accountability)  │  (coordination)   │  (human tasks)      │
 │                    │                   │                      │
 │  casehub-engine (hybrid ACM + blackboard orchestration)      │

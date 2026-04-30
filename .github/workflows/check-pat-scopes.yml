@@ -1,0 +1,86 @@
+name: Check GH_PAT Scopes
+
+on:
+  workflow_dispatch:
+
+jobs:
+  check:
+    name: Check GH_PAT Scopes
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Verify token capabilities
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+          ORG: casehubio
+        run: |
+          failed=0
+
+          # 0. Is the secret set at all?
+          echo "── Secret presence"
+          if [ -z "$GH_TOKEN" ]; then
+            echo "   ✗ GH_PAT secret is empty or not set in this org"
+            exit 1
+          fi
+          echo "   ✓ GH_PAT is set (length: ${#GH_TOKEN} chars)"
+
+          # 1. Basic auth — is the token valid at all?
+          echo ""
+          echo "── Token identity"
+          auth_err=$(gh api /user --jq '.login' 2>&1 >/dev/null || true)
+          if user=$(gh api /user --jq '.login' 2>/dev/null); then
+            echo "   ✓ authenticated as: $user"
+          else
+            echo "   ✗ token is invalid or expired — cannot authenticate"
+            echo "   gh error: $auth_err"
+            exit 1
+          fi
+
+          # 2. read:packages — can we list packages in the org?
+          echo ""
+          echo "── read:packages"
+          if result=$(gh api "/orgs/$ORG/packages?package_type=maven&per_page=1" \
+              --jq 'length' 2>/tmp/pkg_err); then
+            echo "   ✓ can list Maven packages in $ORG (got $result result(s))"
+          else
+            echo "   ✗ cannot list packages — missing read:packages scope"
+            echo "     $(cat /tmp/pkg_err)"
+            failed=$((failed + 1))
+          fi
+
+          # 3. delete:packages — probe a delete with a dummy ID to test permission
+          #    A 404 (package not found) means the token HAS delete permission
+          #    A 403 (forbidden) means it LACKS delete permission
+          echo ""
+          echo "── delete:packages"
+          http_code=$(gh api -X DELETE \
+            "/orgs/$ORG/packages/maven/__probe_nonexistent__/versions/0" \
+            --silent -w "%{http_code}" 2>/dev/null || true)
+
+          # gh cli doesn't expose http_code directly — use curl for this probe
+          http_code=$(curl -s -o /dev/null -w "%{http_code}" \
+            -X DELETE \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/orgs/$ORG/packages/maven/__probe_nonexistent__/versions/0")
+
+          echo "   probe response: HTTP $http_code"
+          if [ "$http_code" = "404" ]; then
+            echo "   ✓ delete:packages — permission confirmed (404 = authorised but package not found)"
+          elif [ "$http_code" = "403" ] || [ "$http_code" = "401" ]; then
+            echo "   ✗ delete:packages — permission denied (HTTP $http_code)"
+            failed=$((failed + 1))
+          else
+            echo "   ? unexpected HTTP $http_code — manual verification needed"
+          fi
+
+          echo ""
+          if [ "$failed" -gt 0 ]; then
+            echo "FAIL: $failed capability check(s) failed."
+            echo "Update the token at: https://github.com/settings/tokens"
+            echo "Required: read:packages + delete:packages (classic PAT)"
+            echo "          or Packages: Read/Write (fine-grained PAT)"
+            exit 1
+          else
+            echo "OK: GH_PAT has all required capabilities."
+          fi

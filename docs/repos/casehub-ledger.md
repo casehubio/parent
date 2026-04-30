@@ -1,7 +1,7 @@
 # casehub-ledger — Platform Deep Dive
 
 **GitHub:** [casehubio/casehub-ledger](https://github.com/casehubio/casehub-ledger)  
-**Platform doc:** [PLATFORM.md](https://raw.githubusercontent.com/casehubio/casehub-parent/main/docs/PLATFORM.md)
+**Platform doc:** [PLATFORM.md](https://raw.githubusercontent.com/casehubio/parent/main/docs/PLATFORM.md)
 
 ---
 
