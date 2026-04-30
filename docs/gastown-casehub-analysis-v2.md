@@ -50,7 +50,7 @@ CaseHub is explicitly two-tiered:
 │   system, blackboard,    acts, commitments,        trust, GDPR, PROV-DM)         │
 │   plans, LLM planning    typed channels)                                          │
 │   SPI, stage gating)                                                              │
-│                          quarkus-work              casehub-connectors            │
+│                          casehub-work              casehub-connectors            │
 │                          (human task lifecycle,     (outbound delivery SPI:       │
 │                           SLA, delegation)          Slack, Teams, SMS, email)     │
 │                                                                                   │
@@ -85,7 +85,7 @@ Gastown's merge queue is not an application built on a foundation — it is infr
 | `casehub-engine` | Hybrid choreography+blackboard ACM engine | Foundation |
 | `quarkus-qhorus` | Agent communication mesh (speech acts, commitments, typed channels) | Foundation |
 | `quarkus-ledger` | Immutable tamper-evident audit ledger, Bayesian trust scoring, GDPR compliance | Foundation |
-| `quarkus-work` | Human task lifecycle (WorkItem inbox, SLA, delegation, escalation) | Foundation |
+| `casehub-work` | Human task lifecycle (WorkItem inbox, SLA, delegation, escalation) | Foundation |
 | `casehub-connectors` | Outbound message connectors (Slack, Teams, SMS, email) | Foundation |
 | `claudony` | Remote Claude CLI sessions, CaseHub SPI implementations, dashboard | Integration |
 | `casehub-assisteddev` *(planned)* | AI coding agent coordination — merge queue, review orchestration | Application |
@@ -595,7 +595,7 @@ Wiring issues in the existing design. Not new features — completion of designe
 
 **Root cause:** Qhorus `LedgerWriteService` writes `actorId = message.sender` (raw instance ID like `claudony-worker-abc123`). Persona format (`claude:analyst@v1`) never reaches the ledger from Qhorus interactions.
 
-~~**Fix 1:** Add `ActorTypeResolver` utility to quarkus-ledger — single canonical `actorId` derivation for all consumers. ([ledger#47](https://github.com/casehubio/quarkus-ledger/issues/47))~~ **✅ DONE 2026-04-28** — utility created. **Consumer updates ✅ DONE 2026-04-29** — quarkus-qhorus (`3cb5749`), quarkus-work (`dcad49b`), claudony (`434d7df`) all now use `ActorTypeResolver.resolve()`.
+~~**Fix 1:** Add `ActorTypeResolver` utility to quarkus-ledger — single canonical `actorId` derivation for all consumers. ([ledger#47](https://github.com/casehubio/quarkus-ledger/issues/47))~~ **✅ DONE 2026-04-28** — utility created. **Consumer updates ✅ DONE 2026-04-29** — quarkus-qhorus (`3cb5749`), casehub-work (`dcad49b`), claudony (`434d7df`) all now use `ActorTypeResolver.resolve()`.
 
 ~~**Fix 2:** Add `InstanceActorIdProvider` SPI to quarkus-qhorus — maps Qhorus instance IDs to ledger persona IDs. claudony-casehub implements it. ([qhorus#124](https://github.com/casehubio/quarkus-qhorus/issues/124)) — *pending*~~ **✅ SPI DONE 2026-04-29** — `InstanceActorIdProvider` + `DefaultInstanceActorIdProvider` (no-op identity) shipped. `CommitmentAttestationPolicy` SPI also shipped. claudony-casehub session→persona mapping implementation still pending — trust accumulation per persona not yet active.
 
@@ -664,7 +664,7 @@ public enum RecoveryAction { REPROVISION, ESCALATE_TO_HUMAN, CANCEL_CASE, WAIT }
 **Fix:**
 1. Make `WorkerSelectionStrategy` injectable in `CaseContextChangedEventHandler` (`@Inject WorkerSelectionStrategy strategy`)
 2. Add `TrustWeightedSelectionStrategy` that observes `TrustScoreFullPayload` CDI events and applies trust score as a multiplier over workload count
-3. `SemanticWorkerSelectionStrategy` (already in quarkus-work-ai) becomes usable by casehub-engine for the first time
+3. `SemanticWorkerSelectionStrategy` (already in casehub-work-ai) becomes usable by casehub-engine for the first time
 
 **Repos:** casehub-engine (CaseContextChangedEventHandler, TrustWeightedSelectionStrategy), quarkus-ledger (TrustScoreRoutingPublisher already exists)
 
@@ -710,7 +710,7 @@ public enum RecoveryAction { REPROVISION, ESCALATE_TO_HUMAN, CANCEL_CASE, WAIT }
 
 | Item | Status | Notes |
 |------|--------|-------|
-| **quarkus-work Epic #106 — Multi-instance WorkItems** | ✅ DONE | `MultiInstanceCoordinator`, `MultiInstanceGroupPolicy`, M-of-N completion, threaded inbox, claim guard, `GET /workitems/{id}/instances`. Full group policy boundary clarified in LAYERING.md. |
+| **casehub-work Epic #106 — Multi-instance WorkItems** | ✅ DONE | `MultiInstanceCoordinator`, `MultiInstanceGroupPolicy`, M-of-N completion, threaded inbox, claim guard, `GET /workitems/{id}/instances`. Full group policy boundary clarified in LAYERING.md. |
 | **casehub-engine WorkerContextProvider + WorkerProvisioner wiring** | ✅ DONE | Wired into execution path (commit `f5a96e6`). Workers now receive lineage context at startup. |
 | **claudony case worker panel (#76)** | ✅ DONE | Terminal.js case worker panel — fetch, poll, render, switch. E2E tests. Closes the Worker↔Session dashboard gap. |
 | **casehub-engine WorkerContextProvider + WorkerProvisioner wiring** | ✅ DONE | Closes part of the end-to-end provisioner wiring (ADR-0006 path). |
@@ -752,9 +752,9 @@ These capabilities are needed by every application domain but are implemented at
 
 **SLA propagation ([parent#6](https://github.com/casehubio/casehub-parent/issues/6)):** Case budget bounds child WorkItem and Commitment deadlines. Currently a 1-hour case can spawn a 48-hour WorkItem. Fix in `casehub-work-adapter`.
 
-**Notification consolidation ([parent#5](https://github.com/casehubio/casehub-parent/issues/5)):** `quarkus-work-notifications` Slack/Teams implementations replaced with `casehub-connectors` delegation. Unblocks unified delivery for stalled commitment alerts, case fault notifications, and escalation notifications.
+**Notification consolidation ([parent#5](https://github.com/casehubio/casehub-parent/issues/5)):** `casehub-work-notifications` Slack/Teams implementations replaced with `casehub-connectors` delegation. Unblocks unified delivery for stalled commitment alerts, case fault notifications, and escalation notifications.
 
-**Critical event notifications:** Wire three event sources to casehub-connectors: `WatchdogEvaluationService` stall detection, `CaseLifecycleEvent(FAULTED)`, and `EscalationPolicy.escalate()` in quarkus-work. Depends on notification consolidation completing first.
+**Critical event notifications:** Wire three event sources to casehub-connectors: `WatchdogEvaluationService` stall detection, `CaseLifecycleEvent(FAULTED)`, and `EscalationPolicy.escalate()` in casehub-work. Depends on notification consolidation completing first.
 
 **Human-in-the-loop end-to-end:** Complete `casehub-work-adapter` so that `WorkItemLifecycleEvent(COMPLETED)` with a `callerRef` encoding `case:{id}/pi:{planItemId}` fires `CaseHubReactor.signal()`, transitioning the plan item from WAITING to active and triggering binding re-evaluation. Without this, CaseHub cannot orchestrate any process requiring human judgment mid-case.
 
@@ -778,7 +778,7 @@ Individual issues exist for the top 8:
 |---|---------|-------|-------|-------|
 | ~~1~~ | ~~Commitment terminal states don't write LedgerAttestation — trust scoring has no normative signal~~ **✅ DONE 2026-04-28** | qhorus, ledger | [qhorus#123](https://github.com/casehubio/quarkus-qhorus/issues/123) | ~~P0.2~~ |
 | 2 | ActorType derivation uses 4 different logics — same actor gets different ActorType across repos. **Partial:** `ActorTypeResolver` utility created in quarkus-ledger; consumers in qhorus/engine/work still pending. | ledger, work, qhorus, engine | [ledger#47](https://github.com/casehubio/quarkus-ledger/issues/47) | P0.3 |
-| 3 | Two parallel delivery SPIs (casehub-connectors + quarkus-work-notifications) with overlapping Slack/Teams | connectors, work | [parent#5](https://github.com/casehubio/casehub-parent/issues/5) | A2 |
+| 3 | Two parallel delivery SPIs (casehub-connectors + casehub-work-notifications) with overlapping Slack/Teams | connectors, work | [parent#5](https://github.com/casehubio/casehub-parent/issues/5) | A2 |
 | 4 | Qhorus instanceId and ledger actorId unjoined — trust doesn't accumulate across sessions of same persona | qhorus, ledger, claudony | [qhorus#124](https://github.com/casehubio/quarkus-qhorus/issues/124) | P0.3 |
 | 5 | Cross-repo causal chain broken — no causedByEntryId linking MessageLedgerEntry → CaseLedgerEntry → WorkItemLedgerEntry | claudony, engine, qhorus | [claudony#94](https://github.com/casehubio/claudony/issues/94) | P2.3 |
 | ~~6~~ | ~~PropagationContext.traceId is UUID, OTel trace ID is W3C hex — case spans not correlatable in Jaeger~~ **✅ DONE 2026-04-28** | engine, ledger | [engine#185](https://github.com/casehubio/engine/issues/185) | ~~P2.2~~ |

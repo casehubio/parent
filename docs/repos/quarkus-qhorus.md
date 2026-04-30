@@ -78,7 +78,7 @@ Key parameter name: messages use `sender` (not `agent_id`).
 ## What This Repo Explicitly Does NOT Do
 
 - Orchestrate agent workflows (that is casehub-engine)
-- Manage human task inboxes (that is quarkus-work)
+- Manage human task inboxes (that is casehub-work)
 - Own case state or process logic
 - Interpret message content — purely infrastructure
 - Provision or terminate AI agent processes (that is claudony)

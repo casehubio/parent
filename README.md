@@ -8,7 +8,7 @@ Org-level parent POM and BOM for the [casehubio](https://github.com/casehubio) e
 |:-----------|:------:|
 | [casehub-parent](https://github.com/casehubio/casehub-parent) | [![casehub-parent](https://github.com/casehubio/casehub-parent/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/casehub-parent/actions/workflows/publish.yml) |
 | [quarkus-ledger](https://github.com/casehubio/quarkus-ledger) | [![quarkus-ledger](https://github.com/casehubio/quarkus-ledger/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/quarkus-ledger/actions/workflows/publish.yml) |
-| [quarkus-work](https://github.com/casehubio/quarkus-work) | [![quarkus-work](https://github.com/casehubio/quarkus-work/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/quarkus-work/actions/workflows/publish.yml) |
+| [casehub-work](https://github.com/casehubio/work) | [![casehub-work](https://github.com/casehubio/work/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/work/actions/workflows/publish.yml) |
 | [quarkus-qhorus](https://github.com/casehubio/quarkus-qhorus) | [![quarkus-qhorus](https://github.com/casehubio/quarkus-qhorus/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/quarkus-qhorus/actions/workflows/publish.yml) |
 | [casehub-engine](https://github.com/casehubio/engine) | [![casehub-engine](https://github.com/casehubio/engine/actions/workflows/maven.yml/badge.svg?branch=main)](https://github.com/casehubio/engine/actions/workflows/maven.yml) |
 | [claudony](https://github.com/casehubio/claudony) | [![claudony](https://github.com/casehubio/claudony/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/casehubio/claudony/actions/workflows/ci.yml) |
@@ -42,11 +42,11 @@ Org-level parent POM and BOM for the [casehubio](https://github.com/casehubio) e
 |---|---|---|
 | `quarkus-ledger` | `io.quarkiverse.ledger` | Immutable audit ledger base |
 | `quarkus-ledger-deployment` | `io.quarkiverse.ledger` | Extension deployment module |
-| `quarkus-work-api` | `io.quarkiverse.work` | Work item SPI |
-| `quarkus-work-core` | `io.quarkiverse.work` | Work item core |
-| `quarkus-work` | `io.quarkiverse.work` | Work item runtime |
-| `quarkus-work-deployment` | `io.quarkiverse.work` | Work item deployment |
-| `quarkus-work-ledger` | `io.quarkiverse.work` | Optional ledger integration for work items |
+| `casehub-work-api` | `io.casehub` | Work item SPI |
+| `casehub-work-core` | `io.casehub` | Work item core |
+| `casehub-work` | `io.casehub` | Work item runtime |
+| `casehub-work-deployment` | `io.casehub` | Work item deployment |
+| `casehub-work-ledger` | `io.casehub` | Optional ledger integration for work items |
 | `quarkus-qhorus` | `io.quarkiverse.qhorus` | AI agent communication mesh |
 | `quarkus-qhorus-deployment` | `io.quarkiverse.qhorus` | Qhorus deployment module |
 | `quarkus-qhorus-testing` | `io.quarkiverse.qhorus` | Test utilities for Qhorus consumers |
@@ -98,7 +98,7 @@ Each project in the ecosystem has a different Maven parent (`quarkiverse-parent`
 | Repo | GroupId | Remote |
 |---|---|---|
 | `quarkus-ledger` | `io.quarkiverse.ledger` | `casehubio/quarkus-ledger` |
-| `quarkus-work` | `io.quarkiverse.work` | `casehubio/quarkus-work` |
+| `casehub-work` | `io.casehub` | `casehubio/work` |
 | `quarkus-qhorus` | `io.quarkiverse.qhorus` | `casehubio/quarkus-qhorus` |
 | `casehub-engine` | `io.casehub` | `casehubio/casehub-engine` |
 | `claudony` | `dev.claudony` | `casehubio/claudony` |
@@ -109,7 +109,7 @@ Dependency order (each project may depend on those above it):
 ```
 quarkus-ledger
     ↑
-quarkus-work
+casehub-work
     ↑
 quarkus-qhorus    casehub-engine
     ↑                   ↑
@@ -154,16 +154,16 @@ Each module is classified into one of three states before building. The state is
 | **TEST** | Own SHA unchanged, but a transitive casehub dependency is in BUILD state | `mvn test` only — tests run against the newly installed dep artifacts, no recompile |
 | **SKIP** | Own SHA and all transitive casehub dep SHAs unchanged | Nothing — artifact already in local `.m2` is current |
 
-The rationale for the TEST state: if `quarkus-ledger` changes but `quarkus-work`'s own code does not, `quarkus-work` doesn't need recompiling — its bytecode is the same. But its tests should run against the new `quarkus-ledger` to catch integration regressions.
+The rationale for the TEST state: if `quarkus-ledger` changes but `casehub-work`'s own code does not, `casehub-work` doesn't need recompiling — its bytecode is the same. But its tests should run against the new `quarkus-ledger` to catch integration regressions.
 
 The dependency graph used for propagation:
 
 ```
 quarkus-ledger      → (no casehub deps)
-quarkus-work        → quarkus-ledger
-quarkus-qhorus      → quarkus-ledger, quarkus-work
-casehub-engine      → quarkus-ledger, quarkus-work
-claudony            → quarkus-ledger, quarkus-work, quarkus-qhorus
+casehub-work        → quarkus-ledger
+quarkus-qhorus      → quarkus-ledger, casehub-work
+casehub-engine      → quarkus-ledger, casehub-work
+claudony            → quarkus-ledger, casehub-work, quarkus-qhorus
 ```
 
 Example output:
@@ -171,13 +171,13 @@ Example output:
 ```
 ==> Incremental analysis...
     quarkus-ledger       BUILD   (own SHA changed)
-    quarkus-work         TEST    (dep changed, rerun tests against new artifacts)
+    casehub-work         TEST    (dep changed, rerun tests against new artifacts)
     quarkus-qhorus       TEST    (dep changed, rerun tests against new artifacts)
     casehub-engine       TEST    (dep changed, rerun tests against new artifacts)
     claudony             SKIP    (SHA and all deps unchanged)
 
 ==> Installing: quarkus-ledger
-==> Retesting against updated deps: quarkus-work,quarkus-qhorus,casehub-engine
+==> Retesting against updated deps: casehub-work,quarkus-qhorus,casehub-engine
 ```
 
 ### SHA logs and the build cache
@@ -199,7 +199,7 @@ Each log records the exact HEAD SHA of every repo at build time:
 # branch:    main
 
 quarkus-ledger=a2636e132b43bc0faad66cf587ab5b30996ff3df
-quarkus-work=e085d64c1f2a93b7d0f4e89a3c12d45e678f901a
+casehub-work=e085d64c1f2a93b7d0f4e89a3c12d45e678f901a
 quarkus-qhorus=ef89aaa3b7c1d20f4e5a67b89c0d12e3f456789a
 casehub-engine=fccb647d8e2f31a05b6c78d90e1f23a4b5678901
 claudony=3fbeac7e9f0a12b34c56d78e90f1a2b3c4567890
@@ -225,7 +225,7 @@ To reproduce an exact prior build:
 ```bash
 # Run directly if repos are already cloned and pinned
 mvn install -f aggregator.xml
-mvn install -f aggregator.xml -pl quarkus-ledger,quarkus-work   # partial build
+mvn install -f aggregator.xml -pl quarkus-ledger,casehub-work   # partial build
 ```
 
 The aggregator is not published to Maven. It is a local build tool only.
@@ -278,12 +278,12 @@ Because each project publishes independently, upstream artifacts must be availab
 
 1. `casehub-parent` → publishes BOM
 2. `quarkus-ledger` → depends on BOM
-3. `quarkus-work` → depends on BOM + `quarkus-ledger`
-4. `quarkus-qhorus` → depends on BOM + `quarkus-ledger` + `quarkus-work`
-5. `casehub-engine` → depends on BOM + `quarkus-ledger` + `quarkus-work`
+3. `casehub-work` → depends on BOM + `quarkus-ledger`
+4. `quarkus-qhorus` → depends on BOM + `quarkus-ledger` + `casehub-work`
+5. `casehub-engine` → depends on BOM + `quarkus-ledger` + `casehub-work`
 6. `claudony` → depends on BOM + `quarkus-qhorus`
 
-If `quarkus-ledger` CI hasn't published yet when `quarkus-work` CI runs, `quarkus-work` will fail with `Could not resolve io.quarkiverse.ledger:quarkus-ledger:0.2-SNAPSHOT`. Re-running the failing job after the upstream publish completes resolves this.
+If `quarkus-ledger` CI hasn't published yet when `casehub-work` CI runs, `casehub-work` will fail with `Could not resolve io.quarkiverse.ledger:quarkus-ledger:0.2-SNAPSHOT`. Re-running the failing job after the upstream publish completes resolves this.
 
 ### `quarkus-langchain4j`
 

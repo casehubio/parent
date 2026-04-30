@@ -144,7 +144,7 @@ Two agents from different providers, given the normative layer as their protocol
 │  [compliance automation] | [any consequential AI process]    │
 ├──────────────────────────────────────────────────────────────┤
 │                     Foundation Layer                          │
-│  quarkus-ledger    │  quarkus-qhorus   │  quarkus-work       │
+│  quarkus-ledger    │  quarkus-qhorus   │  casehub-work       │
 │  (accountability)  │  (coordination)   │  (human tasks)      │
 │                    │                   │                      │
 │  casehub-engine (hybrid ACM + blackboard orchestration)      │
@@ -250,7 +250,7 @@ Real numbers, shipped code:
 
 | Repo | Tests | Status |
 |------|-------|--------|
-| quarkus-work | 1,019+ | Production-quality |
+| casehub-work | 1,019+ | Production-quality |
 | quarkus-qhorus | 900+ | Normative layer shipped 2026-04-28 |
 | claudony | 339 | Passing |
 

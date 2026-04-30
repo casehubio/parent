@@ -48,7 +48,7 @@ Hybrid choreography+orchestration coordination engine for multi-agent work. Impl
 | `WorkOrchestrator` | `submitAndWait()` — orchestration: suspends case, returns `CompletionStage<WorkResult>` |
 | `PendingWorkRegistry` | Restart-durable orchestration correlation |
 
-`WorkBroker` (from `quarkus-work-core`) is used for worker selection. casehub-engine does NOT depend on the quarkus-work runtime.
+`WorkBroker` (from `casehub-work-core`) is used for worker selection. casehub-engine does NOT depend on the casehub-work runtime.
 
 ### Worker Provisioner SPIs (`api/spi/`)
 
@@ -84,7 +84,7 @@ Bridges `WorkItemLifecycleEvent` CDI events to `PlanItem` transitions via `Black
 
 | Repo | How |
 |---|---|
-| `quarkus-work-core` | `WorkBroker` and selection strategies — NOT the quarkus-work runtime |
+| `casehub-work-core` | `WorkBroker` and selection strategies — NOT the casehub-work runtime |
 | `quarkus-ledger` | Optional, via `casehub-ledger` module |
 
 ## Depended On By
@@ -97,7 +97,7 @@ Bridges `WorkItemLifecycleEvent` CDI events to `PlanItem` transitions via `Black
 
 ## What This Repo Explicitly Does NOT Do
 
-- Manage human task inboxes (that is quarkus-work)
+- Manage human task inboxes (that is casehub-work)
 - Handle agent-to-agent messaging protocols (that is quarkus-qhorus)
 - Provide a terminal/session UI (that is claudony)
 - Implement worker provisioner SPIs — only defines the contracts

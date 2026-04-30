@@ -66,7 +66,7 @@ Nothing in the casehubio ecosystem. Pure Java (`java.net.http.HttpClient`) + opt
 | Repo | Expected usage |
 |---|---|
 | `casehub-engine` | Escalation and notification paths (not yet wired) |
-| `quarkus-work-notifications` | Should delegate to `casehub-connectors` rather than maintain its own Slack/Teams implementations |
+| `casehub-work-notifications` | Should delegate to `casehub-connectors` rather than maintain its own Slack/Teams implementations |
 
 ---
 
@@ -75,7 +75,7 @@ Nothing in the casehubio ecosystem. Pure Java (`java.net.http.HttpClient`) + opt
 - Provide domain logic — purely delivery infrastructure
 - Route or schedule notifications — callers decide when and what to send
 - Implement inbound message handling
-- Depend on quarkus-work, quarkus-ledger, or casehub-engine
+- Depend on casehub-work, quarkus-ledger, or casehub-engine
 
 ---
 
@@ -83,7 +83,7 @@ Nothing in the casehubio ecosystem. Pure Java (`java.net.http.HttpClient`) + opt
 
 **Do not implement a new Slack, Teams, SMS, or email connector in any other repo.** All outbound messaging routes through this SPI. If a new channel type is needed, add it here.
 
-`quarkus-work-notifications` currently has parallel Slack/Teams implementations — this is a known overlap risk and should be resolved by delegating to `casehub-connectors`.
+`casehub-work-notifications` currently has parallel Slack/Teams implementations — this is a known overlap risk and should be resolved by delegating to `casehub-connectors`.
 
 ---
 
@@ -93,7 +93,7 @@ Nothing in the casehubio ecosystem. Pure Java (`java.net.http.HttpClient`) + opt
 - Recently added to the ecosystem CI dashboards
 - Published to GitHub Packages at `0.2-SNAPSHOT`
 - GroupId: `io.casehubio` (not yet `io.quarkiverse.*`)
-- Not yet wired into casehub-engine or quarkus-work escalation paths
+- Not yet wired into casehub-engine or casehub-work escalation paths
 
 ---
 
