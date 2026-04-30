@@ -1,7 +1,7 @@
 # casehub-qhorus — Platform Deep Dive
 
 **GitHub:** [casehubio/qhorus](https://github.com/casehubio/qhorus)  
-**Platform doc:** [PLATFORM.md](https://raw.githubusercontent.com/casehubio/casehub-parent/main/docs/PLATFORM.md)
+**Platform doc:** [PLATFORM.md](https://raw.githubusercontent.com/casehubio/parent/main/docs/PLATFORM.md)
 
 ---
 

@@ -1,7 +1,7 @@
 # casehub-work — Platform Deep Dive
 
 **GitHub:** [casehubio/work](https://github.com/casehubio/work)  
-**Platform doc:** [PLATFORM.md](https://raw.githubusercontent.com/casehubio/casehub-parent/main/docs/PLATFORM.md)
+**Platform doc:** [PLATFORM.md](https://raw.githubusercontent.com/casehubio/parent/main/docs/PLATFORM.md)
 
 ---
 

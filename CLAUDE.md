@@ -11,8 +11,8 @@ This repo hosts the canonical platform architecture documentation for the entire
 - Commit and push so raw GitHub URLs resolve correctly for other repos
 
 **Platform document locations:**
-- Master: `docs/PLATFORM.md` ([raw](https://raw.githubusercontent.com/casehubio/casehub-parent/main/docs/PLATFORM.md))
-- Per-repo deep-dives: `docs/repos/` ([directory](https://github.com/casehubio/casehub-parent/tree/main/docs/repos))
+- Master: `docs/PLATFORM.md` ([raw](https://raw.githubusercontent.com/casehubio/parent/main/docs/PLATFORM.md))
+- Per-repo deep-dives: `docs/repos/` ([directory](https://github.com/casehubio/parent/tree/main/docs/repos))
 
 ---
 
@@ -70,6 +70,6 @@ Trigger manually: GitHub Actions → select workflow → "Run workflow".
 | `qhorus` | casehubio/qhorus | Agent communication mesh (local dir: `casehub/qhorus`) |
 | `engine` | casehubio/engine | Hybrid choreography+orchestration engine (local dir: `casehub/engine`) |
 | `claudony` | casehubio/claudony | Remote Claude CLI sessions + ecosystem dashboard |
-| `casehub-connectors` | casehubio/casehub-connectors | Outbound message connectors (Slack, Teams, SMS, email) |
-| `casehub-assisteddev` | casehubio/casehub-assisteddev | AI-assisted development application (placeholder name) — first app layer built on CaseHub foundation |
+| `casehub-connectors` | casehubio/connectors | Outbound message connectors (Slack, Teams, SMS, email) |
+| `casehub-assisteddev` | casehubio/assisteddev | AI-assisted development application (placeholder name) — first app layer built on CaseHub foundation |
 | `casehub` | casehubio/casehub | **Retiring** — original POC, no new features |

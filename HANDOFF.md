@@ -12,7 +12,7 @@
 - `docs/gastown-casehub-analysis.md` + `docs/gastown-casehub-analysis-v2.md` — full Gastown vs CaseHub analysis; v2 separates foundation/application layers
 
 ### casehub-assisteddev repo created
-- Live at `casehubio/casehub-assisteddev` — first application layer on CaseHub foundation
+- Live at `casehubio/assisteddev` — first application layer on CaseHub foundation
 - Scaffolded with README + CLAUDE.md, added to CI dashboards
 - App-level trust epics and issues #1–#7 created
 
@@ -61,7 +61,7 @@
 |----------|------|
 | Platform architecture | `docs/PLATFORM.md` |
 | Gastown analysis v2 | `docs/gastown-casehub-analysis-v2.md` |
-| Foundation roadmap | https://github.com/casehubio/casehub-parent/issues/7 |
-| Ledger parent epic | https://github.com/casehubio/quarkus-ledger/issues/48 |
-| Normative body of works | `~/claude/quarkus-qhorus/docs/normative-framework.md` |
-| Platform coherence audit | https://github.com/casehubio/casehub-parent/issues/4 |
+| Foundation roadmap | https://github.com/casehubio/parent/issues/7 |
+| Ledger parent epic | https://github.com/casehubio/ledger/issues/48 |
+| Normative body of works | `~/claude/casehub/qhorus/docs/normative-framework.md` |
+| Platform coherence audit | https://github.com/casehubio/parent/issues/4 |

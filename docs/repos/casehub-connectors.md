@@ -1,7 +1,7 @@
 # casehub-connectors — Platform Deep Dive
 
-**GitHub:** [casehubio/casehub-connectors](https://github.com/casehubio/casehub-connectors)  
-**Platform doc:** [PLATFORM.md](https://raw.githubusercontent.com/casehubio/casehub-parent/main/docs/PLATFORM.md)
+**GitHub:** [casehubio/connectors](https://github.com/casehubio/connectors)  
+**Platform doc:** [PLATFORM.md](https://raw.githubusercontent.com/casehubio/parent/main/docs/PLATFORM.md)
 
 ---
 
