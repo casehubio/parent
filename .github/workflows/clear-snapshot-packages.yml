@@ -77,13 +77,14 @@ jobs:
               ver_id=$(echo "$row"   | jq -r '.id')
               ver_name=$(echo "$row" | jq -r '.name')
               printf "   [del]  %-40s id=%-10s ... " "$ver_name" "$ver_id"
-              if gh api -X DELETE \
-                "/orgs/$ORG/packages/maven/$pkg_name/versions/$ver_id" \
-                --silent 2>/dev/null; then
+              resp=$(gh api -X DELETE \
+                "/orgs/$ORG/packages/maven/$pkg_name/versions/$ver_id" 2>&1)
+              rc=$?
+              if [ $rc -eq 0 ]; then
                 echo "ok"
                 pkg_deleted=$((pkg_deleted + 1))
               else
-                echo "FAILED"
+                echo "FAILED: $resp"
                 pkg_failed=$((pkg_failed + 1))
               fi
             done < <(echo "$versions" | jq -c '.[]')
