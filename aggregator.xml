@@ -15,7 +15,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>io.casehubio</groupId>
+  <groupId>io.casehub</groupId>
   <artifactId>casehub-aggregator</artifactId>
   <version>0.2-SNAPSHOT</version>
   <packaging>pom</packaging>
@@ -29,14 +29,15 @@
 
   <modules>
     <!-- Ordered by dependency — reactor will enforce this regardless of list order -->
+    <!-- All repos are siblings of this parent inside ~/claude/casehub/ -->
     <!-- quarkus-langchain4j: casehubio fork, publishes 999-SNAPSHOT with unreleased fixes -->
-    <module>quarkus-langchain4j</module>
-    <module>casehub/ledger</module>
-    <module>casehub-connectors</module>
-    <module>casehub/work</module>
-    <module>quarkus-qhorus</module>
-    <module>casehub/engine</module>
-    <module>claudony</module>
+    <module>../quarkus-langchain4j</module>
+    <module>../ledger</module>
+    <module>../connectors</module>
+    <module>../work</module>
+    <module>../qhorus</module>
+    <module>../engine</module>
+    <module>../claudony</module>
   </modules>
 
 </project>

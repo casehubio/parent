@@ -66,9 +66,9 @@ Trigger manually: GitHub Actions → select workflow → "Run workflow".
 |------|--------|---------|
 | `quarkus-langchain4j` | casehubio/quarkus-langchain4j | Casehubio fork with unreleased fixes (999-SNAPSHOT) — temporary, not in BOM |
 | `ledger` | casehubio/ledger | Immutable audit ledger + trust scoring (local dir: `casehub/ledger`) |
-| `casehub-work` | casehubio/work | Human task lifecycle (WorkItem inbox, SLA, routing) |
-| `quarkus-qhorus` | casehubio/quarkus-qhorus | Agent communication mesh |
-| `engine` | casehubio/engine | Hybrid choreography+orchestration engine (local dir: `casehub-engine`) |
+| `work` | casehubio/work | Human task lifecycle (WorkItem inbox, SLA, routing) (local dir: `casehub/work`) |
+| `qhorus` | casehubio/qhorus | Agent communication mesh (local dir: `casehub/qhorus`) |
+| `engine` | casehubio/engine | Hybrid choreography+orchestration engine (local dir: `casehub/engine`) |
 | `claudony` | casehubio/claudony | Remote Claude CLI sessions + ecosystem dashboard |
 | `casehub-connectors` | casehubio/casehub-connectors | Outbound message connectors (Slack, Teams, SMS, email) |
 | `casehub-assisteddev` | casehubio/casehub-assisteddev | AI-assisted development application (placeholder name) — first app layer built on CaseHub foundation |
