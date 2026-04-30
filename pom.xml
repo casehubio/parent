@@ -11,7 +11,7 @@
 
   <name>CaseHub Parent</name>
   <description>Org-level parent POM and BOM for casehubio projects</description>
-  <url>https://github.com/casehubio/casehub-parent</url>
+  <url>https://github.com/casehubio/parent</url>
 
   <licenses>
     <license>
@@ -156,12 +156,12 @@
     <repository>
       <id>github</id>
       <name>casehubio GitHub Packages</name>
-      <url>https://maven.pkg.github.com/casehubio/casehub-parent</url>
+      <url>https://maven.pkg.github.com/casehubio/parent</url>
     </repository>
     <snapshotRepository>
       <id>github</id>
       <name>casehubio GitHub Packages</name>
-      <url>https://maven.pkg.github.com/casehubio/casehub-parent</url>
+      <url>https://maven.pkg.github.com/casehubio/parent</url>
     </snapshotRepository>
   </distributionManagement>
 
@@ -177,9 +177,9 @@
   </repositories>
 
   <scm>
-    <connection>scm:git:https://github.com/casehubio/casehub-parent.git</connection>
-    <developerConnection>scm:git:https://github.com/casehubio/casehub-parent.git</developerConnection>
-    <url>https://github.com/casehubio/casehub-parent</url>
+    <connection>scm:git:https://github.com/casehubio/parent.git</connection>
+    <developerConnection>scm:git:https://github.com/casehubio/parent.git</developerConnection>
+    <url>https://github.com/casehubio/parent</url>
     <tag>HEAD</tag>
   </scm>
 

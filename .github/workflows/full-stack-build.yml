@@ -100,7 +100,7 @@ jobs:
           cd casehub/ledger && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
           echo $((SECONDS - START)) > ../.build-times/casehub-ledger
 
-      - name: "Build: casehub-connectors"
+      - name: "Build: connectors"
         id: connectors
         continue-on-error: true
         env:
@@ -114,7 +114,7 @@ jobs:
           [ "$SKIP_ITS" = "true" ] && FLAGS="$FLAGS -DskipITs"
           START=$SECONDS
           cd casehub/connectors && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
-          echo $((SECONDS - START)) > ../.build-times/casehub-connectors
+          echo $((SECONDS - START)) > ../.build-times/connectors
 
       - name: "Build: casehub-work"
         id: work
@@ -148,7 +148,7 @@ jobs:
           cd casehub/qhorus && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
           echo $((SECONDS - START)) > ../../.build-times/casehub-qhorus
 
-      - name: "Build: casehub-engine"
+      - name: "Build: casehub-engine (engine)"
         id: engine
         continue-on-error: true
         env:
@@ -162,7 +162,7 @@ jobs:
           [ "$SKIP_ITS" = "true" ] && FLAGS="$FLAGS -DskipITs"
           START=$SECONDS
           cd casehub/engine && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
-          echo $((SECONDS - START)) > ../.build-times/casehub-engine
+          echo $((SECONDS - START)) > ../.build-times/engine
 
       - name: "Build: claudony"
         id: claudony
@@ -202,15 +202,15 @@ jobs:
             TEST_MODE="full test suite"
           fi
 
-          MODULES=(quarkus-langchain4j casehub-ledger casehub-connectors casehub-work casehub-qhorus casehub-engine casehub-claudony)
+          MODULES=(quarkus-langchain4j ledger connectors work qhorus engine claudony)
           declare -A OUTCOMES=(
             [quarkus-langchain4j]="$OUTCOME_LANGCHAIN4J"
-            [casehub-ledger]="$OUTCOME_LEDGER"
-            [casehub-connectors]="$OUTCOME_CONNECTORS"
-            [casehub-work]="$OUTCOME_WORK"
-            [casehub-qhorus]="$OUTCOME_QHORUS"
-            [casehub-engine]="$OUTCOME_ENGINE"
-            [casehub-claudony]="$OUTCOME_CLAUDONY"
+            [ledger]="$OUTCOME_LEDGER"
+            [connectors]="$OUTCOME_CONNECTORS"
+            [work]="$OUTCOME_WORK"
+            [qhorus]="$OUTCOME_QHORUS"
+            [engine]="$OUTCOME_ENGINE"
+            [claudony]="$OUTCOME_CLAUDONY"
           )
 
           {
@@ -236,7 +236,7 @@ jobs:
             esac
 
             repo_name="$module"
-            [ "$module" = "casehub-engine" ] && repo_name="engine"
+            
             [ "$module" = "casehub-ledger" ] && repo_name="ledger"
             [ "$module" = "casehub-qhorus" ] && repo_name="qhorus"
             echo "| [$module](https://github.com/casehubio/$repo_name) | $icon $outcome | $duration |" \

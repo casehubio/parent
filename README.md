@@ -6,15 +6,15 @@ Org-level parent POM and BOM for the [casehubio](https://github.com/casehubio) e
 
 | Repository | Status |
 |:-----------|:------:|
-| [casehub-parent](https://github.com/casehubio/casehub-parent) | [![casehub-parent](https://github.com/casehubio/casehub-parent/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/casehub-parent/actions/workflows/publish.yml) |
-| [quarkus-ledger](https://github.com/casehubio/quarkus-ledger) | [![quarkus-ledger](https://github.com/casehubio/quarkus-ledger/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/quarkus-ledger/actions/workflows/publish.yml) |
+| [casehub-parent](https://github.com/casehubio/parent) | [![casehub-parent](https://github.com/casehubio/parent/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/parent/actions/workflows/publish.yml) |
+| [quarkus-ledger](https://github.com/casehubio/ledger) | [![quarkus-ledger](https://github.com/casehubio/ledger/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/ledger/actions/workflows/publish.yml) |
 | [casehub-work](https://github.com/casehubio/work) | [![casehub-work](https://github.com/casehubio/work/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/work/actions/workflows/publish.yml) |
 | [casehub-qhorus](https://github.com/casehubio/qhorus) | [![casehub-qhorus](https://github.com/casehubio/qhorus/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/qhorus/actions/workflows/publish.yml) |
 | [casehub-engine](https://github.com/casehubio/engine) | [![casehub-engine](https://github.com/casehubio/engine/actions/workflows/maven.yml/badge.svg?branch=main)](https://github.com/casehubio/engine/actions/workflows/maven.yml) |
 | [claudony](https://github.com/casehubio/claudony) | [![claudony](https://github.com/casehubio/claudony/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/casehubio/claudony/actions/workflows/ci.yml) |
 | [quarkus-langchain4j](https://github.com/casehubio/quarkus-langchain4j) | [![quarkus-langchain4j](https://github.com/casehubio/quarkus-langchain4j/actions/workflows/casehub-publish.yml/badge.svg?branch=main)](https://github.com/casehubio/quarkus-langchain4j/actions/workflows/casehub-publish.yml) |
 
-> Full detail: [Build Status Dashboard](https://github.com/casehubio/casehub-parent/actions/workflows/dashboard.yml) &nbsp;|&nbsp; [PR Dashboard](https://github.com/casehubio/casehub-parent/actions/workflows/pr-dashboard.yml) &nbsp;|&nbsp; [▶ Run Full Stack Build](https://github.com/casehubio/casehub-parent/actions/workflows/full-stack-build.yml)
+> Full detail: [Build Status Dashboard](https://github.com/casehubio/parent/actions/workflows/dashboard.yml) &nbsp;|&nbsp; [PR Dashboard](https://github.com/casehubio/parent/actions/workflows/pr-dashboard.yml) &nbsp;|&nbsp; [▶ Run Full Stack Build](https://github.com/casehubio/parent/actions/workflows/full-stack-build.yml)
 
 ---
 
@@ -97,10 +97,10 @@ Each project in the ecosystem has a different Maven parent (`quarkiverse-parent`
 
 | Repo | GroupId | Remote |
 |---|---|---|
-| `quarkus-ledger` | `io.quarkiverse.ledger` | `casehubio/quarkus-ledger` |
+| `quarkus-ledger` | `io.quarkiverse.ledger` | `casehubio/ledger` |
 | `casehub-work` | `io.casehub` | `casehubio/work` |
 | `casehub-qhorus` | `io.casehub` | `casehubio/qhorus` |
-| `casehub-engine` | `io.casehub` | `casehubio/casehub-engine` |
+| `casehub-engine` | `io.casehub` | `casehubio/engine` |
 | `claudony` | `dev.claudony` | `casehubio/claudony` |
 | `quarkus-langchain4j` | (upstream fork) | `casehubio/quarkus-langchain4j` |
 
@@ -125,7 +125,7 @@ For day-to-day development, use `build-all.sh`. It clones or updates all ecosyst
 ### Quick start
 
 ```bash
-git clone https://github.com/casehubio/casehub-parent.git
+git clone https://github.com/casehubio/parent.git
 cd casehub-parent
 ./build-all.sh
 ```
