@@ -24,7 +24,7 @@ These are not competing implementations of the same idea. They answer different 
 ├───────────────────────────────────────────────────────────────┤
 │                      Foundation Layer                          │
 │  casehub-engine  │  quarkus-qhorus    │  quarkus-ledger       │
-│  quarkus-work    │  casehub-connectors│  (+ Quarkus ecosystem)│
+│  casehub-work    │  casehub-connectors│  (+ Quarkus ecosystem)│
 └───────────────────────────────────────────────────────────────┘
 ```
 
@@ -46,7 +46,7 @@ The second fundamental difference: Gastown drives agents through predefined step
 |------|--------|---------|------|
 | `casehub-parent` | casehubio/casehub-parent | BOM, CI dashboards, full-stack build | — |
 | `quarkus-ledger` | casehubio/quarkus-ledger | Immutable tamper-evident audit ledger, Bayesian trust scoring, GDPR compliance | Foundation |
-| `quarkus-work` | casehubio/quarkus-work | Human task lifecycle (WorkItem inbox, SLA, delegation, escalation) | Foundation |
+| `casehub-work` | casehubio/casehub-work | Human task lifecycle (WorkItem inbox, SLA, delegation, escalation) | Foundation |
 | `quarkus-qhorus` | casehubio/quarkus-qhorus | Agent communication mesh (speech acts, commitments, typed channels) | Foundation |
 | `casehub-connectors` | casehubio/casehub-connectors | Outbound message connectors (Slack, Teams, SMS, email) | Foundation |
 | `casehub-engine` | casehubio/engine | Hybrid choreography+blackboard ACM engine | Orchestration |
@@ -218,7 +218,7 @@ Stale escalations auto-re-escalate after 4 hours (configurable), bumping severit
 | Work bundle | Convoy | CasePlanModel | Convoy is flat; CasePlanModel has goals/milestones/stages |
 | Workflow | Formula (TOML) | CaseDefinition YAML + Quarkus Flow | CaseHub additionally has binding conditions |
 | Durable workflow | Molecule (bead chains) | Quarkus Flow as worker type | Both survive restarts; quarkus-flow is more formal |
-| Work queue | Hook | WorkItem inbox (quarkus-work) | Hooks are per-agent; WorkItem inbox is per-human |
+| Work queue | Hook | WorkItem inbox (casehub-work) | Hooks are per-agent; WorkItem inbox is per-human |
 | Assignment | `gt sling` | WorkBroker + WorkerSelectionStrategy | CaseHub routing is algorithmic and trust-weighted |
 | Messaging | `gt nudge` | qhorus `send_message` (9 speech-act types) | Gastown: informal. CaseHub: formal semantics |
 | Obligation tracking | None | qhorus Commitment (7-state lifecycle) | Gastown has no normative commitment concept |
@@ -468,7 +468,7 @@ Full audit: [casehub-parent#4](https://github.com/casehubio/casehub-parent/issue
 |---|---------|-------|-------|
 | 1 | Commitment terminal states don't write LedgerAttestation — trust scoring has no normative signal | qhorus, ledger | [qhorus#123](https://github.com/casehubio/quarkus-qhorus/issues/123) |
 | 2 | ActorType derivation uses 4 different logics — same actor gets different ActorType across repos | ledger, work, qhorus, engine | [ledger#47](https://github.com/casehubio/quarkus-ledger/issues/47) |
-| 3 | Two parallel delivery SPIs (casehub-connectors + quarkus-work-notifications) with overlapping Slack/Teams | connectors, work | [parent#5](https://github.com/casehubio/casehub-parent/issues/5) |
+| 3 | Two parallel delivery SPIs (casehub-connectors + casehub-work-notifications) with overlapping Slack/Teams | connectors, work | [parent#5](https://github.com/casehubio/casehub-parent/issues/5) |
 | 4 | Qhorus instanceId and ledger actorId unjoined — trust doesn't accumulate across sessions of same persona | qhorus, ledger, claudony | [qhorus#124](https://github.com/casehubio/quarkus-qhorus/issues/124) |
 | 5 | Cross-repo causal chain broken — no causedByEntryId linking MessageLedgerEntry → CaseLedgerEntry → WorkItemLedgerEntry | claudony, engine, qhorus | [claudony#94](https://github.com/casehubio/claudony/issues/94) |
 | 6 | PropagationContext.traceId is UUID, OTel trace ID is W3C hex — case spans not correlatable in Jaeger | engine, ledger | [engine#185](https://github.com/casehubio/engine/issues/185) |
@@ -606,7 +606,7 @@ public enum RecoveryAction { REPROVISION, ESCALATE_TO_HUMAN, CANCEL_CASE, WAIT }
 **Fix:**
 1. Make `WorkerSelectionStrategy` injectable in `CaseContextChangedEventHandler` (`@Inject WorkerSelectionStrategy strategy`) rather than instantiating `LeastLoadedStrategy` directly
 2. Add `TrustWeightedSelectionStrategy` to casehub-engine (or claudony-casehub): observes `TrustScoreFullPayload` CDI events, applies trust score as a multiplier over workload count when selecting candidates
-3. `SemanticWorkerSelectionStrategy` (already in quarkus-work-ai) then also becomes usable by casehub-engine for the first time
+3. `SemanticWorkerSelectionStrategy` (already in casehub-work-ai) then also becomes usable by casehub-engine for the first time
 
 **Why P1:** Depends on P0 (trust must be computed before it can be consumed), but should follow immediately. Without it the feedback loop from P0 is wired but goes nowhere.
 **Repos:** casehub-engine (CaseContextChangedEventHandler, TrustWeightedSelectionStrategy), quarkus-ledger (TrustScoreRoutingPublisher already exists)
@@ -668,24 +668,24 @@ Case budget bounds child WorkItem and Commitment deadlines. Currently a 1-hour c
 **Issue:** [casehub-parent#6](https://github.com/casehubio/casehub-parent/issues/6)
 
 #### P3.3 — Notification consolidation (parent#5)
-`quarkus-work-notifications` Slack/Teams implementations replaced with `casehub-connectors` delegation. Unblocks: stalled commitment alerts, case fault notifications, escalation notifications — all via one outbound pipeline.
+`casehub-work-notifications` Slack/Teams implementations replaced with `casehub-connectors` delegation. Unblocks: stalled commitment alerts, case fault notifications, escalation notifications — all via one outbound pipeline.
 **Issue:** [casehub-parent#5](https://github.com/casehubio/casehub-parent/issues/5)
 
 #### P3.4 — Human-in-the-loop end-to-end (casehub-work-adapter completion) *(not yet tracked)*
 **Symptom:** CaseHub can create human tasks (WorkItems) but cannot use their outcomes to progress a case. A human completing a WorkItem does not resume a waiting case. The HITL loop is open.
 **Root cause:** `casehub-work-adapter` exists and bridges `WorkItemLifecycleEvent → PlanItem` transitions via choreography, but it is incomplete and blocked on casehub-engine stability. The `WAITING` state orchestration path (human approval → case resumes) has no end-to-end test.
 **Fix:** Complete `casehub-work-adapter`: (1) `WorkItemLifecycleEvent(COMPLETED)` with a `callerRef` encoding `case:{id}/pi:{planItemId}` fires `CaseHubReactor.signal()`, (2) the case engine transitions the plan item from WAITING to active, (3) binding re-evaluation fires next workers. This is the primary HITL path — without it CaseHub cannot orchestrate any process that requires human judgment mid-case.
-**Repos:** casehub-engine (casehub-work-adapter module), quarkus-work
+**Repos:** casehub-engine (casehub-work-adapter module), casehub-work
 
 #### P3.5 — Notification for critical operational events *(not yet tracked)*
 **Symptom:** Stalled obligations, case faults, and WorkItem escalations surface in Qhorus channels only. Operations teams have no external signal when things go wrong.
-**Root cause:** Alert events exist (qhorus `WatchdogEvaluationService`, casehub-engine `FAULTED` state, quarkus-work `EscalationPolicy`) but none route through `casehub-connectors` to human-facing channels.
+**Root cause:** Alert events exist (qhorus `WatchdogEvaluationService`, casehub-engine `FAULTED` state, casehub-work `EscalationPolicy`) but none route through `casehub-connectors` to human-facing channels.
 **Depends on:** P3.3 (notification consolidation) — needs the unified delivery pipeline first.
 **Fix:** Wire three event sources to `casehub-connectors`:
 - `WatchdogEvaluationService` stall detection → `Connector.send()` (Slack/email)
 - `CaseLifecycleEvent(FAULTED)` → `Connector.send()` (email/SMS for critical cases)
-- `EscalationPolicy.escalate()` in quarkus-work → `Connector.send()` (Slack for MEDIUM, email for HIGH, SMS for CRITICAL)
-**Repos:** quarkus-qhorus, casehub-engine, quarkus-work, casehub-connectors
+- `EscalationPolicy.escalate()` in casehub-work → `Connector.send()` (Slack for MEDIUM, email for HIGH, SMS for CRITICAL)
+**Repos:** quarkus-qhorus, casehub-engine, casehub-work, casehub-connectors
 
 ---
 

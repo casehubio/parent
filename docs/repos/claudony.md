@@ -77,7 +77,7 @@ Nothing — Claudony is the integration terminus.
 - Define orchestration rules (that is casehub-engine)
 - Define agent messaging protocols (that is quarkus-qhorus)
 - Own audit ledger logic (that is quarkus-ledger)
-- Manage human task inboxes (that is quarkus-work)
+- Manage human task inboxes (that is casehub-work)
 - Reimplement channel, message, or commitment logic — Qhorus handles all of that
 
 `TmuxService` and `SessionRegistry` are deliberately kept free of CaseHub/Qhorus concepts. The CaseHub wiring lives in `claudony-casehub` as a clean SPI implementation layer.
@@ -126,7 +126,7 @@ tmux does not expose a PTY to ProcessBuilder. Streaming uses:
 - Three-panel dashboard (CaseHub case graph + terminal + side panel) not yet built
 - Worker↔Session↔Channel triple-link not stored on `Session` model (needed for the case graph panel)
 - `ClaudonyWorkerProvisioner.provision()` does not store `caseWorkerId` on the session
-- `quarkus-work-casehub` adapter — planned bridge from WorkItemLifecycleEvent to CaseHub; blocked on CaseHub stability
+- `casehub-work-casehub` adapter — planned bridge from WorkItemLifecycleEvent to CaseHub; blocked on CaseHub stability
 
 ---
 

@@ -68,31 +68,31 @@
       </dependency>
 
       <!-- ================================================================ -->
-      <!-- quarkus-work                                                     -->
+      <!-- casehub-work                                                     -->
       <!-- ================================================================ -->
       <dependency>
-        <groupId>io.quarkiverse.work</groupId>
-        <artifactId>quarkus-work-api</artifactId>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-work-api</artifactId>
         <version>${casehub.version}</version>
       </dependency>
       <dependency>
-        <groupId>io.quarkiverse.work</groupId>
-        <artifactId>quarkus-work-core</artifactId>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-work-core</artifactId>
         <version>${casehub.version}</version>
       </dependency>
       <dependency>
-        <groupId>io.quarkiverse.work</groupId>
-        <artifactId>quarkus-work</artifactId>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-work</artifactId>
         <version>${casehub.version}</version>
       </dependency>
       <dependency>
-        <groupId>io.quarkiverse.work</groupId>
-        <artifactId>quarkus-work-deployment</artifactId>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-work-deployment</artifactId>
         <version>${casehub.version}</version>
       </dependency>
       <dependency>
-        <groupId>io.quarkiverse.work</groupId>
-        <artifactId>quarkus-work-ledger</artifactId>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-work-ledger</artifactId>
         <version>${casehub.version}</version>
       </dependency>
 

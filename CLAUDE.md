@@ -23,7 +23,7 @@ type: custom
 ## Purpose
 
 `casehub-parent` is the org-level parent POM and BOM for all casehubio ecosystem projects. It:
-- Declares dependency versions for shared artifacts (`casehub-ledger`, `quarkus-work`, etc.)
+- Declares dependency versions for shared artifacts (`casehub-ledger`, `casehub-work`, etc.)
 - Provides the `aggregator.xml` for full-stack local builds
 - Hosts ecosystem-wide CI dashboards and the full-stack build workflow
 
@@ -35,7 +35,7 @@ All casehubio projects align on these conventions:
 
 **GitHub Packages — dependency resolution:** Each project's `pom.xml` has `<repositories>` with `id=github` pointing to `https://maven.pkg.github.com/casehubio/*`. CI uses `server-id: github` + `GITHUB_TOKEN` in `actions/setup-java`.
 
-**Cross-project SNAPSHOT versions:** `casehub-ledger` and `quarkus-work` are `0.2-SNAPSHOT` from GitHub Packages. The `casehub.version` property in this BOM manages all casehubio artifact versions.
+**Cross-project SNAPSHOT versions:** `casehub-ledger` and `casehub-work` are `0.2-SNAPSHOT` from GitHub Packages. The `casehub.version` property in this BOM manages all casehubio artifact versions.
 
 **Publishing:** Each project publishes to `https://maven.pkg.github.com/casehubio/<repo>` via `mvn deploy` on push to `main`. Root aggregator POMs skip deployment (`maven.deploy.skip=true`); only deployable JAR modules override to `false`.
 
@@ -66,7 +66,7 @@ Trigger manually: GitHub Actions → select workflow → "Run workflow".
 |------|--------|---------|
 | `quarkus-langchain4j` | casehubio/quarkus-langchain4j | Casehubio fork with unreleased fixes (999-SNAPSHOT) — temporary, not in BOM |
 | `ledger` | casehubio/ledger | Immutable audit ledger + trust scoring (local dir: `casehub/ledger`) |
-| `quarkus-work` | casehubio/quarkus-work | Human task lifecycle (WorkItem inbox, SLA, routing) |
+| `casehub-work` | casehubio/work | Human task lifecycle (WorkItem inbox, SLA, routing) |
 | `quarkus-qhorus` | casehubio/quarkus-qhorus | Agent communication mesh |
 | `engine` | casehubio/engine | Hybrid choreography+orchestration engine (local dir: `casehub-engine`) |
 | `claudony` | casehubio/claudony | Remote Claude CLI sessions + ecosystem dashboard |
