@@ -85,7 +85,7 @@ Bridges `WorkItemLifecycleEvent` CDI events to `PlanItem` transitions via `Black
 | Repo | How |
 |---|---|
 | `casehub-work-core` | `WorkBroker` and selection strategies — NOT the casehub-work runtime |
-| `quarkus-ledger` | Optional, via `casehub-ledger` module |
+| `casehub-ledger` | Optional, via `casehub-ledger` module |
 
 ## Depended On By
 

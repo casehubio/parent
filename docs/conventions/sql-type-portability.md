@@ -33,4 +33,4 @@ H2 is designed for developer convenience and accepts many non-standard type alia
 
 ## Discovered in
 
-`quarkus-work` V13, `quarkus-ledger` V1000–V1002: bare `DOUBLE` columns failed with `PSQLException: type "double" does not exist` on first PostgreSQL deployment. Fixed in quarkus-work#146 and quarkus-ledger#66.
+`casehub-work` V13, `casehub-ledger` V1000–V1002: bare `DOUBLE` columns failed with `PSQLException: type "double" does not exist` on first PostgreSQL deployment. Fixed in casehub-work#146 and casehub-ledger#66.

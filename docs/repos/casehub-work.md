@@ -20,7 +20,7 @@ A `WorkItem` is deliberately NOT called `Task` — CNCF Serverless Workflow and 
 | `casehub-work-api` | Pure-Java SPI (no Quarkus) | All SPIs: `WorkerSelectionStrategy`, `WorkerRegistry`, `WorkloadProvider`, `EscalationPolicy`, `SpawnPort`, `SkillProfile*`, `NotificationChannel` |
 | `casehub-work-core` | Jandex library (no JPA) | `WorkBroker`, `LeastLoadedStrategy`, `ClaimFirstStrategy`, `NoOpWorkerRegistry` — used directly by casehub-engine |
 | `runtime` | Full Quarkus extension | `WorkItem` entity, services, REST API, filter engine |
-| `casehub-work-ledger` | Optional module | Attaches quarkus-ledger for `WorkItemLedgerEntry` |
+| `casehub-work-ledger` | Optional module | Attaches casehub-ledger for `WorkItemLedgerEntry` |
 | `casehub-work-queues` | Optional module | Label-based queue views |
 | `casehub-work-ai` | Optional module | `SemanticWorkerSelectionStrategy`, `LowConfidenceFilterProducer` |
 | `casehub-work-notifications` | Optional module | Slack/Teams/webhook outbound notifications |
@@ -69,7 +69,7 @@ Key fields: `title`, `description`, `assigneeId`, `candidateUsers`, `candidateGr
 
 ## Depends On
 
-- `quarkus-ledger` — optional only, via `casehub-work-ledger` module. Core has zero casehubio deps.
+- `casehub-ledger` — optional only, via `casehub-work-ledger` module. Core has zero casehubio deps.
 
 ## Depended On By
 

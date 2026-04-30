@@ -75,7 +75,7 @@ Nothing in the casehubio ecosystem. Pure Java (`java.net.http.HttpClient`) + opt
 - Provide domain logic — purely delivery infrastructure
 - Route or schedule notifications — callers decide when and what to send
 - Implement inbound message handling
-- Depend on casehub-work, quarkus-ledger, or casehub-engine
+- Depend on casehub-work, casehub-ledger, or casehub-engine
 
 ---
 

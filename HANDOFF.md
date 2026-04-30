@@ -21,13 +21,13 @@
 - `casehub-parent#4` — 32-finding platform coherence audit (8 individual issues created)
 - `casehub-parent#3` — linked PR chain automation (design documented, not built)
 
-### quarkus-ledger — full epic structure
+### casehub-ledger — full epic structure
 - `ledger#48` — parent epic with 6 consolidation checks and dependency graph
 - `ledger#49–#52` — child epics (Groups A, B, C, D)
 - `ledger#53–#68` — 16 individual issues with full implementation specs
 - `ledger#67–#68` — prerequisite refactors (enrichment pipeline, ActorTrustScore discriminator)
 
-### quarkus-qhorus normative docs (restructured and pushed)
+### casehub-qhorus normative docs (restructured and pushed)
 - `docs/normative-framework.md` — entry point / body of works
 - `docs/normative-layer.md` — theory + Tower of Babel argument + two worked examples + engine#189 reference + objection responses
 - `docs/normative-objections.md` — 10 objections with drafted counter-arguments
@@ -42,7 +42,7 @@
 
 ## Active work
 
-**quarkus-ledger** — briefed and started on epic #48. Starting order: #67 → #68 → #55/#54/#53 in parallel. Has the full briefing.
+**casehub-ledger** — briefed and started on epic #48. Starting order: #67 → #68 → #55/#54/#53 in parallel. Has the full briefing.
 
 ---
 
