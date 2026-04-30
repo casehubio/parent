@@ -7,7 +7,7 @@ Org-level parent POM and BOM for the [casehubio](https://github.com/casehubio) e
 | Repository | Status |
 |:-----------|:------:|
 | [casehub-parent](https://github.com/casehubio/parent) | [![casehub-parent](https://github.com/casehubio/parent/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/parent/actions/workflows/publish.yml) |
-| [quarkus-ledger](https://github.com/casehubio/ledger) | [![quarkus-ledger](https://github.com/casehubio/ledger/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/ledger/actions/workflows/publish.yml) |
+| [casehub-ledger](https://github.com/casehubio/ledger) | [![casehub-ledger](https://github.com/casehubio/ledger/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/ledger/actions/workflows/publish.yml) |
 | [casehub-work](https://github.com/casehubio/work) | [![casehub-work](https://github.com/casehubio/work/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/work/actions/workflows/publish.yml) |
 | [casehub-qhorus](https://github.com/casehubio/qhorus) | [![casehub-qhorus](https://github.com/casehubio/qhorus/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/qhorus/actions/workflows/publish.yml) |
 | [casehub-engine](https://github.com/casehubio/engine) | [![casehub-engine](https://github.com/casehubio/engine/actions/workflows/maven.yml/badge.svg?branch=main)](https://github.com/casehubio/engine/actions/workflows/maven.yml) |
@@ -40,8 +40,8 @@ Org-level parent POM and BOM for the [casehubio](https://github.com/casehubio) e
 
 | Artifact | GroupId | What it is |
 |---|---|---|
-| `quarkus-ledger` | `io.quarkiverse.ledger` | Immutable audit ledger base |
-| `quarkus-ledger-deployment` | `io.quarkiverse.ledger` | Extension deployment module |
+| `casehub-ledger` | `io.casehub` | Immutable audit ledger base |
+| `casehub-ledger-deployment` | `io.casehub` | Extension deployment module |
 | `casehub-work-api` | `io.casehub` | Work item SPI |
 | `casehub-work-core` | `io.casehub` | Work item core |
 | `casehub-work` | `io.casehub` | Work item runtime |
@@ -78,8 +78,8 @@ Then declare casehubio dependencies without versions:
 
 ```xml
 <dependency>
-  <groupId>io.quarkiverse.ledger</groupId>
-  <artifactId>quarkus-ledger</artifactId>
+  <groupId>io.casehub</groupId>
+  <artifactId>casehub-ledger</artifactId>
 </dependency>
 <dependency>
   <groupId>io.casehub</groupId>
@@ -89,7 +89,7 @@ Then declare casehubio dependencies without versions:
 
 ### Why a separate BOM rather than inheritance
 
-Each project in the ecosystem has a different Maven parent (`quarkiverse-parent` for extensions, internal root POMs for multi-module projects). Maven only allows one parent per project, so a shared parent would break existing inheritance chains. Importing the BOM via `<scope>import</scope>` achieves centralised version management without requiring a shared parent.
+Each project in the ecosystem has its own Maven parent (casehub projects use internal root POMs; some use upstream parents for tooling). Maven only allows one parent per project, so a shared parent would break existing inheritance chains. Importing the BOM via `<scope>import</scope>` achieves centralised version management without requiring a shared parent.
 
 ---
 
@@ -97,7 +97,7 @@ Each project in the ecosystem has a different Maven parent (`quarkiverse-parent`
 
 | Repo | GroupId | Remote |
 |---|---|---|
-| `quarkus-ledger` | `io.quarkiverse.ledger` | `casehubio/ledger` |
+| `casehub-ledger` | `io.casehub` | `casehubio/ledger` |
 | `casehub-work` | `io.casehub` | `casehubio/work` |
 | `casehub-qhorus` | `io.casehub` | `casehubio/qhorus` |
 | `casehub-engine` | `io.casehub` | `casehubio/engine` |
@@ -107,7 +107,7 @@ Each project in the ecosystem has a different Maven parent (`quarkiverse-parent`
 Dependency order (each project may depend on those above it):
 
 ```
-quarkus-ledger
+casehub-ledger
     ↑
 casehub-work
     ↑
@@ -154,29 +154,29 @@ Each module is classified into one of three states before building. The state is
 | **TEST** | Own SHA unchanged, but a transitive casehub dependency is in BUILD state | `mvn test` only — tests run against the newly installed dep artifacts, no recompile |
 | **SKIP** | Own SHA and all transitive casehub dep SHAs unchanged | Nothing — artifact already in local `.m2` is current |
 
-The rationale for the TEST state: if `quarkus-ledger` changes but `casehub-work`'s own code does not, `casehub-work` doesn't need recompiling — its bytecode is the same. But its tests should run against the new `quarkus-ledger` to catch integration regressions.
+The rationale for the TEST state: if `casehub-ledger` changes but `casehub-work`'s own code does not, `casehub-work` doesn't need recompiling — its bytecode is the same. But its tests should run against the new `casehub-ledger` to catch integration regressions.
 
 The dependency graph used for propagation:
 
 ```
-quarkus-ledger      → (no casehub deps)
-casehub-work        → quarkus-ledger
-casehub-qhorus      → quarkus-ledger, casehub-work
-casehub-engine      → quarkus-ledger, casehub-work
-claudony            → quarkus-ledger, casehub-work, casehub-qhorus
+casehub-ledger      → (no casehub deps)
+casehub-work        → casehub-ledger
+casehub-qhorus      → casehub-ledger, casehub-work
+casehub-engine      → casehub-ledger, casehub-work
+claudony            → casehub-ledger, casehub-work, casehub-qhorus
 ```
 
 Example output:
 
 ```
 ==> Incremental analysis...
-    quarkus-ledger       BUILD   (own SHA changed)
+    casehub-ledger       BUILD   (own SHA changed)
     casehub-work         TEST    (dep changed, rerun tests against new artifacts)
     casehub-qhorus       TEST    (dep changed, rerun tests against new artifacts)
     casehub-engine       TEST    (dep changed, rerun tests against new artifacts)
     claudony             SKIP    (SHA and all deps unchanged)
 
-==> Installing: quarkus-ledger
+==> Installing: casehub-ledger
 ==> Retesting against updated deps: casehub-work,casehub-qhorus,casehub-engine
 ```
 
@@ -198,7 +198,7 @@ Each log records the exact HEAD SHA of every repo at build time:
 # timestamp: 20260424T143022
 # branch:    main
 
-quarkus-ledger=a2636e132b43bc0faad66cf587ab5b30996ff3df
+casehub-ledger=a2636e132b43bc0faad66cf587ab5b30996ff3df
 casehub-work=e085d64c1f2a93b7d0f4e89a3c12d45e678f901a
 casehub-qhorus=ef89aaa3b7c1d20f4e5a67b89c0d12e3f456789a
 casehub-engine=fccb647d8e2f31a05b6c78d90e1f23a4b5678901
@@ -225,7 +225,7 @@ To reproduce an exact prior build:
 ```bash
 # Run directly if repos are already cloned and pinned
 mvn install -f aggregator.xml
-mvn install -f aggregator.xml -pl quarkus-ledger,casehub-work   # partial build
+mvn install -f aggregator.xml -pl casehub-ledger,casehub-work   # partial build
 ```
 
 The aggregator is not published to Maven. It is a local build tool only.
@@ -277,13 +277,13 @@ Every ecosystem repo contains:
 Because each project publishes independently, upstream artifacts must be available in GitHub Packages before downstream CI can run. The natural order is:
 
 1. `casehub-parent` → publishes BOM
-2. `quarkus-ledger` → depends on BOM
-3. `casehub-work` → depends on BOM + `quarkus-ledger`
-4. `casehub-qhorus` → depends on BOM + `quarkus-ledger` + `casehub-work`
-5. `casehub-engine` → depends on BOM + `quarkus-ledger` + `casehub-work`
+2. `casehub-ledger` → depends on BOM
+3. `casehub-work` → depends on BOM + `casehub-ledger`
+4. `casehub-qhorus` → depends on BOM + `casehub-ledger` + `casehub-work`
+5. `casehub-engine` → depends on BOM + `casehub-ledger` + `casehub-work`
 6. `claudony` → depends on BOM + `casehub-qhorus`
 
-If `quarkus-ledger` CI hasn't published yet when `casehub-work` CI runs, `casehub-work` will fail with `Could not resolve io.quarkiverse.ledger:quarkus-ledger:0.2-SNAPSHOT`. Re-running the failing job after the upstream publish completes resolves this.
+If `casehub-ledger` CI hasn't published yet when `casehub-work` CI runs, `casehub-work` will fail with `Could not resolve io.casehub:casehub-ledger:0.2-SNAPSHOT`. Re-running the failing job after the upstream publish completes resolves this.
 
 ### `quarkus-langchain4j`
 

@@ -59,7 +59,10 @@
       "Bash(JAVA_HOME=$\\(/usr/libexec/java_home -v 26\\) mvn clean install -DskipTests -f /Users/mdproctor/claude/claudony/pom.xml)",
       "mcp__intellij__get_all_open_file_paths",
       "Bash(cat)",
-      "Read(//tmp/**)"
+      "Read(//tmp/**)",
+      "Bash(wait)",
+      "Bash(git -C ~/claude/casehub/engine branch --show-current)",
+      "Bash(git -C ~/claude/casehub/engine push)"
     ]
   }
 }
