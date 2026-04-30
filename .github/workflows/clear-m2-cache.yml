@@ -52,37 +52,72 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
+          total_deleted=0
+          total_failed=0
+
           clear_maven_cache() {
             local repo="$1"
             echo "── $repo"
-            local ids
-            ids=$(gh api "repos/$repo/actions/caches?per_page=100" \
-              --jq '.actions_caches[] | select(.key | test("maven|m2"; "i")) | .id' \
-              2>/dev/null || true)
-            if [ -z "$ids" ]; then
-              echo "   no Maven caches found"
+
+            # Pre-state: fetch all Maven caches
+            local response
+            response=$(gh api "repos/$repo/actions/caches?per_page=100" 2>/dev/null \
+              || echo '{"actions_caches":[]}')
+
+            local pre_count
+            pre_count=$(echo "$response" \
+              | jq '[.actions_caches[] | select(.key | test("maven|m2"; "i"))] | length')
+
+            if [ "$pre_count" -eq 0 ]; then
+              echo "   [pre]  no Maven caches — skipping"
               return
             fi
-            local count=0
+
+            echo "   [pre]  $pre_count cache(s) found:"
+            echo "$response" | jq -r '
+              .actions_caches[]
+              | select(.key | test("maven|m2"; "i"))
+              | "     • \(.key)  \(.size_in_bytes / 1048576 | floor) MB  ref=\(.ref // "n/a")"'
+
+            # Delete
+            local ids
+            ids=$(echo "$response" \
+              | jq -r '.actions_caches[] | select(.key | test("maven|m2"; "i")) | .id')
             while IFS= read -r id; do
               gh api -X DELETE "repos/$repo/actions/caches/$id" --silent || true
-              count=$((count + 1))
             done <<< "$ids"
-            echo "   deleted $count cache(s)"
+
+            # Post-state: verify
+            local post_count
+            post_count=$(gh api "repos/$repo/actions/caches?per_page=100" 2>/dev/null \
+              | jq '[.actions_caches[] | select(.key | test("maven|m2"; "i"))] | length')
+
+            if [ "$post_count" -eq 0 ]; then
+              echo "   [post] ✓ all $pre_count cache(s) deleted"
+              total_deleted=$((total_deleted + pre_count))
+            else
+              echo "   [post] ✗ $post_count of $pre_count cache(s) still present"
+              total_failed=$((total_failed + post_count))
+            fi
           }
 
           should_clear() {
-            local flag="$1"
-            [ "${{ inputs.all }}" == "true" ] || [ "$flag" == "true" ]
+            [ "${{ inputs.all }}" == "true" ] || [ "$1" == "true" ]
           }
 
-          should_clear "${{ inputs.engine }}"     && clear_maven_cache "casehubio/engine"
-          should_clear "${{ inputs.ledger }}"     && clear_maven_cache "casehubio/ledger"
-          should_clear "${{ inputs.work }}"       && clear_maven_cache "casehubio/work"
-          should_clear "${{ inputs.qhorus }}"     && clear_maven_cache "casehubio/qhorus"
-          should_clear "${{ inputs.connectors }}" && clear_maven_cache "casehubio/connectors"
-          should_clear "${{ inputs.assisteddev }}" && clear_maven_cache "casehubio/assisteddev"
-          should_clear "${{ inputs.claudony }}"   && clear_maven_cache "casehubio/claudony"
-          should_clear "${{ inputs.parent }}"     && clear_maven_cache "casehubio/parent"
+          should_clear "${{ inputs.engine }}"      && clear_maven_cache "casehubio/engine"
+          should_clear "${{ inputs.ledger }}"      && clear_maven_cache "casehubio/ledger"
+          should_clear "${{ inputs.work }}"        && clear_maven_cache "casehubio/work"
+          should_clear "${{ inputs.qhorus }}"      && clear_maven_cache "casehubio/qhorus"
+          should_clear "${{ inputs.connectors }}"  && clear_maven_cache "casehubio/connectors"
+          should_clear "${{ inputs.assisteddev }}"  && clear_maven_cache "casehubio/assisteddev"
+          should_clear "${{ inputs.claudony }}"    && clear_maven_cache "casehubio/claudony"
+          should_clear "${{ inputs.parent }}"      && clear_maven_cache "casehubio/parent"
 
-          echo "Done."
+          echo ""
+          echo "── Summary: $total_deleted deleted, $total_failed failed"
+
+          if [ "$total_failed" -gt 0 ]; then
+            echo "FAIL: $total_failed cache(s) were not deleted"
+            exit 1
+          fi
