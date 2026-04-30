@@ -1,0 +1,259 @@
+name: Full Stack Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      skip_tests:
+        description: "Skip all tests (compile check only)"
+        required: false
+        default: false
+        type: boolean
+      skip_integration_tests:
+        description: "Skip integration tests only (unit tests still run)"
+        required: false
+        default: false
+        type: boolean
+      maven_args:
+        description: Extra Maven args (e.g. -T 1C)
+        required: false
+        default: ''
+        type: string
+
+jobs:
+  build:
+    name: Full Stack Build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          server-id: github
+          server-username: GITHUB_ACTOR
+          server-password: GITHUB_TOKEN
+
+      - name: Cache Maven repository
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-fullstack-${{ hashFiles('pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-fullstack-
+            ${{ runner.os }}-maven-
+
+      - name: Clone repositories
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p .build-times casehub
+          git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/quarkus-langchain4j.git" quarkus-langchain4j
+          git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/ledger.git" casehub/ledger
+          git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/connectors.git" casehub/connectors
+          git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/work.git" casehub/work
+          git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/qhorus.git" casehub/qhorus
+          git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/engine.git" casehub/engine
+          git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/claudony.git" casehub/claudony
+
+      # continue-on-error: true ensures all steps run and we get per-module outcomes
+
+      - name: "Build: quarkus-langchain4j"
+        id: langchain4j
+        continue-on-error: true
+        env:
+          SKIP_TESTS: ${{ inputs.skip_tests }}
+          SKIP_ITS: ${{ inputs.skip_integration_tests }}
+          MAVEN_EXTRA: ${{ inputs.maven_args }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          FLAGS=""
+          [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
+          [ "$SKIP_ITS" = "true" ] && FLAGS="$FLAGS -DskipITs"
+          START=$SECONDS
+          cd quarkus-langchain4j && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
+          echo $((SECONDS - START)) > ../.build-times/quarkus-langchain4j
+
+      - name: "Build: ledger"
+        id: ledger
+        continue-on-error: true
+        env:
+          SKIP_TESTS: ${{ inputs.skip_tests }}
+          SKIP_ITS: ${{ inputs.skip_integration_tests }}
+          MAVEN_EXTRA: ${{ inputs.maven_args }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          FLAGS=""
+          [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
+          [ "$SKIP_ITS" = "true" ] && FLAGS="$FLAGS -DskipITs"
+          START=$SECONDS
+          cd casehub/ledger && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
+          echo $((SECONDS - START)) > ../../.build-times/ledger
+
+      - name: "Build: connectors"
+        id: connectors
+        continue-on-error: true
+        env:
+          SKIP_TESTS: ${{ inputs.skip_tests }}
+          SKIP_ITS: ${{ inputs.skip_integration_tests }}
+          MAVEN_EXTRA: ${{ inputs.maven_args }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          FLAGS=""
+          [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
+          [ "$SKIP_ITS" = "true" ] && FLAGS="$FLAGS -DskipITs"
+          START=$SECONDS
+          cd casehub/connectors && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
+          echo $((SECONDS - START)) > ../../.build-times/connectors
+
+      - name: "Build: work"
+        id: work
+        continue-on-error: true
+        env:
+          SKIP_TESTS: ${{ inputs.skip_tests }}
+          SKIP_ITS: ${{ inputs.skip_integration_tests }}
+          MAVEN_EXTRA: ${{ inputs.maven_args }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          FLAGS=""
+          [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
+          [ "$SKIP_ITS" = "true" ] && FLAGS="$FLAGS -DskipITs"
+          START=$SECONDS
+          cd casehub/work && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
+          echo $((SECONDS - START)) > ../../.build-times/work
+
+      - name: "Build: qhorus"
+        id: qhorus
+        continue-on-error: true
+        env:
+          SKIP_TESTS: ${{ inputs.skip_tests }}
+          SKIP_ITS: ${{ inputs.skip_integration_tests }}
+          MAVEN_EXTRA: ${{ inputs.maven_args }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          FLAGS=""
+          [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
+          [ "$SKIP_ITS" = "true" ] && FLAGS="$FLAGS -DskipITs"
+          START=$SECONDS
+          cd casehub/qhorus && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
+          echo $((SECONDS - START)) > ../../.build-times/qhorus
+
+      - name: "Build: engine"
+        id: engine
+        continue-on-error: true
+        env:
+          SKIP_TESTS: ${{ inputs.skip_tests }}
+          SKIP_ITS: ${{ inputs.skip_integration_tests }}
+          MAVEN_EXTRA: ${{ inputs.maven_args }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          FLAGS=""
+          [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
+          [ "$SKIP_ITS" = "true" ] && FLAGS="$FLAGS -DskipITs"
+          START=$SECONDS
+          cd casehub/engine && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
+          echo $((SECONDS - START)) > ../../.build-times/engine
+
+      - name: "Build: claudony"
+        id: claudony
+        continue-on-error: true
+        env:
+          SKIP_TESTS: ${{ inputs.skip_tests }}
+          SKIP_ITS: ${{ inputs.skip_integration_tests }}
+          MAVEN_EXTRA: ${{ inputs.maven_args }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          FLAGS=""
+          [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
+          [ "$SKIP_ITS" = "true" ] && FLAGS="$FLAGS -DskipITs"
+          START=$SECONDS
+          cd casehub/claudony && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
+          echo $((SECONDS - START)) > ../../.build-times/claudony
+
+      - name: Build summary
+        if: always()
+        env:
+          ACTOR: ${{ github.actor }}
+          SKIP_TESTS: ${{ inputs.skip_tests }}
+          SKIP_ITS: ${{ inputs.skip_integration_tests }}
+          OUTCOME_LANGCHAIN4J: ${{ steps.langchain4j.outcome }}
+          OUTCOME_LEDGER: ${{ steps.ledger.outcome }}
+          OUTCOME_CONNECTORS: ${{ steps.connectors.outcome }}
+          OUTCOME_WORK: ${{ steps.work.outcome }}
+          OUTCOME_QHORUS: ${{ steps.qhorus.outcome }}
+          OUTCOME_ENGINE: ${{ steps.engine.outcome }}
+          OUTCOME_CLAUDONY: ${{ steps.claudony.outcome }}
+        run: |
+          if [ "$SKIP_TESTS" = "true" ]; then
+            TEST_MODE="compile check only (all tests skipped)"
+          elif [ "$SKIP_ITS" = "true" ]; then
+            TEST_MODE="unit tests only (integration tests skipped)"
+          else
+            TEST_MODE="full test suite"
+          fi
+
+          MODULES=(quarkus-langchain4j ledger connectors work qhorus engine claudony)
+          declare -A OUTCOMES=(
+            [quarkus-langchain4j]="$OUTCOME_LANGCHAIN4J"
+            [ledger]="$OUTCOME_LEDGER"
+            [connectors]="$OUTCOME_CONNECTORS"
+            [work]="$OUTCOME_WORK"
+            [qhorus]="$OUTCOME_QHORUS"
+            [engine]="$OUTCOME_ENGINE"
+            [claudony]="$OUTCOME_CLAUDONY"
+          )
+          declare -A GH_REPO=(
+            [quarkus-langchain4j]="quarkus-langchain4j"
+            [ledger]="ledger"
+            [connectors]="connectors"
+            [work]="work"
+            [qhorus]="qhorus"
+            [engine]="engine"
+            [claudony]="claudony"
+          )
+
+          {
+            echo "# Full Stack Build"
+            echo ""
+            echo "_Triggered by @${ACTOR} &nbsp;|&nbsp; $(date -u '+%Y-%m-%d %H:%M UTC') &nbsp;|&nbsp; ${TEST_MODE}_"
+            echo ""
+            echo "| Module | Result | Duration |"
+            echo "|:-------|:------:|:--------:|"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          FAIL_COUNT=0
+          for module in "${MODULES[@]}"; do
+            outcome="${OUTCOMES[$module]}"
+            repo_name="${GH_REPO[$module]}"
+            duration=$(cat ".build-times/$module" 2>/dev/null || true)
+            [ -n "$duration" ] && duration="${duration}s" || duration="—"
+
+            case "$outcome" in
+              success)  icon="✅" ;;
+              failure)  icon="❌"; FAIL_COUNT=$((FAIL_COUNT + 1)) ;;
+              skipped)  icon="⏭️ skipped"; FAIL_COUNT=$((FAIL_COUNT + 1)) ;;
+              *)        icon="⚠️"; FAIL_COUNT=$((FAIL_COUNT + 1)) ;;
+            esac
+
+            echo "| [$module](https://github.com/casehubio/$repo_name) | $icon $outcome | $duration |" \
+              >> "$GITHUB_STEP_SUMMARY"
+          done
+
+          {
+            echo ""
+            if [ "$FAIL_COUNT" -eq 0 ]; then
+              echo "✅ **All modules built successfully.**"
+            else
+              echo "❌ **$FAIL_COUNT module(s) failed or were skipped.**"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$FAIL_COUNT" -gt 0 ]; then
+            echo "::error::$FAIL_COUNT module(s) failed in the full stack build."
+            exit 1
+          fi
