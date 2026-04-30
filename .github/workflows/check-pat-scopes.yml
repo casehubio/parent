@@ -1,0 +1,47 @@
+name: Check GH_PAT Scopes
+
+on:
+  workflow_dispatch:
+
+jobs:
+  check:
+    name: Check GH_PAT Scopes
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Verify required scopes
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          REQUIRED="read:packages delete:packages"
+
+          # GitHub returns the token's scopes in the X-OAuth-Scopes header
+          headers=$(gh api /user -i 2>&1 | grep -i "x-oauth-scopes" || true)
+
+          if [ -z "$headers" ]; then
+            echo "ERROR: could not read token scopes — GH_PAT may be invalid or expired"
+            exit 1
+          fi
+
+          scopes=$(echo "$headers" | sed 's/.*X-OAuth-Scopes: //i' | tr -d '\r')
+          echo "GH_PAT scopes: $scopes"
+          echo ""
+
+          failed=0
+          for scope in $REQUIRED; do
+            if echo "$scopes" | grep -q "$scope"; then
+              echo "  ✓ $scope"
+            else
+              echo "  ✗ $scope  ← MISSING"
+              failed=$((failed + 1))
+            fi
+          done
+
+          echo ""
+          if [ "$failed" -gt 0 ]; then
+            echo "FAIL: $failed required scope(s) missing from GH_PAT."
+            echo "Update the token at: https://github.com/settings/tokens"
+            exit 1
+          else
+            echo "OK: GH_PAT has all required scopes."
+          fi
