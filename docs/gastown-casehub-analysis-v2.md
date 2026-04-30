@@ -579,7 +579,7 @@ Wiring issues in the existing design. Not new features — completion of designe
 
 **Repos:** casehub-engine, claudony-casehub, quarkus-qhorus
 
-#### ~~P0.2 — Commitment outcomes→trust scoring ([qhorus#123](https://github.com/casehubio/quarkus-qhorus/issues/123))~~ ✅ DONE 2026-04-28
+#### ~~P0.2 — Commitment outcomes→trust scoring ([qhorus#123](https://github.com/casehubio/qhorus/issues/123))~~ ✅ DONE 2026-04-28
 
 ~~**Symptom:** Trust scores never update from agent behaviour. The Bayesian model has no input. Routing is permanently based on priors.~~
 
@@ -589,15 +589,15 @@ Wiring issues in the existing design. Not new features — completion of designe
 
 **Closed:** `LedgerWriteService.record()` now writes `LedgerAttestation` on DONE (SOUND, 0.7), FAILURE (FLAGGED, 0.6), DECLINE (FLAGGED, 0.4). Confidence values config-driven via `quarkus.qhorus.attestation.*`. 899 tests passing. Commit `17556e0`.
 
-#### P0.3 — Actor identity fragmentation ([ledger#47](https://github.com/casehubio/quarkus-ledger/issues/47), [qhorus#124](https://github.com/casehubio/quarkus-qhorus/issues/124))
+#### P0.3 — Actor identity fragmentation ([ledger#47](https://github.com/casehubio/ledger/issues/47), [qhorus#124](https://github.com/casehubio/qhorus/issues/124))
 
 **Symptom:** Every new Claude session starts with zero trust, even if the same AI persona has built a strong track record. EigenTrust computes over session IDs, not personas.
 
 **Root cause:** Qhorus `LedgerWriteService` writes `actorId = message.sender` (raw instance ID like `claudony-worker-abc123`). Persona format (`claude:analyst@v1`) never reaches the ledger from Qhorus interactions.
 
-~~**Fix 1:** Add `ActorTypeResolver` utility to quarkus-ledger — single canonical `actorId` derivation for all consumers. ([ledger#47](https://github.com/casehubio/quarkus-ledger/issues/47))~~ **✅ DONE 2026-04-28** — utility created. **Consumer updates ✅ DONE 2026-04-29** — quarkus-qhorus (`3cb5749`), casehub-work (`dcad49b`), claudony (`434d7df`) all now use `ActorTypeResolver.resolve()`.
+~~**Fix 1:** Add `ActorTypeResolver` utility to quarkus-ledger — single canonical `actorId` derivation for all consumers. ([ledger#47](https://github.com/casehubio/ledger/issues/47))~~ **✅ DONE 2026-04-28** — utility created. **Consumer updates ✅ DONE 2026-04-29** — quarkus-qhorus (`3cb5749`), casehub-work (`dcad49b`), claudony (`434d7df`) all now use `ActorTypeResolver.resolve()`.
 
-~~**Fix 2:** Add `InstanceActorIdProvider` SPI to quarkus-qhorus — maps Qhorus instance IDs to ledger persona IDs. claudony-casehub implements it. ([qhorus#124](https://github.com/casehubio/quarkus-qhorus/issues/124)) — *pending*~~ **✅ SPI DONE 2026-04-29** — `InstanceActorIdProvider` + `DefaultInstanceActorIdProvider` (no-op identity) shipped. `CommitmentAttestationPolicy` SPI also shipped. claudony-casehub session→persona mapping implementation still pending — trust accumulation per persona not yet active.
+~~**Fix 2:** Add `InstanceActorIdProvider` SPI to quarkus-qhorus — maps Qhorus instance IDs to ledger persona IDs. claudony-casehub implements it. ([qhorus#124](https://github.com/casehubio/qhorus/issues/124)) — *pending*~~ **✅ SPI DONE 2026-04-29** — `InstanceActorIdProvider` + `DefaultInstanceActorIdProvider` (no-op identity) shipped. `CommitmentAttestationPolicy` SPI also shipped. claudony-casehub session→persona mapping implementation still pending — trust accumulation per persona not yet active.
 
 **Repos:** quarkus-ledger, quarkus-qhorus, claudony-casehub
 
@@ -750,9 +750,9 @@ This establishes the application layer pattern for any future domain application
 
 These capabilities are needed by every application domain but are implemented at the adapter/integration layer, not in the foundation itself.
 
-**SLA propagation ([parent#6](https://github.com/casehubio/casehub-parent/issues/6)):** Case budget bounds child WorkItem and Commitment deadlines. Currently a 1-hour case can spawn a 48-hour WorkItem. Fix in `casehub-work-adapter`.
+**SLA propagation ([parent#6](https://github.com/casehubio/parent/issues/6)):** Case budget bounds child WorkItem and Commitment deadlines. Currently a 1-hour case can spawn a 48-hour WorkItem. Fix in `casehub-work-adapter`.
 
-**Notification consolidation ([parent#5](https://github.com/casehubio/casehub-parent/issues/5)):** `casehub-work-notifications` Slack/Teams implementations replaced with `casehub-connectors` delegation. Unblocks unified delivery for stalled commitment alerts, case fault notifications, and escalation notifications.
+**Notification consolidation ([parent#5](https://github.com/casehubio/parent/issues/5)):** `casehub-work-notifications` Slack/Teams implementations replaced with `casehub-connectors` delegation. Unblocks unified delivery for stalled commitment alerts, case fault notifications, and escalation notifications.
 
 **Critical event notifications:** Wire three event sources to casehub-connectors: `WatchdogEvaluationService` stall detection, `CaseLifecycleEvent(FAULTED)`, and `EscalationPolicy.escalate()` in casehub-work. Depends on notification consolidation completing first.
 
@@ -770,20 +770,20 @@ Each domain application inherits the full compliance, trust, and accountability 
 
 ## 10. Internal Platform Coherence Audit
 
-Systematic cross-capability analysis across all CaseHub repos produced 32 findings. Full audit: [casehub-parent#4](https://github.com/casehubio/casehub-parent/issues/4). All 32 findings are foundation-layer work.
+Systematic cross-capability analysis across all CaseHub repos produced 32 findings. Full audit: [casehub-parent#4](https://github.com/casehubio/parent/issues/4). All 32 findings are foundation-layer work.
 
 Individual issues exist for the top 8:
 
 | # | Finding | Repos | Issue | Phase |
 |---|---------|-------|-------|-------|
-| ~~1~~ | ~~Commitment terminal states don't write LedgerAttestation — trust scoring has no normative signal~~ **✅ DONE 2026-04-28** | qhorus, ledger | [qhorus#123](https://github.com/casehubio/quarkus-qhorus/issues/123) | ~~P0.2~~ |
-| 2 | ActorType derivation uses 4 different logics — same actor gets different ActorType across repos. **Partial:** `ActorTypeResolver` utility created in quarkus-ledger; consumers in qhorus/engine/work still pending. | ledger, work, qhorus, engine | [ledger#47](https://github.com/casehubio/quarkus-ledger/issues/47) | P0.3 |
-| 3 | Two parallel delivery SPIs (casehub-connectors + casehub-work-notifications) with overlapping Slack/Teams | connectors, work | [parent#5](https://github.com/casehubio/casehub-parent/issues/5) | A2 |
-| 4 | Qhorus instanceId and ledger actorId unjoined — trust doesn't accumulate across sessions of same persona | qhorus, ledger, claudony | [qhorus#124](https://github.com/casehubio/quarkus-qhorus/issues/124) | P0.3 |
+| ~~1~~ | ~~Commitment terminal states don't write LedgerAttestation — trust scoring has no normative signal~~ **✅ DONE 2026-04-28** | qhorus, ledger | [qhorus#123](https://github.com/casehubio/qhorus/issues/123) | ~~P0.2~~ |
+| 2 | ActorType derivation uses 4 different logics — same actor gets different ActorType across repos. **Partial:** `ActorTypeResolver` utility created in quarkus-ledger; consumers in qhorus/engine/work still pending. | ledger, work, qhorus, engine | [ledger#47](https://github.com/casehubio/ledger/issues/47) | P0.3 |
+| 3 | Two parallel delivery SPIs (casehub-connectors + casehub-work-notifications) with overlapping Slack/Teams | connectors, work | [parent#5](https://github.com/casehubio/parent/issues/5) | A2 |
+| 4 | Qhorus instanceId and ledger actorId unjoined — trust doesn't accumulate across sessions of same persona | qhorus, ledger, claudony | [qhorus#124](https://github.com/casehubio/qhorus/issues/124) | P0.3 |
 | 5 | Cross-repo causal chain broken — no causedByEntryId linking MessageLedgerEntry → CaseLedgerEntry → WorkItemLedgerEntry | claudony, engine, qhorus | [claudony#94](https://github.com/casehubio/claudony/issues/94) | P2.3 |
 | ~~6~~ | ~~PropagationContext.traceId is UUID, OTel trace ID is W3C hex — case spans not correlatable in Jaeger~~ **✅ DONE 2026-04-28** | engine, ledger | [engine#185](https://github.com/casehubio/engine/issues/185) | ~~P2.2~~ |
 | 7 | CaseHub work assignments don't create Qhorus COMMITMENTs — normative obligation lifecycle bypassed entirely | engine, qhorus, claudony | [engine#186](https://github.com/casehubio/engine/issues/186) | P0.1 |
-| 8 | No SLA propagation from case budget to child WorkItems or Commitments | engine, work, qhorus | [parent#6](https://github.com/casehubio/casehub-parent/issues/6) | A2 |
+| 8 | No SLA propagation from case budget to child WorkItems or Commitments | engine, work, qhorus | [parent#6](https://github.com/casehubio/parent/issues/6) | A2 |
 
 Four structural themes run through all 32 findings:
 
