@@ -23,7 +23,7 @@ jobs:
           set -euo pipefail
 
           # Explicit ecosystem repo list — avoids demo/scratch repos polluting the dashboard
-          REPOS=$(printf '%s\n' casehub-parent casehub-connectors engine ledger work quarkus-qhorus claudony casehub-assisteddev)
+          REPOS=$(printf '%s\n' parent connectors engine ledger work qhorus claudony casehub-assisteddev)
 
           if [ -z "$REPOS" ]; then
             echo "::error::REPOS list is empty — check workflow configuration."
@@ -99,7 +99,7 @@ jobs:
             echo ""
             echo "---"
             echo ""
-            echo "[▶ Run Full Stack Build](https://github.com/$ORG/casehub-parent/actions/workflows/full-stack-build.yml) — clones and builds the entire platform in dependency order."
+            echo "[▶ Run Full Stack Build](https://github.com/$ORG/parent/actions/workflows/full-stack-build.yml) — clones and builds the entire platform in dependency order."
           } >> "$GITHUB_STEP_SUMMARY"
 
           # Surface failures as a workflow-level error so the dashboard run goes red

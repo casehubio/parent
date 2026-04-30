@@ -98,7 +98,7 @@ Bridges `WorkItemLifecycleEvent` CDI events to `PlanItem` transitions via `Black
 ## What This Repo Explicitly Does NOT Do
 
 - Manage human task inboxes (that is casehub-work)
-- Handle agent-to-agent messaging protocols (that is quarkus-qhorus)
+- Handle agent-to-agent messaging protocols (that is casehub-qhorus)
 - Provide a terminal/session UI (that is claudony)
 - Implement worker provisioner SPIs — only defines the contracts
 - Include Flyway migrations (Hibernate `drop-and-create` for now — no prod instances)

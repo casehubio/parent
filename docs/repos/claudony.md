@@ -62,7 +62,7 @@ Two modes from one binary: **server** (owns sessions, WebSocket streaming, dashb
 
 | Repo | How |
 |---|---|
-| `quarkus-qhorus` | Embedded directly; named `qhorus` datasource |
+| `casehub-qhorus` | Embedded directly; named `qhorus` datasource |
 | `casehub-engine` | Implements its 4 worker provisioner SPIs |
 | `quarkus-ledger` | Transitively via Qhorus (`AgentMessageLedgerEntry`) and casehub-ledger |
 
@@ -75,7 +75,7 @@ Nothing — Claudony is the integration terminus.
 ## What This Repo Explicitly Does NOT Do
 
 - Define orchestration rules (that is casehub-engine)
-- Define agent messaging protocols (that is quarkus-qhorus)
+- Define agent messaging protocols (that is casehub-qhorus)
 - Own audit ledger logic (that is quarkus-ledger)
 - Manage human task inboxes (that is casehub-work)
 - Reimplement channel, message, or commitment logic — Qhorus handles all of that
@@ -92,7 +92,7 @@ Three named persistence units:
 - Optional engine datasource — when CaseHub active
 
 ```properties
-quarkus.hibernate-orm.qhorus.packages=io.quarkiverse.qhorus.runtime,io.quarkiverse.ledger.runtime.model,io.casehub.ledger.model
+quarkus.hibernate-orm.qhorus.packages=io.casehub.qhorus.runtime,io.quarkiverse.ledger.runtime.model,io.casehub.ledger.model
 quarkus.flyway.qhorus.migrate-at-start=true
 ```
 

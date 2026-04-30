@@ -1,15 +1,15 @@
-# quarkus-qhorus — Platform Deep Dive
+# casehub-qhorus — Platform Deep Dive
 
-**GitHub:** [casehubio/quarkus-qhorus](https://github.com/casehubio/quarkus-qhorus)  
+**GitHub:** [casehubio/qhorus](https://github.com/casehubio/qhorus)  
 **Platform doc:** [PLATFORM.md](https://raw.githubusercontent.com/casehubio/casehub-parent/main/docs/PLATFORM.md)
 
 ---
 
 ## Purpose
 
-Agent communication mesh and governance methodology for multi-agent AI systems. Gives every agent interaction the formal status of an accountable act — grounded in speech act theory, deontic logic, defeasible reasoning, and social commitment semantics. The LLM reasons; Qhorus enforces, records, and derives. Independently embeddable in any Quarkus app. Designed for Quarkiverse submission.
+Agent communication mesh and governance methodology for multi-agent AI systems. Gives every agent interaction the formal status of an accountable act — grounded in speech act theory, deontic logic, defeasible reasoning, and social commitment semantics. The LLM reasons; Qhorus enforces, records, and derives. Independently embeddable in any Quarkus app. CaseHub ecosystem agent communication mesh.
 
-Designed after research into A2A, AutoGen, LangGraph, OpenAI Swarm, Letta, and CrewAI. See [docs/normative-layer.md](https://raw.githubusercontent.com/casehubio/quarkus-qhorus/main/docs/normative-layer.md) for the theoretical framing.
+Designed after research into A2A, AutoGen, LangGraph, OpenAI Swarm, Letta, and CrewAI. See [docs/normative-layer.md](https://raw.githubusercontent.com/casehubio/qhorus/main/docs/normative-layer.md) for the theoretical framing.
 
 ---
 
@@ -93,7 +93,7 @@ In Claudony's `application.properties`:
 ```properties
 quarkus.datasource.qhorus.db-kind=h2
 quarkus.hibernate-orm.qhorus.datasource=qhorus
-quarkus.hibernate-orm.qhorus.packages=io.quarkiverse.qhorus.runtime,io.quarkiverse.ledger.runtime.model
+quarkus.hibernate-orm.qhorus.packages=io.casehub.qhorus.runtime,io.casehub.ledger.runtime.model
 ```
 
 ---
@@ -116,7 +116,7 @@ Qhorus implements a 4-layer normative accountability framework:
 3. **Evaluative** — whether commitments were kept (commitment state transitions)
 4. **Corrective** — stalled obligation detection (`list_stalled_obligations`)
 
-See [docs/normative-layer.md](https://raw.githubusercontent.com/casehubio/quarkus-qhorus/main/docs/normative-layer.md).
+See [docs/normative-layer.md](https://raw.githubusercontent.com/casehubio/qhorus/main/docs/normative-layer.md).
 
 ---
 
@@ -131,6 +131,6 @@ See [docs/normative-layer.md](https://raw.githubusercontent.com/casehubio/quarku
 
 ## Design Documents
 
-- [docs/DESIGN.md](https://raw.githubusercontent.com/casehubio/quarkus-qhorus/main/docs/DESIGN.md) — full MCP tool surface, store SPIs, commitment lifecycle
-- [docs/normative-layer.md](https://raw.githubusercontent.com/casehubio/quarkus-qhorus/main/docs/normative-layer.md) — 4-layer normative accountability framework
-- [adr/INDEX.md](https://raw.githubusercontent.com/casehubio/quarkus-qhorus/main/adr/INDEX.md) — architectural decision records (incl. ADR-0005 speech-act taxonomy)
+- [docs/DESIGN.md](https://raw.githubusercontent.com/casehubio/qhorus/main/docs/DESIGN.md) — full MCP tool surface, store SPIs, commitment lifecycle
+- [docs/normative-layer.md](https://raw.githubusercontent.com/casehubio/qhorus/main/docs/normative-layer.md) — 4-layer normative accountability framework
+- [adr/INDEX.md](https://raw.githubusercontent.com/casehubio/qhorus/main/adr/INDEX.md) — architectural decision records (incl. ADR-0005 speech-act taxonomy)

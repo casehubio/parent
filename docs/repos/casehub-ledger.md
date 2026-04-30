@@ -75,7 +75,7 @@ Nothing in the casehubio ecosystem. Quarkus + Hibernate ORM only.
 | Repo | How |
 |---|---|
 | `casehub-work` | Optional `casehub-work-ledger` module — `WorkItemLedgerEntry` subclass |
-| `quarkus-qhorus` | Mandatory — `AgentMessageLedgerEntry` subclass; `LedgerWriteService` |
+| `casehub-qhorus` | Mandatory — `AgentMessageLedgerEntry` subclass; `LedgerWriteService` |
 | `casehub-engine` | Optional `casehub-ledger` module — `CaseLedgerEntry` subclass |
 | `claudony` | Transitively via Qhorus and casehub-ledger |
 
