@@ -33,3 +33,5 @@ One file per rule. Each file is self-contained and retrievable independently.
 | [quarkus-named-datasource-schema-generation.md](quarkus-named-datasource-schema-generation.md) | Named persistence units require explicit schema generation config | All modules with multiple named Hibernate ORM PUs |
 | [git-worktree-absolute-path-maven.md](git-worktree-absolute-path-maven.md) | Use absolute paths when running Maven in git worktrees | All modules using git worktrees |
 | [spi-blocking-reactive-parity.md](spi-blocking-reactive-parity.md) | Reflection test to assert reactive SPI covers all blocking SPI methods | All modules with blocking + reactive SPI pairs |
+| [qhorus-event-content-null.md](qhorus-event-content-null.md) | EVENT message `content` is always null — render telemetry fields instead | All projects reading or displaying Qhorus ledger entries |
+| [qhorus-human-governance-channel-types.md](qhorus-human-governance-channel-types.md) | Oversight channel must have `allowedTypes=QUERY,COMMAND`; human actors never post EVENT | All projects using the Qhorus NormativeChannelLayout |
