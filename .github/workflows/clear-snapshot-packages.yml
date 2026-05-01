@@ -11,6 +11,10 @@ on:
         description: "Version to target (e.g. 0.2-SNAPSHOT). Leave blank for all SNAPSHOTs."
         type: string
         default: ""
+      group_filter:
+        description: "Only delete packages whose name starts with this prefix (e.g. io.casehub). Leave blank for all — DANGEROUS."
+        type: string
+        default: "io.casehub"
 
 jobs:
   clear:
@@ -24,6 +28,7 @@ jobs:
           ORG: casehubio
           DRY_RUN: ${{ inputs.dry_run }}
           VERSION_FILTER: ${{ inputs.version }}
+          GROUP_FILTER: ${{ inputs.group_filter }}
         run: |
           total_pre=0
           total_deleted=0
@@ -44,6 +49,11 @@ jobs:
           echo ""
 
           while IFS= read -r pkg_name; do
+            # Skip packages not matching the group filter
+            if [ -n "$GROUP_FILTER" ] && [[ "$pkg_name" != "$GROUP_FILTER"* ]]; then
+              continue
+            fi
+
             # Fetch all versions, filter to SNAPSHOTs
             versions=$(gh api \
               "/orgs/$ORG/packages/maven/$pkg_name/versions?per_page=100" \
