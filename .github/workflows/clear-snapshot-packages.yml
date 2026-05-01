@@ -15,6 +15,10 @@ on:
         description: "Only delete packages whose name starts with this prefix (e.g. io.casehub). Leave blank for all — DANGEROUS."
         type: string
         default: "io.casehub"
+      rebuild:
+        description: "Trigger full-stack rebuild after successful clear (recommended — avoids missing artifact errors)"
+        type: boolean
+        default: true
 
 jobs:
   clear:
@@ -29,6 +33,7 @@ jobs:
           DRY_RUN: ${{ inputs.dry_run }}
           VERSION_FILTER: ${{ inputs.version }}
           GROUP_FILTER: ${{ inputs.group_filter }}
+          REBUILD: ${{ inputs.rebuild }}
         run: |
           total_pre=0
           total_deleted=0
@@ -152,5 +157,16 @@ jobs:
             if [ "$total_failed" -gt 0 ]; then
               echo "FAIL: $total_failed version(s) confirmed still present after deletion."
               exit 1
+            fi
+
+            # Trigger full-stack rebuild if requested and clear succeeded
+            if [ "$REBUILD" == "true" ] && [ "$total_failed" -eq 0 ]; then
+              echo ""
+              echo "==> Triggering full-stack rebuild (skip_tests=true for speed)..."
+              gh api repos/casehubio/parent/actions/workflows/full-stack-build.yml/dispatches \
+                -f ref=main \
+                -f inputs[skip_tests]=true \
+                2>/dev/null && echo "✅ Full stack build triggered" \
+                || echo "⚠️  Failed to trigger full stack build — run manually"
             fi
           fi
