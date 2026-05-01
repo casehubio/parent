@@ -70,7 +70,7 @@ jobs:
               continue
             fi
 
-            # Delete each version, printing name and result inline
+            # Delete each version — if it's the last version, delete the whole package
             pkg_deleted=0
             pkg_failed=0
             while IFS= read -r row; do
@@ -81,6 +81,16 @@ jobs:
                 "/orgs/$ORG/packages/maven/$pkg_name/versions/$ver_id" 2>&1); then
                 echo "ok"
                 pkg_deleted=$((pkg_deleted + 1))
+              elif echo "$resp" | grep -q "delete the last version"; then
+                # Last version — must delete the whole package instead
+                if resp2=$(gh api -X DELETE \
+                  "/orgs/$ORG/packages/maven/$pkg_name" 2>&1); then
+                  echo "ok (deleted whole package)"
+                  pkg_deleted=$((pkg_deleted + 1))
+                else
+                  echo "FAILED (package delete): $resp2"
+                  pkg_failed=$((pkg_failed + 1))
+                fi
               else
                 echo "FAILED: $resp"
                 pkg_failed=$((pkg_failed + 1))
