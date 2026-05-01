@@ -32,3 +32,4 @@ One file per rule. Each file is self-contained and retrievable independently.
 | [quarkus-conditional-bean-build-time-only.md](quarkus-conditional-bean-build-time-only.md) | `@IfBuildProperty` / `@UnlessBuildProperty` are evaluated at build time only | All modules using conditional bean activation |
 | [quarkus-named-datasource-schema-generation.md](quarkus-named-datasource-schema-generation.md) | Named persistence units require explicit schema generation config | All modules with multiple named Hibernate ORM PUs |
 | [git-worktree-absolute-path-maven.md](git-worktree-absolute-path-maven.md) | Use absolute paths when running Maven in git worktrees | All modules using git worktrees |
+| [spi-blocking-reactive-parity.md](spi-blocking-reactive-parity.md) | Reflection test to assert reactive SPI covers all blocking SPI methods | All modules with blocking + reactive SPI pairs |
