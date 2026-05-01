@@ -18,6 +18,11 @@ on:
         required: false
         default: ''
         type: string
+      include_langchain4j:
+        description: "Include quarkus-langchain4j (slow — only needed when that fork changes)"
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   build:
@@ -51,9 +56,11 @@ jobs:
       - name: Clone repositories
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INCLUDE_LANGCHAIN4J: ${{ inputs.include_langchain4j }}
         run: |
           mkdir -p .build-times casehub
-          git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/quarkus-langchain4j.git" quarkus-langchain4j
+          [ "$INCLUDE_LANGCHAIN4J" = "true" ] && \
+            git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/quarkus-langchain4j.git" quarkus-langchain4j
           git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/ledger.git" casehub/ledger
           git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/connectors.git" casehub/connectors
           git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/work.git" casehub/work
@@ -65,6 +72,7 @@ jobs:
 
       - name: "Build: quarkus-langchain4j"
         id: langchain4j
+        if: inputs.include_langchain4j
         continue-on-error: true
         env:
           SKIP_TESTS: ${{ inputs.skip_tests }}
@@ -181,6 +189,7 @@ jobs:
           ACTOR: ${{ github.actor }}
           SKIP_TESTS: ${{ inputs.skip_tests }}
           SKIP_ITS: ${{ inputs.skip_integration_tests }}
+          INCLUDE_LANGCHAIN4J: ${{ inputs.include_langchain4j }}
           OUTCOME_LANGCHAIN4J: ${{ steps.langchain4j.outcome }}
           OUTCOME_LEDGER: ${{ steps.ledger.outcome }}
           OUTCOME_CONNECTORS: ${{ steps.connectors.outcome }}
@@ -236,7 +245,13 @@ jobs:
             case "$outcome" in
               success)  icon="✅" ;;
               failure)  icon="❌"; FAIL_COUNT=$((FAIL_COUNT + 1)) ;;
-              skipped)  icon="⏭️ skipped"; FAIL_COUNT=$((FAIL_COUNT + 1)) ;;
+              skipped)
+                if [ "$module" = "quarkus-langchain4j" ] && [ "$INCLUDE_LANGCHAIN4J" != "true" ]; then
+                  icon="⏭️ excluded"
+                else
+                  icon="⏭️ skipped"; FAIL_COUNT=$((FAIL_COUNT + 1))
+                fi
+                ;;
               *)        icon="⚠️"; FAIL_COUNT=$((FAIL_COUNT + 1)) ;;
             esac
 
