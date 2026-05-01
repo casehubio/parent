@@ -19,6 +19,10 @@ on:
         description: "Trigger full-stack rebuild after successful clear (recommended — avoids missing artifact errors)"
         type: boolean
         default: true
+      include_langchain4j:
+        description: "Also delete quarkus-langchain4j SNAPSHOT packages (rarely needed)"
+        type: boolean
+        default: false
 
 jobs:
   clear:
@@ -34,6 +38,7 @@ jobs:
           VERSION_FILTER: ${{ inputs.version }}
           GROUP_FILTER: ${{ inputs.group_filter }}
           REBUILD: ${{ inputs.rebuild }}
+          INCLUDE_LANGCHAIN4J: ${{ inputs.include_langchain4j }}
         run: |
           total_pre=0
           total_deleted=0
@@ -56,6 +61,11 @@ jobs:
           while IFS= read -r pkg_name; do
             # Skip packages not matching the group filter
             if [ -n "$GROUP_FILTER" ] && [[ "$pkg_name" != "$GROUP_FILTER"* ]]; then
+              continue
+            fi
+
+            # Skip langchain4j packages unless explicitly included
+            if [ "$INCLUDE_LANGCHAIN4J" != "true" ] && [[ "$pkg_name" == *"langchain4j"* ]]; then
               continue
             fi
 
