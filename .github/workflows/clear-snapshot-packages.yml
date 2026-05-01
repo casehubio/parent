@@ -98,17 +98,21 @@ jobs:
             done < <(echo "$versions" | jq -c '.[]')
 
             # Post-state: independent re-fetch — proves absence, not just API success
-            post_versions=$(gh api \
+            # Package may have been fully deleted — treat 404 as success (0 versions)
+            post_raw=$(gh api \
               "/orgs/$ORG/packages/maven/$pkg_name/versions?per_page=100" \
-              --paginate 2>/dev/null \
-              | jq -c '[.[] | select(.name | test("SNAPSHOT"; ""))]')
+              --paginate 2>/dev/null) || post_raw="[]"
+            post_versions=$(echo "$post_raw" \
+              | jq -c '[.[] | select(.name | test("SNAPSHOT"; ""))]' 2>/dev/null) \
+              || post_versions="[]"
 
             if [ -n "$VERSION_FILTER" ]; then
               post_versions=$(echo "$post_versions" \
-                | jq -c "[.[] | select(.name == \"$VERSION_FILTER\")]")
+                | jq -c "[.[] | select(.name == \"$VERSION_FILTER\")]" 2>/dev/null) \
+                || post_versions="[]"
             fi
 
-            post_count=$(echo "$post_versions" | jq 'length')
+            post_count=$(echo "$post_versions" | jq 'length' 2>/dev/null) || post_count=0
 
             if [ "$post_count" -eq 0 ]; then
               echo "   [post] ✓ $pre_count → 0 SNAPSHOT versions remain"
