@@ -51,3 +51,11 @@ Key constraints:
 ## @TestTransaction + REST assertions
 
 Do not mix `@TestTransaction` with REST Assured assertions in the same test class. A `@Transactional` CDI method called from within `@TestTransaction` joins the test transaction; subsequent HTTP calls run in their own transaction and cannot see the uncommitted data (returns 404). Remove `@TestTransaction` from test classes that mix direct service calls with REST Assured assertions.
+
+## @TestTransaction scope: method only, not @BeforeEach
+
+`@TestTransaction` wraps the test **method** only. Any entity created in `@BeforeEach` via `@Transactional` service calls commits immediately and is visible to subsequent HTTP calls and other tests.
+
+If those service calls internally use `REQUIRES_NEW` (e.g. audit writes, ledger captures), those entries are committed in their own nested transaction and **survive the test method's rollback**. Stale entries from prior tests' `@BeforeEach` runs will then be visible to queries in subsequent tests.
+
+**Rule:** set up scenario-specific data inside the `@Test` method body, not in `@BeforeEach`, whenever the setup calls services that use `REQUIRES_NEW` or when assertions depend on an exact result count.
