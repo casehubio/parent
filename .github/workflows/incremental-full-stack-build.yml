@@ -1,0 +1,535 @@
+name: Incremental Full Stack Build
+
+# Standalone orchestrator — always starts from root, evaluates the entire
+# module graph. Complements the per-repo dispatch chain (which is reactive
+# and fast) by providing a reproducible, SHA-keyed full-stack gate.
+#
+# Three decisions per module (same logic as build-all.sh):
+#   BUILD — own SHA changed             → compile + test + install
+#   TEST  — dep changed, source intact  → test only (artifact in .m2 is current)
+#   SKIP  — nothing changed             → skip entirely
+
+on:
+  workflow_dispatch:
+    inputs:
+      skip_tests:
+        description: "Skip all tests (BUILD still installs, TEST becomes SKIP)"
+        type: boolean
+        default: false
+      skip_integration_tests:
+        description: "Skip integration tests only"
+        type: boolean
+        default: false
+      maven_args:
+        description: "Extra Maven args (e.g. -T 1C)"
+        type: string
+        default: ''
+      include_langchain4j:
+        description: "Include quarkus-langchain4j (slow — only when that fork changed)"
+        type: boolean
+        default: false
+      force_rebuild:
+        description: "Force full rebuild — ignore all cached state (equivalent to --no-cache)"
+        type: boolean
+        default: false
+
+jobs:
+  build:
+    name: Incremental Full Stack Build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          server-id: github
+          server-username: GITHUB_ACTOR
+          server-password: GITHUB_TOKEN
+
+      - name: Clone repositories
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INCLUDE_LANGCHAIN4J: ${{ inputs.include_langchain4j }}
+        run: |
+          mkdir -p .build-times casehub
+          [ "$INCLUDE_LANGCHAIN4J" = "true" ] && \
+            git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/quarkus-langchain4j.git" quarkus-langchain4j
+          git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/ledger.git" casehub/ledger
+          git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/connectors.git" casehub/connectors
+          git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/work.git" casehub/work
+          git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/qhorus.git" casehub/qhorus
+          git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/engine.git" casehub/engine
+          git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/claudony.git" casehub/claudony
+
+      - name: Collect SHAs
+        id: shas
+        run: |
+          P=$(git rev-parse HEAD)
+          L=$(git -C casehub/ledger rev-parse HEAD)
+          C=$(git -C casehub/connectors rev-parse HEAD)
+          W=$(git -C casehub/work rev-parse HEAD)
+          Q=$(git -C casehub/qhorus rev-parse HEAD)
+          E=$(git -C casehub/engine rev-parse HEAD)
+          D=$(git -C casehub/claudony rev-parse HEAD)
+
+          echo "sha_parent=$P"     >> $GITHUB_OUTPUT
+          echo "sha_ledger=$L"     >> $GITHUB_OUTPUT
+          echo "sha_connectors=$C" >> $GITHUB_OUTPUT
+          echo "sha_work=$W"       >> $GITHUB_OUTPUT
+          echo "sha_qhorus=$Q"     >> $GITHUB_OUTPUT
+          echo "sha_engine=$E"     >> $GITHUB_OUTPUT
+          echo "sha_claudony=$D"   >> $GITHUB_OUTPUT
+
+          echo "::group::SHA manifest (pin these to reproduce this build)"
+          echo "parent:     $P"
+          echo "ledger:     $L"
+          echo "connectors: $C"
+          echo "work:       $W"
+          echo "qhorus:     $Q"
+          echo "engine:     $E"
+          echo "claudony:   $D"
+          echo "::endgroup::"
+
+      # Restore state from last run on this branch.
+      # Key includes run_id so each run writes its own entry; restore-keys
+      # falls back to the most recent prior run on the same branch.
+      - name: Restore build state
+        uses: actions/cache/restore@v4
+        with:
+          path: .incremental-state
+          key: incremental-state-${{ github.ref_name }}-${{ github.run_id }}
+          restore-keys: |
+            incremental-state-${{ github.ref_name }}-
+
+      - name: Load previous SHAs
+        id: prev
+        env:
+          FORCE_REBUILD: ${{ inputs.force_rebuild }}
+        run: |
+          MODULES=(parent ledger connectors work qhorus engine claudony)
+          if [ "$FORCE_REBUILD" = "true" ] || [ ! -f .incremental-state/shas.txt ]; then
+            for m in "${MODULES[@]}"; do echo "sha_${m}=none" >> $GITHUB_OUTPUT; done
+          else
+            while IFS='=' read -r key value; do
+              echo "sha_${key}=${value}" >> $GITHUB_OUTPUT
+            done < .incremental-state/shas.txt
+            # Ensure any module missing from state file defaults to "none"
+            for m in "${MODULES[@]}"; do
+              grep -q "^${m}=" .incremental-state/shas.txt || echo "sha_${m}=none" >> $GITHUB_OUTPUT
+            done
+          fi
+
+      # Cache the compiled casehub artifacts between runs.
+      # Full key covers all module SHAs — a hit means all artifacts are current → all SKIP.
+      # Restore-key fallback gives us the most recent partial match — stale artifacts
+      # are overwritten by whichever modules get BUILD/TEST decisions this run.
+      - name: Restore Maven cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository/io/casehub
+          key: m2-casehub-${{ steps.shas.outputs.sha_parent }}-${{ steps.shas.outputs.sha_ledger }}-${{ steps.shas.outputs.sha_connectors }}-${{ steps.shas.outputs.sha_work }}-${{ steps.shas.outputs.sha_qhorus }}-${{ steps.shas.outputs.sha_engine }}-${{ steps.shas.outputs.sha_claudony }}
+          restore-keys: |
+            m2-casehub-
+
+      # Always install the parent POM — it's lightweight and ensures .m2 has the
+      # current version regardless of cache state.
+      - name: Install parent POM
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: mvn install -N --batch-mode -q
+
+      # ── Module builds ────────────────────────────────────────────────────────
+      #
+      # Each step:
+      #   1. Calls the decision script with own SHA, previous SHA, and dep SHAs
+      #   2. Outputs the decision (BUILD/TEST/SKIP) for the summary
+      #   3. Executes: BUILD→mvn install, TEST→mvn test (or SKIP if tests disabled),
+      #      SKIP→nothing
+      #
+      # Parent SHA is passed as a dep to every module — if parent changes,
+      # all modules get at least TEST.
+      #
+      # continue-on-error: true so all modules run and we get a complete summary.
+
+      - name: "Build: ledger"
+        id: ledger
+        continue-on-error: true
+        env:
+          CUR: ${{ steps.shas.outputs.sha_ledger }}
+          PRV: ${{ steps.prev.outputs.sha_ledger }}
+          CUR_P: ${{ steps.shas.outputs.sha_parent }}
+          PRV_P: ${{ steps.prev.outputs.sha_parent }}
+          SKIP_TESTS: ${{ inputs.skip_tests }}
+          SKIP_ITS: ${{ inputs.skip_integration_tests }}
+          MAVEN_EXTRA: ${{ inputs.maven_args }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          D=$(./scripts/incremental-build-decision.sh \
+            --module ledger --current-sha "$CUR" --previous-sha "${PRV:-none}" \
+            --dep "parent:${CUR_P}:${PRV_P:-none}")
+          echo "decision=$D" >> $GITHUB_OUTPUT
+          START=$SECONDS
+          case "$D" in
+            SKIP) echo "⏭️  ledger: SKIP" ;;
+            TEST)
+              if [ "$SKIP_TESTS" = "true" ]; then echo "⏭️  ledger: SKIP (TEST — tests disabled)"
+              else
+                ITS=""; [ "$SKIP_ITS" = "true" ] && ITS="-DskipITs"
+                cd casehub/ledger && mvn test --batch-mode $ITS $MAVEN_EXTRA
+              fi ;;
+            BUILD)
+              F=""; [ "$SKIP_TESTS" = "true" ] && F="-DskipTests"
+              [ "$SKIP_ITS" = "true" ] && F="$F -DskipITs"
+              cd casehub/ledger && mvn install --batch-mode $F $MAVEN_EXTRA ;;
+          esac
+          echo $((SECONDS - START)) > .build-times/ledger
+
+      - name: "Build: connectors"
+        id: connectors
+        continue-on-error: true
+        env:
+          CUR: ${{ steps.shas.outputs.sha_connectors }}
+          PRV: ${{ steps.prev.outputs.sha_connectors }}
+          CUR_P: ${{ steps.shas.outputs.sha_parent }}
+          PRV_P: ${{ steps.prev.outputs.sha_parent }}
+          SKIP_TESTS: ${{ inputs.skip_tests }}
+          SKIP_ITS: ${{ inputs.skip_integration_tests }}
+          MAVEN_EXTRA: ${{ inputs.maven_args }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          D=$(./scripts/incremental-build-decision.sh \
+            --module connectors --current-sha "$CUR" --previous-sha "${PRV:-none}" \
+            --dep "parent:${CUR_P}:${PRV_P:-none}")
+          echo "decision=$D" >> $GITHUB_OUTPUT
+          START=$SECONDS
+          case "$D" in
+            SKIP) echo "⏭️  connectors: SKIP" ;;
+            TEST)
+              if [ "$SKIP_TESTS" = "true" ]; then echo "⏭️  connectors: SKIP (TEST — tests disabled)"
+              else
+                ITS=""; [ "$SKIP_ITS" = "true" ] && ITS="-DskipITs"
+                cd casehub/connectors && mvn test --batch-mode $ITS $MAVEN_EXTRA
+              fi ;;
+            BUILD)
+              F=""; [ "$SKIP_TESTS" = "true" ] && F="-DskipTests"
+              [ "$SKIP_ITS" = "true" ] && F="$F -DskipITs"
+              cd casehub/connectors && mvn install --batch-mode $F $MAVEN_EXTRA ;;
+          esac
+          echo $((SECONDS - START)) > .build-times/connectors
+
+      - name: "Build: work"
+        id: work
+        continue-on-error: true
+        env:
+          CUR: ${{ steps.shas.outputs.sha_work }}
+          PRV: ${{ steps.prev.outputs.sha_work }}
+          CUR_P: ${{ steps.shas.outputs.sha_parent }}
+          PRV_P: ${{ steps.prev.outputs.sha_parent }}
+          CUR_L: ${{ steps.shas.outputs.sha_ledger }}
+          PRV_L: ${{ steps.prev.outputs.sha_ledger }}
+          CUR_C: ${{ steps.shas.outputs.sha_connectors }}
+          PRV_C: ${{ steps.prev.outputs.sha_connectors }}
+          SKIP_TESTS: ${{ inputs.skip_tests }}
+          SKIP_ITS: ${{ inputs.skip_integration_tests }}
+          MAVEN_EXTRA: ${{ inputs.maven_args }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          D=$(./scripts/incremental-build-decision.sh \
+            --module work --current-sha "$CUR" --previous-sha "${PRV:-none}" \
+            --dep "parent:${CUR_P}:${PRV_P:-none}" \
+            --dep "ledger:${CUR_L}:${PRV_L:-none}" \
+            --dep "connectors:${CUR_C}:${PRV_C:-none}")
+          echo "decision=$D" >> $GITHUB_OUTPUT
+          START=$SECONDS
+          case "$D" in
+            SKIP) echo "⏭️  work: SKIP" ;;
+            TEST)
+              if [ "$SKIP_TESTS" = "true" ]; then echo "⏭️  work: SKIP (TEST — tests disabled)"
+              else
+                ITS=""; [ "$SKIP_ITS" = "true" ] && ITS="-DskipITs"
+                cd casehub/work && mvn test --batch-mode $ITS $MAVEN_EXTRA
+              fi ;;
+            BUILD)
+              F=""; [ "$SKIP_TESTS" = "true" ] && F="-DskipTests"
+              [ "$SKIP_ITS" = "true" ] && F="$F -DskipITs"
+              cd casehub/work && mvn install --batch-mode $F $MAVEN_EXTRA ;;
+          esac
+          echo $((SECONDS - START)) > .build-times/work
+
+      - name: "Build: qhorus"
+        id: qhorus
+        continue-on-error: true
+        env:
+          CUR: ${{ steps.shas.outputs.sha_qhorus }}
+          PRV: ${{ steps.prev.outputs.sha_qhorus }}
+          CUR_P: ${{ steps.shas.outputs.sha_parent }}
+          PRV_P: ${{ steps.prev.outputs.sha_parent }}
+          CUR_L: ${{ steps.shas.outputs.sha_ledger }}
+          PRV_L: ${{ steps.prev.outputs.sha_ledger }}
+          CUR_W: ${{ steps.shas.outputs.sha_work }}
+          PRV_W: ${{ steps.prev.outputs.sha_work }}
+          SKIP_TESTS: ${{ inputs.skip_tests }}
+          SKIP_ITS: ${{ inputs.skip_integration_tests }}
+          MAVEN_EXTRA: ${{ inputs.maven_args }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          D=$(./scripts/incremental-build-decision.sh \
+            --module qhorus --current-sha "$CUR" --previous-sha "${PRV:-none}" \
+            --dep "parent:${CUR_P}:${PRV_P:-none}" \
+            --dep "ledger:${CUR_L}:${PRV_L:-none}" \
+            --dep "work:${CUR_W}:${PRV_W:-none}")
+          echo "decision=$D" >> $GITHUB_OUTPUT
+          START=$SECONDS
+          case "$D" in
+            SKIP) echo "⏭️  qhorus: SKIP" ;;
+            TEST)
+              if [ "$SKIP_TESTS" = "true" ]; then echo "⏭️  qhorus: SKIP (TEST — tests disabled)"
+              else
+                ITS=""; [ "$SKIP_ITS" = "true" ] && ITS="-DskipITs"
+                cd casehub/qhorus && mvn test --batch-mode $ITS $MAVEN_EXTRA
+              fi ;;
+            BUILD)
+              F=""; [ "$SKIP_TESTS" = "true" ] && F="-DskipTests"
+              [ "$SKIP_ITS" = "true" ] && F="$F -DskipITs"
+              cd casehub/qhorus && mvn install --batch-mode $F $MAVEN_EXTRA ;;
+          esac
+          echo $((SECONDS - START)) > .build-times/qhorus
+
+      - name: "Build: engine"
+        id: engine
+        continue-on-error: true
+        env:
+          CUR: ${{ steps.shas.outputs.sha_engine }}
+          PRV: ${{ steps.prev.outputs.sha_engine }}
+          CUR_P: ${{ steps.shas.outputs.sha_parent }}
+          PRV_P: ${{ steps.prev.outputs.sha_parent }}
+          CUR_L: ${{ steps.shas.outputs.sha_ledger }}
+          PRV_L: ${{ steps.prev.outputs.sha_ledger }}
+          CUR_W: ${{ steps.shas.outputs.sha_work }}
+          PRV_W: ${{ steps.prev.outputs.sha_work }}
+          SKIP_TESTS: ${{ inputs.skip_tests }}
+          SKIP_ITS: ${{ inputs.skip_integration_tests }}
+          MAVEN_EXTRA: ${{ inputs.maven_args }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          D=$(./scripts/incremental-build-decision.sh \
+            --module engine --current-sha "$CUR" --previous-sha "${PRV:-none}" \
+            --dep "parent:${CUR_P}:${PRV_P:-none}" \
+            --dep "ledger:${CUR_L}:${PRV_L:-none}" \
+            --dep "work:${CUR_W}:${PRV_W:-none}")
+          echo "decision=$D" >> $GITHUB_OUTPUT
+          START=$SECONDS
+          case "$D" in
+            SKIP) echo "⏭️  engine: SKIP" ;;
+            TEST)
+              if [ "$SKIP_TESTS" = "true" ]; then echo "⏭️  engine: SKIP (TEST — tests disabled)"
+              else
+                ITS=""; [ "$SKIP_ITS" = "true" ] && ITS="-DskipITs"
+                cd casehub/engine && mvn test --batch-mode $ITS $MAVEN_EXTRA
+              fi ;;
+            BUILD)
+              F=""; [ "$SKIP_TESTS" = "true" ] && F="-DskipTests"
+              [ "$SKIP_ITS" = "true" ] && F="$F -DskipITs"
+              cd casehub/engine && mvn install --batch-mode $F $MAVEN_EXTRA ;;
+          esac
+          echo $((SECONDS - START)) > .build-times/engine
+
+      - name: "Build: claudony"
+        id: claudony
+        continue-on-error: true
+        env:
+          CUR: ${{ steps.shas.outputs.sha_claudony }}
+          PRV: ${{ steps.prev.outputs.sha_claudony }}
+          CUR_P: ${{ steps.shas.outputs.sha_parent }}
+          PRV_P: ${{ steps.prev.outputs.sha_parent }}
+          CUR_L: ${{ steps.shas.outputs.sha_ledger }}
+          PRV_L: ${{ steps.prev.outputs.sha_ledger }}
+          CUR_W: ${{ steps.shas.outputs.sha_work }}
+          PRV_W: ${{ steps.prev.outputs.sha_work }}
+          CUR_Q: ${{ steps.shas.outputs.sha_qhorus }}
+          PRV_Q: ${{ steps.prev.outputs.sha_qhorus }}
+          SKIP_TESTS: ${{ inputs.skip_tests }}
+          SKIP_ITS: ${{ inputs.skip_integration_tests }}
+          MAVEN_EXTRA: ${{ inputs.maven_args }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          D=$(./scripts/incremental-build-decision.sh \
+            --module claudony --current-sha "$CUR" --previous-sha "${PRV:-none}" \
+            --dep "parent:${CUR_P}:${PRV_P:-none}" \
+            --dep "ledger:${CUR_L}:${PRV_L:-none}" \
+            --dep "work:${CUR_W}:${PRV_W:-none}" \
+            --dep "qhorus:${CUR_Q}:${PRV_Q:-none}")
+          echo "decision=$D" >> $GITHUB_OUTPUT
+          START=$SECONDS
+          case "$D" in
+            SKIP) echo "⏭️  claudony: SKIP" ;;
+            TEST)
+              if [ "$SKIP_TESTS" = "true" ]; then echo "⏭️  claudony: SKIP (TEST — tests disabled)"
+              else
+                ITS=""; [ "$SKIP_ITS" = "true" ] && ITS="-DskipITs"
+                cd casehub/claudony && mvn test --batch-mode $ITS $MAVEN_EXTRA
+              fi ;;
+            BUILD)
+              F=""; [ "$SKIP_TESTS" = "true" ] && F="-DskipTests"
+              [ "$SKIP_ITS" = "true" ] && F="$F -DskipITs"
+              cd casehub/claudony && mvn install --batch-mode $F $MAVEN_EXTRA ;;
+          esac
+          echo $((SECONDS - START)) > .build-times/claudony
+
+      # ── State persistence ─────────────────────────────────────────────────
+      #
+      # Records the SHA for each module that succeeded (or was SKIPped, meaning
+      # its cached artifact is still valid). Failed modules keep their previous
+      # SHA so the next run retries them.
+
+      - name: Save build state
+        if: always()
+        env:
+          SHA_PARENT: ${{ steps.shas.outputs.sha_parent }}
+          SHA_LEDGER: ${{ steps.shas.outputs.sha_ledger }}
+          SHA_CONNECTORS: ${{ steps.shas.outputs.sha_connectors }}
+          SHA_WORK: ${{ steps.shas.outputs.sha_work }}
+          SHA_QHORUS: ${{ steps.shas.outputs.sha_qhorus }}
+          SHA_ENGINE: ${{ steps.shas.outputs.sha_engine }}
+          SHA_CLAUDONY: ${{ steps.shas.outputs.sha_claudony }}
+          PREV_PARENT: ${{ steps.prev.outputs.sha_parent }}
+          PREV_LEDGER: ${{ steps.prev.outputs.sha_ledger }}
+          PREV_CONNECTORS: ${{ steps.prev.outputs.sha_connectors }}
+          PREV_WORK: ${{ steps.prev.outputs.sha_work }}
+          PREV_QHORUS: ${{ steps.prev.outputs.sha_qhorus }}
+          PREV_ENGINE: ${{ steps.prev.outputs.sha_engine }}
+          PREV_CLAUDONY: ${{ steps.prev.outputs.sha_claudony }}
+          OUTCOME_LEDGER: ${{ steps.ledger.outcome }}
+          OUTCOME_CONNECTORS: ${{ steps.connectors.outcome }}
+          OUTCOME_WORK: ${{ steps.work.outcome }}
+          OUTCOME_QHORUS: ${{ steps.qhorus.outcome }}
+          OUTCOME_ENGINE: ${{ steps.engine.outcome }}
+          OUTCOME_CLAUDONY: ${{ steps.claudony.outcome }}
+        run: |
+          mkdir -p .incremental-state
+
+          # Helper: on success record current SHA; on failure keep previous SHA
+          # so the next run retries. Parent always uses current SHA (no outcome to check).
+          record() {
+            local name=$1 cur=$2 prev=$3 outcome=$4
+            if [ "$outcome" = "success" ]; then echo "${name}=${cur}"
+            else echo "${name}=${prev:-none}"
+            fi
+          }
+
+          {
+            echo "parent=${SHA_PARENT}"
+            record ledger     "$SHA_LEDGER"     "${PREV_LEDGER:-none}"     "$OUTCOME_LEDGER"
+            record connectors "$SHA_CONNECTORS" "${PREV_CONNECTORS:-none}" "$OUTCOME_CONNECTORS"
+            record work       "$SHA_WORK"       "${PREV_WORK:-none}"       "$OUTCOME_WORK"
+            record qhorus     "$SHA_QHORUS"     "${PREV_QHORUS:-none}"     "$OUTCOME_QHORUS"
+            record engine     "$SHA_ENGINE"     "${PREV_ENGINE:-none}"     "$OUTCOME_ENGINE"
+            record claudony   "$SHA_CLAUDONY"   "${PREV_CLAUDONY:-none}"   "$OUTCOME_CLAUDONY"
+          } > .incremental-state/shas.txt
+
+          echo "State saved:"
+          cat .incremental-state/shas.txt
+
+      - name: Persist build state
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: .incremental-state
+          key: incremental-state-${{ github.ref_name }}-${{ github.run_id }}
+
+      # ── Summary ───────────────────────────────────────────────────────────
+
+      - name: Build summary
+        if: always()
+        env:
+          ACTOR: ${{ github.actor }}
+          SKIP_TESTS: ${{ inputs.skip_tests }}
+          SKIP_ITS: ${{ inputs.skip_integration_tests }}
+          FORCE_REBUILD: ${{ inputs.force_rebuild }}
+          DECISION_LEDGER: ${{ steps.ledger.outputs.decision }}
+          DECISION_CONNECTORS: ${{ steps.connectors.outputs.decision }}
+          DECISION_WORK: ${{ steps.work.outputs.decision }}
+          DECISION_QHORUS: ${{ steps.qhorus.outputs.decision }}
+          DECISION_ENGINE: ${{ steps.engine.outputs.decision }}
+          DECISION_CLAUDONY: ${{ steps.claudony.outputs.decision }}
+          OUTCOME_LEDGER: ${{ steps.ledger.outcome }}
+          OUTCOME_CONNECTORS: ${{ steps.connectors.outcome }}
+          OUTCOME_WORK: ${{ steps.work.outcome }}
+          OUTCOME_QHORUS: ${{ steps.qhorus.outcome }}
+          OUTCOME_ENGINE: ${{ steps.engine.outcome }}
+          OUTCOME_CLAUDONY: ${{ steps.claudony.outcome }}
+        run: |
+          if [ "$SKIP_TESTS" = "true" ]; then
+            TEST_MODE="compile check only"
+          elif [ "$SKIP_ITS" = "true" ]; then
+            TEST_MODE="unit tests only"
+          else
+            TEST_MODE="full test suite"
+          fi
+          [ "$FORCE_REBUILD" = "true" ] && TEST_MODE="$TEST_MODE — forced rebuild"
+
+          MODULES=(ledger connectors work qhorus engine claudony)
+          declare -A DECISIONS=(
+            [ledger]="$DECISION_LEDGER"
+            [connectors]="$DECISION_CONNECTORS"
+            [work]="$DECISION_WORK"
+            [qhorus]="$DECISION_QHORUS"
+            [engine]="$DECISION_ENGINE"
+            [claudony]="$DECISION_CLAUDONY"
+          )
+          declare -A OUTCOMES=(
+            [ledger]="$OUTCOME_LEDGER"
+            [connectors]="$OUTCOME_CONNECTORS"
+            [work]="$OUTCOME_WORK"
+            [qhorus]="$OUTCOME_QHORUS"
+            [engine]="$OUTCOME_ENGINE"
+            [claudony]="$OUTCOME_CLAUDONY"
+          )
+
+          {
+            echo "# Incremental Full Stack Build"
+            echo ""
+            echo "_Triggered by @${ACTOR} &nbsp;|&nbsp; $(date -u '+%Y-%m-%d %H:%M UTC') &nbsp;|&nbsp; ${TEST_MODE}_"
+            echo ""
+            echo "| Module | Decision | Result | Duration |"
+            echo "|:-------|:--------:|:------:|:--------:|"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          FAIL_COUNT=0
+          for module in "${MODULES[@]}"; do
+            decision="${DECISIONS[$module]:-—}"
+            outcome="${OUTCOMES[$module]}"
+            duration=$(cat ".build-times/$module" 2>/dev/null || true)
+            [ -n "$duration" ] && duration="${duration}s" || duration="—"
+
+            case "$outcome" in
+              success)  icon="✅" ;;
+              failure)  icon="❌"; FAIL_COUNT=$((FAIL_COUNT + 1)) ;;
+              skipped)  icon="⚠️ skipped"; FAIL_COUNT=$((FAIL_COUNT + 1)) ;;
+              *)        icon="—" ;;
+            esac
+
+            echo "| [$module](https://github.com/casehubio/$module) | $decision | $icon | $duration |" \
+              >> "$GITHUB_STEP_SUMMARY"
+          done
+
+          {
+            echo ""
+            if [ "$FAIL_COUNT" -eq 0 ]; then
+              echo "✅ **All modules passed.**"
+            else
+              echo "❌ **$FAIL_COUNT module(s) failed.**"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$FAIL_COUNT" -gt 0 ]; then
+            echo "::error::$FAIL_COUNT module(s) failed in the incremental full stack build."
+            exit 1
+          fi
