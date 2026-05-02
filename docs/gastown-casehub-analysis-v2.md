@@ -1,7 +1,7 @@
 # CaseHub vs Gastown: Architectural Analysis
 
-> **Status:** Working document — not committed. Do not push.
-> **Date:** 2026-04-27
+> **Status:** Working document — updated 2026-05-02
+> **Date:** 2026-04-27 (last revised 2026-05-02)
 > **Version:** v2 — full rewrite with foundation/application separation
 
 ---
@@ -577,7 +577,9 @@ Wiring issues in the existing design. Not new features — completion of designe
 
 **Fix:** In `CaseContextChangedEventHandler` / `WorkOrchestrator.submit()`, after provisioning, call `channelProvider.postMessage(COMMAND)`. The agent's DONE/FAILURE response then drives the full normative lifecycle automatically.
 
-**Repos:** casehub-engine, claudony-casehub, casehub-qhorus
+**✅ Engine side DONE 2026-05-01** — `WorkerScheduleEventHandler` now dispatches a Qhorus COMMAND after scheduling (engine#186 closed). `WorkerExecutionContext` thread-local populated and `WorkerContext.channels()` available at execution time (engine#220/PR#224). Remaining: claudony-casehub `InstanceActorIdProvider` must map session IDs to persona format so trust accumulates per persona, not per ephemeral session (qhorus#124 open).
+
+**Repos:** casehub-engine ✅, claudony-casehub (qhorus#124 pending), casehub-qhorus
 
 #### ~~P0.2 — Commitment outcomes→trust scoring ([qhorus#123](https://github.com/casehubio/qhorus/issues/123))~~ ✅ DONE 2026-04-28
 
@@ -595,9 +597,9 @@ Wiring issues in the existing design. Not new features — completion of designe
 
 **Root cause:** Qhorus `LedgerWriteService` writes `actorId = message.sender` (raw instance ID like `claudony-worker-abc123`). Persona format (`claude:analyst@v1`) never reaches the ledger from Qhorus interactions.
 
-~~**Fix 1:** Add `ActorTypeResolver` utility to casehub-ledger — single canonical `actorId` derivation for all consumers. ([ledger#47](https://github.com/casehubio/ledger/issues/47))~~ **✅ DONE 2026-04-28** — utility created. **Consumer updates ✅ DONE 2026-04-29** — casehub-qhorus (`3cb5749`), casehub-work (`dcad49b`), claudony (`434d7df`) all now use `ActorTypeResolver.resolve()`.
+~~**Fix 1:** Add `ActorTypeResolver` utility to casehub-ledger — single canonical `actorId` derivation for all consumers. ([ledger#47](https://github.com/casehubio/ledger/issues/47))~~ **✅ DONE 2026-04-28** — utility created. **Consumer updates ✅ DONE 2026-04-29** — casehub-qhorus (`3cb5749`), casehub-work (`dcad49b`), claudony (`434d7df`) all now use `ActorTypeResolver.resolve()`. All four consumers complete.
 
-~~**Fix 2:** Add `InstanceActorIdProvider` SPI to casehub-qhorus — maps Qhorus instance IDs to ledger persona IDs. claudony-casehub implements it. ([qhorus#124](https://github.com/casehubio/qhorus/issues/124)) — *pending*~~ **✅ SPI DONE 2026-04-29** — `InstanceActorIdProvider` + `DefaultInstanceActorIdProvider` (no-op identity) shipped. `CommitmentAttestationPolicy` SPI also shipped. claudony-casehub session→persona mapping implementation still pending — trust accumulation per persona not yet active.
+~~**Fix 2:** Add `InstanceActorIdProvider` SPI to casehub-qhorus — maps Qhorus instance IDs to ledger persona IDs. claudony-casehub implements it. ([qhorus#124](https://github.com/casehubio/qhorus/issues/124)) — *pending*~~ **✅ SPI DONE 2026-04-29** — `InstanceActorIdProvider` + `DefaultInstanceActorIdProvider` (no-op identity) shipped. `CommitmentAttestationPolicy` SPI also shipped. claudony-casehub session→persona mapping implementation still pending — trust accumulation per persona not yet active (qhorus#124 open).
 
 **Repos:** casehub-ledger, casehub-qhorus, claudony-casehub
 
@@ -668,15 +670,11 @@ public enum RecoveryAction { REPROVISION, ESCALATE_TO_HUMAN, CANCEL_CASE, WAIT }
 
 **Repos:** casehub-engine (CaseContextChangedEventHandler, TrustWeightedSelectionStrategy), casehub-ledger (TrustScoreRoutingPublisher already exists)
 
-#### P1.4 — Merge CaseLedgerEntry branch
+#### ~~P1.4 — Merge CaseLedgerEntry branch~~ ✅ DONE 2026-04-26
 
-**Symptom:** Case lifecycle events are not in the tamper-evident ledger. CaseHub's compliance story — its primary market differentiator for regulated industries — is incomplete without it.
+~~**Symptom:** Case lifecycle events are not in the tamper-evident ledger.~~
 
-**Root cause:** `casehub-ledger` module and `CaseLedgerEventCapture` exist in `feat/casehub-ledger-integration` branch but are unmerged. The branch has merge conflict markers in `docs/DESIGN.md`.
-
-**Fix:** Resolve conflicts, merge to main. Verify: (1) `LedgerTraceListener` propagates correctly to `CaseLedgerEntry` via JPA `@EntityListeners` inheritance, (2) a case lifecycle event produces a verifiable Merkle entry, (3) `EventLog` (operational) and `CaseLedgerEntry` (compliance) co-exist without drift — add invariant test confirming every `CaseLedgerEntry` has a matching `EventLog` entry.
-
-**Repos:** casehub-engine (casehub-ledger module, feat/casehub-ledger-integration branch)
+**Closed:** `CaseLedgerEntry`, `CaseLedgerEventCapture`, and `CaseLedgerEntryRepository` merged to main (engine#145–#148, 2026-04-26). Case lifecycle events now produce verifiable Merkle entries. `EventLog` (operational) and `CaseLedgerEntry` (compliance) co-exist. CaseHub's compliance story for regulated industries is now structurally complete.
 
 ### P2 — Production Quality
 
@@ -713,14 +711,29 @@ public enum RecoveryAction { REPROVISION, ESCALATE_TO_HUMAN, CANCEL_CASE, WAIT }
 | **casehub-work Epic #106 — Multi-instance WorkItems** | ✅ DONE | `MultiInstanceCoordinator`, `MultiInstanceGroupPolicy`, M-of-N completion, threaded inbox, claim guard, `GET /workitems/{id}/instances`. Full group policy boundary clarified in LAYERING.md. |
 | **casehub-engine WorkerContextProvider + WorkerProvisioner wiring** | ✅ DONE | Wired into execution path (commit `f5a96e6`). Workers now receive lineage context at startup. |
 | **claudony case worker panel (#76)** | ✅ DONE | Terminal.js case worker panel — fetch, poll, render, switch. E2E tests. Closes the Worker↔Session dashboard gap. |
-| **casehub-engine WorkerContextProvider + WorkerProvisioner wiring** | ✅ DONE | Closes part of the end-to-end provisioner wiring (ADR-0006 path). |
+
+### Additional completions 2026-04-30 – 2026-05-01
+
+| Item | Status | Notes |
+|------|--------|-------|
+| **casehub-engine SubCase orchestration (#195)** | ✅ DONE | `SubCaseBinding`, `SubCaseExecutionHandler`, `SubCaseCompletionListener`. A case can now spawn and coordinate sub-cases with full lifecycle linkage. |
+| **WorkerContext.channels() + WorkerExecutionContext thread-local (#220/PR#224)** | ✅ DONE | `WorkerContext.channels()` populated from CaseChannelProvider at execution time. `WorkerExecutionContext.current()` thread-local provides in-worker access. Enables workers to post directly to their case channels. |
+| **casehub-engine DLQ replay (#194)** | ✅ DONE | Explicit dead-letter-queue replay API + auto-replay scheduler. Undeliverable events no longer silently dropped. |
+| **casehub-engine idempotency window (#193)** | ✅ DONE | Configurable dedup TTL on `WorkerScheduleEventHandler` prevents duplicate provisioning on redelivered events. |
+| **casehub-engine configurable worker timeout (#215)** | ✅ DONE | Worker execution timeout now configurable via `casehub.engine.worker.execution-timeout`. |
+| **casehub-ledger capabilityTag on LedgerAttestation (#60)** | ✅ DONE | `capability_tag` column on `LedgerAttestation` (V1000 rewrite). Attestations now carry the capability context of the COMMAND they attest. Foundation for capability-scoped trust (ledger#61, open). |
+| **casehub-qhorus capabilityTag from COMMAND content (#133)** | ✅ DONE | `LedgerWriteService` extracts `capability` from COMMAND JSON content and sets `LedgerAttestation.capabilityTag`. Attestations are now capability-scoped automatically. |
+| **casehub-qhorus cross-channel obligation view (#134)** | ✅ DONE | `get_obligation_activity` MCP tool — threaded view of obligations spanning work, observe, and oversight channels. Closes the fleet-level obligation visibility gap for multi-channel deployments. |
+| **casehub-work GitHub Issues sync (#157)** | ✅ DONE | WorkItem lifecycle events sync to GitHub Issue labels and state on create/claim/complete/expire. |
+| **casehub-work distributed SSE via PostgreSQL LISTEN/NOTIFY (#155)** | ✅ DONE | `PostgresBroadcaster` for WorkItem queue events — SSE fan-out across multiple work-runtime instances without Redis. |
+| **claudony human interjection dock (#77)** | ✅ DONE | Case worker panel with interjection dock — operators can post messages to Qhorus channels directly from the dashboard mid-case. |
 
 ### Phase-Gate Summary
 
 | Phase | Items | Gate to next phase |
 |-------|-------|-------------------|
-| **P0 — Wiring** | ~~ledger#47~~ ✅ ~~qhorus#123~~ ✅ ~~qhorus#124 SPI~~ ✅ · **engine#186 still open** | Normative layer functional end-to-end; trust accumulates from real behaviour |
-| **P1 — Scale** | Concurrency throttle, RecoveryPolicy SPI, trust routing wired, CaseLedgerEntry merged | Can run 10+ agents; trust actually drives routing; case events in ledger |
+| **P0 — Wiring** | ~~ledger#47~~ ✅ ~~qhorus#123~~ ✅ ~~qhorus#124 SPI~~ ✅ ~~engine#186 engine-side~~ ✅ · **qhorus#124 claudony persona mapping open** | Normative layer functional end-to-end; trust accumulates from real behaviour |
+| **P1 — Scale** | Concurrency throttle, RecoveryPolicy SPI, trust routing wired · ~~CaseLedgerEntry merged~~ ✅ | Can run 10+ agents; trust actually drives routing |
 | **P2 — Quality** | ~~OTel alignment~~ ✅ · causal chain (partial ✅) · trust federation | Full observability; audit trail complete; cross-deployment trust |
 
 ---
@@ -777,12 +790,12 @@ Individual issues exist for the top 8:
 | # | Finding | Repos | Issue | Phase |
 |---|---------|-------|-------|-------|
 | ~~1~~ | ~~Commitment terminal states don't write LedgerAttestation — trust scoring has no normative signal~~ **✅ DONE 2026-04-28** | qhorus, ledger | [qhorus#123](https://github.com/casehubio/qhorus/issues/123) | ~~P0.2~~ |
-| 2 | ActorType derivation uses 4 different logics — same actor gets different ActorType across repos. **Partial:** `ActorTypeResolver` utility created in casehub-ledger; consumers in qhorus/engine/work still pending. | ledger, work, qhorus, engine | [ledger#47](https://github.com/casehubio/ledger/issues/47) | P0.3 |
+| ~~2~~ | ~~ActorType derivation uses 4 different logics — same actor gets different ActorType across repos.~~ **✅ DONE 2026-04-29** — `ActorTypeResolver` utility shipped; all consumers (qhorus `3cb5749`, work `dcad49b`, claudony `434d7df`, engine) updated. | ledger, work, qhorus, engine | [ledger#47](https://github.com/casehubio/ledger/issues/47) | ~~P0.3~~ |
 | 3 | Two parallel delivery SPIs (casehub-connectors + casehub-work-notifications) with overlapping Slack/Teams | connectors, work | [parent#5](https://github.com/casehubio/parent/issues/5) | A2 |
 | 4 | Qhorus instanceId and ledger actorId unjoined — trust doesn't accumulate across sessions of same persona | qhorus, ledger, claudony | [qhorus#124](https://github.com/casehubio/qhorus/issues/124) | P0.3 |
 | 5 | Cross-repo causal chain broken — no causedByEntryId linking MessageLedgerEntry → CaseLedgerEntry → WorkItemLedgerEntry | claudony, engine, qhorus | [claudony#94](https://github.com/casehubio/claudony/issues/94) | P2.3 |
 | ~~6~~ | ~~PropagationContext.traceId is UUID, OTel trace ID is W3C hex — case spans not correlatable in Jaeger~~ **✅ DONE 2026-04-28** | engine, ledger | [engine#185](https://github.com/casehubio/engine/issues/185) | ~~P2.2~~ |
-| 7 | CaseHub work assignments don't create Qhorus COMMITMENTs — normative obligation lifecycle bypassed entirely | engine, qhorus, claudony | [engine#186](https://github.com/casehubio/engine/issues/186) | P0.1 |
+| 7 | CaseHub work assignments don't create Qhorus COMMITMENTs — normative obligation lifecycle bypassed entirely. **Partial ✅ 2026-05-01** — engine side done (engine#186 closed); claudony persona→session mapping (qhorus#124) still open. | engine, qhorus, claudony | [engine#186](https://github.com/casehubio/engine/issues/186) | P0.1 |
 | 8 | No SLA propagation from case budget to child WorkItems or Commitments | engine, work, qhorus | [parent#6](https://github.com/casehubio/parent/issues/6) | A2 |
 
 Four structural themes run through all 32 findings:
