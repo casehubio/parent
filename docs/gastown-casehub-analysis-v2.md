@@ -221,10 +221,7 @@ Consider two representations of the same event sequence:
 
 *With status fields (Gastown-style):*
 ```
-14:02  bead-123  assigned to agent-7
-14:05  bead-123  status: in_progress
-15:30  bead-123  status: in_progress  (note: "found 3 vectors")
-16:47  bead-123  status: done
+t
 ```
 
 *With formal speech acts (CaseHub):*
@@ -308,23 +305,24 @@ When a new engineer joins a team using CaseHub, "what does a COMMAND mean?" has 
 
 | Dimension | Gastown Foundation | CaseHub Foundation | Notes |
 |-----------|-------------------|--------------------|-------|
-| Audit mechanism | Dolt git-for-SQL history | Merkle Mountain Range (casehub-ledger) | Fundamentally different trust models |
-| Trust model | Admin-trusted (trust the Dolt server) | Cryptographic (inclusion proofs, no server trust required) | |
-| Tamper evidence | Git history (rewritable by admin) | Merkle proof (independently verifiable, Ed25519 signed checkpoints) | |
+| Audit mechanism | Dolt git-for-SQL history (content-addressed, Merkle Trees internally) | Merkle Mountain Range (casehub-ledger) + Doltgres git history (configurable) | Complementary when combined |
+| Trust model | Admin-trusted (admin can run `dolt filter-branch` to rewrite history) | Cryptographic (inclusion proofs, no server trust required); Doltgres adds git-level audit trail on top | CaseHub + Doltgres is stronger than either alone |
+| Tamper evidence | Git history — rewritable by admin but detectable via `dolt fsck` | Merkle proof (independently verifiable, Ed25519 signed checkpoints) | Doltgres rollback breaks already-signed Merkle checkpoint — detectable |
 | Inclusion proofs | No | Yes — checkpoints publishable to external transparency log | |
 | External verification | Impossible without server access | Any party can verify a Merkle proof independently | |
-| Time-travel queries | Yes — Dolt `AS OF` syntax | No | **Gastown advantage** |
-| Branch-and-merge for experimental state | Yes — Dolt branches | No | **Gastown advantage** |
-| Rollback | Yes — Dolt commit revert | No equivalent | **Gastown advantage** |
+| Time-travel queries | Yes — Dolt `AS OF` syntax | **PostgreSQL (default):** No / **Doltgres backend:** Yes — same `AS OF` syntax | Gap closed by configurable backend |
+| Branch-and-merge for experimental state | Yes — Dolt branches | **PostgreSQL (default):** No / **Doltgres backend:** Yes | Gap closed by configurable backend |
+| Rollback | Yes — Dolt commit revert | **PostgreSQL (default):** No / **Doltgres backend:** Yes | Gap closed by configurable backend |
+| GDPR Art.17 erasure with versioned history | N/A (no versioned history) | **PostgreSQL:** tombstone + Merkle chain intact ✅ / **Doltgres:** requires git history purge — harder; PII persists in old commits | **Doltgres trade-off** — regulated deployments should use PostgreSQL |
 | Concurrent mutation (conflict-free) | Yes — Dolt merge resolution | Per-concern named datasources + SPI-pluggable backends | Different approaches |
 | Provenance standard | None (OTel telemetry only) | W3C PROV-DM JSON-LD export | |
 | Causal chain | Implicit in bead history | Explicit `causedByEntryId` on every entry | |
-| GDPR Art.17 erasure | No | LedgerErasureService + ActorIdentityProvider SPI | |
+| GDPR Art.17 erasure | No | LedgerErasureService + ActorIdentityProvider SPI (PostgreSQL backend) | |
 | GDPR Art.22 automated decision records | No | ComplianceSupplement (structured per EU AI Act Art.12) | |
 | EU AI Act Art.12 | No | ComplianceSupplement + LedgerRetentionJob | |
 | PII sanitisation | No | DecisionContextSanitiser SPI | |
 
-**Mixed.** CaseHub wins on cryptographic proof, compliance, and independent verification. Gastown's Dolt wins on operational flexibility (time-travel, rollback, branching). For regulated use cases, CaseHub's model is required; for operational agility, Dolt is genuinely superior.
+**Mixed — and closing.** CaseHub wins on cryptographic proof and compliance. The time-travel, branching, and rollback gap is addressable via a configurable Doltgres backend (`casehub.ledger.backend=doltgres`) — Doltgres is the PostgreSQL-compatible version of Dolt, now in Beta, using the same git-for-SQL semantics. Merkle MMR and Doltgres are **complementary**, not alternatives: Doltgres adds git-level operation audit on top of cryptographic tamper-evidence, making tampering doubly detectable. The one genuine trade-off with Doltgres is GDPR Art.17 erasure — PII persists in git history even after deletion from current state. For regulated deployments (clinical, financial, legal), PostgreSQL remains the correct choice. For operational/assisteddev use cases, Doltgres closes the gap entirely.
 
 ### 4.6 Human-in-the-Loop
 
@@ -351,7 +349,7 @@ When a new engineer joins a team using CaseHub, "what does a COMMAND mean?" has 
 | W3C PROV-DM lineage | No | LedgerProvExportService | |
 | Trace correlation | Strong — `run.id` + bead hierarchy | ~~Weak — PropagationContext.traceId is UUID, OTel is W3C hex. Fixable ([engine#185](https://github.com/casehubio/engine/issues/185))~~ **✅ Fixed** — `LedgerTraceIdProvider` used at case creation | ~~**Gastown advantage today**~~ Gastown still ahead on run.id hierarchy |
 | Operational tooling | `gt feed`, `gt problems`, `gt doctor`, `gt seance` | Basic claudony dashboard | **Gastown advantage** |
-| Predecessor session access | `gt seance` — agents query prior session decisions | WorkerContextProvider rebuilds from ledger entries; no access to prior reasoning | **Gastown advantage** |
+| Predecessor session access | `gt seance` — agents query prior session decisions | **PostgreSQL (default):** WorkerContextProvider rebuilds from ledger entries; no access to prior reasoning / **Doltgres backend:** AS OF queries enable prior-state access; reasoning traces stored in ledger become queryable at any past point | Gap addressable via Doltgres backend |
 
 **Gastown wins on OTel depth and operational tooling today.** CaseHub wins on tamper-evident audit.
 
@@ -546,7 +544,7 @@ These are direct infrastructure advantages — not minimised, not framed as futu
 
 **Rich operational tooling.** `gt feed` (live event stream), `gt problems` (agent issue surface), `gt doctor` (system health), `gt seance` (predecessor session decision access), `gt stale` (stale artifact detection and cleanup), `gt peek` (bead inspection). CaseHub has a basic claudony dashboard and MCP tools. There is no equivalent debugging surface for multi-agent operation.
 
-**Dolt git-for-SQL.** Time-travel queries (`AS OF` any past commit), branch-and-merge for experimental state, conflict-free concurrent mutation, rollback without admin access. `gt seance` using Dolt enables agents to query predecessor sessions' actual decisions — not just reconstructed ledger entries, but the reasoning state at that point. CaseHub's WorkerContextProvider rebuilds from ledger entries but cannot access prior reasoning.
+**Dolt git-for-SQL — partially closing.** Time-travel queries, branch-and-merge, rollback, and `gt seance`-style prior reasoning access are all addressable via a configurable **Doltgres** backend (`casehub.ledger.backend=doltgres`). Doltgres is the PostgreSQL-compatible version of Dolt (same DoltHub team, Beta quality 2025), using the same git-for-SQL semantics with the PostgreSQL wire protocol — Hibernate, Flyway, and JDBC all work unchanged. Doltgres and Merkle MMR are **complementary**: Doltgres adds git-level operation audit (every database commit is traceable) on top of CaseHub's cryptographic tamper-evidence, making the combination stronger than Gastown's Dolt alone. The one genuine trade-off is **GDPR Art.17 erasure** — PII persists in Doltgres git history even after deletion from current state, requiring explicit git history purging that doesn't arise with PostgreSQL. For regulated deployments, PostgreSQL remains correct. For operational/assisteddev deployments where GDPR erasure is not a constraint, Doltgres closes this gap entirely. This is a **roadmap item**, not a current capability — see Section 8.
 
 **Single source of truth.** Everything flows through one Dolt server per town. There are no cross-repo coherence gaps of the kind CaseHub's platform audit documents (findings #1, #2, #4, #5, #7). CaseHub's distributed, SPI-pluggable persistence model is architecturally superior for extensibility and compliance, but it creates integration gaps by design. Gastown avoids them by design.
 
@@ -676,6 +674,20 @@ public enum RecoveryAction { REPROVISION, ESCALATE_TO_HUMAN, CANCEL_CASE, WAIT }
 
 **Closed:** `CaseLedgerEntry`, `CaseLedgerEventCapture`, and `CaseLedgerEntryRepository` merged to main (engine#145–#148, 2026-04-26). Case lifecycle events now produce verifiable Merkle entries. `EventLog` (operational) and `CaseLedgerEntry` (compliance) co-exist. CaseHub's compliance story for regulated industries is now structurally complete.
 
+### P1.5 — Doltgres configurable backend
+
+**Symptom:** Time-travel queries, database branching, rollback, and prior reasoning access (`gt seance` equivalent) are Gastown advantages with no CaseHub equivalent today.
+
+**Fix:** Add `casehub.ledger.backend` configuration property with two values:
+- `postgresql` (default) — current behaviour; full Merkle MMR, GDPR Art.17 tombstone erasure, all compliance features
+- `doltgres` — Doltgres PostgreSQL-compatible backend; enables time-travel (`AS OF`), branching, rollback, prior-state reasoning access; Merkle MMR stays active (complementary); GDPR Art.17 requires git history purge (unsuitable for regulated deployments)
+
+Gate via `@IfBuildProperty("casehub.ledger.backend", "postgresql")` / `@UnlessBuildProperty` — Quarkus evaluates at build time (per `quarkus-conditional-bean-build-time-only.md` convention), giving compile-time errors rather than runtime surprises if incompatible features are combined.
+
+**Prerequisite:** Audit all Flyway migrations across casehub-ledger, casehub-work, casehub-qhorus, casehub-engine for PostgreSQL-specific syntax incompatible with Doltgres. Doltgres does not yet support PostgreSQL extensions — verify none are used.
+
+**Repos:** casehub-ledger (DoltgresLedgerBackend SPI), casehub-parent (backend configuration property)
+
 ### P2 — Production Quality
 
 #### P2.1 — Cross-deployment trust federation
@@ -733,7 +745,7 @@ public enum RecoveryAction { REPROVISION, ESCALATE_TO_HUMAN, CANCEL_CASE, WAIT }
 | Phase | Items | Gate to next phase |
 |-------|-------|-------------------|
 | **P0 — Wiring** | ~~ledger#47~~ ✅ ~~qhorus#123~~ ✅ ~~qhorus#124 SPI~~ ✅ ~~engine#186 engine-side~~ ✅ · **qhorus#124 claudony persona mapping open** | Normative layer functional end-to-end; trust accumulates from real behaviour |
-| **P1 — Scale** | Concurrency throttle, RecoveryPolicy SPI, trust routing wired · ~~CaseLedgerEntry merged~~ ✅ | Can run 10+ agents; trust actually drives routing |
+| **P1 — Scale** | Concurrency throttle, RecoveryPolicy SPI, trust routing wired · ~~CaseLedgerEntry merged~~ ✅ · Doltgres backend (P1.5) | Can run 10+ agents; trust actually drives routing; time-travel + branching available |
 | **P2 — Quality** | ~~OTel alignment~~ ✅ · causal chain (partial ✅) · trust federation | Full observability; audit trail complete; cross-deployment trust |
 
 ---
@@ -816,7 +828,7 @@ These are not design flaws — the prescriptive, normative, and evaluative layer
 | Dimension | Gastown | CaseHub |
 |-----------|---------|---------|
 | Language | Go 1.25+ | Java 21 (on Java 26 JVM) |
-| Persistence | Dolt SQL Server (git semantics: time-travel, branching, rollback) | PostgreSQL / H2 (Flyway managed, SPI-pluggable backends) |
+| Persistence | Dolt SQL Server (git semantics: time-travel, branching, rollback) | PostgreSQL / H2 (default, Flyway managed, SPI-pluggable) · Doltgres (configurable — same git semantics as Dolt, PostgreSQL wire protocol, Beta 2025) |
 | Runtime | Go binary (no runtime required) | GraalVM native image (0.084s startup) or JVM |
 | Reactive model | Goroutines + patrol polling | Vert.x event loop + Mutiny reactive streams |
 | Workflow | Formula (TOML) + Molecules (bead chains) | Quarkus Flow (CNCF Serverless Workflow SDK) |
