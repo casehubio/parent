@@ -182,30 +182,80 @@ Stage 4: Full platform
 
 ---
 
-## 4. The LangChain4j Agentic Patterns Connection
+## 4. LangChain4j, Quarkus Flow, and CaseHub — Three Layers, Not Three Alternatives
 
-Engine issue #102 defines 16 enterprise patterns. Engine issue #209 defines the LangChain4j bridge (AgenticScopeBridge, CasehubPlanner, AgentListener). The LangChain4j agentic patterns (the 5 patterns from its model) map onto both the module layers and the enterprise scenarios.
+This is the most important architectural distinction to get right in the tutorials. Developers coming from LangChain4j experience will ask: "Do I need CaseHub if I already have LangChain4j?" The answer requires understanding that these operate at completely different levels of granularity. They are not alternatives — they are a stack.
 
-### 4.1 The 5 LangChain4j patterns and their CaseHub mapping
+### 4.1 The three layers
 
-| LangChain4j pattern | CaseHub expression | Engine issue | Tutorial level |
-|---|---|---|---|
-| **Sequential** | Linear binding chain — each binding fires when the previous worker completes | #101 (LLM Supervisor), #114 (ReAct) | Level 2 — two modules |
-| **Loop** | LoopControl.select() cycles until exit condition met | #114 (ReAct Cycles) | Level 2 |
-| **Parallel** | Multiple bindings fire simultaneously on one CaseContextChangedEvent | #107 (Elastic Research Teams) | Level 3 |
-| **Parallel mapper** | Sub-case per item — parent waits for M-of-N | #112 (Sub-Case Orchestration) | Level 3 |
-| **Conditional** | Binding condition (JQ/lambda) gates which path fires | #108 (Long-Running), #116 (Compliance) | Level 2 |
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│  CaseHub case                                                         │
+│  Duration: days, weeks, months                                        │
+│  Scope: multiple humans + multiple agents + audit + compliance        │
+│  Concerns: obligations, SLA, trust routing, regulatory evidence chain │
+├──────────────────────────────────────────────────────────────────────┤
+│  Quarkus Flow workflow (one case step)                                │
+│  Duration: minutes to hours                                           │
+│  Scope: bounded, durable execution of one unit of work               │
+│  Concerns: task sequencing, error handling, durable state             │
+├──────────────────────────────────────────────────────────────────────┤
+│  LangChain4j agent (one agent's reasoning)                           │
+│  Duration: seconds to minutes                                         │
+│  Scope: one AI agent deciding how to use its tools                   │
+│  Concerns: tool selection, reasoning loop, result synthesis           │
+└──────────────────────────────────────────────────────────────────────┘
+```
 
-### 4.2 Where LangChain4j patterns appear in business scenarios
+**The Java developer analogy:**
 
-The AML tutorial (Section 6) exercises all five:
-- **Sequential:** transaction flagged → entity resolution → OSINT → SAR narrative
-- **Loop:** iterative evidence gathering until risk score exceeds threshold
-- **Parallel:** three specialist agents (entity, pattern, sanctions) run concurrently
-- **Parallel mapper:** batch of 10 suspicious transactions, each as a sub-case
-- **Conditional:** different investigation path based on transaction type (structuring vs sanctions vs PEP)
+- **LangChain4j** is the AI reasoning library your service uses — the equivalent of a domain library. It gives one agent the ability to think, call tools, and loop until it has an answer.
+- **Quarkus Flow** is the durable workflow that service executes — the equivalent of a Spring Batch step or a BPMN service task. It defines what "run entity resolution" means: which APIs to call, how to handle retries, how to structure the result.
+- **CaseHub** is the enterprise process orchestrating everything above it — the equivalent of an enterprise BPM engine (jBPM, Camunda), but adaptive rather than fixed-path. It coordinates which agents work on what, enforces SLAs, tracks formal obligations, and produces the audit trail the regulator sees.
 
-This means the AML tutorial simultaneously teaches LangChain4j agentic patterns *and* CaseHub capabilities — a developer coming from langchain4j experience lands in familiar territory.
+Each layer is independent. You can use LangChain4j without Quarkus Flow. You can use Quarkus Flow without CaseHub. But when you need all three concerns simultaneously — regulated, multi-agent, long-running, auditable — the stack is the answer.
+
+### 4.2 Why the LangChain4j patterns are NOT CaseHub patterns
+
+The 5 LangChain4j agentic patterns (sequential, loop, parallel, parallel mapper, conditional) describe how **one agent** reasons internally. At the CaseHub level, these are not patterns — they are simply how the binding system works by default:
+
+| LangChain4j "pattern" | At CaseHub level | Why it's not a pattern |
+|---|---|---|
+| **Sequential** | Binding chain | Default behaviour: A's output satisfies B's condition. No declaration needed. |
+| **Parallel** | Multi-binding evaluation | CaseHub evaluates ALL matching bindings simultaneously on every state change — automatic, not declared. This is one of CaseHub's fundamental advantages over workflow engines. |
+| **Conditional** | JQ predicate binding condition | Every binding has a condition. This is the most basic CaseHub concept, not a special pattern. |
+| **Loop** | LoopControl.select() | CaseHub's LoopControl handles this with full CaseContext awareness — more powerful than a simple while loop. |
+| **Parallel mapper** | Sub-case orchestration | CaseHub sub-cases each have full lifecycle, SLA, compliance, and commitment tracking — far richer than LangChain4j's parallel map. |
+
+**The key insight:** At the CaseHub level, parallel execution is the default, conditions are everywhere, and loops are handled by LoopControl. A developer who frames these as "CaseHub patterns" is operating at the wrong layer.
+
+### 4.3 Where LangChain4j patterns DO apply — inside a single agent
+
+The LangChain4j patterns apply within the innermost layer: how a single agent reasons during its execution as a CaseHub worker. The entity resolution agent in an AML investigation might use:
+
+- **Sequential** (internally): query company registry → check PEP database → cross-reference news → synthesise result
+- **Loop** (internally): search, evaluate confidence, search different sources if confidence < threshold
+- **Conditional** (internally): if jurisdiction is offshore, call additional screening tool
+
+None of this is visible to CaseHub. CaseHub sees the agent as a black box that eventually sends a formal RESPONSE message with its findings. The agent's internal reasoning is LangChain4j's concern; the formal accountability for that RESPONSE — who committed to it, whether it arrived within SLA, whether trust score should update — is CaseHub's concern.
+
+### 4.4 What engine issue #209 (AgenticScopeBridge) actually does
+
+Issue #209 is not about expressing LangChain4j patterns in CaseHub. It is about making LangChain4j agents work smoothly as CaseHub workers — specifically:
+
+- **AgenticScopeBridge**: maps CaseContext (the case's shared blackboard state) into the `AgenticScope` format that LangChain4j agents expect, and writes agent outputs back to the EventLog
+- **CasehubPlanner**: implements LangChain4j's `Planner` interface, delegating to `LoopControl.select()` — so an LLM-driven planner can be used as a CaseHub worker
+- **CasehubAgentListener**: records every LangChain4j agent invocation as an EventLog entry with `causedByEntryId` — so the agent's tool calls appear in the case's audit trail
+
+The bridge makes LangChain4j agents first-class CaseHub workers. It does not import LangChain4j patterns into CaseHub.
+
+### 4.5 The teaching story for the AML tutorial
+
+The correct framing — relatable for a Java developer:
+
+> "The entity resolution agent uses LangChain4j internally to decide which company registries to query and how to reason about the results. That's its job. CaseHub's job is different: it records that this agent was formally assigned the task, tracks whether it delivered its RESPONSE within the investigation SLA, updates its trust score based on whether the SAR it contributed to was upheld, and ensures the entire sequence is in an independently verifiable audit trail. LangChain4j makes the agent smart. CaseHub makes the agent accountable."
+
+The AML tutorial is not "here are the 5 LangChain4j patterns expressed in CaseHub." It is "here is how a LangChain4j-powered agent operates as one accountable participant in a regulated multi-agent case managed by CaseHub." That is a stronger and more accurate story.
 
 ---
 
@@ -320,15 +370,24 @@ After 50 investigations, which Pattern Agent has the highest SAR accuracy rate? 
 | Trust-weighted routing | Not addressed | Not applicable | ✅ EigenTrust from attestation history |
 | Adaptive investigation path | Fixed pipeline | Fixed simulation | ✅ ACM binding evaluation |
 
-### 6.2 LangChain4j patterns exercised
+### 6.2 What each layer contributes — the AML split
 
-| Pattern | AML expression |
-|---|---|
-| Sequential | Transaction flagged → entity → pattern → OSINT → SAR narrative |
-| Loop | Iterative evidence gathering until risk confidence > threshold |
-| Parallel | Entity, pattern, and sanctions checks run concurrently |
-| Parallel mapper | Batch of flagged transactions, each as a sub-case investigation |
-| Conditional | PEP detection routes to senior analyst; standard case routes to officer |
+The AML tutorial demonstrates why all three layers matter by showing what each one contributes:
+
+**LangChain4j (inside the entity resolution agent):**
+The entity resolution agent uses LangChain4j's tool-calling internally — it queries company registries, evaluates confidence, loops to search additional sources if confidence is below threshold, conditionally calls the PEP screening tool for offshore jurisdictions. This is LangChain4j's domain. CaseHub does not see or control this reasoning.
+
+**Quarkus Flow (the entity resolution workflow step):**
+The entity resolution step is a durable Quarkus Flow task — if the external registry API times out, the workflow retries with backoff. The result is structured into the format the case expects. This is the bounded, durable execution layer.
+
+**CaseHub (the investigation case):**
+CaseHub sees the entity resolution agent as a worker that was issued a COMMAND, committed to delivering a RESPONSE, did so within SLA (or didn't — triggering escalation), and whose result contributed to a SAR narrative that was either upheld or overturned. That outcome feeds the agent's trust score. The full investigation — multiple specialist agents, compliance officer WorkItem with 30-day FinCEN SLA, adaptive path on PEP detection — is CaseHub's domain.
+
+The summary for the tutorial audience:
+
+> "LangChain4j makes each agent smart. Quarkus Flow makes each step durable. CaseHub makes the investigation accountable."
+
+That is three sentences covering three layers. A Java developer who has used Spring Batch (workflow), a domain library (reasoning), and an enterprise BPM tool (process orchestration) has already experienced all three concerns separately — CaseHub is what happens when all three are integrated with formal obligations, trust scoring, and regulatory audit."
 
 ### 6.3 Engine issue #102 patterns covered
 
@@ -431,15 +490,19 @@ POST /demo/parallel-mapper
 → Shows: sub-case orchestration, M-of-N completion, result rollup
 ```
 
-### 8.2 Comparison to LangChain4j patterns
+### 8.2 Relationship to LangChain4j patterns
 
-| LangChain4j | CaseHub equivalent | Key difference |
+Developers coming from LangChain4j will recognise the names but the execution model is fundamentally different. These are not "CaseHub's version of LangChain4j patterns" — they are how CaseHub's binding system works naturally. The comparison is useful for orientation, not for equivalence:
+
+| LangChain4j "pattern" | CaseHub reality | Why different |
 |---|---|---|
-| Sequential chain | Linear binding chain | LangChain4j is code; CaseHub is declarative + audit-traced |
-| Agent loop | LoopControl.select() | CaseHub loop has durable state — survives restart |
-| Parallel | Multi-binding evaluation | CaseHub parallel exploits state changes automatically |
-| Parallel mapper | Sub-case orchestration | CaseHub sub-cases have independent lifecycle, SLA, compliance |
-| Conditional | JQ/lambda binding condition | CaseHub conditions operate on the full accumulated case context |
+| Sequential chain | Binding chain — A's output satisfies B's condition | Not a pattern: it's the default. No explicit sequencing declaration. |
+| Agent loop | LoopControl.select() with full CaseContext | CaseHub's loop is durable — survives restarts, spans transactions |
+| Parallel | All matching bindings fire on one state change | Not a pattern: automatic. CaseHub evaluates all bindings simultaneously by default. |
+| Parallel mapper | Sub-case orchestration — each item gets full lifecycle | CaseHub sub-cases have SLA, compliance, and commitment tracking. LangChain4j parallel map has none of this. |
+| Conditional | JQ predicate on accumulated case state | Not a pattern: every binding has a condition. It's the most basic CaseHub concept. |
+
+The showcase's goal is not to teach "CaseHub's version of LangChain4j." It is to show that the execution control capabilities developers associate with LangChain4j emerge naturally from CaseHub's binding model — with significantly more power (durability, audit, SLA) and without explicit declaration. A developer who reaches for LangChain4j for coordination is solving the problem at the wrong layer.
 
 ---
 
