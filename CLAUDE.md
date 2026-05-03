@@ -26,7 +26,8 @@ mvn --batch-mode deploy -DskipTests
 | Workflow | Trigger | Purpose |
 |---|---|---|
 | `publish.yml` | push/main, dispatch, manual | Publish parent POM; dispatch to ledger + connectors |
-| `full-stack-build.yml` | manual only | Sequential build of all repos in dependency order |
+| `full-stack-build.yml` | manual only | Full sequential rebuild of all repos — always rebuilds everything |
+| `incremental-full-stack-build.yml` | manual only | SHA-keyed incremental build — BUILD/TEST/SKIP per module based on what changed |
 | `clear-snapshot-packages.yml` | manual only | Delete SNAPSHOT artifacts from GitHub Packages |
 
 **Key rule:** Cross-repo `repository_dispatch` requires `GH_TOKEN: ${{ secrets.GH_PAT }}` (classic PAT). `GITHUB_TOKEN` is repo-scoped only and returns 403 on cross-repo calls.
@@ -38,6 +39,14 @@ mvn --batch-mode deploy -DskipTests
 Conventions shared across all modules live in `docs/conventions/`. Each file is self-contained. See `docs/conventions/INDEX.md` for the full list.
 
 **Critical:** Never commit or push to peer repo directories (`../ledger`, `../work`, etc.). Each repo has its own Claude session. For cross-repo fixes, create a GitHub issue on the target repo instead.
+
+## Scripts
+
+`scripts/incremental-build-decision.sh` — pure bash decision function for the incremental build. Given a module's current SHA, previous SHA, and dep SHAs, outputs `BUILD`, `TEST`, or `SKIP`. No side effects.
+
+`scripts/tests/incremental-build-decision.bats` — bats test suite (49 tests) covering all BUILD/TEST/SKIP scenarios. Run with: `bats scripts/tests/incremental-build-decision.bats`
+
+Prereq: `brew install bats-core`
 
 ## Testing
 
