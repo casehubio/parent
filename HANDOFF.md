@@ -1,41 +1,37 @@
-# HANDOFF — CI Chain Repair
-2026-05-01
+# HANDOFF — Platform Positioning and Incremental Build
+2026-05-04
 
 ## What changed this session
 
-**Dispatch chain fixed:** All publish.yml files used `GITHUB_TOKEN` for cross-repo `repository_dispatch` — that token is repo-scoped, returns 403. Changed to `secrets.GH_PAT` (classic PAT) across parent, ledger, connectors, work, qhorus, and engine. Chain now fires correctly.
+**Incremental full-stack build:** `scripts/incremental-build-decision.sh` (pure bash, no side effects) + 49-test bats suite. `incremental-full-stack-build.yml` workflow: SHA-keyed BUILD/TEST/SKIP per module, two-key cache (full key for SKIP, source key for TEST), failure-aware state persistence using `actions/cache/restore` + `actions/cache/save` separately.
 
-**Peer-repo discipline established:** This Claude (parent session) does not commit to peer repos. Each has its own Claude session. Cross-repo fixes → GitHub issues. Lesson learned the hard way: committed to engine's feature branch and swept 15 staged files from another session into a CI commit.
+**Gastown gap analysis revised:** Doltgres (PostgreSQL-compatible Dolt, Beta 2025) closes time-travel/branching/rollback gaps. Merkle MMR + Doltgres are complementary not competing. GDPR Art.17 erasure is the one genuine trade-off: PII persists in git history after row deletion. `docs/gastown-casehub-analysis-v2.md` updated throughout. P1.5 roadmap item added.
 
-**langchain4j excluded by default:** Added `include_langchain4j` boolean input to both `full-stack-build.yml` and `clear-snapshot-packages.yml`. Default false — skips the slow fork unless explicitly ticked.
+**Use case analysis:** `docs/use-case-analysis.md` — 10 candidates scored across Market Fit (/25) and Community Fit (/25) in separate tables. Selected: Clinical Trials (market entry, 24 market) + AML Investigation (Java tutorial, 22+22=44 all-rounder).
 
-**Surefire rerun:** Parent POM now sets `rerunFailingTestsCount=2`. Flaky tests retry twice before failing.
+**Tutorial strategy:** `docs/tutorial-strategy.md` — layered module progression, AML as primary tutorial (Layer 1–7), clinical trials as market showcase. Key correction: LangChain4j patterns are NOT CaseHub patterns — they operate at the innermost agent reasoning layer. Three-sentence summary: "LangChain4j makes each agent smart. Quarkus Flow makes each step durable. CaseHub makes the investigation accountable."
 
-**CLAUDE.md created:** Was empty — now populated with repo role, CI/CD rules, peer-repo boundaries, and conventions pointer.
+**CLAUDE.md updated:** incremental-full-stack-build.yml added to CI/CD table; Scripts section added for `incremental-build-decision.sh` and bats tests.
 
 ## Current CI state
 
-| Repo | Status | Blocker |
-|------|--------|---------|
-| parent | ✅ | — |
-| ledger | ✅ | — |
-| connectors | ✅ | — |
-| qhorus | ✅ | — |
-| engine | ✅ | — |
-| work | ❌ | `BusinessHoursIntegrationTest.createWithClaimDeadlineBusinessHours` — fix: change `isBefore(Instant.now().plus(1, DAYS))` to `isBefore(before.plus(3, DAYS))` at line 82 |
-| claudony | ❌ | `ClaudonyWorkerContextProvider` missing `UUID caseId` param — engine PR #224 added it. New signature: `buildContext(String workerId, UUID caseId, WorkRequest task)` |
+*Unchanged — `git show HEAD~1:HANDOFF.md`*
+
+Work ❌ — `BusinessHoursIntegrationTest.createWithClaimDeadlineBusinessHours` fails Friday evenings. Fix: `isBefore(before.plus(3, DAYS))` at line 82.
+
+Claudony ❌ — engine PR #224 added `UUID caseId` to `WorkerContextProvider.buildContext()`. Fix: update `ClaudonyWorkerContextProvider` signature to `buildContext(String workerId, UUID caseId, WorkRequest task)`.
 
 ## Immediate next action
 
-Tell work Claude and claudony Claude the fixes in the CI state table. Then trigger `full-stack-build.yml` to verify the chain is fully green.
+Tell work Claude and claudony Claude the fixes above, then trigger `incremental-full-stack-build.yml` to verify full chain green.
 
 ## References
 
 | Item | Location |
-|------|----------|
-| Platform architecture | `docs/PLATFORM.md` |
-| Foundation roadmap epic | https://github.com/casehubio/parent/issues/7 |
-| Conventions index | `docs/conventions/INDEX.md` |
-| Clear-snapshot workflow | `.github/workflows/clear-snapshot-packages.yml` |
-| Full-stack build | `.github/workflows/full-stack-build.yml` |
-| Blog entry | `blog/2026-05-01-mdp01-ci-chain-repair.md` |
+|---|---|
+| Use case analysis | `docs/use-case-analysis.md` |
+| Tutorial strategy | `docs/tutorial-strategy.md` |
+| Gastown gap analysis | `docs/gastown-casehub-analysis-v2.md` |
+| Incremental build workflow | `.github/workflows/incremental-full-stack-build.yml` |
+| Decision script + tests | `scripts/incremental-build-decision.sh`, `scripts/tests/incremental-build-decision.bats` |
+| Blog entry | `blog/2026-05-04-mdp01-platform-positioning-incremental-build.md` |
