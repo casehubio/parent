@@ -27,6 +27,20 @@ Designed after research into A2A, AutoGen, LangGraph, OpenAI Swarm, Letta, and C
 | `PendingReply` | `wait_for_reply` long-poll correlation with SSE keepalives. |
 | `Watchdog` | Condition-based alert registration. |
 
+### Channel Gateway
+
+| Class | Purpose |
+|---|---|
+| `ChannelGateway` | Routes outbound messages to registered backends; handles inbound normalisation |
+| `ChannelBackend` | SPI base — `AgentChannelBackend`, `HumanParticipatingChannelBackend`, `HumanObserverChannelBackend` |
+| `QhorusChannelBackend` | Default `AgentChannelBackend` — always registered, wraps `MessageService` |
+| `InboundNormaliser` | SPI — maps raw human inbound to Qhorus `MessageType`; `@DefaultBean` always QUERY |
+| `Senders` | Constants in `casehub-qhorus-api`: `HUMAN = "human"` |
+
+**Fan-out:** `sendMessage` persists via `MessageService` then calls `channelGateway.fanOut()` for external backends (async, virtual threads, non-fatal failures).
+**Inbound:** `HumanParticipatingChannelBackend` → `gateway.receiveHumanMessage()` → `InboundNormaliser` → `MessageService`. `HumanObserverChannelBackend` → `gateway.receiveObserverSignal()` → forced `EVENT`.
+**New MCP tools:** `list_backends`, `deregister_backend`.
+
 ### Ledger Integration
 
 | Class | Purpose |
@@ -42,6 +56,7 @@ All 9 message types are recorded. For EVENT messages with structured JSON, `tool
 `@Tool` methods in `QhorusMcpTools` (blocking) / `ReactiveQhorusMcpTools` (reactive):
 - Instance management: `register_instance`, `deregister_instance`, `list_instances`, `get_instance`
 - Channel management: `create_channel`, `list_channels`, `get_channel`, `delete_channel`, `get_channel_digest`, `add_writer`, `remove_writer`
+- Backend management: `list_backends(channel_name)`, `deregister_backend(channel_name, backend_id)`
 - Messaging: `send_message`, `check_messages`, `read_messages`, `get_message`, `wait_for_reply`
 - Observers: `register_observer`, `read_observer_events`, `clear_observer`, `list_observers`
 - Shared data: `store_data`, `get_data`, `list_data`, `claim_artefact`, `release_artefact`
@@ -122,10 +137,11 @@ See [docs/normative-layer.md](https://raw.githubusercontent.com/casehubio/qhorus
 
 ## Current State
 
-- ~800+ tests passing (runtime + testing module)
-- All 15 implementation phases complete through reactive dual-stack
+- 1007+ tests passing (runtime + testing + examples modules)
+- Channel backend abstraction complete: `ChannelGateway`, `QhorusChannelBackend`, `HumanParticipatingChannelBackend`, `HumanObserverChannelBackend`, `DefaultInboundNormaliser`, `Senders` — see ADR-0006
+- `register_backend` MCP tool (agent-driven association) deferred to #140
+- A2A protocol bridge (`A2AChannelBackend`) deferred to #135
 - Reactive store tests are `@Disabled` — require PostgreSQL with native reactive driver (Docker not always available)
-- Phase 8 (embed in Claudony unified MCP endpoint) still pending
 
 ---
 
