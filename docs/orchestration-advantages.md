@@ -389,5 +389,5 @@ Until engine#186 ships, CaseHub's advanced orchestration and choreography runs o
 ---
 
 *Part of the [CaseHub platform documentation](https://github.com/casehubio/parent/blob/main/docs/PLATFORM.md).*  
-*Application layer: [casehub-assisteddev](https://github.com/casehubio/assisteddev)*  
+*Application layer: [casehub-devtown](https://github.com/casehubio/devtown)*  
 *Engine issues: [casehubio/engine#102](https://github.com/casehubio/engine/issues/102) — full use case pattern list*

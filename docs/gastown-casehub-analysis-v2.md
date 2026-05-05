@@ -8,7 +8,7 @@
 
 ## 1. Executive Summary
 
-The central architectural difference between CaseHub and Gastown is **layering**. CaseHub is a domain-agnostic coordination foundation on top of which domain-specific applications are built. Gastown is a software engineering coordination application — well-built and in production — with no separable foundation underneath. Its merge queue, rig/worktree model, git/CI integration, and agent lifecycle management are application-layer concerns baked into its infrastructure. You cannot reuse Gastown's coordination layer for regulated compliance or knowledge-intensive case management because the domain is not above the infrastructure — it *is* the infrastructure. CaseHub's foundation has no domain knowledge. The merge queue does not live in `casehub-engine`; it is a future application (`casehub-assisteddev`) that uses CaseHub's primitives. The same foundation enables 16+ distinct enterprise AI agent use cases — from LLM supervisor mode to regulatory compliance to RAG pipelines to AI-assisted code review — each as a separate application. These are application-layer patterns built on the foundation, not the foundation's own orchestration modes. See [engine#102](https://github.com/casehubio/engine/issues/102).
+The central architectural difference between CaseHub and Gastown is **layering**. CaseHub is a domain-agnostic coordination foundation on top of which domain-specific applications are built. Gastown is a software engineering coordination application — well-built and in production — with no separable foundation underneath. Its merge queue, rig/worktree model, git/CI integration, and agent lifecycle management are application-layer concerns baked into its infrastructure. You cannot reuse Gastown's coordination layer for regulated compliance or knowledge-intensive case management because the domain is not above the infrastructure — it *is* the infrastructure. CaseHub's foundation has no domain knowledge. The merge queue does not live in `casehub-engine`; it is a future application (`casehub-devtown`) that uses CaseHub's primitives. The same foundation enables 16+ distinct enterprise AI agent use cases — from LLM supervisor mode to regulatory compliance to RAG pipelines to AI-assisted code review — each as a separate application. These are application-layer patterns built on the foundation, not the foundation's own orchestration modes. See [engine#102](https://github.com/casehubio/engine/issues/102).
 
 The second fundamental difference is **orchestration breadth**. Gastown drives agents through predefined steps: formula steps, convoy structure, hook-based dispatch — workflow. CaseHub's foundation supports a full spectrum of orchestration modes, selectable per use case:
 
@@ -20,7 +20,7 @@ The second fundamental difference is **orchestration breadth**. Gastown drives a
 | **LLM supervisor mode** | `LlmPlanningStrategy` SPI — an LLM reads CaseContext and selects the next binding dynamically | Open-ended goals where the next step cannot be determined without reasoning over current state |
 | **Hybrid** | Any combination of the above within a single case | Complex cases that are partly structured, partly adaptive, partly human-driven |
 
-All five patterns from LangChain4j's agentic AI model (sequential, loop, parallel, parallel mapper, conditional) are expressible — emerging from binding conditions and stage gating rather than explicit pattern selection. The difference is that CaseHub's patterns come with distributed workers, human-in-the-loop as a first-class concern, cryptographic audit, and compliance features that LangChain4j does not address. Gastown competes with `casehub-assisteddev` — the software engineering application — not with CaseHub's foundation.
+All five patterns from LangChain4j's agentic AI model (sequential, loop, parallel, parallel mapper, conditional) are expressible — emerging from binding conditions and stage gating rather than explicit pattern selection. The difference is that CaseHub's patterns come with distributed workers, human-in-the-loop as a first-class concern, cryptographic audit, and compliance features that LangChain4j does not address. Gastown competes with `casehub-devtown` — the software engineering application — not with CaseHub's foundation.
 
 ---
 
@@ -32,7 +32,7 @@ CaseHub is explicitly two-tiered:
 ┌──────────────────────────────────────────────────────────────────────────────────┐
 │                              Application Layer                                    │
 │                                                                                   │
-│  casehub-assisteddev      [domain app]          [domain app]     [domain app]      │
+│  casehub-devtown      [domain app]          [domain app]     [domain app]      │
 │  (AI-assisted dev,     (e.g. regulated        (e.g. legal      (e.g. financial   │
 │   code review,          clinical workflows)    case mgmt)       compliance)       │
 │   merge orchestration)                                                             │
@@ -88,7 +88,7 @@ Gastown's merge queue is not an application built on a foundation — it is infr
 | `casehub-work` | Human task lifecycle (WorkItem inbox, SLA, delegation, escalation) | Foundation |
 | `casehub-connectors` | Outbound message connectors (Slack, Teams, SMS, email) | Foundation |
 | `claudony` | Remote Claude CLI sessions, CaseHub SPI implementations, dashboard | Integration |
-| `casehub-assisteddev` *(planned)* | AI coding agent coordination — merge queue, review orchestration | Application |
+| `casehub-devtown` *(planned)* | AI coding agent coordination — merge queue, review orchestration | Application |
 | `casehub-healthcare` *(planned)* | Clinical workflow application | Application |
 | `casehub-legal` *(planned)* | Legal case management application | Application |
 
@@ -226,9 +226,9 @@ t
 
 *With formal speech acts (CaseHub):*
 ```
-14:02  COMMAND    from: casehub-assisteddev  to: agent-7
+14:02  COMMAND    from: casehub-devtown  to: agent-7
                   "review PR #123 for security vulnerabilities"
-                  → creates OPEN commitment: agent-7 is obligated to casehub-assisteddev
+                  → creates OPEN commitment: agent-7 is obligated to casehub-devtown
 14:05  ACKNOWLEDGED by agent-7
                   → commitment state: ACKNOWLEDGED (active, not just queued)
 15:30  STATUS     from: agent-7
@@ -396,7 +396,7 @@ When a new engineer joins a team using CaseHub, "what does a COMMAND mean?" has 
 
 ## 5. Application vs Application (Apples to Apples)
 
-The application comparison is between Gastown's software engineering domain — the only domain it can serve — and what a CaseHub application (`casehub-assisteddev`) would provide for the same domain.
+The application comparison is between Gastown's software engineering domain — the only domain it can serve — and what a CaseHub application (`casehub-devtown`) would provide for the same domain.
 
 ### 5.1 What Gastown's Application Layer Provides
 
@@ -416,9 +416,9 @@ Gastown's application-layer capabilities are tightly integrated with its infrast
 
 These capabilities are operational and battle-tested at v1.0.1. For the software engineering domain, this is a complete application.
 
-### 5.2 What casehub-assisteddev Would Provide
+### 5.2 What casehub-devtown Would Provide
 
-`casehub-assisteddev` is a planned separate repo — not a module in `casehub-engine`. The foundation provides the primitives; the application wires them for the domain:
+`casehub-devtown` is a planned separate repo — not a module in `casehub-engine`. The foundation provides the primitives; the application wires them for the domain:
 
 | Application capability | CaseHub primitive used |
 |-----------------------|----------------------|
@@ -431,13 +431,13 @@ These capabilities are operational and battle-tested at v1.0.1. For the software
 | Commitment tracking per MR | qhorus 7-state Commitment lifecycle |
 | Audit trail per merge decision | Merkle ledger entry with W3C PROV-DM lineage |
 
-`casehub-assisteddev` does not exist yet. Gastown's Refinery is in production. This is the most significant application-layer gap.
+`casehub-devtown` does not exist yet. Gastown's Refinery is in production. This is the most significant application-layer gap.
 
-### 5.3 What casehub-assisteddev Would Add That Gastown Cannot
+### 5.3 What casehub-devtown Would Add That Gastown Cannot
 
-Because `casehub-assisteddev` sits on CaseHub's foundation, it inherits capabilities that Gastown's application layer cannot provide — because Gastown's infrastructure does not support them:
+Because `casehub-devtown` sits on CaseHub's foundation, it inherits capabilities that Gastown's application layer cannot provide — because Gastown's infrastructure does not support them:
 
-| Capability | casehub-assisteddev | Gastown Refinery |
+| Capability | casehub-devtown | Gastown Refinery |
 |-----------|-----------------|-----------------|
 | Cryptographically tamper-evident merge decision audit | Yes — every merge decision is a Merkle entry | No — Dolt history is admin-trusted |
 | Formal obligation tracking per code review assignment | Yes — qhorus COMMAND creates a Commitment | No |
@@ -453,7 +453,7 @@ Gastown's domain is fixed. Its infrastructure is the software engineering domain
 
 | Domain | Application | Foundation capabilities required |
 |--------|------------|----------------------------------|
-| AI coding agent coordination | casehub-assisteddev | All foundation primitives |
+| AI coding agent coordination | casehub-devtown | All foundation primitives |
 | Regulated clinical/compliance workflow *(illustrative)* | [domain app] | HITL with SLA, compliance audit, trust routing — foundation provides all primitives |
 | Knowledge-intensive case management *(illustrative)* | [domain app] | Formal obligation tracking, commitment lifecycle, audit chain, GDPR |
 | Regulatory decision automation *(illustrative)* | [domain app] | EU AI Act, GDPR, Merkle proofs, PII sanitisation, PROV-DM |
@@ -754,9 +754,9 @@ Gate via `@IfBuildProperty("casehub.ledger.backend", "postgresql")` / `@UnlessBu
 
 Application work is distinct from foundation work. These items are built on top of the foundation and can proceed independently — but only once the relevant foundation phase-gates are met.
 
-### A1 — casehub-assisteddev (AI Coding Agent Coordination Application)
+### A1 — casehub-devtown (AI Coding Agent Coordination Application)
 
-`casehub-assisteddev` is a separate repo — not a module in casehub-engine. The foundation knows nothing about git, PRs, or CI; the application provides all domain logic.
+`casehub-devtown` is a separate repo — not a module in casehub-engine. The foundation knows nothing about git, PRs, or CI; the application provides all domain logic.
 
 | Application capability | CaseHub primitive | Foundation gate |
 |-----------------------|------------------|----------------|
@@ -785,7 +785,7 @@ These capabilities are needed by every application domain but are implemented at
 
 ### A3 — Other Planned Application Domains
 
-Each domain application follows the same pattern established by casehub-assisteddev: separate repo, uses foundation primitives, adds domain logic, modifies nothing in the foundation.
+Each domain application follows the same pattern established by casehub-devtown: separate repo, uses foundation primitives, adds domain logic, modifies nothing in the foundation.
 
 The pattern the foundation enables for any future domain app: bring your domain logic, use the foundation's primitives (case engine, normative layer, trust, audit, human tasks). The foundation handles coordination, accountability, and compliance infrastructure. The domain application handles what the work actually is..
 
