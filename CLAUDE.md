@@ -1,3 +1,55 @@
+# parent Workspace
+
+**Project repo:** /Users/mdproctor/claude/casehub/parent
+**Workspace type:** public
+
+## Session Start
+
+Run `add-dir /Users/mdproctor/claude/casehub/parent` before any other work.
+
+## Artifact Locations
+
+| Skill | Writes to |
+|-------|-----------|
+| brainstorming (specs) | `specs/` |
+| writing-plans (plans) | `plans/` |
+| handover | `HANDOFF.md` |
+| idea-log | `IDEAS.md` |
+| design-snapshot | `snapshots/` |
+| java-update-design / update-primary-doc | `design/JOURNAL.md` (created by `epic`) |
+| adr | `adr/` |
+| write-blog | `blog/` |
+
+## Structure
+
+- `HANDOFF.md` — session handover (single file, overwritten each session)
+- `IDEAS.md` — idea log (single file)
+- `specs/` — brainstorming / design specs (superpowers output)
+- `plans/` — implementation plans (superpowers output)
+- `snapshots/` — design snapshots with INDEX.md (auto-pruned, max 10)
+- `adr/` — architecture decision records with INDEX.md
+- `blog/` — project diary entries with INDEX.md
+- `design/` — epic journal (created by `epic` at branch start)
+
+## Rules
+
+- All methodology artifacts go here, not in the project repo
+- Promotion to project repo is always explicit — never automatic
+- Workspace branches mirror project branches — switch both together
+
+## Routing
+
+| Artifact   | Destination | Notes |
+|------------|-------------|-------|
+| adr        | workspace   | |
+| blog       | workspace   | |
+| design     | workspace   | |
+| snapshots  | workspace   | |
+| specs      | workspace   | |
+| handover   | workspace   | |
+
+---
+
 # CaseHub Parent
 
 ## Project Type
@@ -9,7 +61,7 @@ type: java
 Root parent POM for the CaseHub ecosystem. Owns shared build configuration, CI/CD workflows, cross-module conventions, and the full-stack build orchestration.
 
 **Peer repos (each has its own Claude session — do not commit to these):**
-ledger, connectors, work, qhorus, engine, claudony, quarkus-langchain4j
+ledger, connectors, work, qhorus, engine, claudony, quarkus-langchain4j, devtown, aml, clinical
 
 ## Build Commands
 
