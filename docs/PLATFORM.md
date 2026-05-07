@@ -108,10 +108,9 @@ Four tiers, always kept separate:
 | `casehub-connectors` | [casehubio/connectors](https://github.com/casehubio/connectors) | Outbound message connectors (Slack, Teams, SMS, email) | Foundation |
 | `casehub-engine` | [casehubio/engine](https://github.com/casehubio/engine) | Hybrid choreography+blackboard orchestration engine | Orchestration |
 | `claudony` | [casehubio/claudony](https://github.com/casehubio/claudony) | Remote Claude CLI sessions + unified ecosystem dashboard | Integration |
-| `casehub-devtown` | [casehubio/devtown](https://github.com/casehubio/devtown) | AI-assisted software development — PR review, merge queue, trust-weighted reviewer routing | Application |
-| `casehub-aml` | [casehubio/aml](https://github.com/casehubio/aml) | Anti-money laundering investigation — FinCEN-compliant audit, SAR workflow, adaptive investigation paths | Application |
-| `casehub-clinical` | [casehubio/clinical](https://github.com/casehubio/clinical) | Clinical trial coordination — GCP/FDA compliance, multi-site sub-cases, adverse event escalation | Application |
 | `casehub-poc` | [casehubio/casehub](https://github.com/casehubio/casehub) | **Retiring** — original POC; no new features | — |
+
+Application tier (devtown, aml, clinical): see [APPLICATIONS.md](APPLICATIONS.md).
 
 ---
 
@@ -126,10 +125,7 @@ casehub-parent              (BOM — publish first; all others import it)
   casehub-engine            (depends on casehub-work-core + optionally casehub-ledger)
   claudony                  (depends on casehub-qhorus + implements casehub-engine SPIs)
 
-  — Application tier (opt-in, off by default in CI) —
-  casehub-devtown           (depends on engine + ledger + work + qhorus)
-  casehub-aml               (depends on engine + ledger + work + qhorus)
-  casehub-clinical          (depends on engine + ledger + work + qhorus)
+  — Application tier (opt-in, off by default in CI): see APPLICATIONS.md —
 ```
 
 ---
@@ -158,9 +154,7 @@ casehub-parent              (BOM — publish first; all others import it)
 | Remote Claude CLI sessions | `claudony` | `TmuxService`, `SessionRegistry`, WebSocket streaming |
 | Browser + agent authentication | `claudony` | WebAuthn passkeys + `X-Api-Key` header |
 | Ecosystem CI dashboards | `casehub-parent` | `dashboard.yml`, `pr-dashboard.yml`, `full-stack-build.yml` |
-| Software dev domain logic (PR review, merge queue, capability tags) | `casehub-devtown` | Application layer — not in foundation |
-| AML domain logic (investigation, SAR workflow, FinCEN compliance) | `casehub-aml` | Application layer — not in foundation |
-| Clinical trial domain logic (protocol, site management, GCP/FDA) | `casehub-clinical` | Application layer — not in foundation |
+| Application domain logic (devtown, aml, clinical) | Application tier | See [APPLICATIONS.md](APPLICATIONS.md) |
 
 ---
 
@@ -265,6 +259,5 @@ Full index: [docs/conventions/](conventions/INDEX.md)
 | `casehub-engine` | https://raw.githubusercontent.com/casehubio/parent/main/docs/repos/casehub-engine.md |
 | `claudony` | https://raw.githubusercontent.com/casehubio/parent/main/docs/repos/claudony.md |
 | `casehub-connectors` | https://raw.githubusercontent.com/casehubio/parent/main/docs/repos/casehub-connectors.md |
-| `casehub-devtown` | https://raw.githubusercontent.com/casehubio/parent/main/docs/repos/casehub-devtown.md |
-| `casehub-aml` | https://raw.githubusercontent.com/casehubio/parent/main/docs/repos/casehub-aml.md |
-| `casehub-clinical` | https://raw.githubusercontent.com/casehubio/parent/main/docs/repos/casehub-clinical.md |
+
+Application tier deep-dives: see [APPLICATIONS.md](APPLICATIONS.md).
