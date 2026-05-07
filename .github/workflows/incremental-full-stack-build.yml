@@ -28,6 +28,10 @@ on:
         description: "Include quarkus-langchain4j (slow — only when that fork changed)"
         type: boolean
         default: false
+      include_applications:
+        description: "Include application repos (devtown, aml, clinical) — off by default"
+        type: boolean
+        default: false
       force_rebuild:
         description: "Force full rebuild — ignore all cached state (equivalent to --no-cache)"
         type: boolean
@@ -57,6 +61,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           INCLUDE_LANGCHAIN4J: ${{ inputs.include_langchain4j }}
+          INCLUDE_APPLICATIONS: ${{ inputs.include_applications }}
         run: |
           mkdir -p .build-times casehub
           [ "$INCLUDE_LANGCHAIN4J" = "true" ] && \
@@ -67,6 +72,11 @@ jobs:
           git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/qhorus.git" casehub/qhorus
           git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/engine.git" casehub/engine
           git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/claudony.git" casehub/claudony
+          if [ "$INCLUDE_APPLICATIONS" = "true" ]; then
+            git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/devtown.git"  casehub/devtown
+            git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/aml.git"     casehub/aml
+            git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/clinical.git" casehub/clinical
+          fi
 
       - name: Collect SHAs
         id: shas
@@ -87,6 +97,15 @@ jobs:
           echo "sha_engine=$E"     >> $GITHUB_OUTPUT
           echo "sha_claudony=$D"   >> $GITHUB_OUTPUT
 
+          if [ "${{ inputs.include_applications }}" = "true" ]; then
+            DT=$(git -C casehub/devtown  rev-parse HEAD)
+            AM=$(git -C casehub/aml      rev-parse HEAD)
+            CL=$(git -C casehub/clinical rev-parse HEAD)
+            echo "sha_devtown=$DT"  >> $GITHUB_OUTPUT
+            echo "sha_aml=$AM"      >> $GITHUB_OUTPUT
+            echo "sha_clinical=$CL" >> $GITHUB_OUTPUT
+          fi
+
           echo "::group::SHA manifest (pin these to reproduce this build)"
           echo "parent:     $P"
           echo "ledger:     $L"
@@ -95,6 +114,7 @@ jobs:
           echo "qhorus:     $Q"
           echo "engine:     $E"
           echo "claudony:   $D"
+          [ "${{ inputs.include_applications }}" = "true" ] && { echo "devtown:    $DT"; echo "aml:        $AM"; echo "clinical:   $CL"; }
           echo "::endgroup::"
 
       # Restore state from last run on this branch.
@@ -114,6 +134,7 @@ jobs:
           FORCE_REBUILD: ${{ inputs.force_rebuild }}
         run: |
           MODULES=(parent ledger connectors work qhorus engine claudony)
+          [ "${{ inputs.include_applications }}" = "true" ] && MODULES+=(devtown aml clinical)
           if [ "$FORCE_REBUILD" = "true" ] || [ ! -f .incremental-state/shas.txt ]; then
             for m in "${MODULES[@]}"; do echo "sha_${m}=none" >> $GITHUB_OUTPUT; done
           else
@@ -383,6 +404,144 @@ jobs:
           esac
           echo $((SECONDS - START)) > .build-times/claudony
 
+      - name: "Build: devtown"
+        id: devtown
+        if: inputs.include_applications
+        continue-on-error: true
+        env:
+          CUR: ${{ steps.shas.outputs.sha_devtown }}
+          PRV: ${{ steps.prev.outputs.sha_devtown }}
+          CUR_P: ${{ steps.shas.outputs.sha_parent }}
+          PRV_P: ${{ steps.prev.outputs.sha_parent }}
+          CUR_L: ${{ steps.shas.outputs.sha_ledger }}
+          PRV_L: ${{ steps.prev.outputs.sha_ledger }}
+          CUR_W: ${{ steps.shas.outputs.sha_work }}
+          PRV_W: ${{ steps.prev.outputs.sha_work }}
+          CUR_Q: ${{ steps.shas.outputs.sha_qhorus }}
+          PRV_Q: ${{ steps.prev.outputs.sha_qhorus }}
+          CUR_E: ${{ steps.shas.outputs.sha_engine }}
+          PRV_E: ${{ steps.prev.outputs.sha_engine }}
+          SKIP_TESTS: ${{ inputs.skip_tests }}
+          SKIP_ITS: ${{ inputs.skip_integration_tests }}
+          MAVEN_EXTRA: ${{ inputs.maven_args }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          D=$(./scripts/incremental-build-decision.sh \
+            --module devtown --current-sha "$CUR" --previous-sha "${PRV:-none}" \
+            --dep "parent:${CUR_P}:${PRV_P:-none}" \
+            --dep "ledger:${CUR_L}:${PRV_L:-none}" \
+            --dep "work:${CUR_W}:${PRV_W:-none}" \
+            --dep "qhorus:${CUR_Q}:${PRV_Q:-none}" \
+            --dep "engine:${CUR_E}:${PRV_E:-none}")
+          echo "decision=$D" >> $GITHUB_OUTPUT
+          START=$SECONDS
+          case "$D" in
+            SKIP) echo "⏭️  devtown: SKIP" ;;
+            TEST)
+              if [ "$SKIP_TESTS" = "true" ]; then echo "⏭️  devtown: SKIP (TEST — tests disabled)"
+              else
+                ITS=""; [ "$SKIP_ITS" = "true" ] && ITS="-DskipITs"
+                cd casehub/devtown && mvn test --batch-mode $ITS $MAVEN_EXTRA
+              fi ;;
+            BUILD)
+              F=""; [ "$SKIP_TESTS" = "true" ] && F="-DskipTests"
+              [ "$SKIP_ITS" = "true" ] && F="$F -DskipITs"
+              cd casehub/devtown && mvn install --batch-mode $F $MAVEN_EXTRA ;;
+          esac
+          echo $((SECONDS - START)) > .build-times/devtown
+
+      - name: "Build: aml"
+        id: aml
+        if: inputs.include_applications
+        continue-on-error: true
+        env:
+          CUR: ${{ steps.shas.outputs.sha_aml }}
+          PRV: ${{ steps.prev.outputs.sha_aml }}
+          CUR_P: ${{ steps.shas.outputs.sha_parent }}
+          PRV_P: ${{ steps.prev.outputs.sha_parent }}
+          CUR_L: ${{ steps.shas.outputs.sha_ledger }}
+          PRV_L: ${{ steps.prev.outputs.sha_ledger }}
+          CUR_W: ${{ steps.shas.outputs.sha_work }}
+          PRV_W: ${{ steps.prev.outputs.sha_work }}
+          CUR_Q: ${{ steps.shas.outputs.sha_qhorus }}
+          PRV_Q: ${{ steps.prev.outputs.sha_qhorus }}
+          CUR_E: ${{ steps.shas.outputs.sha_engine }}
+          PRV_E: ${{ steps.prev.outputs.sha_engine }}
+          SKIP_TESTS: ${{ inputs.skip_tests }}
+          SKIP_ITS: ${{ inputs.skip_integration_tests }}
+          MAVEN_EXTRA: ${{ inputs.maven_args }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          D=$(./scripts/incremental-build-decision.sh \
+            --module aml --current-sha "$CUR" --previous-sha "${PRV:-none}" \
+            --dep "parent:${CUR_P}:${PRV_P:-none}" \
+            --dep "ledger:${CUR_L}:${PRV_L:-none}" \
+            --dep "work:${CUR_W}:${PRV_W:-none}" \
+            --dep "qhorus:${CUR_Q}:${PRV_Q:-none}" \
+            --dep "engine:${CUR_E}:${PRV_E:-none}")
+          echo "decision=$D" >> $GITHUB_OUTPUT
+          START=$SECONDS
+          case "$D" in
+            SKIP) echo "⏭️  aml: SKIP" ;;
+            TEST)
+              if [ "$SKIP_TESTS" = "true" ]; then echo "⏭️  aml: SKIP (TEST — tests disabled)"
+              else
+                ITS=""; [ "$SKIP_ITS" = "true" ] && ITS="-DskipITs"
+                cd casehub/aml && mvn test --batch-mode $ITS $MAVEN_EXTRA
+              fi ;;
+            BUILD)
+              F=""; [ "$SKIP_TESTS" = "true" ] && F="-DskipTests"
+              [ "$SKIP_ITS" = "true" ] && F="$F -DskipITs"
+              cd casehub/aml && mvn install --batch-mode $F $MAVEN_EXTRA ;;
+          esac
+          echo $((SECONDS - START)) > .build-times/aml
+
+      - name: "Build: clinical"
+        id: clinical
+        if: inputs.include_applications
+        continue-on-error: true
+        env:
+          CUR: ${{ steps.shas.outputs.sha_clinical }}
+          PRV: ${{ steps.prev.outputs.sha_clinical }}
+          CUR_P: ${{ steps.shas.outputs.sha_parent }}
+          PRV_P: ${{ steps.prev.outputs.sha_parent }}
+          CUR_L: ${{ steps.shas.outputs.sha_ledger }}
+          PRV_L: ${{ steps.prev.outputs.sha_ledger }}
+          CUR_W: ${{ steps.shas.outputs.sha_work }}
+          PRV_W: ${{ steps.prev.outputs.sha_work }}
+          CUR_Q: ${{ steps.shas.outputs.sha_qhorus }}
+          PRV_Q: ${{ steps.prev.outputs.sha_qhorus }}
+          CUR_E: ${{ steps.shas.outputs.sha_engine }}
+          PRV_E: ${{ steps.prev.outputs.sha_engine }}
+          SKIP_TESTS: ${{ inputs.skip_tests }}
+          SKIP_ITS: ${{ inputs.skip_integration_tests }}
+          MAVEN_EXTRA: ${{ inputs.maven_args }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          D=$(./scripts/incremental-build-decision.sh \
+            --module clinical --current-sha "$CUR" --previous-sha "${PRV:-none}" \
+            --dep "parent:${CUR_P}:${PRV_P:-none}" \
+            --dep "ledger:${CUR_L}:${PRV_L:-none}" \
+            --dep "work:${CUR_W}:${PRV_W:-none}" \
+            --dep "qhorus:${CUR_Q}:${PRV_Q:-none}" \
+            --dep "engine:${CUR_E}:${PRV_E:-none}")
+          echo "decision=$D" >> $GITHUB_OUTPUT
+          START=$SECONDS
+          case "$D" in
+            SKIP) echo "⏭️  clinical: SKIP" ;;
+            TEST)
+              if [ "$SKIP_TESTS" = "true" ]; then echo "⏭️  clinical: SKIP (TEST — tests disabled)"
+              else
+                ITS=""; [ "$SKIP_ITS" = "true" ] && ITS="-DskipITs"
+                cd casehub/clinical && mvn test --batch-mode $ITS $MAVEN_EXTRA
+              fi ;;
+            BUILD)
+              F=""; [ "$SKIP_TESTS" = "true" ] && F="-DskipTests"
+              [ "$SKIP_ITS" = "true" ] && F="$F -DskipITs"
+              cd casehub/clinical && mvn install --batch-mode $F $MAVEN_EXTRA ;;
+          esac
+          echo $((SECONDS - START)) > .build-times/clinical
+
       # ── State persistence ─────────────────────────────────────────────────
       #
       # Records the SHA for each module that succeeded (or was SKIPped, meaning
@@ -399,6 +558,9 @@ jobs:
           SHA_QHORUS: ${{ steps.shas.outputs.sha_qhorus }}
           SHA_ENGINE: ${{ steps.shas.outputs.sha_engine }}
           SHA_CLAUDONY: ${{ steps.shas.outputs.sha_claudony }}
+          SHA_DEVTOWN: ${{ steps.shas.outputs.sha_devtown }}
+          SHA_AML: ${{ steps.shas.outputs.sha_aml }}
+          SHA_CLINICAL: ${{ steps.shas.outputs.sha_clinical }}
           PREV_PARENT: ${{ steps.prev.outputs.sha_parent }}
           PREV_LEDGER: ${{ steps.prev.outputs.sha_ledger }}
           PREV_CONNECTORS: ${{ steps.prev.outputs.sha_connectors }}
@@ -406,12 +568,19 @@ jobs:
           PREV_QHORUS: ${{ steps.prev.outputs.sha_qhorus }}
           PREV_ENGINE: ${{ steps.prev.outputs.sha_engine }}
           PREV_CLAUDONY: ${{ steps.prev.outputs.sha_claudony }}
+          PREV_DEVTOWN: ${{ steps.prev.outputs.sha_devtown }}
+          PREV_AML: ${{ steps.prev.outputs.sha_aml }}
+          PREV_CLINICAL: ${{ steps.prev.outputs.sha_clinical }}
+          INCLUDE_APPLICATIONS: ${{ inputs.include_applications }}
           OUTCOME_LEDGER: ${{ steps.ledger.outcome }}
           OUTCOME_CONNECTORS: ${{ steps.connectors.outcome }}
           OUTCOME_WORK: ${{ steps.work.outcome }}
           OUTCOME_QHORUS: ${{ steps.qhorus.outcome }}
           OUTCOME_ENGINE: ${{ steps.engine.outcome }}
           OUTCOME_CLAUDONY: ${{ steps.claudony.outcome }}
+          OUTCOME_DEVTOWN: ${{ steps.devtown.outcome }}
+          OUTCOME_AML: ${{ steps.aml.outcome }}
+          OUTCOME_CLINICAL: ${{ steps.clinical.outcome }}
         run: |
           mkdir -p .incremental-state
 
@@ -432,6 +601,11 @@ jobs:
             record qhorus     "$SHA_QHORUS"     "${PREV_QHORUS:-none}"     "$OUTCOME_QHORUS"
             record engine     "$SHA_ENGINE"     "${PREV_ENGINE:-none}"     "$OUTCOME_ENGINE"
             record claudony   "$SHA_CLAUDONY"   "${PREV_CLAUDONY:-none}"   "$OUTCOME_CLAUDONY"
+            if [ "$INCLUDE_APPLICATIONS" = "true" ]; then
+              record devtown  "$SHA_DEVTOWN"  "${PREV_DEVTOWN:-none}"  "$OUTCOME_DEVTOWN"
+              record aml      "$SHA_AML"      "${PREV_AML:-none}"      "$OUTCOME_AML"
+              record clinical "$SHA_CLINICAL" "${PREV_CLINICAL:-none}" "$OUTCOME_CLINICAL"
+            fi
           } > .incremental-state/shas.txt
 
           echo "State saved:"
@@ -459,12 +633,19 @@ jobs:
           DECISION_QHORUS: ${{ steps.qhorus.outputs.decision }}
           DECISION_ENGINE: ${{ steps.engine.outputs.decision }}
           DECISION_CLAUDONY: ${{ steps.claudony.outputs.decision }}
+          DECISION_DEVTOWN: ${{ steps.devtown.outputs.decision }}
+          DECISION_AML: ${{ steps.aml.outputs.decision }}
+          DECISION_CLINICAL: ${{ steps.clinical.outputs.decision }}
+          INCLUDE_APPLICATIONS: ${{ inputs.include_applications }}
           OUTCOME_LEDGER: ${{ steps.ledger.outcome }}
           OUTCOME_CONNECTORS: ${{ steps.connectors.outcome }}
           OUTCOME_WORK: ${{ steps.work.outcome }}
           OUTCOME_QHORUS: ${{ steps.qhorus.outcome }}
           OUTCOME_ENGINE: ${{ steps.engine.outcome }}
           OUTCOME_CLAUDONY: ${{ steps.claudony.outcome }}
+          OUTCOME_DEVTOWN: ${{ steps.devtown.outcome }}
+          OUTCOME_AML: ${{ steps.aml.outcome }}
+          OUTCOME_CLINICAL: ${{ steps.clinical.outcome }}
         run: |
           if [ "$SKIP_TESTS" = "true" ]; then
             TEST_MODE="compile check only"
@@ -476,6 +657,7 @@ jobs:
           [ "$FORCE_REBUILD" = "true" ] && TEST_MODE="$TEST_MODE — forced rebuild"
 
           MODULES=(ledger connectors work qhorus engine claudony)
+          [ "$INCLUDE_APPLICATIONS" = "true" ] && MODULES+=(devtown aml clinical)
           declare -A DECISIONS=(
             [ledger]="$DECISION_LEDGER"
             [connectors]="$DECISION_CONNECTORS"
@@ -483,6 +665,9 @@ jobs:
             [qhorus]="$DECISION_QHORUS"
             [engine]="$DECISION_ENGINE"
             [claudony]="$DECISION_CLAUDONY"
+            [devtown]="$DECISION_DEVTOWN"
+            [aml]="$DECISION_AML"
+            [clinical]="$DECISION_CLINICAL"
           )
           declare -A OUTCOMES=(
             [ledger]="$OUTCOME_LEDGER"
@@ -491,6 +676,9 @@ jobs:
             [qhorus]="$OUTCOME_QHORUS"
             [engine]="$OUTCOME_ENGINE"
             [claudony]="$OUTCOME_CLAUDONY"
+            [devtown]="$OUTCOME_DEVTOWN"
+            [aml]="$OUTCOME_AML"
+            [clinical]="$OUTCOME_CLINICAL"
           )
 
           {
