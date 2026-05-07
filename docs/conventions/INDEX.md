@@ -13,6 +13,7 @@ One file per rule. Each file is self-contained and retrievable independently.
 | [scheduler-test-isolation.md](scheduler-test-isolation.md) | `@Scheduled` runs in its own transaction; use `@TestTransaction` and unique names | All modules with `@Scheduled` beans |
 | [managed-executor-cdi.md](managed-executor-cdi.md) | Inject `ManagedExecutor` for CDI context propagation on background threads | All modules with concurrent test scenarios |
 | [maven-module-scoping.md](maven-module-scoping.md) | Always specify `-pl <module>` when running Maven commands | All multi-module casehub modules |
+| [maven-submodule-folder-naming.md](maven-submodule-folder-naming.md) | Submodule folder names are short — no repo prefix; `api`, `runtime`, `deployment` etc. | All multi-module casehub repos |
 | [flyway-version-range-allocation.md](flyway-version-range-allocation.md) | Each module owns an exclusive Flyway thousand-block version range | All casehub modules using Flyway |
 | [configmapping-javadoc-requirement.md](configmapping-javadoc-requirement.md) | Every method in a `@ConfigMapping` interface must have Javadoc | All Quarkus extensions with @ConfigMapping |
 | [h2-reserved-word-columns.md](h2-reserved-word-columns.md) | Avoid H2-reserved words as column names in Flyway migrations | All modules with Flyway migrations |
