@@ -14,7 +14,7 @@
 
 Run this before implementing any feature, API, abstraction, SPI, or data model change in any casehubio repo. This is not a bureaucratic gate — it is the practice that keeps the platform orthogonal, intuitive, and free of duplication.
 
-> **These protocols are living documents — never treat them as dogma.** When implementation reveals a case the protocol doesn't handle well, update the protocol in the same session. When a rule turns out to be wrong or too coarse, correct it. When a new pattern emerges that isn't captured, add it. A protocol that doesn't adapt to new evidence is just friction. The goal is a platform that improves continuously, not one that enforces yesterday's decisions on tomorrow's problems.
+> **These protocols are living documents — never treat them as dogma.** If implementation reveals a gap or a rule that doesn't fit, update the protocol in the same session. A rule that doesn't adapt to new evidence is just friction.
 
 The protocols index is at [`docs/protocols/INDEX.md`](/Users/mdproctor/claude/casehub/parent/docs/protocols/INDEX.md). One file per rule, self-contained and retrievable independently. Add new entries there; link from PLATFORM.md when a capability ownership entry needs it.
 
@@ -88,11 +88,7 @@ Do not leave parallel implementations in place. Parallel implementations rot: th
 
 ## Development Session Protocol
 
-Before designing or implementing anything, run this sequence:
-
-1. **Brainstorm first** — invoke `superpowers:brainstorming` before proposing a design. Explore the problem space, surface alternatives, understand constraints. Do not jump to implementation.
-2. **TDD** — invoke `superpowers:test-driven-development` before writing implementation code. Name unit tests, integration tests, happy-path tests, robustness tests, and correctness tests as part of planning — not as an afterthought.
-3. **Review before committing** — invoke `superpowers:requesting-code-review` before any commit that completes meaningful work.
+Before designing or implementing: brainstorm → TDD → review before committing. Full norms in `~/.claude/design-implementation.md`.
 4. **IntelliJ first** — for any rename, move, find-references, or type hierarchy query, use IntelliJ MCPs before reaching for bash. See [IntelliJ MCP tool guide](#intellij-mcp-tool-guide) below.
 
 ---
