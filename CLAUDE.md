@@ -121,6 +121,18 @@ filtering or dropping commits that touch these paths.
 | `docs/` | Platform documentation (PLATFORM.md, APPLICATIONS.md, repo deep-dives) |
 | `docs/adr/` | Architecture decision records |
 
+
+## Development Workflow
+
+Before designing: `superpowers:brainstorming`
+Before implementing: `superpowers:test-driven-development`
+Before committing: `superpowers:requesting-code-review`
+
+Living docs — check for drift after significant changes:
+- `docs/PLATFORM.md`
+- `docs/APPLICATIONS.md`
+- `docs/repos/`
+
 ## Work Tracking
 
 **Issue tracking:** enabled
