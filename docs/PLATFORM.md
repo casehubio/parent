@@ -88,8 +88,7 @@ Do not leave parallel implementations in place. Parallel implementations rot: th
 
 ## Development Session Protocol
 
-Before designing or implementing: brainstorm → TDD → review before committing. Full norms in `~/.claude/design-implementation.md`.
-4. **IntelliJ first** — for any rename, move, find-references, or type hierarchy query, use IntelliJ MCPs before reaching for bash. See [IntelliJ MCP tool guide](#intellij-mcp-tool-guide) below.
+Before designing or implementing: brainstorm → TDD → review before committing. IntelliJ first for rename, move, and find-references. Full norms in `~/.claude/design-implementation.md`; IntelliJ tool guide in the `ide-tooling` skill.
 
 ---
 
