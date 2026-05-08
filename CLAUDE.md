@@ -108,6 +108,19 @@ Surefire is configured in this parent POM with `rerunFailingTestsCount=2` — fa
 
 **The writing style guide at `~/claude-workspace/writing-styles/blog-technical.md` is mandatory for all blog and diary entries.** Load it in full before drafting. Complete the pre-draft voice classification (I / we / Claude-named) before generating any prose. Do not show a draft without verifying it against the style guide.
 
+---
+
+## Project Artifacts
+
+Paths that are project content (not workspace noise). Skills use this to avoid
+filtering or dropping commits that touch these paths.
+
+| Path | What it is |
+|------|------------|
+| `CLAUDE.md` | Project conventions |
+| `docs/` | Platform documentation (PLATFORM.md, APPLICATIONS.md, repo deep-dives) |
+| `docs/adr/` | Architecture decision records |
+
 ## Work Tracking
 
 **Issue tracking:** enabled
