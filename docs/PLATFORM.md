@@ -97,51 +97,6 @@ Before designing or implementing anything, run this sequence:
 
 ---
 
-## IntelliJ MCP Tool Guide
-
-Two MCP servers are available. Always check `ide_index_status` before batch semantic operations.
-
-**`mcp__intellij-index` — semantic index (prefer for all code intelligence)**
-
-| Operation | Tool |
-|-----------|------|
-| Find all usages of a symbol | `ide_find_references` — run before any rename or delete |
-| Go to definition | `ide_find_definition` |
-| Find implementations of interface/abstract | `ide_find_implementations` |
-| Find what a method overrides | `ide_find_super_methods` |
-| Class/interface inheritance tree | `ide_type_hierarchy` |
-| Who calls this / what this calls | `ide_call_hierarchy` |
-| Find class by name | `ide_find_class` |
-| Find file by name | `ide_find_file` |
-| **Safe rename** (updates all references) | `ide_refactor_rename` |
-| **Safe move** (updates package/imports) | `ide_move_file` |
-| Safe delete (checks for usages first) | `ide_refactor_safe_delete` |
-| Fast text/identifier search | `ide_search_text` |
-| Errors, warnings, quick-fix intentions | `ide_diagnostics` |
-| Check IDE indexing is ready | `ide_index_status` |
-| Sync IDE after external file changes | `ide_sync_files` |
-
-**`mcp__intellij` — JetBrains official (use for what intellij-index cannot do)**
-
-| Operation | Tool |
-|-----------|------|
-| Build / compile | `build_project` |
-| Run a test configuration | `execute_run_configuration` |
-| Hover documentation / type info | `get_symbol_info` |
-| File-level inspection results | `get_file_problems` |
-| Targeted text replacement | `replace_text_in_file` |
-| Apply code formatting | `reformat_file` |
-| Project module structure | `get_project_modules` |
-| Project dependencies | `get_project_dependencies` |
-| Find files by glob pattern | `find_files_by_glob` |
-| Find files by name keyword | `find_files_by_name_keyword` |
-| Browse directory tree | `list_directory_tree` |
-| Run shell command in IDE terminal | `execute_terminal_command` |
-
-**Decision rule:** `intellij-index` for anything semantic. `intellij` for build/run, formatting, file browsing, and database tools.
-
----
-
 ## What We're Building
 
 A production-grade, compliance-first infrastructure stack for multi-agent AI systems on Quarkus. Targeted at regulated deployments (EU AI Act Art.12, GDPR Art.17/22).
