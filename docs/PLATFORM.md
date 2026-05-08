@@ -6,7 +6,7 @@
 >
 > **Per-repo deep dives:** [docs/repos/](https://github.com/casehubio/parent/tree/main/docs/repos/)
 
-> **Platform docs:** Paths below are local (use `Read`). If the path does not exist — standalone clone on another machine — replace `/Users/mdproctor/claude/casehub/parent/docs/` with `https://raw.githubusercontent.com/casehubio/parent/main/docs/` and use `WebFetch`.
+> **Platform docs:** Paths are relative to this file's directory (`docs/`). Read them as `<repo-root>/docs/<path>`. If a path does not exist, that repo is not cloned locally — skip it gracefully and continue.
 
 ---
 
@@ -16,7 +16,7 @@ Run this before implementing any feature, API, abstraction, SPI, or data model c
 
 > **These protocols are living documents — never treat them as dogma.** If implementation reveals a gap or a rule that doesn't fit, update the protocol in the same session. A rule that doesn't adapt to new evidence is just friction.
 
-The protocols index is at [`docs/protocols/INDEX.md`](/Users/mdproctor/claude/casehub/parent/docs/protocols/INDEX.md). One file per rule, self-contained and retrievable independently. Add new entries there; link from PLATFORM.md when a capability ownership entry needs it.
+The protocols index is at [`docs/protocols/INDEX.md`](protocols/INDEX.md). One file per rule, self-contained and retrievable independently. Add new entries there; link from PLATFORM.md when a capability ownership entry needs it.
 
 ### Step 1 — Does this already exist?
 
@@ -60,7 +60,7 @@ Check how the same concern is handled in the two or three most similar places in
 - **Persistence module split rule:** JPA entity classes MUST live in a separate module from the domain model SPI. Any artifact that bundles JPA entities forces every downstream consumer to configure a datasource — including test modules that use in-memory repos. The correct split: `<name>-api` (domain POJOs + SPIs, zero JPA), `<name>` or `<name>-hibernate` (JPA entities + migrations). `casehub-work` is the canonical example: `casehub-work-api` is JPA-free; the runtime module has entities and is kept at arm's length. Violating this rule causes cascading datasource failures across all downstream test suites.
 - No-op defaults: every SPI gets a default no-op implementation in the owning repo
 - **Application tier rule:** domain logic (git, PRs, clinical protocols, AML investigations) belongs in application repos. Foundation repos must remain domain-agnostic. If it requires knowledge of a specific business domain, it does not belong in foundation.
-- **Submodule folder naming:** short descriptive names — no repo prefix. `api` not `casehub-work-api`; `runtime` not `casehub-ledger-runtime`. See [`docs/protocols/maven-submodule-folder-naming.md`](/Users/mdproctor/claude/casehub/parent/docs/protocols/maven-submodule-folder-naming.md).
+- **Submodule folder naming:** short descriptive names — no repo prefix. `api` not `casehub-work-api`; `runtime` not `casehub-ledger-runtime`. See [`docs/protocols/maven-submodule-folder-naming.md`](protocols/maven-submodule-folder-naming.md).
 
 ### Step 5 — Does this need a platform-level doc update?
 
@@ -118,7 +118,7 @@ Four tiers, always kept separate:
 | `claudony` | [casehubio/claudony](https://github.com/casehubio/claudony) | Remote Claude CLI sessions + unified ecosystem dashboard | Integration |
 | `casehub-poc` | [casehubio/casehub](https://github.com/casehubio/casehub) | **Retiring** — original POC; no new features | — |
 
-Application tier (devtown, aml, clinical): see [APPLICATIONS.md](/Users/mdproctor/claude/casehub/parent/docs/APPLICATIONS.md).
+Application tier (devtown, aml, clinical): see [APPLICATIONS.md](APPLICATIONS.md).
 
 ---
 
@@ -162,7 +162,7 @@ casehub-parent              (BOM — publish first; all others import it)
 | Remote Claude CLI sessions | `claudony` | `TmuxService`, `SessionRegistry`, WebSocket streaming |
 | Browser + agent authentication | `claudony` | WebAuthn passkeys + `X-Api-Key` header |
 | Ecosystem CI dashboards | `casehub-parent` | `dashboard.yml`, `pr-dashboard.yml`, `full-stack-build.yml` |
-| Application domain logic (devtown, aml, clinical) | Application tier | See [APPLICATIONS.md](/Users/mdproctor/claude/casehub/parent/docs/APPLICATIONS.md) |
+| Application domain logic (devtown, aml, clinical) | Application tier | See [APPLICATIONS.md](APPLICATIONS.md) |
 
 ---
 
@@ -241,7 +241,7 @@ Rules that apply across all casehubio modules:
 | [Quarkus test database](protocols/quarkus-test-database.md) | H2 `MODE=PostgreSQL`; Testcontainers for dialect validation |
 | [Submodule folder naming](protocols/maven-submodule-folder-naming.md) | Short names — no repo prefix. `api` not `casehub-work-api` |
 
-Full index: [`docs/protocols/INDEX.md`](/Users/mdproctor/claude/casehub/parent/docs/protocols/INDEX.md)
+Full index: [`docs/protocols/INDEX.md`](protocols/INDEX.md)
 
 ---
 
@@ -258,14 +258,14 @@ Full index: [`docs/protocols/INDEX.md`](/Users/mdproctor/claude/casehub/parent/d
 
 | Repo | Local path |
 |------|-----------|
-| `casehub-ledger` | `/Users/mdproctor/claude/casehub/parent/docs/repos/casehub-ledger.md` |
-| `casehub-work` | `/Users/mdproctor/claude/casehub/parent/docs/repos/casehub-work.md` |
-| `casehub-qhorus` | `/Users/mdproctor/claude/casehub/parent/docs/repos/casehub-qhorus.md` |
-| `casehub-engine` | `/Users/mdproctor/claude/casehub/parent/docs/repos/casehub-engine.md` |
-| `claudony` | `/Users/mdproctor/claude/casehub/parent/docs/repos/claudony.md` |
-| `casehub-connectors` | `/Users/mdproctor/claude/casehub/parent/docs/repos/casehub-connectors.md` |
-| `casehub-devtown` | `/Users/mdproctor/claude/casehub/parent/docs/repos/casehub-devtown.md` |
-| `casehub-aml` | `/Users/mdproctor/claude/casehub/parent/docs/repos/casehub-aml.md` |
-| `casehub-clinical` | `/Users/mdproctor/claude/casehub/parent/docs/repos/casehub-clinical.md` |
+| `casehub-ledger` | `repos/casehub-ledger.md` |
+| `casehub-work` | `repos/casehub-work.md` |
+| `casehub-qhorus` | `repos/casehub-qhorus.md` |
+| `casehub-engine` | `repos/casehub-engine.md` |
+| `claudony` | `repos/claudony.md` |
+| `casehub-connectors` | `repos/casehub-connectors.md` |
+| `casehub-devtown` | `repos/casehub-devtown.md` |
+| `casehub-aml` | `repos/casehub-aml.md` |
+| `casehub-clinical` | `repos/casehub-clinical.md` |
 
-Application tier: see [APPLICATIONS.md](/Users/mdproctor/claude/casehub/parent/docs/APPLICATIONS.md)
+Application tier: see [APPLICATIONS.md](APPLICATIONS.md)
