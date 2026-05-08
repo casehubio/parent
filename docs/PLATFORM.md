@@ -6,15 +6,17 @@
 >
 > **Per-repo deep dives:** [docs/repos/](https://github.com/casehubio/parent/tree/main/docs/repos/)
 
+> **Platform docs:** Paths are relative to this file's directory (`docs/`). Read them as `<repo-root>/docs/<path>`. If a path does not exist, that repo is not cloned locally — skip it gracefully and continue.
+
 ---
 
 ## Platform Coherence Protocol
 
 Run this before implementing any feature, API, abstraction, SPI, or data model change in any casehubio repo. This is not a bureaucratic gate — it is the practice that keeps the platform orthogonal, intuitive, and free of duplication.
 
-> **These protocols are living documents.** When you discover a non-obvious pattern, a corrected architectural understanding, or a gotcha that would have been avoided if a protocol existed — update the protocol immediately, in the same session. Do not defer it to a cleanup pass that never happens. A discovery that isn't captured becomes a repeated mistake. When in doubt, ask: "would a future Claude session avoid this problem if it were written down?" If yes, write it down.
+> **These protocols are living documents — never treat them as dogma.** If implementation reveals a gap or a rule that doesn't fit, update the protocol in the same session. A rule that doesn't adapt to new evidence is just friction.
 
-The conventions index is at [`docs/conventions/INDEX.md`](conventions/INDEX.md). One file per rule, self-contained and retrievable independently. Add new entries there; link from PLATFORM.md when a capability ownership entry needs it.
+The protocols index is at [`docs/protocols/INDEX.md`](protocols/INDEX.md). One file per rule, self-contained and retrievable independently. Add new entries there; link from PLATFORM.md when a capability ownership entry needs it.
 
 ### Step 1 — Does this already exist?
 
@@ -58,12 +60,13 @@ Check how the same concern is handled in the two or three most similar places in
 - **Persistence module split rule:** JPA entity classes MUST live in a separate module from the domain model SPI. Any artifact that bundles JPA entities forces every downstream consumer to configure a datasource — including test modules that use in-memory repos. The correct split: `<name>-api` (domain POJOs + SPIs, zero JPA), `<name>` or `<name>-hibernate` (JPA entities + migrations). `casehub-work` is the canonical example: `casehub-work-api` is JPA-free; the runtime module has entities and is kept at arm's length. Violating this rule causes cascading datasource failures across all downstream test suites.
 - No-op defaults: every SPI gets a default no-op implementation in the owning repo
 - **Application tier rule:** domain logic (git, PRs, clinical protocols, AML investigations) belongs in application repos. Foundation repos must remain domain-agnostic. If it requires knowledge of a specific business domain, it does not belong in foundation.
+- **Submodule folder naming:** short descriptive names — no repo prefix. `api` not `casehub-work-api`; `runtime` not `casehub-ledger-runtime`. See [`docs/protocols/maven-submodule-folder-naming.md`](protocols/maven-submodule-folder-naming.md).
 
 ### Step 5 — Does this need a platform-level doc update?
 
 If the capability ownership table, boundary rules, or deep-dive docs need updating after this implementation, update `casehub-parent/docs/PLATFORM.md` and/or the relevant `docs/repos/*.md` file.
 
-Also ask: **did this session surface a non-obvious pattern, a corrected rule, or a gotcha?** If yes — add it to `docs/conventions/` now, before the session ends. Patterns worth capturing include:
+Also ask: **did this session surface a non-obvious pattern, a corrected rule, or a gotcha?** If yes — add it to `docs/protocols/` now, before the session ends. Patterns worth capturing include:
 - A solution that required research or multiple failed attempts to find
 - A rule in this document that turned out to be wrong or too coarse (update it)
 - A concurrency, boundary, or schema decision that would otherwise be re-discovered independently
@@ -81,7 +84,11 @@ Do not leave parallel implementations in place. Parallel implementations rot: th
 3. If a consumer repo needs the new abstraction and it isn't published yet: open the issue, link it to the implementation issue, don't leave it undocumented
 4. Update the capability ownership table in this document if a capability has moved or consolidated
 
-**Why this matters:** the goal is orthogonal, non-duplicated architecture where each concept has exactly one implementation. New abstractions are only valuable if old ones are retired. An abstraction that coexists with its predecessor creates two sources of truth, not one.
+---
+
+## Development Session Protocol
+
+Before designing or implementing: brainstorm → TDD → review before committing. IntelliJ first for rename, move, and find-references. Full norms in `~/.claude/design-implementation.md`; IntelliJ tool guide in the `ide-tooling` skill.
 
 ---
 
@@ -160,21 +167,21 @@ casehub-parent              (BOM — publish first; all others import it)
 
 ## Key Boundary Rules
 
-**Do not add orchestration logic to `casehub-work`.** When a WorkItem completes, casehub-work fires a CDI event and stops. CaseHub decides what completing a WorkItem *means* in a case context. Homogeneous M-of-N group completion (all instances of the same template) is casehub-work (`MultiInstanceCoordinator`). Heterogeneous plan-level completion (named plan items A, B, and C gate a Stage) is CaseHub. "Mark the WorkItem EXPIRED when its deadline passes" is casehub-work.
+**Do not add orchestration logic to `casehub-work`.** When a WorkItem completes, casehub-work fires a CDI event and stops. Homogeneous M-of-N group completion is casehub-work. Heterogeneous plan-level completion is casehub-engine. "Mark the WorkItem EXPIRED when its deadline passes" is casehub-work.
 
-**Do not add WorkItem inbox management to `casehub-engine`.** casehub-engine depends on `casehub-work-core` (`WorkBroker`) only. WorkItem entities, Flyway migrations, REST endpoints, and audit stores must not flow into the engine.
+**Do not add WorkItem inbox management to `casehub-engine`.** casehub-engine depends on `casehub-work-core` (`WorkBroker`) only. WorkItem entities, Flyway migrations, REST endpoints must not flow into the engine.
 
-**Do not add trust scoring to `casehub-work` or `casehub-engine`.** Trust derives from attestation history across *all* actors. It lives in casehub-ledger and is surfaced via CDI routing events (`TrustScoreRoutingPublisher`). Consumers observe those events — they never compute trust themselves.
+**Do not add trust scoring to `casehub-work` or `casehub-engine`.** Trust lives in casehub-ledger and is surfaced via CDI routing events (`TrustScoreRoutingPublisher`). Consumers observe those events — they never compute trust themselves.
 
-**Do not duplicate notification infrastructure.** `casehub-connectors` owns Slack/Teams/SMS/email outbound delivery. `casehub-work-notifications` must use or delegate to `casehub-connectors`. Do not implement a new outbound channel in casehub-work, casehub-engine, or claudony.
+**Do not duplicate notification infrastructure.** `casehub-connectors` owns Slack/Teams/SMS/email. `casehub-work-notifications` must delegate here.
 
-**Do not implement Qhorus channel semantics in `claudony`.** Claudony embeds Qhorus and adds CaseHub SPI implementations on top. It must not re-implement channel, message, or commitment logic.
+**Do not implement Qhorus channel semantics in `claudony`.** Claudony embeds Qhorus and adds SPI implementations. It must not re-implement channel, message, or commitment logic.
 
-**Do not put CaseHub SPI implementations in `casehub-engine`.** `WorkerProvisioner`, `CaseChannelProvider`, etc. are environment-specific operational contracts. casehub-engine defines them; deployment-specific implementations belong in the deploying application (e.g. Claudony).
+**Do not put CaseHub SPI implementations in `casehub-engine`.** casehub-engine defines them; deployment-specific implementations belong in the deploying application.
 
-**Do not use `casehub-work` runtime in `casehub-engine`.** The engine depends on `casehub-work-core` only (a Jandex library, no JPA, no REST). Pulling in the runtime module would introduce WorkItem entities, datasource requirements, and Flyway migrations into the engine.
+**Do not use `casehub-work` runtime in `casehub-engine`.** The engine depends on `casehub-work-core` only.
 
-**Do not add domain logic to foundation repos.** If the capability requires knowledge of software development (PRs, git), clinical trials (GCP, protocols), or financial crime (AML, SAR), it belongs in an application repo. The foundation knows about cases, commitments, trust, and audit — not about any specific domain.
+**Do not add domain logic to foundation repos.** If the capability requires knowledge of software development, clinical trials, or financial crime, it belongs in an application repo.
 
 ---
 
@@ -184,81 +191,80 @@ casehub-parent              (BOM — publish first; all others import it)
 
 | Concern | Owner | Mechanism |
 |---|---|---|
-| Base ledger tables (`ledger_entry`, `ledger_attestation`, etc.) | `casehub-ledger` | Flyway V1000–V1004 |
+| Base ledger tables | `casehub-ledger` | Flyway V1000–V1004 |
 | WorkItem tables | `casehub-work` runtime | Flyway V1–V999 |
 | Qhorus tables | `casehub-qhorus` | Flyway V1–V7 (named `qhorus` datasource) |
-| Engine tables | `casehub-engine` | Hibernate `drop-and-create` (no migrations — no prod instances yet) |
-| Ledger subclass join tables | Each consumer | Consumer-owned Flyway migration, V1004+ numbering |
+| Engine tables | `casehub-engine` | Hibernate `drop-and-create` (no migrations yet) |
+| Ledger subclass join tables | Each consumer | Consumer-owned Flyway, V1004+ numbering |
 
-**Flyway numbering rule:** casehub-ledger owns V1000–V1003. Domain tables: V1–V999. Ledger subclass join tables: V1004+. Violating this breaks FK constraints at startup.
+**Flyway numbering rule:** casehub-ledger owns V1000–V1003. Domain: V1–V999. Ledger subclass joins: V1004+.
 
-**Named datasource rule:** Qhorus always runs on a named `qhorus` datasource — never share it with domain tables. Claudony uses separate `claudony` and `qhorus` persistence units.
+**Named datasource rule:** Qhorus always runs on named `qhorus` datasource. Claudony uses separate `claudony` and `qhorus` persistence units.
 
 ### Observability
 
-- OTel trace → ledger: `LedgerTraceListener` in casehub-ledger auto-populates `traceId` at `@PrePersist`
-- Agent interactions: `MessageLedgerEntry` in casehub-qhorus records all 9 message types; queryable via `list_ledger_entries`, `get_channel_timeline`, `get_telemetry_summary`
-- WorkItem audit: `AuditEntry` entity (always present) + optional tamper-evident `WorkItemLedgerEntry`
-- Case decisions: `EventLog` (engine-internal, restart-safe) + optional `CaseLedgerEntry` (external, tamper-evident)
+- OTel trace → ledger: `LedgerTraceListener` auto-populates `traceId` at `@PrePersist`
+- Agent interactions: `MessageLedgerEntry` records all 9 message types
+- WorkItem audit: `AuditEntry` (always-on) + optional `WorkItemLedgerEntry` (tamper-evident)
+- Case decisions: `EventLog` (engine-internal) + optional `CaseLedgerEntry` (external, tamper-evident)
 
 ### Authentication
 
 | Context | Owner | Mechanism |
 |---|---|---|
-| Extension-level (casehub-work, casehub-qhorus) | Consuming app | Extensions provide no auth — consuming app owns it |
-| Browser → Claudony | `claudony` | WebAuthn passkeys (`quarkus-security-webauthn`) |
-| Agent → Claudony | `claudony` | `X-Api-Key` header (`ApiKeyAuthMechanism`) |
-| Channel write ACL | `casehub-qhorus` | `allowed_writers` field on `Channel` |
+| Extension-level | Consuming app | Extensions provide no auth |
+| Browser → Claudony | `claudony` | WebAuthn passkeys |
+| Agent → Claudony | `claudony` | `X-Api-Key` header |
+| Channel write ACL | `casehub-qhorus` | `allowed_writers` on `Channel` |
 
 ### Privacy (GDPR)
 
 All GDPR concerns centralised in `casehub-ledger`:
-- Art.17 right to erasure: `LedgerErasureService` + `ActorIdentityProvider` SPI
-- Art.22 automated decision records: `ComplianceSupplement` (attached by consumers)
-- PII sanitisation before storage: `DecisionContextSanitiser` SPI
+- Art.17 erasure: `LedgerErasureService` + `ActorIdentityProvider` SPI
+- Art.22 decision records: `ComplianceSupplement`
+- PII sanitisation: `DecisionContextSanitiser` SPI
 
 ### Agent Identity
 
-Format: `{model-family}:{persona}@{major}` — e.g. `"claude:tarkus-reviewer@v1"`.
-Defined and owned by `casehub-ledger` (ADR 0004). Major version bump resets trust baseline (Beta(1,1) prior).
+Format: `{model-family}:{persona}@{major}` — e.g. `"claude:analyst@v1"`. Defined in casehub-ledger ADR 0004. Major version bump resets trust baseline.
 
-### Implementation Conventions
+### Implementation Protocols
 
-Rules that apply across all casehubio modules — one file per rule, each self-contained for focused retrieval:
+Rules that apply across all casehubio modules:
 
-| Convention | Rule |
+| Protocol | Rule |
 |---|---|
-| [SQL type portability](conventions/sql-type-portability.md) | Use `DOUBLE PRECISION` not `DOUBLE`; `SMALLINT` not `TINYINT`; `TIMESTAMP` not `DATETIME` |
-| [Flyway migration rules](conventions/flyway-migration-rules.md) | Version namespace ranges per module; `MODE=PostgreSQL` in all H2 test URLs |
-| [Optional module pattern](conventions/optional-module-pattern.md) | Jandex library module; `jandex-maven-plugin` required; zero cost when absent |
-| [Submodule folder naming](conventions/maven-submodule-folder-naming.md) | Short names — no repo prefix. `api` not `casehub-work-api`; `runtime` not `casehub-ledger-runtime` |
-| [Quarkus test database](conventions/quarkus-test-database.md) | H2 `MODE=PostgreSQL`; PostgreSQL Testcontainers for dialect validation |
+| [SQL type portability](protocols/sql-type-portability.md) | `DOUBLE PRECISION` not `DOUBLE`; `SMALLINT` not `TINYINT` |
+| [Flyway migration rules](protocols/flyway-migration-rules.md) | Version namespace ranges; `MODE=PostgreSQL` in all H2 test URLs |
+| [Optional module pattern](protocols/optional-module-pattern.md) | Jandex library module; zero cost when absent |
+| [Quarkus test database](protocols/quarkus-test-database.md) | H2 `MODE=PostgreSQL`; Testcontainers for dialect validation |
+| [Submodule folder naming](protocols/maven-submodule-folder-naming.md) | Short names — no repo prefix. `api` not `casehub-work-api` |
 
-Full index: [docs/conventions/](conventions/INDEX.md)
+Full index: [`docs/protocols/INDEX.md`](protocols/INDEX.md)
 
 ---
 
 ## Known Overlap Risks
 
-1. **`EventLog` vs `CaseLedgerEntry`** — casehub-engine has two case audit mechanisms. `EventLog` is internal (restart recovery). `CaseLedgerEntry` is the external tamper-evident ledger. If a lifecycle transition doesn't fire `CaseLifecycleEvent`, it won't be ledgered.
-
-2. **`AuditEntry` vs `WorkItemLedgerEntry`** — casehub-work has two audit mechanisms. `AuditEntry` is always-on and queryable. `WorkItemLedgerEntry` is opt-in and tamper-evident. Don't use `AuditEntry` for compliance claims.
-
-3. **Notification duplication** — `casehub-connectors` and `casehub-work-notifications` both provide Slack/Teams. These must converge to a single pipeline (parent#5, open).
-
-4. **`callerRef` format is implicit** — `WorkItem.callerRef` carries `case:{caseId}/pi:{planItemId}` (defined in `CallerRef` in casehub-engine). casehub-work treats it as opaque. Any consumer using `callerRef` must know this format out of band.
+1. **`EventLog` vs `CaseLedgerEntry`** — `EventLog` is internal (restart recovery). `CaseLedgerEntry` is external (tamper-evident). If a lifecycle transition doesn't fire `CaseLifecycleEvent`, it won't be ledgered.
+2. **`AuditEntry` vs `WorkItemLedgerEntry`** — `AuditEntry` is always-on. `WorkItemLedgerEntry` is opt-in tamper-evident. Don't use `AuditEntry` for compliance claims.
+3. **Notification duplication** — `casehub-connectors` and `casehub-work-notifications` both provide Slack/Teams. Must converge (parent#5, open).
+4. **`callerRef` format is implicit** — carries `case:{caseId}/pi:{planItemId}`. casehub-work treats it as opaque. Consumers must know this format out of band.
 
 ---
 
 ## Per-Repo Deep Dives
 
-| Repo | Raw URL |
-|------|---------|
-| `casehub-ledger` | https://raw.githubusercontent.com/casehubio/parent/main/docs/repos/casehub-ledger.md |
-| `casehub-work` | https://raw.githubusercontent.com/casehubio/parent/main/docs/repos/casehub-work.md |
-| `casehub-qhorus` | https://raw.githubusercontent.com/casehubio/parent/main/docs/repos/casehub-qhorus.md |
-| `casehub-engine` | https://raw.githubusercontent.com/casehubio/parent/main/docs/repos/casehub-engine.md |
-| `claudony` | https://raw.githubusercontent.com/casehubio/parent/main/docs/repos/claudony.md |
-| `casehub-connectors` | https://raw.githubusercontent.com/casehubio/parent/main/docs/repos/casehub-connectors.md |
+| Repo | Local path |
+|------|-----------|
+| `casehub-ledger` | `repos/casehub-ledger.md` |
+| `casehub-work` | `repos/casehub-work.md` |
+| `casehub-qhorus` | `repos/casehub-qhorus.md` |
+| `casehub-engine` | `repos/casehub-engine.md` |
+| `claudony` | `repos/claudony.md` |
+| `casehub-connectors` | `repos/casehub-connectors.md` |
+| `casehub-devtown` | `repos/casehub-devtown.md` |
+| `casehub-aml` | `repos/casehub-aml.md` |
+| `casehub-clinical` | `repos/casehub-clinical.md` |
 
-Application tier deep-dives: see [APPLICATIONS.md](APPLICATIONS.md).
+Application tier: see [APPLICATIONS.md](APPLICATIONS.md)
