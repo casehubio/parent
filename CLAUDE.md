@@ -88,7 +88,7 @@ mvn --batch-mode deploy -DskipTests
 
 ## Cross-Repo Conventions
 
-Conventions shared across all modules live in `docs/conventions/`. Each file is self-contained. See `docs/conventions/INDEX.md` for the full list.
+Conventions shared across all modules live in `docs/protocols/`. Each file is self-contained. See `docs/protocols/INDEX.md` for the full list.
 
 **Critical:** Never commit or push to peer repo directories (`../ledger`, `../work`, etc.). Each repo has its own Claude session. For cross-repo fixes, create a GitHub issue on the target repo instead.
 
@@ -120,6 +120,18 @@ filtering or dropping commits that touch these paths.
 | `CLAUDE.md` | Project conventions |
 | `docs/` | Platform documentation (PLATFORM.md, APPLICATIONS.md, repo deep-dives) |
 | `docs/adr/` | Architecture decision records |
+
+
+## Development Workflow
+
+Before designing: `superpowers:brainstorming`
+Before implementing: `superpowers:test-driven-development`
+Before committing: `superpowers:requesting-code-review`
+
+Living docs — check for drift after significant changes:
+- `docs/PLATFORM.md`
+- `docs/APPLICATIONS.md`
+- `docs/repos/`
 
 ## Work Tracking
 
