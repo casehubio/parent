@@ -36,3 +36,5 @@ One file per rule. Each file is self-contained and retrievable independently. Al
 | [spi-blocking-reactive-parity.md](spi-blocking-reactive-parity.md) | Reflection test to assert reactive SPI covers all blocking SPI methods | All modules with blocking + reactive SPI pairs |
 | [qhorus-event-content-null.md](qhorus-event-content-null.md) | EVENT message `content` is always null — render telemetry fields instead | All projects reading or displaying Qhorus ledger entries |
 | [qhorus-human-governance-channel-types.md](qhorus-human-governance-channel-types.md) | Oversight channel must have `allowedTypes=QUERY,COMMAND`; human actors never post EVENT | All projects using the Qhorus NormativeChannelLayout |
+
+| [module-tier-structure.md](module-tier-structure.md) | Three-tier module structure — pure-Java SPI / core library (no JPA) / full extension; no SDK types in SPI signatures | All casehubio multi-module repos |
