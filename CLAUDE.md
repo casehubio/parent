@@ -104,6 +104,8 @@ Prereq: `brew install bats-core`
 
 Surefire is configured in this parent POM with `rerunFailingTestsCount=2` — failing tests are retried twice before being marked as failures, surfacing flaky vs consistently broken.
 
+**Config architecture:** https://raw.githubusercontent.com/mdproctor/parent/main/docs/config-architecture.md
+
 ## Writing Style Guide
 
 **The writing style guide at `~/claude-workspace/writing-styles/blog-technical.md` is mandatory for all blog and diary entries.** Load it in full before drafting. Complete the pre-draft voice classification (I / we / Claude-named) before generating any prose. Do not show a draft without verifying it against the style guide.
