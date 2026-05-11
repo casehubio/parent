@@ -4,11 +4,14 @@
   Used only to drive a local or CI reactor build across all ecosystem repos.
 
   Usage:
-    mvn install -f aggregator.xml          # build and install all
-    mvn install -f aggregator.xml -T 1C    # parallel build (safe for independent modules)
+    mvn install -f aggregator.xml               # build foundation + integration
+    mvn install -f aggregator.xml -DskipTests   # skip tests
+    mvn install -f aggregator.xml -T 1C         # parallel (safe for independent modules)
+    mvn install -f aggregator.xml -Plangchain4j # include quarkus-langchain4j (slow)
 
-  Requires all repos to be cloned alongside this file (run build-all.sh first).
+  All repos must be cloned as siblings of this parent under ~/claude/casehub/.
   Maven's reactor resolves build order automatically from declared dependencies.
+  Application repos (devtown, aml, clinical) are excluded by default.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -28,10 +31,7 @@
   </description>
 
   <modules>
-    <!-- Ordered by dependency — reactor will enforce this regardless of list order -->
-    <!-- All repos are siblings of this parent inside ~/claude/casehub/ -->
-    <!-- quarkus-langchain4j: casehubio fork, publishes 999-SNAPSHOT with unreleased fixes -->
-    <module>../../quarkus-langchain4j</module>
+    <!-- All repos are siblings of this parent under ~/claude/casehub/ -->
     <module>../ledger</module>
     <module>../connectors</module>
     <module>../work</module>
@@ -39,5 +39,15 @@
     <module>../engine</module>
     <module>../claudony</module>
   </modules>
+
+  <profiles>
+    <profile>
+      <!-- Activate with -Plangchain4j — slow, only when that fork has changed -->
+      <id>langchain4j</id>
+      <modules>
+        <module>../../quarkus-langchain4j</module>
+      </modules>
+    </profile>
+  </profiles>
 
 </project>
