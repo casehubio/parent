@@ -92,6 +92,14 @@ Before designing or implementing: brainstorm → TDD → review before committin
 
 ---
 
+## Architectural Patterns
+
+The platform uses a deliberate blend of Clean Architecture, Hexagonal (Ports and Adapters), DDD, Event-Driven, Reactive, CQRS-lite, Strategy, Registry, Interceptor, and Observer patterns. Each tier applies a different subset. The dependency rule — source code dependencies only point inward, domain never depends on infrastructure — governs all of them.
+
+Full pattern map, rationale, and invariants: [`docs/ARCHITECTURE.md`](ARCHITECTURE.md)
+
+---
+
 ## What We're Building
 
 A production-grade, compliance-first infrastructure stack for multi-agent AI systems on Quarkus. Targeted at regulated deployments (EU AI Act Art.12, GDPR Art.17/22).

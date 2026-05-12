@@ -1,0 +1,195 @@
+# CaseHub Architecture Patterns
+
+> **Supplement to PLATFORM.md.** This document names the architectural patterns in use across the platform, states the invariants that flow from each, and explains the rationale. It does not need to be read for every implementation decision — the Platform Coherence Protocol in PLATFORM.md covers that. This document is for understanding *why* the platform is shaped the way it is, and for making principled decisions about new modules, new repos, or structural changes.
+
+---
+
+## The Dependency Rule
+
+The single most important architectural principle in CaseHub. Every structural decision in the platform is an expression of it:
+
+> **Source code dependencies may only point inward. Domain logic never depends on infrastructure.**
+
+In Maven module terms:
+```
+REST / UI / Deployment (outermost)
+        ↓ depends on
+Service / Application Logic
+        ↓ depends on
+SPI Interfaces  (ports)
+        ↓ depends on
+Domain Model  (innermost — zero infrastructure dependencies)
+```
+
+Adapters (JPA, Quarkus, REST) depend on SPIs. SPIs never depend on adapters. This is Clean Architecture's dependency rule expressed as the three-tier module convention.
+
+**Enforced by:** `module-tier-structure.md` protocol — pure-Java SPI tier / core library (no JPA) / full Quarkus extension. SPI signatures must not expose infrastructure types (no `Uni<T>` in blocking SPIs, no JPA annotations in `api/`).
+
+**Verified by:** `ArchitecturalExclusionTest` in `casehub-engine` prevents deprecated casehub-poc types from leaking into the engine.
+
+**Violated by:** referencing a Panache entity from `api/`, putting `@ApplicationScoped` in a module that should be pure Java, or letting a domain event carry a JPA type. All of these invert the dependency direction.
+
+---
+
+## Architecture by Tier
+
+### Foundation — Hexagonal Architecture (Ports and Adapters)
+
+`casehub-ledger`, `casehub-work`, `casehub-connectors`, `casehub-qhorus`
+
+The foundation tier is where Hexagonal Architecture is most explicitly applied. Each repo defines SPI interfaces (ports) in a pure-Java `api/` module, with multiple adapter implementations in separate modules.
+
+**Ports (examples):**
+- `EventLogRepository` — storage abstraction for the immutable audit log
+- `CaseInstanceRepository` — case persistence port
+- `WorkerProvisioner` / `ReactiveWorkerProvisioner` — worker lifecycle management
+- `CaseChannelProvider` — external communication channel
+- `Connector` — outbound message delivery (Slack, Teams, SMS, email)
+
+**Adapters (examples):**
+- `InMemoryEventLogRepository` — in-memory adapter for tests
+- `JpaEventLogRepository` — Hibernate/Panache production adapter
+- `MongoWorkItemStore` — MongoDB persistence for work items
+- `SlackConnector`, `TeamsConnector`, `TwilioSmsConnector` — connector implementations
+
+**Invariant:** The `api/` module compiles with no Quarkus, no JPA, no reactive types. Any class that imports `io.quarkus.*` or `jakarta.persistence.*` belongs in the extension module, not the SPI.
+
+**Dual blocking/reactive SPI pairs:** Where both sync and async callers exist, the SPI is mirrored — `WorkerProvisioner` (blocking) + `ReactiveWorkerProvisioner` (`Uni<T>`). A reflection test (`spi-blocking-reactive-parity.md`) asserts the reactive SPI covers all blocking SPI methods.
+
+---
+
+### Orchestration — DDD + Event-Driven + Reactive
+
+`casehub-engine`
+
+The engine is where the domain model lives and where the most complexity is concentrated. Three patterns work together:
+
+**Domain-Driven Design:**
+- A rich domain model in `api/model/` — `CaseDefinition`, `Worker`, `Binding`, `Goal`, `Milestone`, `Capability`, `CaseStatus`
+- Domain events as Java records — `PlanItemCompletedEvent`, `StageActivatedEvent`, `CaseLifecycleEvent`
+- Aggregates with enforced state machines — `CaseStatus { RUNNING, WAITING, SUSPENDED, COMPLETED, FAULTED, CANCELLED }`
+- No anemic domain model: state transitions are enforced by event handlers in `runtime/handler/`, not by setters
+
+**Event-Driven Architecture:**
+- Cross-aggregate communication via events only — no direct aggregate-to-aggregate calls
+- Two event buses used together: CDI `Event<T>.fireAsync()` for CDI observers, Vert.x EventBus for performance-sensitive routing
+- Consumers use `@ObservesAsync` (CDI) or `@ConsumeEvent` (Vert.x) — publishers are unaware of subscribers
+- `CaseLedgerEventCapture` observes `CaseLifecycleEvent` asynchronously and writes immutable ledger entries
+
+**Reactive (Smallrye Mutiny):**
+- All I/O operations return `Uni<T>` — repository calls, scheduler submissions, SPI invocations
+- Composition via `Uni.combine().all().unis()` for parallel calls (e.g., count + page in `CaseDefinitionService`)
+- Reactive is the right choice here: cases are long-running, workers execute asynchronously, the scheduler fires independently. Non-blocking composition is a natural fit.
+
+**Blackboard pattern (CMMN):**
+- `casehub-engine/blackboard/` implements a CMMN plan model layer on top of the reactive core
+- `BlackboardRegistry` maintains active case state in memory
+- Stage lifecycle (Activated → Completed → Terminated) driven by blackboard events, not polling
+
+---
+
+### Integration — Adapter + CQRS-lite
+
+`claudony`, `casehub-flow`
+
+The integration tier connects the foundation and orchestration layers to external consumers (browser clients, REST callers, AI agents).
+
+**CQRS-lite:**
+- Write operations (commands) go through the engine — `CaseHubRuntime`, `WorkOrchestrator`
+- Read operations (queries) can bypass the engine and read directly from persistence
+- Command objects: `CreateWorkItemRequest`, `CompleteRequest`, `DelegateRequest`
+- Query objects: `CaseLineageQuery`, `DeadLetterQuery`, audit trail queries
+- Not full CQRS (no separate read store) — "lite" because the separation is at the service boundary, not at the data store level
+
+**Adapter pattern:**
+- `WorkItemLifecycleAdapter` translates work lifecycle events to engine events — bridging two domain models cleanly
+
+---
+
+### Cross-Cutting — Strategy, Registry, Interceptor, Observer, Factory
+
+These patterns appear across all tiers.
+
+**Strategy Pattern** — pluggable algorithms without changing client code:
+- `WorkerSelectionStrategy` → `ClaimFirstStrategy`, `LeastLoadedStrategy`
+- `InstanceAssignmentStrategy` → `RoundRobinAssignmentStrategy`, `ExplicitListAssignmentStrategy`
+- `ContextDiffStrategy` → `JsonPatchContextDiffStrategy`, `NoOpContextDiffStrategy`
+- `ActiveParticipationStrategy`, `ReactiveParticipationStrategy` in claudony
+
+**Registry Pattern** — runtime discovery and lookup:
+- `CaseDefinitionRegistry` — case definitions from YAML and CDI beans
+- `ExpressionEngineRegistry` — pluggable expression engines (JQ, etc.)
+- `BlackboardRegistry` — active case plan models
+- `FilterEvaluatorRegistry`, `DynamicFilterRegistry` — work item filtering
+
+**Factory Pattern (CDI @Produces)** — conditional construction based on config:
+- `HolidayCalendarProducer` — returns `ICalHolidayCalendar` or `ConfigHolidayCalendar` based on config
+- `LedgerPrivacyProducer`, `LedgerEntityManagerProducer`
+
+**Interceptor Pattern** — cross-cutting concerns without modifying business logic:
+- `@ProvenanceCapture` / `ProvenanceCaptureInterceptor` — wraps method execution to capture audit metadata
+- `@Transactional` on event observers for atomic ledger writes
+
+**Observer Pattern (CDI Events):**
+- `@ObservesAsync` for ledger capture — non-blocking, does not hold up the publishing transaction
+- Sync `@Observes` for routing decisions that need to run before the transaction commits
+
+---
+
+## Event Sourcing — Selective, Not Full
+
+CaseHub uses event sourcing selectively, not as the primary state model.
+
+**What is event-sourced:** the audit ledger — `CaseLedgerEntry` records are immutable, append-only, hash-chained (Merkle tree frontier). This provides tamper-evident history for compliance (EU AI Act Art.12, GDPR Art.17/22).
+
+**What is not event-sourced:** case state. Current state is stored as JPA entities (`CaseInstanceRepository`) and queried directly. Rebuilding state from events on every read would be expensive given the complexity of the case model.
+
+**The hybrid:** the event log gives you full auditability and replay capability. The entity store gives you queryable current state. This is the right tradeoff for a compliance-first platform where reads outnumber writes.
+
+---
+
+## What We Deliberately Did Not Choose
+
+**Full event sourcing:** State reconstruction from events on every read is expensive at scale and adds complexity to queries. The ledger gives audit; entities give query. Both together cover the requirement.
+
+**Vertical slices (now):** The domain model is still maturing — worker provisioning, orchestration, and the work/engine integration are all evolving. Vertical slices require stable feature boundaries. Drawing slice boundaries before the domain settles means drawing the wrong ones. The plan: finish the poc-to-engine migration, let the worker/orchestration model settle, then refactor to slices along the seams the code reveals. See the note on evolution below.
+
+**Separate read stores (full CQRS):** A separate read store (Elasticsearch, read-replica, materialised views) would add operational complexity that isn't justified by current query patterns. CQRS-lite at the service boundary gives the separation of concerns without the infrastructure cost.
+
+---
+
+## On Reactive Complexity
+
+The reactive model (Mutiny `Uni<T>`/`Multi<T>`) is correct for the domain but carries real cognitive overhead. Every new feature requires reasoning about non-blocking composition, transaction boundaries, and CDI context propagation on async threads.
+
+**Why we kept it:** Cases are long-running. Workers execute asynchronously and independently. The scheduler fires outside request threads. Non-blocking composition is natural here — blocking threads would waste resources waiting on async case state transitions.
+
+**The alternative that would have been simpler:** Quarkus virtual threads (Project Loom). Virtual threads allow blocking code without blocking OS threads, which would have eliminated most of the `Uni<T>` composition complexity while preserving concurrency. This was not available at design time. It is worth evaluating for new modules where the reactive model is adding more friction than value.
+
+---
+
+## Architecture and AI Agents at Scale
+
+CaseHub is infrastructure for multi-agent AI systems. The architectural choices above were not made in isolation from that context.
+
+**Why the dependency rule matters for AI:** LLMs reasoning about code need stable, predictable structure. When infrastructure (JPA, Quarkus) leaks into the domain layer, an AI agent cannot safely modify business logic without risk of breaking infrastructure wiring. Clean boundaries make AI assistance safer and more accurate.
+
+**Why event-driven matters for agents:** AI agents are inherently asynchronous — they run for unpredictable durations and produce results on their own timeline. An event-driven engine that coordinates agents via `WorkResult` events rather than synchronous calls naturally accommodates this. Polling-based or blocking orchestration would not scale to multi-agent cases.
+
+**Why the SPI pattern matters for agent pluggability:** New agent types are adapters. They implement `WorkerProvisioner` and appear in the registry without touching the engine. The hexagonal architecture makes the platform open to new agent implementations by design.
+
+**Why immutable audit matters for compliance:** Regulated AI deployments (EU AI Act Art.12) require tamper-evident records of every agent decision and action. The append-only hash-chained ledger is not an afterthought — it is a first-class architectural constraint that shaped the event model throughout the platform.
+
+---
+
+## Evolution Path — Toward Vertical Slices
+
+The current layered structure (horizontal modules per concern) was the right starting point: it gave discipline before the domain was fully understood.
+
+The evolution path when the domain matures:
+1. **Finish the migration** — archive casehub-poc, stabilise the worker/orchestration model
+2. **Identify seams** — where do most changes happen? Which features are genuinely independent? Where does coupling cause friction?
+3. **Promote implicit boundaries to explicit slices** — the SPI boundaries, event model, and ledger separation are already proto-slice boundaries. The refactor names what is already there
+4. **New modules enter as slices** — once the pattern is established, new capability areas start as slices rather than new horizontal layers
+
+The risk to avoid: slicing before the domain is understood. Wrong slice boundaries are harder to fix than horizontal layers, because they scatter a single concept across multiple codebases.
