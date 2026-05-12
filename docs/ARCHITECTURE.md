@@ -168,6 +168,22 @@ The reactive model (Mutiny `Uni<T>`/`Multi<T>`) is correct for the domain but ca
 
 ---
 
+## Blended Approach — What CaseHub Actually Uses
+
+Pure pattern adherence is rare in production systems. CaseHub uses a deliberate blend across its tiers:
+
+| Tier | Blend | Rationale |
+|------|-------|-----------|
+| Foundation | **Hexagonal + Clean** | Domain protected by SPI ports; dependency rule enforced by module structure |
+| Orchestration (engine) | **Hexagonal + DDD + Event-Driven** | Rich domain with separate read/write paths; events as the only cross-aggregate channel |
+| Integration | **Hexagonal + CQRS-lite** | Commands through engine (write port); queries bypass engine (read port) |
+| Cross-cutting | **Strategy + Registry + Observer** | Pluggable algorithms, runtime discovery, decoupled notification |
+| Future | **+ Vertical Slices** | Once the domain matures; see Evolution Path below |
+
+The recommended blend for a new AI platform starting today: **Hexagonal + Clean + Vertical Slices** — clean domain core, ports for all external concerns, and slices organised by business capability. CaseHub arrived at the first two organically; the slices come when the domain stabilises.
+
+---
+
 ## Architecture and AI Agents at Scale
 
 CaseHub is infrastructure for multi-agent AI systems. The architectural choices above were not made in isolation from that context.
@@ -177,6 +193,8 @@ CaseHub is infrastructure for multi-agent AI systems. The architectural choices 
 **Why event-driven matters for agents:** AI agents are inherently asynchronous — they run for unpredictable durations and produce results on their own timeline. An event-driven engine that coordinates agents via `WorkResult` events rather than synchronous calls naturally accommodates this. Polling-based or blocking orchestration would not scale to multi-agent cases.
 
 **Why the SPI pattern matters for agent pluggability:** New agent types are adapters. They implement `WorkerProvisioner` and appear in the registry without touching the engine. The hexagonal architecture makes the platform open to new agent implementations by design.
+
+**The LLM interface is an incoming adapter.** In hexagonal terms, when an LLM calls a tool or function — start a case, signal an event, query case state — that call arrives at an incoming adapter (the REST resource or a function-calling contract). The use case boundary is the port. This means LLM tool schemas are port contracts, not implementation details. Keeping them at the adapter boundary prevents LLM-specific concerns from leaking into the domain. A new LLM provider or a new tool protocol is a new adapter, not a domain change.
 
 **Why immutable audit matters for compliance:** Regulated AI deployments (EU AI Act Art.12) require tamper-evident records of every agent decision and action. The append-only hash-chained ledger is not an afterthought — it is a first-class architectural constraint that shaped the event model throughout the platform.
 
