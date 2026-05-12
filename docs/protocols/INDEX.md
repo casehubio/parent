@@ -40,3 +40,4 @@ One file per rule. Each file is self-contained and retrievable independently. Al
 | [qhorus-human-governance-channel-types.md](qhorus-human-governance-channel-types.md) | Oversight channel must have `allowedTypes=QUERY,COMMAND`; human actors never post EVENT | All projects using the Qhorus NormativeChannelLayout |
 
 | [module-tier-structure.md](module-tier-structure.md) | Three-tier module structure — pure-Java SPI / core library (no JPA) / full extension; no SDK types in SPI signatures | All casehubio multi-module repos |
+| [java-optional-usage.md](java-optional-usage.md) | Use Optional only when absence is the method's primary return contract; never on getters, map accessors, fields, parameters, or collection returns | All Java code across the casehub ecosystem |
