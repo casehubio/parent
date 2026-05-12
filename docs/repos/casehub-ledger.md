@@ -32,18 +32,22 @@ Domain-agnostic, immutable, cryptographically tamper-evident audit ledger for an
 | `LedgerMerklePublisher` | Opt-in Ed25519 tlog-checkpoint publisher |
 | `LedgerProvExportService` | W3C PROV-DM JSON-LD export per subject |
 | `LedgerErasureService` | GDPR Art.17 token-severing erasure |
-| `TrustScoreJob` | `@Scheduled` nightly trust recomputation |
+| `TrustScoreJob` | `@Scheduled` nightly trust recomputation; includes bootstrap pre-pass for new actors when `casehub.ledger.trust-score.bootstrap.enabled=true` |
 | `TrustScoreRoutingPublisher` | CDI events post-compute: `TrustScoreFullPayload`, `TrustScoreDeltaPayload`, `TrustScoreComputedAt` |
+| `TrustExportService` | Trust score read-model: `exportAll(minScore)`, `exportActor(actorId)`, `exportDelta(since)` → `TrustExportPayload` |
+| `TrustBootstrapService` | Seeds Beta(α,β) priors for first-time actors via `TrustBootstrapSource` SPI + `TrustImportService` |
 
-### SPIs (Consumer-Implemented)
+### SPIs (Consumer-Implemented or Built-In Alternatives)
 
-| SPI | Purpose |
-|---|---|
-| `LedgerEntryRepository` / `ReactiveLedgerEntryRepository` | Persistence for ledger entries |
-| `ActorTrustScoreRepository` | Persistence for trust scores |
-| `ActorIdentityProvider` | Tokenise / resolve / erase actor identities (GDPR) |
-| `DecisionContextSanitiser` | Sanitise PII from decision context JSON before storage |
-| `LedgerTraceIdProvider` | Override OTel trace ID extraction |
+| SPI | Default | Built-in Alternative | Purpose |
+|---|---|---|---|
+| `LedgerEntryRepository` / `ReactiveLedgerEntryRepository` | — | `JpaLedgerEntryRepository` | Persistence for ledger entries |
+| `ActorTrustScoreRepository` | — | `JpaActorTrustScoreRepository` | Persistence for trust scores |
+| `ActorIdentityProvider` | — | `InternalActorIdentityProvider` | Tokenise / resolve / erase actor identities (GDPR) |
+| `DecisionContextSanitiser` | no-op | — | Sanitise PII from decision context JSON before storage |
+| `LedgerTraceIdProvider` | OTel span | — | Override OTel trace ID extraction |
+| `TrustImportService` | `NoOpTrustImportService` | `JpaTrustImportService` (seed-if-absent) | Import trust scores from external payload |
+| `TrustBootstrapSource` | `NoOpTrustBootstrapSource` | — | Fetch prior trust data for first-time actors |
 
 ### Supplements (Optional Attachments)
 
