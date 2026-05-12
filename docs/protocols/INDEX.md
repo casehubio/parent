@@ -21,6 +21,7 @@ One file per rule. Each file is self-contained and retrievable independently. Al
 | [maven-coordinate-standard.md](maven-coordinate-standard.md) | Maven coordinate standard for all casehubio repos | All casehubio Maven repos |
 | [artifact-rename-propagation.md](artifact-rename-propagation.md) | Artifact rename propagation — update all cross-repo consumers before shipping | Any casehubio repo renaming a published artifactId |
 | [java-optional-usage.md](java-optional-usage.md) | Use Optional only when absence is the method's primary return contract | All Java code across casehub |
+| [quarkus-test-security-http-only.md](quarkus-test-security-http-only.md) | Only add @TestSecurity to @QuarkusTest classes that exercise HTTP endpoints | All modules with @QuarkusTest classes |
 
 ---
 
