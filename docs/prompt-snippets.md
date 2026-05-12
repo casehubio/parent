@@ -21,7 +21,7 @@ Paste this with every new piece of work to enforce the discipline chain.
 One line of rules, then describe the work:
 
 ```
-superpowers:brainstorming before designing. superpowers:test-driven-development before implementing. java-dev for all Java (loads testing-principles + ide-tooling). superpowers:requesting-code-review before committing. implementation-doc-sync after.
+Read PLATFORM.md and run the Platform Coherence Protocol. Check docs/protocols/ for relevant rules. superpowers:brainstorming before designing. superpowers:test-driven-development before implementing. java-dev for all Java (loads testing-principles + ide-tooling). superpowers:requesting-code-review before committing. implementation-doc-sync after.
 
 [describe the issue or feature here]
 ```
