@@ -18,6 +18,9 @@ ide_move_file not mv. Before any find-usages use ide_find_references not grep.
 Use superpowers:brainstorming before designing,
 superpowers:test-driven-development before implementing,
 superpowers:requesting-code-review before committing.
+For all Java work invoke java-dev — it loads testing-principles (unit/
+integration/E2E, happy path, correctness, robustness coverage) and ide-tooling.
+Do not skip it even for small changes.
 ```
 
 ---
