@@ -128,7 +128,11 @@ filtering or dropping commits that touch these paths.
 
 Before designing: `superpowers:brainstorming`
 Before implementing: `superpowers:test-driven-development`
+For all Java work: `java-dev` (loads `testing-principles` + `ide-tooling`)
 Before committing: `superpowers:requesting-code-review`
+After implementation: `implementation-doc-sync` (scoped doc sweep)
+
+**Prompt snippet:** `docs/prompt-snippets.md` — paste the work-item snippet at the start of each issue to enforce the above chain explicitly.
 
 Living docs — check for drift after significant changes:
 - `docs/PLATFORM.md`
