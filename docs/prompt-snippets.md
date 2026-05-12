@@ -6,28 +6,24 @@ Project-specific snippets for casehubio sessions. The general snippet lives at `
 
 ## casehubio — design and implementation sessions
 
-General snippet plus casehubio additions: read PLATFORM.md and confirm an issue exists.
+Paste this at the start of every session. One phrase — the `session-start`
+skill handles everything.
 
 ```
-Before starting: read ~/claude/casehub/parent/docs/PLATFORM.md and run the
-Platform Coherence Protocol. Confirm an open issue exists for this work —
-create one if not. Check both IntelliJ MCPs are available and report if either
-is missing; do not proceed with semantic operations if they are absent. Before
-any rename use ide_refactor_rename not sed/Edit. Before any move use
-ide_move_file not mv. Before any find-usages use ide_find_references not grep.
-Use superpowers:brainstorming before designing,
-superpowers:test-driven-development before implementing,
-superpowers:requesting-code-review before committing.
-For all Java work invoke java-dev — it loads testing-principles (unit/
-integration/E2E, happy path, correctness, robustness coverage) and ide-tooling.
-Do not skip it even for small changes.
-After implementation and before ending the session: invoke implementation-doc-sync
-to update docs scoped to what changed this session. Do not sweep unrelated docs.
+session start
 ```
+
+The skill reads PLATFORM.md, runs the Platform Coherence Protocol, confirms
+an issue exists, verifies both IntelliJ MCPs, establishes IntelliJ tool
+preferences, and activates the full skill chain:
+brainstorming → TDD → java-dev (+ testing-principles) → code-review → doc-sync.
 
 ---
 
 ## Notes
 
-- General snippet (without PLATFORM.md and issue check): `~/.claude/prompt-snippets.md`
+- `session-start` skill source: `cc-praxis/session-start/`
+- The platform doc path for casehubio is resolved automatically by the skill
+- To extend to other projects: add `platform-doc: path/to/PLATFORM.md` to
+  that project's CLAUDE.md — the skill will pick it up
 - Tracked in: casehubio/parent#13
