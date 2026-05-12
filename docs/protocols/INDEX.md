@@ -2,42 +2,83 @@
 
 One file per rule. Each file is self-contained and retrievable independently. All files use YAML frontmatter with id, title, type, scope, applies_to, severity, refs, violation_hint, and created fields.
 
+## Casehub-Specific Protocols
+
 | File | Rule | Applies to |
 |---|---|---|
-| [sql-type-portability.md](sql-type-portability.md) | Use standard SQL types in all migrations | All modules with Flyway |
 | [flyway-migration-rules.md](flyway-migration-rules.md) | Flyway namespace ranges, H2 mode, PostgreSQL testing | All modules with Flyway |
+| [flyway-version-range-allocation.md](flyway-version-range-allocation.md) | Each module owns an exclusive Flyway thousand-block version range | All casehub modules using Flyway |
 | [optional-module-pattern.md](optional-module-pattern.md) | Optional Jandex library module pattern | All optional feature modules |
 | [quarkus-test-database.md](quarkus-test-database.md) | Database configuration for @QuarkusTest suites | All modules with @QuarkusTest |
-| [atomic-threshold-counters.md](atomic-threshold-counters.md) | OCC + policyTriggered flag for M-of-N completion without pessimistic locking | Any module tracking aggregate completion thresholds |
-| [cdi-alternative-stores.md](cdi-alternative-stores.md) | Panache statics bypass CDI alternatives — use store/service layer in tests | All modules with `@Alternative` InMemory stores |
-| [scheduler-test-isolation.md](scheduler-test-isolation.md) | `@Scheduled` runs in its own transaction; use `@TestTransaction` and unique names | All modules with `@Scheduled` beans |
-| [managed-executor-cdi.md](managed-executor-cdi.md) | Inject `ManagedExecutor` for CDI context propagation on background threads | All modules with concurrent test scenarios |
 | [maven-module-scoping.md](maven-module-scoping.md) | Always specify `-pl <module>` when running Maven commands | All multi-module casehub modules |
 | [maven-submodule-folder-naming.md](maven-submodule-folder-naming.md) | Submodule folder names are short — no repo prefix; `api`, `runtime`, `deployment` etc. | All multi-module casehub repos |
-| [maven-coordinate-standard.md](maven-coordinate-standard.md) | Full Maven coordinate standard — groupId, version, root/child artifactIds, parent reference | All casehubio Maven repos |
-| [artifact-rename-propagation.md](artifact-rename-propagation.md) | When renaming a published artifactId, update all cross-repo consumers before shipping | Any repo renaming a published artifact |
-| [flyway-version-range-allocation.md](flyway-version-range-allocation.md) | Each module owns an exclusive Flyway thousand-block version range | All casehub modules using Flyway |
-| [configmapping-javadoc-requirement.md](configmapping-javadoc-requirement.md) | Every method in a `@ConfigMapping` interface must have Javadoc | All Quarkus extensions with @ConfigMapping |
-| [h2-reserved-word-columns.md](h2-reserved-word-columns.md) | Avoid H2-reserved words as column names in Flyway migrations | All modules with Flyway migrations |
-| [quarkus-integration-test-module-separation.md](quarkus-integration-test-module-separation.md) | `@QuarkusIntegrationTest` must live in a dedicated `integration-tests/` submodule | All Quarkus extensions with integration tests |
-| [quarkus-scheduled-interval-syntax.md](quarkus-scheduled-interval-syntax.md) | `@Scheduled` interval must use `${property}s` syntax, not `{property}s` | All modules with @Scheduled beans |
-| [panache-find-whereclause-syntax.md](panache-find-whereclause-syntax.md) | Panache `find()` WHERE clauses use bare field names, not alias-prefixed names | All modules using Panache |
-| [quarkus-junit-not-junit5.md](quarkus-junit-not-junit5.md) | Use `quarkus-junit` dependency, not deprecated `quarkus-junit5` | All modules with @QuarkusTest classes |
-| [cdi-observesasync-transactional-delegation.md](cdi-observesasync-transactional-delegation.md) | `@ObservesAsync` methods must delegate transactional logic to a separate bean | All modules with CDI async observers |
-| [cdi-fireasync-transaction-boundary.md](cdi-fireasync-transaction-boundary.md) | `fireAsync()` inside `@Transactional` dispatches immediately, not at commit | All modules using CDI async events |
-| [quarkus-broadcastprocessor-backpressure.md](quarkus-broadcastprocessor-backpressure.md) | `BroadcastProcessor.onNext()` throws on no subscribers — catch and discard | All modules using reactive broadcast streams |
-| [quartz-ram-store-configuration.md](quartz-ram-store-configuration.md) | Use Quartz RAM store — no JDBC store, no Quartz tables | All modules using Quartz scheduling |
-| [spi-testing-alternative-inner-classes.md](spi-testing-alternative-inner-classes.md) | Test SPI wiring with `@Alternative` static inner classes, not Mockito | All modules with CDI SPI implementations |
-| [quarkus-test-naming-convention.md](quarkus-test-naming-convention.md) | `@QuarkusTest` classes must be named `*Test.java`, never `*IT.java` | All modules with @QuarkusTest classes |
-| [quarkus-dev-mode-websocket-restart.md](quarkus-dev-mode-websocket-restart.md) | Quarkus dev mode hot-reload breaks WebSocket endpoint registration — full restart required | All modules with WebSocket endpoints |
-| [quarkus-test-stateful-bean-isolation.md](quarkus-test-stateful-bean-isolation.md) | Stateful `@ApplicationScoped` beans don't reset between `@QuarkusTest` classes | All modules with stateful beans and multiple test classes |
-| [quarkus-reactive-datasource-h2-tests.md](quarkus-reactive-datasource-h2-tests.md) | Disable reactive datasource in H2 tests when `hibernate-reactive-panache` is on classpath | All modules with transitive reactive panache dependency |
-| [quarkus-conditional-bean-build-time-only.md](quarkus-conditional-bean-build-time-only.md) | `@IfBuildProperty` / `@UnlessBuildProperty` are evaluated at build time only | All modules using conditional bean activation |
-| [quarkus-named-datasource-schema-generation.md](quarkus-named-datasource-schema-generation.md) | Named persistence units require explicit schema generation config | All modules with multiple named Hibernate ORM PUs |
-| [git-worktree-absolute-path-maven.md](git-worktree-absolute-path-maven.md) | Use absolute paths when running Maven in git worktrees | All modules using git worktrees |
-| [spi-blocking-reactive-parity.md](spi-blocking-reactive-parity.md) | Reflection test to assert reactive SPI covers all blocking SPI methods | All modules with blocking + reactive SPI pairs |
-| [qhorus-event-content-null.md](qhorus-event-content-null.md) | EVENT message `content` is always null — render telemetry fields instead | All projects reading or displaying Qhorus ledger entries |
-| [qhorus-human-governance-channel-types.md](qhorus-human-governance-channel-types.md) | Oversight channel must have `allowedTypes=QUERY,COMMAND`; human actors never post EVENT | All projects using the Qhorus NormativeChannelLayout |
-
 | [module-tier-structure.md](module-tier-structure.md) | Three-tier module structure — pure-Java SPI / core library (no JPA) / full extension; no SDK types in SPI signatures | All casehubio multi-module repos |
-| [java-optional-usage.md](java-optional-usage.md) | Use Optional only when absence is the method's primary return contract; never on getters, map accessors, fields, parameters, or collection returns | All Java code across the casehub ecosystem |
+| [quartz-ram-store-configuration.md](quartz-ram-store-configuration.md) | Use Quartz RAM store — no JDBC store, no Quartz tables | All casehub modules using Quartz |
+| [ledger-spi-propagation.md](ledger-spi-propagation.md) | When a LedgerEntryRepository SPI method is added, update all downstream implementations | casehub-work, casehub-qhorus, casehub-engine |
+| [qhorus-event-content-null.md](qhorus-event-content-null.md) | EVENT message `content` is always null — render telemetry fields instead | All projects reading Qhorus ledger entries |
+| [qhorus-human-governance-channel-types.md](qhorus-human-governance-channel-types.md) | Oversight channel must have `allowedTypes=QUERY,COMMAND`; human actors never post EVENT | All projects using Qhorus NormativeChannelLayout |
+| [qhorus-actor-type-mapping.md](qhorus-actor-type-mapping.md) | All ActorType values must map to the canonical casehub ledger vocabulary | All casehubio projects assigning ActorType |
+| [maven-coordinate-standard.md](maven-coordinate-standard.md) | Maven coordinate standard for all casehubio repos | All casehubio Maven repos |
+| [artifact-rename-propagation.md](artifact-rename-propagation.md) | Artifact rename propagation — update all cross-repo consumers before shipping | Any casehubio repo renaming a published artifactId |
+| [java-optional-usage.md](java-optional-usage.md) | Use Optional only when absence is the method's primary return contract | All Java code across casehub |
+
+---
+
+## Garden References
+
+Generic Quarkus/Java knowledge migrated from casehub conventions to the canonical garden.
+These entries are universally applicable — not casehub-specific.
+Listed here for discoverability until garden RAG is available.
+
+### CDI / Transactions
+
+| GE-ID | Title | Garden domain |
+|---|---|---|
+| GE-20260512-66d997 | Panache static methods bypass CDI @Alternative stores — returns empty results silently | jvm |
+| GE-20260512-0fe012 | CDI fireAsync() inside @Transactional dispatches immediately — observer can run before commit | jvm |
+| GE-20260512-6887c9 | @ObservesAsync + @Transactional on same method is unreliable — delegate to separate bean | jvm |
+| GE-20260512-a9ad9f | Raw ExecutorService drops CDI context — @Transactional silently broken on background threads | jvm |
+| GE-20260512-6d0c2b | BroadcastProcessor.onNext() throws BackPressureFailure when no subscribers are registered | jvm |
+
+### Quarkus Testing
+
+| GE-ID | Title | Garden domain |
+|---|---|---|
+| GE-20260512-47f92e | quarkus-junit5 is a relocation stub since Quarkus 3.31 — use quarkus-junit | jvm |
+| GE-20260512-b3f32a | @IfBuildProperty/@UnlessBuildProperty evaluated at augmentation only — QuarkusTestProfile has no effect | jvm |
+| GE-20260512-e552f7 | @ApplicationScoped bean state persists across @QuarkusTest classes — tests pass in isolation, fail in suite | jvm |
+| GE-20260512-50b394 | Use @TestTransaction + unique identifiers to prevent @Scheduled interference in tests | jvm |
+| GE-20260512-c246b0 | Test CDI SPI with @Alternative static inner classes — Mockito cannot be injected as CDI beans | jvm |
+| GE-20260512-493c90 | @QuarkusTest classes named *IT.java silently report 0 tests — failsafe collects them, not surefire | jvm |
+| GE-20260512-c30f52 | @QuarkusIntegrationTest in runtime module causes class loading failures — separate module required | jvm |
+
+### Database / Schema / Migrations
+
+| GE-ID | Title | Garden domain |
+|---|---|---|
+| GE-20260512-ea776c | Quarkus named persistence units silently skip schema generation — explicit config per named PU | jvm |
+| GE-20260512-a3838e | Transitive hibernate-reactive-panache causes H2 test startup failure — disable reactive datasource | jvm |
+| GE-20260512-7720ab | H2-reserved words as column names pass PostgreSQL but fail in H2 test mode | jvm |
+| GE-20260512-2c2eff | Non-ANSI SQL types in Flyway migrations pass H2 silently but fail on PostgreSQL at deployment | jvm |
+| GE-20260512-67b3b5 | Panache find() alias-prefixed field names return empty results silently — bare field names required | jvm |
+
+### Scheduler / Config
+
+| GE-ID | Title | Garden domain |
+|---|---|---|
+| GE-20260512-1fa51e | @Scheduled interval without $ prefix silently fires at wrong frequency | jvm |
+| GE-20260512-552405 | @ConfigMapping methods without Javadoc cause a compile error — not a runtime warning | jvm |
+| GE-20260512-523f68 | Quarkus dev mode hot-reload silently breaks WebSocket endpoint registration | jvm |
+
+### Architecture / Design Techniques
+
+| GE-ID | Title | Garden domain |
+|---|---|---|
+| GE-20260512-e3e525 | OCC + policyTriggered flag for M-of-N threshold completion — prevents duplicate trigger under READ COMMITTED | jvm |
+| GE-20260512-a09bd3 | Enforce blocking/reactive SPI method parity with a reflection test | jvm |
+
+### Tooling
+
+| GE-ID | Title | Garden domain |
+|---|---|---|
+| GE-20260512-a28ecc | Maven relative paths resolve to wrong worktree when shell cwd changes — use absolute paths | tools |
