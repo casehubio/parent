@@ -12,6 +12,8 @@ created: 2026-05-08
 
 # Convention: Maven Submodule Folder Names Are Short — No Repo Prefix
 
+> This protocol covers **folder names only**. For the full Maven coordinate standard (groupId, artifactId, version, parent reference) see [maven-coordinate-standard.md](maven-coordinate-standard.md).
+
 **Applies to:** All multi-module casehub repos  
 **Severity:** Important — prefix creep makes repos harder to navigate and is inconsistent with Quarkus extension conventions
 

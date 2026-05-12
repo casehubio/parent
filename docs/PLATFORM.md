@@ -137,6 +137,44 @@ casehub-parent              (BOM — publish first; all others import it)
 
 ---
 
+## Cross-Repo Dependency Map
+
+**Purpose:** impact analysis when an artifact changes — rename, removal, SPI break. Look up the artifact here to find every repo that must be updated before the change ships.
+
+**How to maintain:** when adding a cross-repo `<dependency>`, add a row here. When removing one, delete the row. Protocol: [artifact-rename-propagation.md](protocols/artifact-rename-propagation.md).
+
+| Artifact consumed | Consuming repo | Consuming module | Nature |
+|-------------------|---------------|-----------------|--------|
+| `casehub-ledger-api` | `casehub-qhorus` | `api` | SPI types |
+| `casehub-ledger-api` | `casehub-qhorus` | `runtime` | runtime dep |
+| `casehub-ledger-api` | `casehub-work` | `ledger` | audit integration |
+| `casehub-ledger-api` | `casehub-engine` | `ledger` | case audit |
+| `casehub-ledger-api` | `claudony` | `casehub` | worker lineage |
+| `casehub-ledger-api` | `devtown` | `review` | trust queries |
+| `casehub-ledger` (runtime) | `casehub-qhorus` | `runtime` | runtime dep |
+| `casehub-ledger` (runtime) | `casehub-work` | `ledger` | audit writes |
+| `casehub-ledger` (runtime) | `casehub-engine` | `ledger` | case audit writes |
+| `casehub-ledger` (runtime) | `devtown` | `app` | runtime dep |
+| `casehub-connectors-core` | `casehub-work` | `notifications` | delivery SPI impl |
+| `casehub-connectors-core` | `devtown` | `app` | notification delivery |
+| `casehub-work-api` | `casehub-engine` | `work-adapter` | WorkItem adapter |
+| `casehub-work-api` | `devtown` | `review` | WorkItem types |
+| `casehub-work-core` | `casehub-engine` | `work-adapter` | WorkBroker |
+| `casehub-work` (runtime) | `devtown` | `app` | runtime dep |
+| `casehub-work` (runtime) | `casehub-clinical` | `runtime` | runtime dep |
+| `casehub-qhorus-api` | `casehub-engine` | `runtime` | channel SPIs |
+| `casehub-qhorus-api` | `claudony` | `casehub` | channel provider |
+| `casehub-qhorus-api` | `devtown` | `review` | channel routing |
+| `casehub-qhorus` (runtime) | `claudony` | `app` | runtime dep |
+| `casehub-qhorus` (runtime) | `devtown` | `app` | runtime dep |
+| `casehub-engine-api` | `claudony` | `casehub` | SPI implementations |
+| `casehub-engine-api` | `devtown` | `review` | engine types |
+| `casehub-engine-ledger` | `claudony` | `casehub` | lineage queries |
+
+**Application tier** (aml, clinical) — consume foundation runtime artifacts; see [APPLICATIONS.md](APPLICATIONS.md) for detail.
+
+---
+
 ## Capability Ownership — "Where Does X Live?"
 
 | Capability | Owner | Notes |
