@@ -9,7 +9,7 @@ Project-specific snippets for casehubio sessions. The general snippet lives at `
 Paste this with every new piece of work:
 
 ```
-MUST invoke work-start first — do not skip. Then: superpowers:brainstorming before designing. superpowers:test-driven-development before implementing. java-dev for all Java (loads testing-principles + ide-tooling). superpowers:requesting-code-review before committing. implementation-doc-sync after.
+invoke work-start first. superpowers:brainstorming before designing. superpowers:test-driven-development before implementing. java-dev for all Java (loads testing-principles + ide-tooling). superpowers:requesting-code-review before committing. implementation-doc-sync after.
 
 [describe the issue or feature here]
 ```
