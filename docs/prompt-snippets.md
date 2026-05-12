@@ -4,26 +4,32 @@ Project-specific snippets for casehubio sessions. The general snippet lives at `
 
 ---
 
-## casehubio — design and implementation sessions
+## casehubio — session start
 
-Paste this at the start of every session. One phrase — the `session-start`
-skill handles everything.
+Paste once at the start of a new session (handles platform doc, issue check,
+IntelliJ MCPs, tool preferences):
 
 ```
 session start
 ```
 
-The skill reads PLATFORM.md, runs the Platform Coherence Protocol, confirms
-an issue exists, verifies both IntelliJ MCPs, establishes IntelliJ tool
-preferences, and activates the full skill chain:
-brainstorming → TDD → java-dev (+ testing-principles) → code-review → doc-sync.
+---
+
+## casehubio — starting an issue or feature
+
+Paste this with every new piece of work to enforce the discipline chain.
+One line of rules, then describe the work:
+
+```
+superpowers:brainstorming before designing. superpowers:test-driven-development before implementing. java-dev for all Java (loads testing-principles + ide-tooling). superpowers:requesting-code-review before committing. implementation-doc-sync after.
+
+[describe the issue or feature here]
+```
 
 ---
 
 ## Notes
 
-- `session-start` skill source: `cc-praxis/session-start/`
-- The platform doc path for casehubio is resolved automatically by the skill
-- To extend to other projects: add `platform-doc: path/to/PLATFORM.md` to
-  that project's CLAUDE.md — the skill will pick it up
+- `session-start` skill: handles PLATFORM.md, issue check, IntelliJ MCPs, tool preferences
+- Work-item line: enforces the skill chain explicitly for each piece of work
 - Tracked in: casehubio/parent#13
