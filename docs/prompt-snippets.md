@@ -21,6 +21,11 @@ superpowers:requesting-code-review before committing.
 For all Java work invoke java-dev — it loads testing-principles (unit/
 integration/E2E, happy path, correctness, robustness coverage) and ide-tooling.
 Do not skip it even for small changes.
+After implementation and before ending the session: systematically revise all
+documentation to reflect the latest code changes. Check docs/PLATFORM.md,
+docs/APPLICATIONS.md, docs/repos/, CLAUDE.md, any ADRs, and all cross-
+references for correctness. Address drift, staleness, redundancy, duplication,
+and gaps. This is not optional — documentation that diverges from code is a bug.
 ```
 
 ---
