@@ -34,8 +34,8 @@ Run `add-dir /Users/mdproctor/claude/casehub/parent` before any other work.
 ## Git Discipline
 
 Two git repositories are active in every session:
-- **Workspace** (`/Users/mdproctor/claude/public/casehub`) — methodology artifacts: handover, blog, specs, plans, ADRs
-- **Project repo** (`/Users/mdproctor/claude/casehub/parent`) — source code
+- **Workspace** (`/Users/mdproctor/claude/public/casehub`) — methodology artifacts: handover, blog (staging before publish), plans, snapshots
+- **Project repo** (`/Users/mdproctor/claude/casehub/parent`) — source code, ADRs (`docs/adr/`), specs
 
 Before any git operation, run `git rev-parse --show-toplevel` to confirm which repo is currently active. Do not assume — the session may have opened in either. cd to the correct repo before staging:
 - Source code commits → project repo
@@ -52,11 +52,12 @@ Before any git operation, run `git rev-parse --show-toplevel` to confirm which r
 
 | Artifact   | Destination | Notes |
 |------------|-------------|-------|
-| adr        | workspace   | |
-| blog       | workspace   | |
-| design     | workspace   | |
+| adr        | project     | lands in `docs/adr/` |
+| blog       | workspace   | staged here; published to mdproctor.github.io via publish-blog |
+| design     | workspace   | epic journal (`design/JOURNAL.md`) |
 | snapshots  | workspace   | |
-| specs      | workspace   | |
+| specs      | project     | lands in project `docs/` |
+| plans      | workspace   | |
 | handover   | workspace   | |
 
 ---
