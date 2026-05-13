@@ -31,6 +31,17 @@ Run `add-dir /Users/mdproctor/claude/casehub/parent` before any other work.
 - `blog/` — project diary entries with INDEX.md
 - `design/` — epic journal (created by `epic` at branch start)
 
+## Git Discipline
+
+Two git repositories are active in every session:
+- **Workspace** (`/Users/mdproctor/claude/public/casehub`) — methodology artifacts: handover, blog, specs, plans, ADRs
+- **Project repo** (`/Users/mdproctor/claude/casehub/parent`) — source code
+
+Before any git operation, run `git rev-parse --show-toplevel` to confirm which repo is currently active. Do not assume — the session may have opened in either. cd to the correct repo before staging:
+- Source code commits → project repo
+- Methodology artifacts → workspace
+
+
 ## Rules
 
 - All methodology artifacts go here, not in the project repo
