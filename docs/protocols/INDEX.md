@@ -52,6 +52,8 @@ Listed here for discoverability until garden RAG is available.
 | GE-20260512-c246b0 | Test CDI SPI with @Alternative static inner classes — Mockito cannot be injected as CDI beans | jvm |
 | GE-20260512-493c90 | @QuarkusTest classes named *IT.java silently report 0 tests — failsafe collects them, not surefire | jvm |
 | GE-20260512-c30f52 | @QuarkusIntegrationTest in runtime module causes class loading failures — separate module required | jvm |
+| GE-20260513-3c1a03 | @TestSecurity silently ignored on @QuarkusTest classes that never touch HTTP | jvm |
+| GE-20260513-4c4205 | Use AtomicInteger call counter in Supplier<String> to distinguish SSE events by content in tests | jvm |
 
 ### Database / Schema / Migrations
 
