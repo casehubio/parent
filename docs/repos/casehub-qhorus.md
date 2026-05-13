@@ -137,10 +137,10 @@ See [docs/normative-layer.md](https://raw.githubusercontent.com/casehubio/qhorus
 
 ## Current State
 
-- 1007+ tests passing (runtime + testing + examples modules)
+- 1035+ tests passing (runtime + testing + examples modules)
 - Channel backend abstraction complete: `ChannelGateway`, `QhorusChannelBackend`, `HumanParticipatingChannelBackend`, `HumanObserverChannelBackend`, `DefaultInboundNormaliser`, `Senders` — see ADR-0006
-- `register_backend` MCP tool (agent-driven association) deferred to #140
-- A2A protocol bridge (`A2AChannelBackend`) deferred to #135
+- A2A protocol bridge complete: `A2AChannelBackend` (registered as ChannelBackend "a2a"), `A2AActorResolver` (6-step identity chain), `A2AResource` refactored as thin adapter — closed #135
+- `message.actor_type` column: explicit `ActorType` stored on every message; `MessageService.send()` requires it as the final parameter; `LedgerWriteService` uses it directly (no re-derivation)
 - Reactive store tests are `@Disabled` — require PostgreSQL with native reactive driver (Docker not always available)
 
 ---
