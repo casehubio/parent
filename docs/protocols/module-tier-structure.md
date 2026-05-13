@@ -75,11 +75,15 @@ Never the reverse. Tier 1 must not depend on Tier 2 or 3.
 
 ## The Persistence Module Split Rule
 
-This three-tier structure is why `casehub-work-api` is JPA-free: `casehub-engine`
-consumes `casehub-work-api` (Tier 1) to get the `WorkBroker` and
-`WorkerSelectionStrategy` SPI. If `casehub-work-api` contained JPA entities,
-every engine test would need a datasource configured — even tests that use only
-the in-memory WorkBroker.
+**Rule:** JPA entity classes must live in a separate module from the domain model SPI. Any artifact that bundles JPA entities forces every downstream consumer to configure a datasource — including test modules that use in-memory repos.
+
+**Correct split:**
+- `<name>-api` — domain POJOs and SPIs, zero JPA (Tier 1)
+- `<name>` or `<name>-runtime` — JPA entities and Flyway migrations (Tier 3)
+
+**Canonical example:** `casehub-work-api` is JPA-free. `casehub-engine` consumes it to get `WorkBroker` and `WorkerSelectionStrategy` SPI. If `casehub-work-api` contained JPA entities, every engine test would need a datasource configured — even tests that use only the in-memory WorkBroker.
+
+Violating this rule causes cascading datasource failures across all downstream test suites.
 
 ## Checklist when adding a new SPI
 
