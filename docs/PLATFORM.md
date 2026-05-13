@@ -61,6 +61,7 @@ Check how the same concern is handled in the two or three most similar places in
 - No-op defaults: every SPI gets a default no-op implementation in the owning repo
 - **Application tier rule:** domain logic (git, PRs, clinical protocols, AML investigations) belongs in application repos. Foundation repos must remain domain-agnostic. If it requires knowledge of a specific business domain, it does not belong in foundation.
 - **Submodule folder naming:** short descriptive names — no repo prefix. `api` not `casehub-work-api`; `runtime` not `casehub-ledger-runtime`. See [`docs/protocols/maven-submodule-folder-naming.md`](protocols/maven-submodule-folder-naming.md).
+- **Auth retrofit readiness:** RBAC is not yet implemented but must not be foreclosed. No auth or principal logic in domain or service layers. REST resources must stay thin enough for `@RolesAllowed`. Queries need a structurally injectable filter. SPI signatures must stay free of auth types. See [`docs/protocols/auth-retrofit-readiness.md`](protocols/auth-retrofit-readiness.md).
 
 ### Step 5 — Does this need a platform-level doc update?
 
