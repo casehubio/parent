@@ -2,11 +2,11 @@
 id: PP-20260508-f6a8e5
 title: "Each module owns a Flyway version range — claim before writing migrations"
 type: rule
-scope: platform
+scope: universal
 applies_to: "All modules with Flyway migrations"
 severity: critical
 refs:
-  - docs/protocols/sql-type-portability.md
+  - docs/protocols/universal/sql-type-portability.md
 violation_hint: "Version collisions fail at startup with no clear indication of which module caused the conflict"
 created: 2026-05-08
 ---

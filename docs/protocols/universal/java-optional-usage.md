@@ -2,7 +2,7 @@
 id: PP-20260512-5f055d
 title: "Use Optional only when absence is the method's primary return contract"
 type: rule
-scope: platform
+scope: universal
 applies_to: "All Java code across the casehub ecosystem"
 severity: guidance
 refs: []

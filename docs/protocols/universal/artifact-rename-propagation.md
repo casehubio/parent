@@ -2,7 +2,7 @@
 id: PP-20260512-arename
 title: "Artifact rename propagation — update all cross-repo consumers before shipping"
 type: rule
-scope: platform
+scope: universal
 applies_to: "Any casehubio repo renaming a published artifactId"
 severity: important
 refs: [maven-coordinate-standard.md]

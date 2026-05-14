@@ -2,7 +2,7 @@
 id: PP-20260508-4bfd3a
 title: "Always scope Maven commands to a specific module with -pl"
 type: rule
-scope: platform
+scope: universal
 applies_to: "All multi-module casehub modules"
 severity: important
 refs: []

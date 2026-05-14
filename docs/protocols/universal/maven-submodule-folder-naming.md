@@ -2,7 +2,7 @@
 id: PP-20260508-5c0e4b
 title: "Maven submodule folder names are short — no repo prefix"
 type: principle
-scope: platform
+scope: universal
 applies_to: "All multi-module casehub repos"
 severity: guidance
 refs: []

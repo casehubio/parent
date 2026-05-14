@@ -52,16 +52,16 @@ Known consolidation candidates:
 Check how the same concern is handled in the two or three most similar places in the platform. Then implement it the same way. Specifically:
 
 - SPIs: follow the SPI placement rule (operational SPIs in `api/spi/`; persistence SPIs in model modules)
-- Ledger subclasses: JOINED inheritance, consumer-owned V1004+ migration, domain-agnostic leaf hash. See [`docs/protocols/ledger-subclass-extension.md`](protocols/ledger-subclass-extension.md).
+- Ledger subclasses: JOINED inheritance, consumer-owned V1004+ migration, domain-agnostic leaf hash. See [`docs/protocols/casehub/ledger-subclass-extension.md`](protocols/casehub/ledger-subclass-extension.md).
 - CDI events: async (`@ObservesAsync`) for ledger capture; sync for routing decisions
 - Named datasources: Qhorus always on `qhorus`, domain tables never mixed in
 - Flyway numbering: V1000–V1003 = ledger; V1–V999 = domain; V1004+ = ledger subclass joins
-- Module structure: three-tier rule — pure-Java SPI / core library (no JPA) / full extension. SPI method signatures must not expose heavy external SDK types. See [`docs/protocols/module-tier-structure.md`](/Users/mdproctor/claude/casehub/parent/docs/protocols/module-tier-structure.md).
-- **Persistence module split:** JPA entities must not co-locate with domain SPIs — forces all consumers to configure a datasource. See [`docs/protocols/module-tier-structure.md`](protocols/module-tier-structure.md).
+- Module structure: three-tier rule — pure-Java SPI / core library (no JPA) / full extension. SPI method signatures must not expose heavy external SDK types. See [`docs/protocols/casehub/module-tier-structure.md`](/Users/mdproctor/claude/casehub/parent/docs/protocols/casehub/module-tier-structure.md).
+- **Persistence module split:** JPA entities must not co-locate with domain SPIs — forces all consumers to configure a datasource. See [`docs/protocols/casehub/module-tier-structure.md`](protocols/casehub/module-tier-structure.md).
 - No-op defaults: every SPI gets a default no-op implementation in the owning repo
 - **Application tier rule:** domain logic (git, PRs, clinical protocols, AML investigations) belongs in application repos. Foundation repos must remain domain-agnostic. If it requires knowledge of a specific business domain, it does not belong in foundation.
-- **Submodule folder naming:** short descriptive names — no repo prefix. `api` not `casehub-work-api`; `runtime` not `casehub-ledger-runtime`. See [`docs/protocols/maven-submodule-folder-naming.md`](protocols/maven-submodule-folder-naming.md).
-- **Auth retrofit readiness:** RBAC is not yet implemented but must not be foreclosed. No auth or principal logic in domain or service layers. REST resources must stay thin enough for `@RolesAllowed`. Queries need a structurally injectable filter. SPI signatures must stay free of auth types. See [`docs/protocols/auth-retrofit-readiness.md`](protocols/auth-retrofit-readiness.md).
+- **Submodule folder naming:** short descriptive names — no repo prefix. `api` not `casehub-work-api`; `runtime` not `casehub-ledger-runtime`. See [`docs/protocols/universal/maven-submodule-folder-naming.md`](protocols/universal/maven-submodule-folder-naming.md).
+- **Auth retrofit readiness:** RBAC is not yet implemented but must not be foreclosed. No auth or principal logic in domain or service layers. REST resources must stay thin enough for `@RolesAllowed`. Queries need a structurally injectable filter. SPI signatures must stay free of auth types. See [`docs/protocols/casehub/auth-retrofit-readiness.md`](protocols/casehub/auth-retrofit-readiness.md).
 
 ### Step 5 — Does this need a platform-level doc update?
 
@@ -288,7 +288,7 @@ Rules that apply across all casehubio modules:
 | [Flyway migration rules](protocols/flyway-migration-rules.md) | Version namespace ranges; `MODE=PostgreSQL` in all H2 test URLs |
 | [Optional module pattern](protocols/optional-module-pattern.md) | Jandex library module; zero cost when absent |
 | [Quarkus test database](protocols/quarkus-test-database.md) | H2 `MODE=PostgreSQL`; Testcontainers for dialect validation |
-| [Submodule folder naming](protocols/maven-submodule-folder-naming.md) | Short names — no repo prefix. `api` not `casehub-work-api` |
+| [Submodule folder naming](protocols/universal/maven-submodule-folder-naming.md) | Short names — no repo prefix. `api` not `casehub-work-api` |
 
 Full index: [`docs/protocols/INDEX.md`](protocols/INDEX.md)
 

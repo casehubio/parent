@@ -2,7 +2,7 @@
 id: PP-20260508-6d1f5d
 title: "Use Quartz RAM store — no JDBC store, no Quartz tables"
 type: rule
-scope: platform
+scope: universal
 applies_to: "All casehub modules using Quartz scheduling"
 severity: important
 refs: []

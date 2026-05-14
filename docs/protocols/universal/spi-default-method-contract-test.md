@@ -2,7 +2,7 @@
 id: PP-20260513-2ce9e1
 title: "Verify SPI default method contracts with an anonymous implementation test"
 type: rule
-scope: platform
+scope: universal
 applies_to: "All SPI interfaces in devtown-domain/spi/ that use default methods"
 severity: important
 refs:

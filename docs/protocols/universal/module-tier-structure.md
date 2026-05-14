@@ -2,7 +2,7 @@
 id: PP-20260512-module-tiers
 title: "Three-tier module structure — pure-Java SPI, core library, full extension"
 type: rule
-scope: platform
+scope: universal
 applies_to: "All casehubio multi-module repos"
 severity: required
 refs: []

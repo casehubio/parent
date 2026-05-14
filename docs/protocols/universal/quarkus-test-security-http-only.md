@@ -2,7 +2,7 @@
 id: PP-20260513-7c227e
 title: "Only add @TestSecurity to @QuarkusTest classes that exercise HTTP endpoints"
 type: rule
-scope: platform
+scope: universal
 applies_to: "All modules with @QuarkusTest classes"
 severity: guidance
 refs: []

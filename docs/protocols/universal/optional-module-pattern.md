@@ -2,11 +2,11 @@
 id: PP-20260508-6d1f5c
 title: "Package optional features as Jandex library modules, not as core extension runtime"
 type: rule
-scope: platform
+scope: universal
 applies_to: "Any feature module that should not affect applications that don't use it"
 severity: important
 refs:
-  - docs/protocols/flyway-migration-rules.md
+  - docs/protocols/universal/flyway-migration-rules.md
 violation_hint: "Without a Jandex index, CDI beans are not discovered when the module is consumed as a JAR by another module"
 created: 2026-05-08
 ---

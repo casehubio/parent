@@ -13,7 +13,7 @@ Reconstitute this index: `grep -rl "^scope: application" docs/protocols/*.md`
 
 | File | Rule | Applies to |
 |------|------|------------|
-| [layer-log.md](layer-log.md) | Maintain LAYER-LOG.md as definition of done per harness layer — structured wiring, gotchas, and pattern-to-replicate for each layer | All CaseHub agentic harnesses |
+| [layer-log.md](universal/layer-log.md) | Maintain LAYER-LOG.md as definition of done per harness layer — structured wiring, gotchas, and pattern-to-replicate for each layer | All CaseHub agentic harnesses |
 | *(pending #18)* | Hexagonal module placement — `api/` is JPA-free pure domain; `app/` owns use-case orchestration | All CaseHub agentic harnesses |
 | *(pending #19)* | casehub-work Hibernate scan packages — include both `runtime.model` and `runtime.filter` | All harnesses using casehub-work |
 | *(pending)* | Layered adoption approach — one foundation module at a time; each layer independently runnable with a single HTTP call | All CaseHub agentic harnesses |

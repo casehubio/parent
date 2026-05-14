@@ -2,11 +2,11 @@
 id: PP-20260514-f41258
 title: "Gate optional Quarkus extension deps via Capabilities + ExcludedTypeBuildItem, not config flags"
 type: rule
-scope: platform
+scope: universal
 applies_to: "Quarkus extension runtime and deployment modules that optionally depend on another Quarkus extension"
 severity: important
 refs:
-  - docs/protocols/optional-module-pattern.md
+  - docs/protocols/universal/optional-module-pattern.md
 violation_hint: "A user-facing config flag controls whether an optional extension dep is active instead of classpath presence; or an optional extension dep is compile-scope causing unconditional activation for all consumers"
 created: 2026-05-14
 ---

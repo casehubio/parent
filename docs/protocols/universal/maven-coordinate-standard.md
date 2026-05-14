@@ -2,7 +2,7 @@
 id: PP-20260512-coord
 title: "Maven coordinate standard for all casehubio repos"
 type: rule
-scope: platform
+scope: universal
 applies_to: "All casehubio Maven repos"
 severity: important
 refs: [maven-submodule-folder-naming.md, artifact-rename-propagation.md]

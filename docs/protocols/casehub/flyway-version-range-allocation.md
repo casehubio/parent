@@ -6,7 +6,7 @@ scope: platform
 applies_to: "All casehub modules using Flyway"
 severity: critical
 refs:
-  - docs/protocols/flyway-migration-rules.md
+  - docs/protocols/universal/flyway-migration-rules.md
 violation_hint: "Overlapping version ranges cause startup failure across modules when both are on the classpath"
 created: 2026-05-08
 ---

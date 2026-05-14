@@ -2,11 +2,11 @@
 id: PP-20260508-3aec2a
 title: "Use H2 in PostgreSQL compatibility mode for @QuarkusTest — not PostgreSQL Testcontainer by default"
 type: rule
-scope: platform
+scope: universal
 applies_to: "All modules with @QuarkusTest classes that use a datasource"
 severity: important
 refs:
-  - docs/protocols/flyway-migration-rules.md
+  - docs/protocols/universal/flyway-migration-rules.md
 violation_hint: "Wrong config causes intermittent failures or missed production bugs from H2/PostgreSQL type mismatches"
 created: 2026-05-08
 ---

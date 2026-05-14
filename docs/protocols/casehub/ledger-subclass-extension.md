@@ -6,8 +6,8 @@ scope: platform
 applies_to: "Any casehubio repo adding a new JPA subclass of LedgerEntry"
 severity: required
 refs:
-  - docs/protocols/flyway-version-range-allocation.md
-  - docs/protocols/ledger-spi-propagation.md
+  - docs/protocols/casehub/flyway-version-range-allocation.md
+  - docs/protocols/casehub/ledger-spi-propagation.md
 violation_hint: "Wrong inheritance strategy, version conflict, or domain-specific data in leaf hash breaks multi-tenant query and auditability guarantees"
 created: 2026-05-13
 ---
