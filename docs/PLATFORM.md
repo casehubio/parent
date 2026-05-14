@@ -190,7 +190,7 @@ casehub-parent              (BOM — publish first; all others import it)
 |---|---|---|
 | Immutable entry chain (Merkle Mountain Range) | `casehub-ledger` | Domain-agnostic; consumers extend `LedgerEntry` via JPA JOINED |
 | Cryptographic tamper evidence | `casehub-ledger` | `LedgerVerificationService`, inclusion proofs, Ed25519 checkpoints |
-| Actor trust scoring (Bayesian Beta + EigenTrust) | `casehub-ledger` | `ActorTrustScore`, nightly `TrustScoreJob`, `TrustScoreRoutingPublisher` CDI events |
+| Actor trust scoring (Bayesian Beta + EigenTrust) | `casehub-ledger` | `ActorTrustScore` — four score types: GLOBAL, CAPABILITY, DIMENSION, CAPABILITY_DIMENSION (✅ #76); nightly `TrustScoreJob`, `TrustScoreRoutingPublisher` CDI events |
 | Trust score export read-model | `casehub-ledger` | `TrustExportService` (`exportAll`/`exportActor`/`exportDelta`) — consumed by dashboards and upper layers |
 | Trust score import SPI | `casehub-ledger` | `TrustImportService` SPI; `JpaTrustImportService` seed-if-absent `@Alternative`; `NoOpTrustImportService` `@DefaultBean` |
 | Trust bootstrapping | `casehub-ledger` | `TrustBootstrapSource` SPI + `TrustBootstrapService`; seeds Beta(α,β) from external source on actor first-registration; opt-in via `casehub.ledger.trust-score.bootstrap.enabled` |

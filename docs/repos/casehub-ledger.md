@@ -19,7 +19,7 @@ Domain-agnostic, immutable, cryptographically tamper-evident audit ledger for an
 |---|---|
 | `LedgerEntry` | Abstract `@Entity` with `@Inheritance(JOINED)`. Core fields: `subjectId`, `sequenceNumber`, `entryType` (COMMAND/EVENT/ATTESTATION), `actorId`, `actorType` (HUMAN/AGENT/SYSTEM), `actorRole`, `occurredAt`, `traceId`, `causedByEntryId`, `digest`, `supplementJson` |
 | `LedgerAttestation` | Peer verdict: SOUND / FLAGGED / ENDORSED / CHALLENGED, with `confidence` and `evidence` |
-| `ActorTrustScore` | Per-actor Bayesian Beta score: `trustScore`, `globalTrustScore` (EigenTrust), `alphaValue`, `betaValue` |
+| `ActorTrustScore` | Per-actor trust score keyed by `(actorId, capabilityKey, dimensionKey)`; four `ScoreType` values: GLOBAL, CAPABILITY, DIMENSION, CAPABILITY_DIMENSION. Bayesian Beta fields (`alpha`, `beta`, `trustScore`) for binary types; `trustScore` only for continuous types |
 | `LedgerMerkleFrontier` | Stored MMR frontier (≤log₂(N) rows per subject) |
 | `ActorIdentity` | Token↔identity mapping for pseudonymisation |
 
