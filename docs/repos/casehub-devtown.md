@@ -6,9 +6,23 @@
 
 ## What It Is
 
-The AI-assisted software development application built on the CaseHub foundation. Provides PR review orchestration, merge queue (casehub-refinery), trust-weighted reviewer routing, and formal obligation tracking per code review assignment.
+The AI-assisted software development application built on the CaseHub foundation. Field showcase and tutorial for Java developers in software engineering and DevOps — a domain every Java developer knows from their own daily practice.
 
-This is the CaseHub answer to Gastown — same domain (software engineering coordination), but built on the domain-agnostic foundation rather than baked into infrastructure. See `docs/gastown-casehub-analysis-v2.md` in this repo for the full architectural comparison.
+Provides PR review orchestration, merge queue (casehub-refinery), trust-weighted reviewer routing, and formal obligation tracking per code review assignment. This is the CaseHub answer to Gastown — same domain (software engineering coordination), but built on the domain-agnostic foundation rather than baked into infrastructure. See `docs/gastown-casehub-analysis-v2.md` in this repo for the full architectural comparison.
+
+## Tutorial Layers
+
+The tutorial structure emerges from the natural adoption sequence. Each layer adds one foundation module and makes its value tangible relative to the previous layer. The code at every layer is production-grade. See `docs/tutorial-strategy.md §8` for teaching objectives per layer.
+
+| Layer | Adds | Gap it closes | Status |
+|-------|------|---------------|--------|
+| 1 | Naive Java — no CaseHub | Baseline: direct service calls to analysis agents, no accountability | pending |
+| 2 | casehub-work | No formal SLA for reviewer response; reviewer assignments not tracked | pending |
+| 3 | casehub-qhorus | No formal obligation per specialist reviewer; DECLINE when outside expertise | pending |
+| 4 | casehub-ledger | No tamper-evident review record; cannot trace production incident to missed finding | pending |
+| 5 | casehub-engine | Fixed review pipeline; no adaptive routing on security flags or architecture changes | pending |
+| 6 | Trust routing | No trust model; experienced security reviewers not prioritised on sensitive PRs | pending |
+| 7 | Comparison vs naive AI code review | — | pending |
 
 ## What It Owns
 

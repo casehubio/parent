@@ -27,6 +27,41 @@ Each project already has good examples, but they are siloed. The pattern is cons
 
 These apply to every example, tutorial, and walkthrough written for CaseHub.
 
+### 2.0 Every domain application is both a field showcase and a field tutorial
+
+Every CaseHub domain application serves two purposes simultaneously — for the same audience:
+
+- **Field showcase:** demonstrates CaseHub's compliance and accountability capabilities to practitioners evaluating the platform for their domain
+- **Field tutorial:** teaches CaseHub adoption to developers who build systems in that domain
+
+These are not competing goals. A Java developer at a financial institution who watches the AML investigation showcase is the same developer who follows the tutorial to build their own investigation system. A Java developer at a pharmaceutical company who sees the clinical trial demonstration is the same developer who implements their own trial coordination application. A Java developer evaluating devtown for their team's code review workflow is the same developer who will build that workflow.
+
+The "field" qualifier matters. Each domain application targets practitioners who already have domain knowledge — because domain knowledge is the audience's prerequisite, not a barrier. GCP compliance is standard knowledge for a Java developer working in pharma. AML workflow is standard knowledge for a Java developer at a bank. Code review orchestration is standard knowledge for any Java developer. CaseHub domain applications assume that knowledge and show what the platform adds on top.
+
+There is no hierarchy between field tutorials. AML, clinical, and devtown each serve their own field. AML is not "the" tutorial — it is the tutorial for Java developers in financial services, and currently the furthest along.
+
+### 2.1b Production-first — the tutorial structure emerges from adoption sequence
+
+Every domain application is designed and built for production deployment. The tutorial structure is not a separate design concern — it emerges from documenting the natural sequence in which you would adopt CaseHub foundation modules when building a real application.
+
+**Do not make architectural decisions to serve the tutorial.** Every line of code must justify its existence in a deployed production system. The tutorial documents what you built; it does not drive what you build.
+
+The only tutorial-specific element is Layer 1: the naive Java baseline showing the domain without CaseHub. This is a deliberate anti-pattern — code a team would actually write without the platform, so the reader can see exactly what gap each subsequent layer closes. From Layer 2 onward, every implementation decision is a production decision. The gap comments (`// LAYER N GAP: ...`) are the only tutorial artifact.
+
+The natural adoption sequence that all domain apps follow:
+
+| Layer | What it adds | What gap it closes |
+|-------|-------------|-------------------|
+| 1 | Naive Java — domain logic alone | Baseline: this is what you'd write without CaseHub |
+| 2 | casehub-work | No formal deadline or human task lifecycle |
+| 3 | casehub-qhorus | No formal obligation per agent interaction |
+| 4 | casehub-ledger | No tamper-evident audit trail |
+| 5 | casehub-engine | Fixed pipeline; no adaptive paths |
+| 6 | Trust routing | No trust model; random or round-robin agent selection |
+| 7 | Comparison | Explicit contrast with existing tools in the field |
+
+The sequence is a guideline, not a constraint. The domain may justify a different ordering if one compliance requirement is more pressing than another. The principle is: each layer adds one foundation concern and makes its value tangible relative to the previous layer, and each layer is independently runnable with a single HTTP call.
+
 ### 2.1 Standalone module value first
 
 Every module must make sense on its own before it is wired to another. A developer who only uses `casehub-work` without `casehub-ledger` or `casehub-engine` should find complete, working examples for their use case. The value of adding the next module is demonstrated by showing what it *adds*, not by requiring it.
@@ -276,11 +311,11 @@ Some developers want to understand a specific capability without going through a
 
 ---
 
-## 6. Tutorial: AML Investigation (Java Developer Tutorial)
+## 6. AML Investigation — Field Tutorial for Java Developers in Financial Services
 
-**Role:** Primary tutorial — demonstrates all CaseHub capabilities in a domain Java enterprise developers immediately recognise.
+**Role:** Field showcase and tutorial for Java developers in financial services — banking, AML compliance, transaction monitoring, SAR filing. Currently the reference implementation for the layer-by-layer tutorial approach (Layers 1–2 complete, Layers 3–7 in progress).
 
-**Why Java developers relate:** Java dominates banking infrastructure. AML compliance systems — transaction monitoring, case management, SAR filing — are systems Java developers have built or integrated. They recognise the pain: audit trails that can't reconstruct the decision chain, human escalation that fires too late, SAR filings where nobody can say which agent made the call.
+**Why this audience relates:** Java dominates banking infrastructure. AML compliance systems — transaction monitoring, case management, SAR filing — are systems Java developers in this field have built and integrated. They recognise the failure modes first-hand: audit trails that can't reconstruct the decision chain, human escalation that fires too late, SAR filings where nobody can say which agent made the call.
 
 **Comparison baseline:** IBM AMLSim (open source, GitHub), industry whitepapers (AnChain, Sardine) — showing what current LLM-based AML coordination looks like without formal accountability.
 
@@ -402,15 +437,13 @@ That is three sentences covering three layers. A Java developer who has used Spr
 
 ---
 
-## 7. Showcase: Clinical Trial Coordination (Market Entry Demo)
+## 7. Clinical Trial Coordination — Field Tutorial for Java Developers in Regulated Healthcare
 
-**Role:** Market entry demonstration — shows CaseHub in a regulated domain where compliance features are legally mandatory, not optional.
-
-**Audience:** Decision-makers and architects evaluating CaseHub for regulated industries. Not a getting-started tutorial — a demonstration of what becomes possible.
+**Role:** Field showcase and tutorial for Java developers in pharma, biotech, and clinical research organisations. GCP domain knowledge is a prerequisite for this audience — and it is standard knowledge for Java developers in that field. The same developer who evaluates CaseHub for their trial system is the developer who follows the tutorial to build it.
 
 **Comparison baseline:** ClinicalAgent ([arXiv 2404.14777](https://arxiv.org/abs/2404.14777), GitHub open source) — peer-reviewed (ACM BCB '24), showing exactly what naive LLM trial coordination looks like.
 
-### 7.1 What it demonstrates that ClinicalAgent cannot add
+### 7.1 The compliance gap it closes
 
 | GCP / ICH requirement | ClinicalAgent | CaseHub |
 |---|---|---|
@@ -421,7 +454,71 @@ That is three sentences covering three layers. A Java developer who has used Spr
 | Tamper-evident audit (FDA) | No audit trail | Merkle MMR + Ed25519-signed checkpoints |
 | Trust-weighted safety agent routing | No trust model | Bayesian Beta from outcome attestations |
 
-### 7.2 Engine issue #102 patterns covered
+### 7.2 Tutorial layers
+
+**Layer 1 — Naive Java (no CaseHub)**
+
+```java
+// The naive approach: direct service calls
+PatientEligibility eligibility = eligibilityService.screen(patient, protocol);
+AdverseEventAssessment ae = safetyService.assess(adverseEvent);
+// Who signed off on this eligibility decision?
+// What if the safety assessor was unavailable?
+// When did the PI actually review the protocol deviation?
+// Can we prove to the FDA that the trial followed GCP?
+```
+
+**Layer 2 — casehub-work: formal human task with GCP SLA**
+
+```java
+// Adverse event: 24h SLA for serious events (GCP requirement)
+WorkItemRequest adverseEventReview = WorkItemRequest.builder()
+    .title("Grade 3 AE: Patient P-2024-007, Study ABC-001")
+    .category("adverse-event-assessment")
+    .candidateGroups("safety-monitors")
+    .claimDeadline(Instant.now().plus(24, ChronoUnit.HOURS)) // GCP: serious AE within 24h
+    .payload(adverseEvent.toJson())
+    .build();
+```
+
+**Layer 3 — casehub-qhorus: typed agent communication**
+
+```
+[Trial Coordinator] COMMAND → Eligibility Agent: "Screen patient P-007 against Protocol v2.1"
+[Eligibility Agent] RESPONSE → "12/14 criteria met; criteria 7 and 11 require PI waiver"
+[Trial Coordinator] COMMAND → Protocol Deviation Agent: "Assess dosing schedule deviation"
+[Protocol Deviation Agent] DECLINE → "Grade 3 AE flagged; PI authorisation required before assessment"
+[Trial Coordinator] COMMAND → Safety Monitor: "Assess CTCAE Grade 3 event for patient P-007"
+[Safety Monitor] STATUS → "Reviewing concurrent medications..."
+[Safety Monitor] DONE → "Causally unrelated to protocol; continue dosing"
+```
+
+The DECLINE is not an error — it is a formal record that the agent correctly identified a protocol gate before acting.
+
+**Layer 4 — casehub-ledger: FDA audit trail**
+
+Every agent decision, every WorkItem transition, and every PI authorisation creates a `MessageLedgerEntry`. The Merkle chain means the FDA can verify the complete investigation record without accessing the server. GDPR Art.17: patient consent withdrawal erases PII from ledger entries while preserving anonymised trial data.
+
+**Layer 5 — casehub-engine: adaptive protocol paths**
+
+CTCAE Grade 3+ AE routes to senior safety monitor; Grade 4+ fires immediate DSMB escalation. IRB consultation gate suspends the case until approval (WAITING state, durable across restarts). LLM supervisor reads accumulated multi-site context to recommend protocol amendments.
+
+**Layer 6 — Trust routing**
+
+After 50 trial events, which safety monitor has the highest `safety-accuracy` score? Trust scores from `LedgerAttestation` records drive routing. Experienced safety monitors are automatically prioritised on CTCAE Grade 4+ events.
+
+**Layer 7 — Comparison vs ClinicalAgent**
+
+| Requirement | ClinicalAgent | CaseHub |
+|---|---|---|
+| Adverse event SLA enforcement | Not addressed | WorkItem claimDeadline |
+| PI authorisation for deviations | Agent decides autonomously | COMMAND commitment lifecycle |
+| GDPR consent withdrawal | Not applicable | LedgerErasureService |
+| Multi-site independence | Single pipeline | Sub-case per site |
+| FDA tamper-evident audit | Not addressed | Merkle MMR |
+| Trust-weighted safety routing | Not addressed | EigenTrust from attestation history |
+
+### 7.3 Engine issue #102 patterns covered
 
 | Issue | Pattern | Clinical expression |
 |---|---|---|
@@ -433,11 +530,83 @@ That is three sentences covering three layers. A Java developer who has used Spr
 | #115 | Human Escalation | IRB/ethics committee approval gates with formal SLA |
 | #116 | Compliance and Audit Workflows | GCP, FDA IND, EMA CTR, GDPR all enforced by platform construction |
 
-### 7.3 Demonstration scenario
+### 7.4 Showcase scenario
 
-A 3-site oncology trial. Site A enrolls a patient, agents run eligibility screening across 12 criteria. A marginal criterion triggers an IRB consultation (WorkItem: 72-hour SLA). At Site B, a Grade 3 adverse event fires an automatic 24-hour safety escalation. At Site C, a protocol amendment is proposed — the LLM supervisor reads accumulated context from all three sites and recommends whether to proceed. The Merkle audit trail means FDA can independently verify the complete decision chain for every patient at every site.
+A 3-site oncology trial. Site A: agents run eligibility screening across 12 criteria; a marginal criterion triggers an IRB consultation (WorkItem: 72-hour SLA). Site B: a CTCAE Grade 3 adverse event fires automatic 24-hour safety escalation. Site C: a protocol amendment is proposed — the LLM supervisor reads accumulated context from all three sites and recommends whether to proceed. The Merkle audit trail means FDA can independently verify the complete decision chain for every patient at every site.
 
 ClinicalAgent runs as a linear pipeline for one site. It has no concept of SLA, no IRB gate, no adverse event escalation, and no audit trail.
+
+---
+
+## 7.5 PR Review Orchestration — Field Tutorial for Java Developers in Software Engineering
+
+**Role:** Field showcase and tutorial for Java developers in software engineering and DevOps — a domain every Java developer knows from their own daily practice. Demonstrates CaseHub's value in a context developers experience directly: the gap between a naive AI code review and one where every specialist reviewer is formally accountable, every missed finding is traceable, and routing improves from outcome history.
+
+**Comparison baseline:** GitHub Copilot code review, CodeRabbit — showing what LLM-based review looks like without formal accountability or adaptive routing.
+
+### 7.5.1 Tutorial layers
+
+**Layer 1 — Naive Java (no CaseHub)**
+
+```java
+// The naive approach: direct service calls
+SecurityAnalysis security = securityAnalyzer.analyze(pr);
+ArchitectureReview arch = architectureReviewer.review(pr);
+String comment = commentService.post(pr, security, arch);
+// Who was responsible for the missed SQL injection?
+// What if the security reviewer was unavailable?
+// When did the reviewer actually look at this code?
+// Can we trace the production incident back to this review?
+```
+
+**Layer 2 — casehub-work: PR review WorkItem with SLA**
+
+```java
+// Security review with response SLA
+WorkItemRequest reviewRequest = WorkItemRequest.builder()
+    .title("PR #456: Add payment processing endpoint")
+    .category("security-review")
+    .candidateGroups("security-reviewers")
+    .claimDeadline(Instant.now().plus(4, ChronoUnit.HOURS)) // 4h SLA for security reviews
+    .payload(pr.toJson())
+    .build();
+```
+
+**Layer 3 — casehub-qhorus: typed COMMAND to specialist reviewers**
+
+```
+[PR Orchestrator] COMMAND → Security Agent: "Review authentication handling in PaymentController"
+[Security Agent] RESPONSE → "No SQL injection; rate limiting absent on /payment endpoint"
+[PR Orchestrator] COMMAND → Architecture Agent: "Review transaction boundary in PaymentService"
+[Architecture Agent] DECLINE → "Distributed transaction pattern outside my scope; route to senior architect"
+[PR Orchestrator] COMMAND → Test Coverage Agent: "Assess coverage for payment flow"
+[Test Coverage Agent] DONE → "Coverage at 67%; payment failure path untested"
+```
+
+The DECLINE is not an error — it is a formal record that the agent correctly identified a scope boundary. The review continues; a senior architect is routed the binding concern.
+
+**Layer 4 — casehub-ledger: tamper-evident review record**
+
+Every review decision is in the ledger with `causedByEntryId` linking findings to actions. When a production security incident is traced to a merged PR, the ledger answers: who reviewed it, what did they find, what did they miss, and what was their trust score at the time.
+
+**Layer 5 — casehub-engine: adaptive review routing**
+
+Security flag in code analysis triggers security reviewer binding. Large architectural refactor triggers senior architect binding. LLM supervisor reads accumulated PR context (file types, change size, historical incident patterns) and selects the next binding dynamically.
+
+**Layer 6 — Trust routing**
+
+Security reviewers with improving `false-positive-rate` scores get routed more sensitive PRs. Post-merge production incidents trigger a FLAGGED attestation, updating trust scores automatically. Routing shifts over time without manual configuration.
+
+**Layer 7 — Comparison vs naive AI code review**
+
+| Requirement | GitHub Copilot / CodeRabbit | CaseHub devtown |
+|---|---|---|
+| Formal accountability per reviewer | Not addressed | COMMAND commitment lifecycle |
+| Reviewer response SLA | Not addressed | WorkItem claimDeadline |
+| DECLINE when outside expertise | Not addressed | Formal scope boundary, re-routed |
+| Trace production incident to missed finding | Not addressed | causedByEntryId chain |
+| Trust-weighted routing | Not addressed | EigenTrust from outcome attestations |
+| Adaptive routing on code content | Static rules | Engine binding conditions on case context |
 
 ---
 
@@ -568,15 +737,16 @@ Example: link to examples/<name>
 - [ ] Split work-examples into core and full variants (issue #152)
 - [ ] Cross-project integration example: work + ledger (expense approval with audit trail)
 
-### Phase 2 — AML Tutorial (Java developer primary tutorial)
+### Phase 2 — AML (field tutorial: Java developers in financial services)
 
-- [ ] Layer 1: naive Java approach (comparison baseline, no CaseHub)
-- [ ] Layer 2: + casehub-work (compliance officer WorkItem with SLA)
+- [x] Layer 1: naive Java approach (comparison baseline, no CaseHub)
+- [x] Layer 2: + casehub-work (compliance officer WorkItem with 30-day FinCEN SLA)
 - [ ] Layer 3: + casehub-qhorus (typed agent communication)
 - [ ] Layer 4: + casehub-ledger (FinCEN audit trail)
 - [ ] Layer 5: + casehub-engine (adaptive investigation path)
-- [ ] Comparison table vs IBM AMLSim and industry whitepapers
-- [ ] Blocked on: engine issue #209 (LangChain4j bridge) for Layer 5
+- [ ] Layer 6: trust routing from SAR outcome attestations
+- [ ] Layer 7: comparison table vs IBM AMLSim and industry whitepapers
+- [ ] Blocked on: engine P1.3 for Layers 5–6
 
 ### Phase 3 — LangChain4j Pattern Examples (after issue #209)
 
@@ -584,12 +754,26 @@ Example: link to examples/<name>
 - [ ] Mapping table: LangChain4j pattern → CaseHub expression → AML scenario
 - [ ] Covers engine issue #102 children: #101, #107, #112, #113, #114, #115, #116
 
-### Phase 4 — Clinical Trial Showcase (market entry demo)
+### Phase 3b — Devtown (field tutorial: Java developers in software engineering)
 
-- [ ] Multi-site trial scenario
-- [ ] Comparison against ClinicalAgent (open source baseline)
-- [ ] GCP compliance requirements map
-- [ ] FDA audit trail demonstration
+- [ ] Layer 1: naive Java approach (comparison baseline, no CaseHub)
+- [ ] Layer 2: + casehub-work (PR review WorkItem with SLA)
+- [ ] Layer 3: + casehub-qhorus (typed COMMAND to specialist reviewers)
+- [ ] Layer 4: + casehub-ledger (tamper-evident review record)
+- [ ] Layer 5: + casehub-engine (adaptive routing on code content)
+- [ ] Layer 6: trust routing from post-merge outcome attestations
+- [ ] Layer 7: comparison table vs GitHub Copilot code review, CodeRabbit
+
+### Phase 4 — Clinical (field tutorial: Java developers in regulated healthcare)
+
+- [ ] Layer 1: naive Java approach (comparison baseline, no CaseHub)
+- [ ] Layer 2: + casehub-work (adverse event WorkItem with 24h GCP SLA)
+- [ ] Layer 3: + casehub-qhorus (typed COMMAND to PI, DECLINE on scope boundary)
+- [ ] Layer 4: + casehub-ledger (FDA Merkle audit, GDPR Art.17 consent withdrawal)
+- [ ] Layer 5: + casehub-engine (adaptive paths: CTCAE grade routing, IRB gate)
+- [ ] Layer 6: trust routing from safety agent outcome attestations
+- [ ] Layer 7: comparison table vs ClinicalAgent (arXiv 2404.14777)
+- [ ] 3-site oncology showcase scenario
 
 ---
 
@@ -597,8 +781,9 @@ Example: link to examples/<name>
 
 | Decision | Rationale |
 |---|---|
-| AML as primary tutorial, not security incident response | Java developers work in banking; AML compliance systems are what they build. Security incident response (MyAntFarm comparison) is strong on community fit but weak on market entry gap (SOAR is a crowded incumbent market). |
-| Clinical trials as showcase, not tutorial | GCP compliance requires domain knowledge to follow. It makes the market entry argument compellingly but is a poor teaching vehicle for a Java developer without pharma background. |
+| AML as field tutorial for Java developers in financial services, not security incident response | Java developers in banking know AML from their careers — no domain onboarding needed. Security incident response (MyAntFarm comparison) is strong on community fit but weak on market entry gap (SOAR is a crowded incumbent market). |
+| Clinical and devtown are also field tutorials, not just showcases | GCP domain knowledge is a prerequisite — but for Java developers in pharma/biotech, it is standard knowledge. Code review orchestration is standard knowledge for any Java developer. Each domain app serves the developers who already work in that field. |
+| Production-first: tutorial structure emerges from adoption sequence | Designing for the tutorial produces tutorial code. Designing for production and documenting the progressive adoption sequence produces production code that teaches. The only tutorial-specific element is the Layer 1 naive baseline. |
 | Execution control showcase separate from domain tutorials | A developer evaluating CaseHub's binding model should not need to understand AML. Separate entry points for separate purposes. |
 | Examples in each project repo, not a separate tutorials repo | Examples run in CI. They are tested code. Separating them from the project creates drift. |
 | Layer-by-layer structure over "start with the full stack" | The standalone value of each module is the argument for adoption. A developer who adds ledger to an existing work deployment should see ledger demonstrated standalone first. |

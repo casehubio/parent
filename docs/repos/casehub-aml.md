@@ -2,15 +2,29 @@
 
 **GitHub:** [casehubio/aml](https://github.com/casehubio/aml)
 **Tier:** Application
-**Status:** Greenfield — no code yet, epics defined
+**Status:** In progress — Layers 1 and 2 complete and shipped; Layers 3–7 in progress
 
 ## What It Is
 
-The Anti-Money Laundering investigation application built on the CaseHub foundation. Primary community tutorial for Java/Quarkus developers — demonstrates all platform capabilities in a domain every Java enterprise developer recognises.
+The Anti-Money Laundering investigation application built on the CaseHub foundation. Field showcase and tutorial for Java developers in financial services — demonstrates all platform capabilities in a domain that Java enterprise developers have built and know the failure modes of.
 
 Scored 44/50 in the use-case analysis (22 market + 22 community) — the only use case strong on both dimensions simultaneously. Java dominates banking infrastructure; enterprise developers have built these systems and know what fails in practice.
 
 See `docs/use-case-analysis.md` §8.2 and `docs/tutorial-strategy.md` §6 in this repo.
+
+## Tutorial Layers
+
+The tutorial structure emerges from the natural adoption sequence — each layer adds one foundation module and makes its value tangible. The code at every layer is production-grade. See `docs/tutorial-strategy.md §6` for teaching objectives per layer.
+
+| Layer | Adds | Gap it closes | Status |
+|-------|------|---------------|--------|
+| 1 | Naive Java — no CaseHub | Baseline anti-pattern | ✅ complete |
+| 2 | casehub-work | No formal SLA or human task lifecycle for compliance officer review | ✅ complete |
+| 3 | casehub-qhorus | No formal obligation per specialist agent interaction | in progress |
+| 4 | casehub-ledger | No tamper-evident FinCEN audit trail | pending |
+| 5 | casehub-engine | Fixed investigation pipeline; no adaptive paths | pending (blocked: engine P1.3) |
+| 6 | Trust routing | No trust model; random agent selection | pending (blocked: engine P1.3) |
+| 7 | Comparison vs IBM AMLSim | — | pending |
 
 ## What It Owns
 
