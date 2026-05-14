@@ -22,6 +22,7 @@ One file per rule. Each file is self-contained and retrievable independently. Al
 | [qhorus-event-content-null.md](qhorus-event-content-null.md) | EVENT message `content` is always null — render telemetry fields instead | All projects reading Qhorus ledger entries |
 | [qhorus-human-governance-channel-types.md](qhorus-human-governance-channel-types.md) | Oversight channel must have `allowedTypes=QUERY,COMMAND`; human actors never post EVENT | All projects using Qhorus NormativeChannelLayout |
 | [qhorus-actor-type-mapping.md](qhorus-actor-type-mapping.md) | All ActorType values must map to the canonical casehub ledger vocabulary | All casehubio projects assigning ActorType |
+| [gateway-backend-registration-ordering.md](gateway-backend-registration-ordering.md) | Call open() before registerBackend() when registering a ChannelBackend | casehub-qhorus: any code calling ChannelGateway.registerBackend() |
 | [maven-coordinate-standard.md](maven-coordinate-standard.md) | Maven coordinate standard for all casehubio repos | All casehubio Maven repos |
 | [artifact-rename-propagation.md](artifact-rename-propagation.md) | Artifact rename propagation — update all cross-repo consumers before shipping | Any casehubio repo renaming a published artifactId |
 | [java-optional-usage.md](java-optional-usage.md) | Use Optional only when absence is the method's primary return contract | All Java code across casehub |
