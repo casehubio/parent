@@ -7,40 +7,34 @@ applies_to: "casehub-engine runtime — all no-op SPI default implementations"
 severity: error
 refs:
   - GE-20260428-9311f8
-violation_hint: "NoOp* bean is @ApplicationScoped without @DefaultBean — collides with consumer implementations when casehub-engine is indexed alongside a consumer (e.g. via casehub-testing)"
 created: 2026-05-14
 ---
 
 Every no-op SPI default in casehub-engine must be annotated `@DefaultBean @ApplicationScoped`,
-not bare `@ApplicationScoped`. A bare `@ApplicationScoped` no-op collides with consumer
-implementations (e.g. Claudony's `ClaudonyWorkerProvisioner`) when the engine runtime is indexed
-alongside a consumer repo's `@QuarkusTest` classpath, causing CDI ambiguity errors that fail
-the entire test suite.
+not bare `@ApplicationScoped` or `@Alternative @ApplicationScoped`. A bare `@ApplicationScoped`
+no-op collides with consumer implementations (e.g. Claudony's `ClaudonyWorkerProvisioner`) when
+the engine runtime is indexed alongside a consumer repo's `@QuarkusTest` classpath, causing CDI
+ambiguity errors that fail the entire test suite.
 
-`@DefaultBean` yields automatically to any non-default qualifying bean — the correct semantic
-for a platform fallback that exists only when no real implementation is provided.
+`@DefaultBean` is `io.quarkus.arc.DefaultBean` — a Quarkus Arc annotation, not standard CDI.
+It yields automatically to any non-default qualifying bean — the correct semantic for a platform
+fallback that exists only when no real implementation is provided.
 
-## Beans to fix
+## Beans
 
-In `casehub-engine/runtime/src/main/java/io/casehub/engine/internal/worker/`:
+All in `casehub-engine/runtime/src/main/java/io/casehub/engine/internal/`:
 
-| Class | Current | Required |
-|---|---|---|
-| `NoOpWorkerProvisioner` | `@ApplicationScoped` | `@DefaultBean @ApplicationScoped` |
-| `NoOpCaseChannelProvider` | `@ApplicationScoped` | `@DefaultBean @ApplicationScoped` |
-| `NoOpWorkerStatusListener` | `@ApplicationScoped` | `@DefaultBean @ApplicationScoped` |
-
-In `casehub-engine/runtime/src/main/java/io/casehub/engine/internal/diff/`:
-
-| Class | Current | Required |
-|---|---|---|
-| `NoOpContextDiffStrategy` | `@ApplicationScoped` | `@DefaultBean @ApplicationScoped` |
-
-The reactive variants (`NoOpReactiveWorkerProvisioner`, `NoOpReactiveCaseChannelProvider`,
-`NoOpReactiveWorkerStatusListener`) currently use `@Alternative` which avoids the collision,
-but should migrate to `@DefaultBean` for consistency — `@Alternative` requires explicit
-activation, whereas `@DefaultBean` is active by default and clearly communicates "I am the
-fallback, replace me."
+| Class | Package | Annotation |
+|-------|---------|-----------|
+| `NoOpWorkerProvisioner` | `worker/` | `@DefaultBean @ApplicationScoped` |
+| `NoOpCaseChannelProvider` | `worker/` | `@DefaultBean @ApplicationScoped` |
+| `NoOpWorkerStatusListener` | `worker/` | `@DefaultBean @ApplicationScoped` |
+| `EmptyWorkerContextProvider` | `worker/` | `@DefaultBean @ApplicationScoped` |
+| `EmptyReactiveWorkerContextProvider` | `worker/` | `@DefaultBean @ApplicationScoped` |
+| `NoOpReactiveWorkerProvisioner` | `worker/` | `@DefaultBean @ApplicationScoped` |
+| `NoOpReactiveCaseChannelProvider` | `worker/` | `@DefaultBean @ApplicationScoped` |
+| `NoOpReactiveWorkerStatusListener` | `worker/` | `@DefaultBean @ApplicationScoped` |
+| `NoOpContextDiffStrategy` | `diff/` | `@DefaultBean @ApplicationScoped` |
 
 ## Why this matters
 
@@ -50,6 +44,13 @@ implementing the same SPI interface — the engine's no-op and the consumer's re
 — and fails with an unsatisfied/ambiguous dependency error. The workaround (listing each no-op
 in `quarkus.arc.exclude-types` per consumer) is fragile: it breaks silently when new no-ops are
 added to the engine.
+
+## Adding a new no-op default
+
+When adding a new SPI no-op to `casehub-engine`:
+1. Annotate it `@DefaultBean @ApplicationScoped` from the start — use `io.quarkus.arc.DefaultBean`
+2. Add it to the table above
+3. Verify no consumer repo needs updating (no `exclude-types` entries to clean up)
 
 ## See also
 
