@@ -28,6 +28,7 @@ One file per rule. Each file is self-contained and retrievable independently. Al
 | [java-optional-usage.md](java-optional-usage.md) | Use Optional only when absence is the method's primary return contract | All Java code across casehub |
 | [quarkus-test-security-http-only.md](quarkus-test-security-http-only.md) | Only add @TestSecurity to @QuarkusTest classes that exercise HTTP endpoints | All modules with @QuarkusTest classes |
 | [quarkus-optional-extension-dep.md](quarkus-optional-extension-dep.md) | Gate optional Quarkus extension deps via Capabilities + ExcludedTypeBuildItem, not config flags | Quarkus extension runtime and deployment modules |
+| [engine-spi-noops-defaultbean.md](engine-spi-noops-defaultbean.md) | Engine SPI no-op defaults must use @DefaultBean — bare @ApplicationScoped collides with consumer implementations | casehub-engine runtime no-op SPI beans |
 
 ---
 
