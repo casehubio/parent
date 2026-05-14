@@ -1,6 +1,9 @@
 # parent Workspace
 
-**Project repo:** /Users/mdproctor/claude/casehub/parent
+**Physical path:** `/Users/mdproctor/claude/casehub/parent/CLAUDE.md`
+**Symlinked at:** `/Users/mdproctor/claude/public/casehub/CLAUDE.md`
+**Project repo:** `/Users/mdproctor/claude/casehub/parent`
+**Workspace:** `/Users/mdproctor/claude/public/casehub`
 **Workspace type:** public
 
 ## Session Start
@@ -37,9 +40,12 @@ Two git repositories are active in every session:
 - **Workspace** (`/Users/mdproctor/claude/public/casehub`) — methodology artifacts: handover, blog (staging before publish), plans, snapshots
 - **Project repo** (`/Users/mdproctor/claude/casehub/parent`) — source code, ADRs (`docs/adr/`), specs
 
-Before any git operation, run `git rev-parse --show-toplevel` to confirm which repo is currently active. Do not assume — the session may have opened in either. cd to the correct repo before staging:
-- Source code commits → project repo
-- Methodology artifacts → workspace
+Never rely on CWD for git operations — the session may have started in either repo. Always use explicit paths:
+```bash
+git -C /Users/mdproctor/claude/public/casehub ...       # workspace artifacts
+git -C /Users/mdproctor/claude/casehub/parent ...       # project artifacts
+```
+The file path determines the repo: if the file lives under `Workspace`, use the workspace path; if under `Project repo`, use the project path.
 
 
 ## Rules
