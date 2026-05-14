@@ -7,6 +7,7 @@ One file per rule. Each file is self-contained and retrievable independently. Al
 | File | Rule | Applies to |
 |---|---|---|
 | [auth-retrofit-readiness.md](auth-retrofit-readiness.md) | No auth in domain/service; thin REST resources; injectable query filters; auth-free SPI signatures | All casehubio repos |
+| [subcase-coordination-strategy.md](subcase-coordination-strategy.md) | Native M-of-N counting for simple thresholds; quarkus-flow for conditional/sequential orchestration; always behind SPI | casehub-engine blackboard |
 | [flyway-migration-rules.md](flyway-migration-rules.md) | Flyway namespace ranges, H2 mode, PostgreSQL testing | All modules with Flyway |
 | [flyway-version-range-allocation.md](flyway-version-range-allocation.md) | Each module owns an exclusive Flyway thousand-block version range | All casehub modules using Flyway |
 | [optional-module-pattern.md](optional-module-pattern.md) | Optional Jandex library module pattern | All optional feature modules |
