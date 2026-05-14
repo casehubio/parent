@@ -29,6 +29,7 @@ One file per rule. Each file is self-contained and retrievable independently. Al
 | [quarkus-test-security-http-only.md](quarkus-test-security-http-only.md) | Only add @TestSecurity to @QuarkusTest classes that exercise HTTP endpoints | All modules with @QuarkusTest classes |
 | [quarkus-optional-extension-dep.md](quarkus-optional-extension-dep.md) | Gate optional Quarkus extension deps via Capabilities + ExcludedTypeBuildItem, not config flags | Quarkus extension runtime and deployment modules |
 | [engine-spi-noops-defaultbean.md](engine-spi-noops-defaultbean.md) | Engine SPI no-op defaults must use @DefaultBean — bare @ApplicationScoped collides with consumer implementations | casehub-engine runtime no-op SPI beans |
+| [work-adapter-test-subcase-group-repository.md](work-adapter-test-subcase-group-repository.md) | work-adapter @QuarkusTest requires MemorySubCaseGroupRepository in selected-alternatives | casehub-engine-work-adapter test module |
 
 ---
 
