@@ -61,7 +61,9 @@ These are operational contracts — environment-specific implementations belong 
 | `CaseChannelProvider` / `ReactiveCaseChannelProvider` | Open/close/post to backend-agnostic channels |
 | `WorkerContextProvider` / `ReactiveWorkerContextProvider` | Build worker startup context from ledger lineage |
 
-Default no-op implementations: `NoOpWorkerProvisioner`, `NoOpWorkerStatusListener`, `NoOpCaseChannelProvider`, `EmptyWorkerContextProvider`.
+Default no-op/empty implementations (all `@DefaultBean @ApplicationScoped` via `io.quarkus.arc.DefaultBean` — yield automatically to consumer implementations):
+- Blocking: `NoOpWorkerProvisioner`, `NoOpWorkerStatusListener`, `NoOpCaseChannelProvider`, `EmptyWorkerContextProvider`, `NoOpContextDiffStrategy`
+- Reactive: `NoOpReactiveWorkerProvisioner`, `NoOpReactiveCaseChannelProvider`, `NoOpReactiveWorkerStatusListener`, `EmptyReactiveWorkerContextProvider`
 
 ### Ledger Integration (`casehub-ledger`)
 
