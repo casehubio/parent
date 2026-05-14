@@ -27,7 +27,27 @@ Each project already has good examples, but they are siloed. The pattern is cons
 
 These apply to every example, tutorial, and walkthrough written for CaseHub.
 
-### 2.0 Every domain application is both a field showcase and a field tutorial
+### 2.0 All CaseHub applications are agentic harnesses
+
+Every application built on CaseHub is an **agentic harness** — infrastructure that coordinates multiple agents (human and AI), enforces formal accountability per interaction, adapts paths based on accumulated context, and produces an independently verifiable audit trail. The domain is the clothes; the harness is the structure underneath.
+
+This is what distinguishes CaseHub from adjacent tools:
+- **LangChain4j** makes a single agent smart (reasoning, tool use) — inside the harness
+- **Quarkus Flow** makes a single step durable (retry, backoff, state) — inside the harness
+- **CaseHub** makes the full multi-agent coordination accountable — the harness itself
+
+Four harnesses currently exist across different domains:
+
+| App | Domain | Audience |
+|-----|--------|----------|
+| casehub-aml | Financial crime investigation | Java developers in financial services |
+| casehub-clinical | Clinical trial coordination | Java developers in regulated healthcare |
+| casehub-devtown | PR review orchestration | Java developers in software engineering |
+| QuarkMind | StarCraft II game AI | R&D / living lab |
+
+Each demonstrates that the harness pattern holds across domains — from regulated enterprise compliance to game AI. An LLM with all four as reference material can build a fifth harness in any domain without asking questions.
+
+### 2.0b Every domain application is both a field showcase and a field tutorial
 
 Every CaseHub domain application serves two purposes simultaneously — for the same audience:
 

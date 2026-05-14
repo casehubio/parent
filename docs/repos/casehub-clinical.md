@@ -6,7 +6,7 @@
 
 ## What It Is
 
-The clinical trial coordination application built on the CaseHub foundation. Field showcase and tutorial for Java developers in regulated healthcare — pharma, biotech, and clinical research organisations where GCP, FDA IND, EMA CTR, and GDPR requirements apply.
+An agentic harness for clinical trial coordination built on the CaseHub foundation. Coordinates eligibility screening agents, safety monitoring agents, PI authorisation gates, and IRB approval gates across multiple trial sites — producing an FDA-compliant, GDPR-aware, independently verifiable audit trail. Field showcase and tutorial for Java developers in regulated healthcare (pharma, biotech, clinical research).
 
 GCP domain knowledge is a prerequisite for this audience — and it is standard knowledge for Java developers in that field. The same developer who evaluates CaseHub for their trial coordination system is the developer who follows the tutorial to build it.
 

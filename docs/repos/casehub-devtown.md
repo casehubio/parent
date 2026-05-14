@@ -6,9 +6,9 @@
 
 ## What It Is
 
-The AI-assisted software development application built on the CaseHub foundation. Field showcase and tutorial for Java developers in software engineering and DevOps — a domain every Java developer knows from their own daily practice.
+An agentic harness for software engineering coordination built on the CaseHub foundation. Coordinates specialist code reviewers (security, architecture, test coverage), human review task gates with SLA, and adaptive PR routing based on code content — producing a tamper-evident review record where every missed finding is traceable. Field showcase and tutorial for Java developers in software engineering and DevOps.
 
-Provides PR review orchestration, merge queue (casehub-refinery), trust-weighted reviewer routing, and formal obligation tracking per code review assignment. This is the CaseHub answer to Gastown — same domain (software engineering coordination), but built on the domain-agnostic foundation rather than baked into infrastructure. See `docs/gastown-casehub-analysis-v2.md` in this repo for the full architectural comparison.
+This is the CaseHub answer to Gastown — same domain (software engineering coordination), but built on the domain-agnostic foundation rather than baked into infrastructure. See `docs/gastown-casehub-analysis-v2.md` in this repo for the full architectural comparison.
 
 ## Tutorial Layers
 

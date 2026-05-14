@@ -1,8 +1,17 @@
-# Cross-Module Protocols
+# Protocols
 
 One file per rule. Each file is self-contained and retrievable independently. All files use YAML frontmatter with id, title, type, scope, applies_to, severity, refs, violation_hint, and created fields.
 
-## Casehub-Specific Protocols
+Two categories:
+
+- **CaseHub Foundation** — protocols for building the CaseHub platform itself (foundation modules, SPIs, extensions)
+- **CaseHub Agentic Harness** — protocols for building applications on top of CaseHub (domain apps, living labs, any agentic harness)
+
+An LLM session working on the foundation loads foundation protocols. An LLM session building an app loads the agentic harness protocols. Both categories live in this directory.
+
+---
+
+## CaseHub Foundation Protocols
 
 | File | Rule | Applies to |
 |---|---|---|
@@ -153,3 +162,19 @@ Listed here for discoverability until garden RAG is available.
 | GE-20260501-11ce7f | MessageLedgerEntry.content is null for EVENT entries — LIKE content search silently returns nothing |
 | GE-20260501-b12416 | MessageLedgerEntry.sequenceNumber is per-channel, not global — wrong ORDER BY for cross-channel queries |
 | GE-20260508-492336 | casehub-qhorus activates quarkus-hibernate-reactive unconditionally — fails with JDBC H2 at startup |
+
+---
+
+## CaseHub Agentic Harness Protocols
+
+Protocols for building applications on top of CaseHub. Applies to: casehub-aml, casehub-clinical, casehub-devtown, QuarkMind, and any future harness.
+
+*Pending — to be added (tracked in casehubio/parent#18, #19, and new issues):*
+
+| File | Rule | Applies to |
+|------|------|------------|
+| *(pending)* | Layered adoption approach — one foundation module at a time; each layer independently runnable | All CaseHub agentic harnesses |
+| *(pending)* | Production-first — do not design or architect for the tutorial; the tutorial documents what you built | All CaseHub agentic harnesses |
+| *(pending)* | Hexagonal module placement — `api/` is JPA-free pure domain; `app/` owns use-case orchestration | All CaseHub agentic harnesses (PP-20260512-9b8847, parent#18) |
+| *(pending)* | casehub-work Hibernate scan packages — include both `runtime.model` and `runtime.filter` | All harnesses using casehub-work (parent#19) |
+| *(pending)* | LAYER-LOG.md — maintain a structured layer log as definition of done per layer | All CaseHub agentic harnesses |
