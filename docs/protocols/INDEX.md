@@ -177,4 +177,4 @@ Protocols for building applications on top of CaseHub. Applies to: casehub-aml, 
 | *(pending)* | Production-first — do not design or architect for the tutorial; the tutorial documents what you built | All CaseHub agentic harnesses |
 | *(pending)* | Hexagonal module placement — `api/` is JPA-free pure domain; `app/` owns use-case orchestration | All CaseHub agentic harnesses (PP-20260512-9b8847, parent#18) |
 | *(pending)* | casehub-work Hibernate scan packages — include both `runtime.model` and `runtime.filter` | All harnesses using casehub-work (parent#19) |
-| *(pending)* | LAYER-LOG.md — maintain a structured layer log as definition of done per layer | All CaseHub agentic harnesses |
+| [layer-log.md](layer-log.md) | LAYER-LOG.md — maintain a structured layer log as definition of done per layer | All CaseHub agentic harnesses |
