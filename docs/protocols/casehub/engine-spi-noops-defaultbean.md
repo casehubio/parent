@@ -34,7 +34,6 @@ All in `casehub-engine/runtime/src/main/java/io/casehub/engine/internal/`:
 | `NoOpReactiveWorkerProvisioner` | `worker/` | `@DefaultBean @ApplicationScoped` |
 | `NoOpReactiveCaseChannelProvider` | `worker/` | `@DefaultBean @ApplicationScoped` |
 | `NoOpReactiveWorkerStatusListener` | `worker/` | `@DefaultBean @ApplicationScoped` |
-| `NoOpContextDiffStrategy` | `diff/` | `@DefaultBean @ApplicationScoped` |
 
 ## Why this matters
 
@@ -51,6 +50,24 @@ When adding a new SPI no-op to `casehub-engine`:
 1. Annotate it `@DefaultBean @ApplicationScoped` from the start — use `io.quarkus.arc.DefaultBean`
 2. Add it to the table above
 3. Verify no consumer repo needs updating (no `exclude-types` entries to clean up)
+
+## Two patterns: consumer-replaceable SPI vs. engine-internal selection
+
+`@DefaultBean` applies to two distinct situations in the engine:
+
+**Consumer-replaceable SPI** (the 8 worker/channel beans above): The engine ships a no-op
+fallback. A consumer deployment provides a real `@ApplicationScoped` implementation
+(e.g. `ClaudonyWorkerProvisioner`) and the no-op yields automatically.
+
+**Engine-internal strategy selection** (`ContextDiffStrategy`): The engine ships multiple
+real implementations and selects one via config (`casehub.engine.diff-strategy`). A
+`@Produces @DefaultBean @ApplicationScoped` method on `ContextDiffStrategyProducer` produces
+the chosen instance. A consumer `@ApplicationScoped` implementation still wins over the
+produced default. The individual strategy classes (`NoOpContextDiffStrategy` etc.) are plain
+POJOs — no CDI annotations — instantiated directly by the producer.
+
+Do not apply the single-class `@DefaultBean` pattern to engine-internal strategy groups.
+Use a config-driven producer instead.
 
 ## See also
 
