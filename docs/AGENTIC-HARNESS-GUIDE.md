@@ -150,9 +150,14 @@ Create a GitHub issue for it if none exists (check Epics for tutorial layers fir
 
 ## Ongoing Maintenance (per layer)
 
-When completing any layer:
+LAYER-LOG.md has two triggers per layer:
 
-1. Update the LAYER-LOG.md entry — fill in any remaining `🔲` sections, mark **Completed** with date
+- **When work begins:** start the entry — add what is known, `🔲` the rest with context
+- **When code ships:** fill the entry — complete all `🔲` sections, set **Completed** date
+
+When a layer's code ships:
+
+1. Fill all remaining `🔲` sections in the LAYER-LOG.md entry before closing the issue
 2. The completed entry is part of the PR / commit, not a follow-up
 3. Update your repo deep-dive in casehub-parent — change layer status from `pending`
    to `in progress` or `complete` (create issue on casehubio/parent if you cannot

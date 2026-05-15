@@ -13,9 +13,19 @@ created: 2026-05-14
 
 ## Rule
 
-Every CaseHub agentic harness must maintain a `LAYER-LOG.md` at the project root. A layer is not complete until its log entry is fully written — but entries are written incrementally, not all at once. Start an entry as soon as a layer begins; fill in sections as work progresses; mark pending sections with `🔲` so future sessions know exactly what to add without reconstructing context.
+Every CaseHub agentic harness must maintain a `LAYER-LOG.md` at the project root.
+
+**Two obligations, two triggers:**
+- **Start the entry** — when any work on the layer begins
+- **Fill the entry** — when the layer's code ships
+
+Do not conflate these. Starting immediately means wiring decisions and gotchas are captured while the context exists. Filling at ship means the entry is complete before the layer is declared done. An entry that is started but not yet filled is correct; an entry that was never started is a violation.
+
+Entries are written incrementally across sessions. Mark pending sections with `🔲` — see Placeholder guidance below.
 
 **Epics and layers are different organizational schemes.** Epics organize work for build convenience. Layers organize knowledge for teaching. A single tutorial layer may span multiple epics. Do not wait for all epics covering a layer to close before starting its log entry.
+
+**Do not write skeleton entries for layers that have not started.** The layer table in the repo deep-dive already tracks pending/in-progress/complete — that is sufficient for distant layers. The log entry adds value when there is implementation knowledge to capture. Empty skeletons create drift risk without adding anything the layer table does not already provide.
 
 ## Purpose
 
@@ -84,30 +94,33 @@ A layer whose code is merged but has no `LAYER-LOG.md` entry at all is a violati
 
 ## Placeholder guidance
 
-A placeholder section should include whatever context will help the next session fill it in:
-- Expected content (code sketch, known wiring pattern, pointer to AML equivalent)
-- Why it's pending (not yet built, foundation gate still open, etc.)
-- Where to find the source material when it is ready
+A `🔲` placeholder **must** include a cross-reference to where the answer will come from, or the expected content if known. A bare `🔲` with no context is nearly useless — it tells the next session that something is missing but not what, where to find it, or what to expect.
 
-Example of a useful placeholder vs a useless one:
+Required in every placeholder: why it's pending AND either the expected content or the pointer to where it will come from.
 
 ```markdown
 ### Key wiring
 🔲 To fill in when built. Expected: same Hibernate scan packages issue as AML Layer 2
-   (`io.casehub.work.runtime.model,io.casehub.work.runtime.filter`). See AML LAYER-LOG.md §Key wiring.
+   (`io.casehub.work.runtime.model,io.casehub.work.runtime.filter`).
+   See ../aml/LAYER-LOG.md §Key wiring.
 ```
 
-vs
+Not acceptable:
 
 ```markdown
 ### Key wiring
 🔲 To fill in when built.
 ```
 
-The first gives the next session a head start. The second is better than nothing but only barely.
+## Reference implementations
+
+- **casehub-aml `LAYER-LOG.md`** — Layers 1 and 2 complete. Reference for fully-filled entries.
+- **casehub-devtown `LAYER-LOG.md`** — Layer 1 in progress. Reference for in-progress entries with `🔲` placeholders.
+
+Read both before writing your own.
 
 ## Retroactive entries
 
-When adopting this protocol mid-project, write entries for all layers — completed and in-progress — before starting the next one. Use git history, specs, blog entries, and forage garden to reconstruct the content. In-progress layers get entries with `🔲` sections. Only a layer with no work done at all is left out.
+When adopting this protocol mid-project, write entries for all layers that have any work done — completed and in-progress — before starting the next one. Use git history, specs, blog entries, and forage garden to reconstruct the content. In-progress layers get entries with `🔲` sections. Layers with no work done are left out — the layer table already tracks them as pending.
 
 **Note on the epics vs layers confusion:** if epics are closed but the tutorial layer table shows all layers as "pending", the layer table is wrong — not the epics. Epics do not map 1:1 to layers. Update the layer table to reflect actual status (pending / in progress / complete) and write the layer entry for what has been built so far.
