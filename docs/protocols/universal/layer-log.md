@@ -74,7 +74,11 @@ The non-obvious configuration and wiring that is not derivable from the code alo
 
 ### Gotchas
 
-- Bullet list of things that went wrong or would go wrong without prior knowledge
+Each entry must name three things: the **symptom** (what you observe), the **cause** (why it happens), and the **fix** (what resolves it). This structure makes gotchas useful for diagnosis — someone searching for an unexpected behaviour should find the cause and fix without reading the whole entry.
+
+- **Symptom:** [what you see — error message, wrong output, missing bean, test failure]
+- **Cause:** [why it happens]
+- **Fix:** [what resolves it — commit ref, config change, workaround]
 - Link to forage garden entries (GE-XXXXXXXX-XXXXXX) where relevant
 
 ### Pattern to replicate (in another domain)
@@ -97,6 +101,8 @@ A layer whose code is merged but has no `LAYER-LOG.md` entry at all is a violati
 A `🔲` placeholder **must** include a cross-reference to where the answer will come from, or the expected content if known. A bare `🔲` with no context is nearly useless — it tells the next session that something is missing but not what, where to find it, or what to expect.
 
 Required in every placeholder: why it's pending AND either the expected content or the pointer to where it will come from.
+
+In-progress entries may contain anticipated code — code sketched from design that does not yet exist in the repo. Label it explicitly: `Expected pattern (ClassName not yet built — see §What it shows):` before the code block. Replace the label with an actual file reference when the code ships.
 
 ```markdown
 ### Key wiring
