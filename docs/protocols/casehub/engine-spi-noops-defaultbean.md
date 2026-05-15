@@ -4,7 +4,7 @@ title: "Engine SPI no-op defaults must use @DefaultBean, not bare @ApplicationSc
 type: rule
 scope: platform
 applies_to: "casehub-engine runtime — all no-op SPI default implementations"
-severity: error
+severity: critical
 refs:
   - GE-20260428-9311f8
 created: 2026-05-14

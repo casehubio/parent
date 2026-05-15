@@ -4,7 +4,7 @@ title: "Auth retrofit readiness — keep auth out of the domain so RBAC can be i
 type: rule
 scope: platform
 applies_to: "All casehubio repos — REST resources, services, domain, SPIs, queries"
-severity: required
+severity: important
 refs: []
 violation_hint: "Auth checks in service or domain code, identity passed into use cases, or 'get all' queries with no filter hook — all make RBAC painful or impossible to add without touching domain logic"
 created: 2026-05-13

@@ -4,7 +4,7 @@ title: "Ledger subclass extension rules — JOINED inheritance, consumer-owned m
 type: rule
 scope: platform
 applies_to: "Any casehubio repo adding a new JPA subclass of LedgerEntry"
-severity: required
+severity: critical
 refs:
   - docs/protocols/casehub/flyway-version-range-allocation.md
   - docs/protocols/casehub/ledger-spi-propagation.md

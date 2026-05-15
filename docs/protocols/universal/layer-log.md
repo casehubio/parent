@@ -1,10 +1,10 @@
 ---
 id: PP-20260514-layer-log
 title: Maintain LAYER-LOG.md as definition of done per harness layer
-type: convention
+type: rule
 scope: universal
 applies_to: All CaseHub agentic harnesses (casehub-aml, casehub-clinical, casehub-devtown, QuarkMind)
-severity: required
+severity: guidance
 refs:
   - docs/tutorial-strategy.md §2.1b
   - docs/repos/casehub-aml.md

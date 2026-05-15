@@ -4,7 +4,7 @@ title: "When a LedgerEntryRepository SPI method is added, update all downstream 
 type: principle
 scope: platform
 applies_to: "casehub-work, casehub-qhorus, casehub-engine (and any future ledger consumer)"
-severity: required
+severity: critical
 refs: ["casehub-ledger#58", "casehub/work#163", "casehub/qhorus#143", "casehub/engine#242"]
 violation_hint: "Compilation failure in downstream module with 'does not override abstract method' — often masked by stale .m2 jar producing a different error"
 created: 2026-05-11

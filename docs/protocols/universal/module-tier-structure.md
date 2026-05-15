@@ -4,7 +4,7 @@ title: "Three-tier module structure — pure-Java SPI, core library, full extens
 type: rule
 scope: universal
 applies_to: "All casehubio multi-module repos"
-severity: required
+severity: critical
 refs: []
 violation_hint: "Adding Quarkus/JPA to an api/ module forces all consumers to configure a datasource or pull in Quarkus — even if they only need the SPI"
 created: 2026-05-12
