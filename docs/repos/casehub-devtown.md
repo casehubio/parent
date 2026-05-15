@@ -2,7 +2,7 @@
 
 **GitHub:** [casehubio/devtown](https://github.com/casehubio/devtown)
 **Tier:** Application
-**Status:** Greenfield — no code yet, epics defined
+**Status:** Layer 1 in progress — scaffold and vocabulary complete; naive service not yet built
 
 ## What It Is
 
@@ -12,22 +12,24 @@ This is the CaseHub answer to Gastown — same domain (software engineering coor
 
 ## Tutorial Layers
 
-The tutorial structure emerges from the natural adoption sequence. Each layer adds one foundation module and makes its value tangible relative to the previous layer. The code at every layer is production-grade. See `docs/tutorial-strategy.md §8` for teaching objectives per layer.
+The tutorial structure emerges from the natural adoption sequence. Each layer adds one foundation module and makes its value tangible relative to the previous layer. The code at every layer is production-grade. See `../parent/docs/tutorial-strategy.md §7.5` for teaching objectives per layer.
+
+LAYER-LOG.md in the project root is the authoritative layer-by-layer record with cross-references, key wiring, and gotchas. Update it when a layer completes or makes significant progress.
 
 | Layer | Adds | Gap it closes | Status |
 |-------|------|---------------|--------|
-| 1 | Naive Java — no CaseHub | Baseline: direct service calls to analysis agents, no accountability | pending |
+| 1 | Naive Java — no CaseHub | Baseline: direct service calls to analysis agents, no accountability | 🔶 in progress — scaffold (#8) and vocabulary (#9) done; naive service not yet built |
 | 2 | casehub-work | No formal SLA for reviewer response; reviewer assignments not tracked | pending |
 | 3 | casehub-qhorus | No formal obligation per specialist reviewer; DECLINE when outside expertise | pending |
 | 4 | casehub-ledger | No tamper-evident review record; cannot trace production incident to missed finding | pending |
-| 5 | casehub-engine | Fixed review pipeline; no adaptive routing on security flags or architecture changes | pending |
+| 5 | casehub-engine | Fixed review pipeline; no adaptive routing on security flags or architecture changes | 🔷 active — Epic 3 (#10) |
 | 6 | Trust routing | No trust model; experienced security reviewers not prioritised on sensitive PRs | pending |
 | 7 | Comparison vs naive AI code review | — | pending |
 
 ## What It Owns
 
 - Capability tag definitions for the software development domain (`code-analysis`, `security-review`, `architecture-review`, `style-review`, `test-coverage`, `merge-executor`, etc.)
-- Trust dimension definitions (`review-thoroughness`, `false-positive-rate`, `security-specialist`)
+- Trust dimension definitions (`review-thoroughness`, `false-positive-rate`, `scope-calibration`)
 - Routing thresholds per capability (e.g. `security-review` requires ≥ 0.70 trust)
 - PR review `CasePlanModel` — goals, bindings, content-driven routing from code analysis findings
 - Merge queue `CasePlanModel` (casehub-refinery) — batch-then-bisect strategy as binding conditions
