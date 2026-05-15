@@ -62,8 +62,10 @@ These are operational contracts — environment-specific implementations belong 
 | `WorkerContextProvider` / `ReactiveWorkerContextProvider` | Build worker startup context from ledger lineage |
 
 Default no-op/empty implementations (all `@DefaultBean @ApplicationScoped` via `io.quarkus.arc.DefaultBean` — yield automatically to consumer implementations):
-- Blocking: `NoOpWorkerProvisioner`, `NoOpWorkerStatusListener`, `NoOpCaseChannelProvider`, `EmptyWorkerContextProvider`, `NoOpContextDiffStrategy`
+- Blocking: `NoOpWorkerProvisioner`, `NoOpWorkerStatusListener`, `NoOpCaseChannelProvider`, `EmptyWorkerContextProvider`
 - Reactive: `NoOpReactiveWorkerProvisioner`, `NoOpReactiveCaseChannelProvider`, `NoOpReactiveWorkerStatusListener`, `EmptyReactiveWorkerContextProvider`
+
+`ContextDiffStrategy` is selected via `casehub.engine.diff-strategy` config (`none` | `top-level` | `json-patch`, default `none`). A `@Produces @DefaultBean` producer instantiates the chosen POJO — consumer `@ApplicationScoped` impl still wins. See protocol `PP-20260514-engine-spi-noops-defaultbean`.
 
 ### Ledger Integration (`casehub-ledger`)
 
