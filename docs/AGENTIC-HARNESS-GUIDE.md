@@ -47,9 +47,19 @@ what you built. Code that exists only for the tutorial is wrong code.
 
 ### LAYER-LOG.md — the primary new artifact
 
-One file at the project root. A structured record that grows with each completed layer.
-This is the raw material for LLM and human tutorials. **A layer is not complete until
-its LAYER-LOG.md entry is written.**
+One file at the project root. A structured record that grows across sessions as each
+layer is built. This is the raw material for LLM and human tutorials. **A layer is not
+complete until its LAYER-LOG.md entry is fully written — but entries are written
+incrementally, not all at once.**
+
+**Epics and layers are not the same thing.** Epics organize work by build convenience.
+Layers organize knowledge by teaching progression. One tutorial layer may span several
+epics. Do not wait for a layer to be fully built before starting its log entry — write
+what is known, mark pending sections with `🔲`, and let future sessions fill them in.
+
+The layers in the log are ordered for learning, not for chronology. When generating
+tutorials or how-tos, the order can be adjusted for the audience. Git history captures
+chronology; LAYER-LOG.md captures the teaching structure.
 
 Each entry captures:
 - What was built and what gap it closes
@@ -58,8 +68,11 @@ Each entry captures:
 - Gotchas (what went wrong, what would go wrong without prior knowledge)
 - Pattern to replicate — domain-agnostic numbered steps an LLM can follow in a
   different domain
+- Cross-references to commits, blog entries, issues, and design specs — so future
+  sessions and future LLMs can find the source material without reconstructing it
 
-See `docs/protocols/universal/layer-log.md` in casehub-parent for the full format.
+See `docs/protocols/universal/layer-log.md` in casehub-parent for the full format
+including placeholder guidance.
 See `LAYER-LOG.md` in casehub-aml for a reference implementation (Layers 1 and 2).
 
 ### Existing habits to maintain
@@ -107,21 +120,31 @@ information; gaps in the log are better than wrong entries.
 
 ### Step 3 — Map commits and entries to layers
 
-For each completed layer (see your repo deep-dive in casehub-parent for the layer table):
+Remember: epics and layers are different. One layer may span multiple epics. Organize
+by layer (teaching unit), not by epic (build unit).
+
+For each layer that has any work done (see your repo deep-dive for the layer table):
 - Which commits correspond to this layer?
 - Is there a blog entry covering it?
 - Is there a GitHub issue that was closed for it?
+- What is still pending within this layer?
 
-### Step 4 — Write LAYER-LOG.md entries retroactively
+If the layer table shows all layers as "pending" but epics are closed, **the layer table
+is wrong**. Update it: closed epics represent progress within a layer, even if the layer
+is not fully complete.
 
-One entry per completed layer. Use git history, blog entries, and issues as source
-material. If a section (e.g. "Gotchas") cannot be reconstructed, leave a note:
-`*Not captured retroactively — check git log for {commit range}.*`
+### Step 4 — Write LAYER-LOG.md entries
+
+One entry per layer that has any work done — including in-progress layers. Use git
+history, blog entries, and issues as source material. Mark sections that cannot yet
+be written with `🔲` — include the expected content or pointer so future sessions
+can fill them in without context reconstruction. See the protocol for placeholder
+guidance: `docs/protocols/universal/layer-log.md`.
 
 ### Step 5 — Identify the current layer
 
-From the layer table in your repo deep-dive: what is the next layer to build?
-Create a GitHub issue for it if none exists (check Epic for tutorial layers first).
+From the layer table in your repo deep-dive: what is the next layer to complete?
+Create a GitHub issue for it if none exists (check Epics for tutorial layers first).
 
 ---
 
@@ -129,8 +152,8 @@ Create a GitHub issue for it if none exists (check Epic for tutorial layers firs
 
 When completing any layer:
 
-1. Write the LAYER-LOG.md entry **before** marking the issue closed
-2. The entry is part of the PR / commit, not a follow-up
+1. Update the LAYER-LOG.md entry — fill in any remaining `🔲` sections, mark **Completed** with date
+2. The completed entry is part of the PR / commit, not a follow-up
 3. Update your repo deep-dive in casehub-parent — change layer status from `pending`
    to `in progress` or `complete` (create issue on casehubio/parent if you cannot
    commit there directly)

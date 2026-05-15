@@ -13,7 +13,9 @@ created: 2026-05-14
 
 ## Rule
 
-Every CaseHub agentic harness must maintain a `LAYER-LOG.md` at the project root. A layer is not complete until its log entry is written.
+Every CaseHub agentic harness must maintain a `LAYER-LOG.md` at the project root. A layer is not complete until its log entry is fully written — but entries are written incrementally, not all at once. Start an entry as soon as a layer begins; fill in sections as work progresses; mark pending sections with `🔲` so future sessions know exactly what to add without reconstructing context.
+
+**Epics and layers are different organizational schemes.** Epics organize work for build convenience. Layers organize knowledge for teaching. A single tutorial layer may span multiple epics. Do not wait for all epics covering a layer to close before starting its log entry.
 
 ## Purpose
 
@@ -26,16 +28,16 @@ An LLM reading `LAYER-LOG.md` alongside the code and git history has everything 
 
 ## Format
 
-Each layer entry must contain all five sections. Omitting a section is a violation — leave it empty rather than skip it, so the gap is visible.
+Each layer entry must contain all five sections. Sections that cannot yet be filled are marked `🔲` — include the expected content or a pointer to where it will come from. A `🔲` with context is far more useful to a future session than a blank section or a skipped one.
 
 ```markdown
 ## Layer N — [What it adds]
 
-**Completed:** YYYY-MM-DD
-**Issue:** owner/repo#N
+**Completed:** YYYY-MM-DD (or: 🔲 in progress — Epic M done YYYY-MM-DD, naive service pending)
+**Issue:** owner/repo#N (list all contributing epics/issues)
 **Key files:**
 - `path/to/file.java` — one-line description of what it does
-- `path/to/other.java` — one-line description
+- 🔲 `path/to/future.java` — not yet built; see §What it shows
 
 ### What it shows
 
@@ -78,8 +80,34 @@ Numbered steps an LLM would follow to implement this layer in a different domain
 
 ## Violation hint
 
-A layer whose code is merged but has no `LAYER-LOG.md` entry is incomplete. The log entry is as much a deliverable as the code. Block the next layer until the current layer's entry exists.
+A layer whose code is merged but has no `LAYER-LOG.md` entry at all is a violation. An entry with `🔲` placeholders is not — placeholders are expected and useful. The distinction: missing entry means the knowledge is lost; placeholder entry means a future session knows exactly what to fill in.
+
+## Placeholder guidance
+
+A placeholder section should include whatever context will help the next session fill it in:
+- Expected content (code sketch, known wiring pattern, pointer to AML equivalent)
+- Why it's pending (not yet built, foundation gate still open, etc.)
+- Where to find the source material when it is ready
+
+Example of a useful placeholder vs a useless one:
+
+```markdown
+### Key wiring
+🔲 To fill in when built. Expected: same Hibernate scan packages issue as AML Layer 2
+   (`io.casehub.work.runtime.model,io.casehub.work.runtime.filter`). See AML LAYER-LOG.md §Key wiring.
+```
+
+vs
+
+```markdown
+### Key wiring
+🔲 To fill in when built.
+```
+
+The first gives the next session a head start. The second is better than nothing but only barely.
 
 ## Retroactive entries
 
-When adopting this protocol mid-project, write retroactive entries for all completed layers before starting the next one. Use git history, specs, blog entries, and forage garden to reconstruct the content. Incomplete recollection is acceptable — leave sections partially filled rather than skipping them.
+When adopting this protocol mid-project, write entries for all layers — completed and in-progress — before starting the next one. Use git history, specs, blog entries, and forage garden to reconstruct the content. In-progress layers get entries with `🔲` sections. Only a layer with no work done at all is left out.
+
+**Note on the epics vs layers confusion:** if epics are closed but the tutorial layer table shows all layers as "pending", the layer table is wrong — not the epics. Epics do not map 1:1 to layers. Update the layer table to reflect actual status (pending / in progress / complete) and write the layer entry for what has been built so far.
