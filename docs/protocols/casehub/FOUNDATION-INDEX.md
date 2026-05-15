@@ -34,7 +34,7 @@ Reconstitute this index: `grep -rl "^scope: platform\|^scope: repo" docs/protoco
 | [artifact-rename-propagation.md](universal/artifact-rename-propagation.md) | Artifact rename propagation — update all cross-repo consumers before shipping | Any casehubio repo renaming a published artifactId |
 | [java-optional-usage.md](universal/java-optional-usage.md) | Use Optional only when absence is the method's primary return contract | All Java code across casehub |
 | [quarkus-test-security-http-only.md](universal/quarkus-test-security-http-only.md) | Only add @TestSecurity to @QuarkusTest classes that exercise HTTP endpoints | All modules with @QuarkusTest classes |
-| [quarkus-optional-extension-dep.md](universal/quarkus-optional-extension-dep.md) | Gate optional Quarkus extension deps via Capabilities + ExcludedTypeBuildItem, not config flags | Quarkus extension runtime and deployment modules |
+| [quarkus-optional-extension-dep.md](universal/quarkus-optional-extension-dep.md) | Gate optional Quarkus extension deps via @IfBuildProperty on natural datasource property, not ExcludedTypeBuildItem | Quarkus extension runtime and deployment modules |
 | [engine-spi-noops-defaultbean.md](casehub/engine-spi-noops-defaultbean.md) | Engine SPI no-op defaults must use @DefaultBean — bare @ApplicationScoped collides with consumer implementations | casehub-engine runtime no-op SPI beans |
 | [work-adapter-test-subcase-group-repository.md](casehub/work-adapter-test-subcase-group-repository.md) | work-adapter @QuarkusTest requires MemorySubCaseGroupRepository in selected-alternatives | casehub-engine-work-adapter test module |
 
