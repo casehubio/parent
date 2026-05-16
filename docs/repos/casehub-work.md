@@ -43,6 +43,7 @@ Key fields: `title`, `description`, `assigneeId`, `candidateUsers`, `candidateGr
 | Bean | Purpose |
 |---|---|
 | `WorkItemService` | Lifecycle management: create, start, complete, cancel, delegate, expire |
+| `WorkItemTemplateService` | Template CRUD and instantiation. `findByRef(String)` resolves UUID or name; `findByName(String)` throws `IllegalStateException` on >1 match (app-level uniqueness guard). 6-arg `instantiate` accepts `payloadOverride` — non-null/non-blank wins over `template.defaultPayload`, enabling engine adapters to inject `inputMapping` output. |
 | `WorkItemAssignmentService` | Routing via `WorkBroker` → `WorkerSelectionStrategy` |
 | `WorkItemSpawnService` | Child spawning with idempotency key; implements `SpawnPort` |
 | `FilterRegistryEngine` | JEXL/JQ condition evaluation for label-based routing |

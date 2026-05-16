@@ -78,7 +78,11 @@ Status: `casehub-ledger` module exists in a `feat/casehub-ledger-integration` br
 
 ### Work Adapter (`casehub-work-adapter`)
 
-Bridges `WorkItemLifecycleEvent` CDI events to `PlanItem` transitions via `BlackboardRegistry`. Choreography path only. Uses `CallerRef.parse()` to extract `caseId` and `planItemId` from `WorkItem.callerRef`.
+Two-way bridge between casehub-work and CaseHub plan items.
+
+**Inbound** (`WorkItemLifecycleAdapter`): translates terminal `WorkItemLifecycleEvent` CDI events to `PlanItem` transitions via `BlackboardRegistry`, evaluates `outputMapping`, fires `CONTEXT_CHANGED`. Uses `CallerRef.parse()` to extract `caseId` and `planItemId` from `WorkItem.callerRef`.
+
+**Outbound** (`HumanTaskScheduleHandler`): consumes `HUMAN_TASK_SCHEDULE` events. Inline mode creates a `WorkItem` directly via `WorkItemService`. Template mode resolves the `templateRef` (UUID or name) via `WorkItemTemplateService.findByRef`, then calls `WorkItemTemplateService.instantiate` with `inputData` as `payloadOverride` — honouring `HumanTaskTarget`'s `inputMapping` contract. Template not found or ambiguous name → PlanItem left PENDING.
 
 `callerRef` format: `case:{caseId}/pi:{planItemId}` — use `CallerRef.encode()` / `CallerRef.parse()`.
 
