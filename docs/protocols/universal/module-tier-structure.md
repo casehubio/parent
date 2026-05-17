@@ -85,6 +85,37 @@ Never the reverse. Tier 1 must not depend on Tier 2 or 3.
 
 Violating this rule causes cascading datasource failures across all downstream test suites.
 
+## The Store SPI Pattern — How to Make a Domain Model Persistent
+
+When a domain model needs pluggable persistence (JPA, MongoDB, in-memory, Redis), follow the **Store SPI pattern**. This is the standard mechanism across all casehubio repos.
+
+**Structure:**
+
+| Artifact | Tier | What it contains |
+|----------|------|-----------------|
+| `WorkItemStore` interface | Tier 1 (`api/`) | SPI: `put`, `get`, `scan` — no JPA annotations |
+| `JpaWorkItemStore` | Tier 3 (`runtime/`) | Default blocking JPA/Panache implementation |
+| `InMemoryWorkItemStore` | `testing/` module | `@Alternative @Priority(1)` in-memory test impl |
+| `MongoWorkItemStore` | `persistence-mongodb/` | Alternative MongoDB implementation |
+
+**Canonical example:** `casehub-work` — `WorkItemStore` SPI + JPA default + MongoDB alternative + in-memory test impl.
+
+**Rules:**
+- The SPI interface is pure Java — no `@Entity`, no Panache, no JPA imports
+- The default JPA implementation lives in the Tier 3 runtime module; alternatives in their own modules
+- The in-memory implementation lives in a `testing/` module and is activated via `@Alternative @Priority(1)`
+- SPI method signatures take domain POJOs, not JPA entity types
+- **Dual-variant rule:** Ship both a blocking SPI (`PlanItemStore`) and a reactive mirror (`ReactivePlanItemStore`, returning `Uni<>`) when the store is consumed from both blocking and reactive contexts. Method signatures are identical except for the return type wrapper. See `ledger-sync-async-parity.md` for the canonical example (`LedgerEntryRepository` + `ReactiveLedgerEntryRepository`).
+
+**Checklist when adding a new Store SPI:**
+
+- [ ] SPI interface in the correct tier (Tier 1 `api/` or Tier 2 `common/` — no JPA)
+- [ ] Default JPA impl in the runtime module; JPA entities do not leak into the SPI module
+- [ ] In-memory test impl in a `testing/` module — activated via `@Alternative @Priority(1)`
+- [ ] SPI method signatures use only domain POJOs, not JPA entity types
+- [ ] If consumed from both blocking and reactive contexts: ship blocking + reactive (`Uni<>`) variants
+- [ ] PLATFORM.md capability ownership table updated if this is a new platform capability
+
 ## Checklist when adding a new SPI
 
 - [ ] Does the SPI interface reference any external SDK types? If yes — can it be abstracted? If not — which tier owns that SDK?
