@@ -58,7 +58,7 @@ All 9 message types are recorded. For EVENT messages with structured JSON, `tool
 - Channel management: `create_channel`, `list_channels`, `get_channel`, `delete_channel`, `get_channel_digest`, `add_writer`, `remove_writer`
 - Backend management: `list_backends(channel_name)`, `deregister_backend(channel_name, backend_id)`
 - Messaging: `send_message`, `check_messages`, `read_messages`, `get_message`, `wait_for_reply`
-- Observers: `register_observer`, `read_observer_events`, `clear_observer`, `list_observers`
+- Observer notification: `MessageObserver` SPI (see §Gateway section); CDI `@ObservesAsync MessageReceivedEvent` for embedded harnesses
 - Shared data: `store_data`, `get_data`, `list_data`, `claim_artefact`, `release_artefact`
 - Commitments: `open_commitment`, `acknowledge_commitment`, `fulfill_commitment`, `decline_commitment`, `fail_commitment`, `delegate_commitment`, `list_commitments`, `get_commitment`, `list_stalled_obligations`
 - Ledger queries (normative): `list_ledger_entries` (with `type_filter`, `sender`, `correlation_id`, `sort`), `get_obligation_chain`, `get_causal_chain`, `get_obligation_stats`, `get_telemetry_summary`, `get_channel_timeline`
@@ -119,7 +119,7 @@ Every message of all 9 types (`QUERY`, `COMMAND`, `RESPONSE`, `STATUS`, `DECLINE
 
 For EVENT messages with structured telemetry JSON, `tool_name` and `duration_ms` are extracted as indexed fields for `get_telemetry_summary`.
 
-`check_messages` excludes EVENT messages by design. Use `read_observer_events` for EVENT delivery assertions in tests. Use `list_ledger_entries` to query the full history.
+`check_messages` excludes EVENT messages by design. Use `list_ledger_entries` to query the full history including EVENTs. To assert EVENT delivery in tests, use `check_messages(include_events=true, reader_instance_id=<id>)` with a `register(read_only=true)` observer instance.
 
 ---
 
