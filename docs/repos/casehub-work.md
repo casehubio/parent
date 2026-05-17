@@ -42,7 +42,7 @@ Key fields: `title`, `description`, `assigneeId`, `candidateUsers`, `candidateGr
 
 | Bean | Purpose |
 |---|---|
-| `WorkItemService` | Lifecycle management: create, start, complete, cancel, delegate, expire |
+| `WorkItemService` | Lifecycle management: create, start, complete, cancel, delegate, expire. Validates `payload` against `WorkItem.inputDataSchema` at create and `resolution` against `WorkItem.outputDataSchema` at complete (both snapshotted from template at instantiation). `completeFromSystem()` bypasses schema validation. |
 | `WorkItemTemplateService` | Template CRUD and instantiation. `findByRef(String)` resolves UUID or name; `findByName(String)` throws `IllegalStateException` on >1 match (app-level uniqueness guard). 6-arg `instantiate` accepts `payloadOverride` — non-null/non-blank wins over `template.defaultPayload`, enabling engine adapters to inject `inputMapping` output. Snapshots `templateId` and `permittedOutcomes` onto the created WorkItem. |
 | `OutcomeCodecs` | Pure-static JSON utilities for encoding/decoding `WorkItemTemplate.outcomes` (`List<Outcome>`) and `WorkItem.permittedOutcomes` (`List<String>`). No CDI — safe to use from any layer. |
 | `WorkItemAssignmentService` | Routing via `WorkBroker` → `WorkerSelectionStrategy` |
