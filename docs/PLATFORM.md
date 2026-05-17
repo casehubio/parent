@@ -243,7 +243,7 @@ casehub-parent              (BOM — publish first; all others import it)
 |---|---|---|
 | Base ledger tables | `casehub-ledger` | Flyway V1000–V1004 |
 | WorkItem tables | `casehub-work` runtime | Flyway V1–V999 |
-| Qhorus tables | `casehub-qhorus` | Flyway V1–V7 (named `qhorus` datasource) |
+| Qhorus tables | `casehub-qhorus` | Flyway V1–V9, V1003 (named `qhorus` datasource; scoped to `classpath:db/migration/qhorus`) |
 | Engine tables | `casehub-engine` | Hibernate `drop-and-create` (no migrations yet) |
 | Ledger subclass join tables | Each consumer | Consumer-owned Flyway, V1004+ numbering |
 

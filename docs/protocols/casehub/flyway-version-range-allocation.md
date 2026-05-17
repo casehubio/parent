@@ -37,3 +37,15 @@ Naming a migration in the notifications module:
 ```sql
 -- V3001__add_notification_rule.sql
 ```
+
+## Scoped Migration Directories (Alternative to Range Allocation)
+
+Extensions that operate on their own **named datasource** can use a scoped migration directory instead of claiming a version range block. This makes version numbers module-local and eliminates the need for global coordination:
+
+- Place migrations in `db/migration/<module>/` (e.g. `db/migration/qhorus/`)
+- Configure: `quarkus.flyway.<datasource>.locations=classpath:db/migration/<module>`
+- Version numbers (V1, V2, …) are then module-local — no overlap with other modules
+
+**`casehub-qhorus`** uses this pattern (named datasource `qhorus`, migrations in `classpath:db/migration/qhorus`). See qhorus#142 and qhorus#155 for context.
+
+The range-allocation table above applies to casehub-work's shared-datasource modules. Modules with isolated named datasources should prefer the scoped-directory approach.
