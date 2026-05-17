@@ -37,6 +37,8 @@ Reconstitute this index: `grep -rl "^scope: platform\|^scope: repo" docs/protoco
 | [quarkus-optional-extension-dep.md](universal/quarkus-optional-extension-dep.md) | Gate optional Quarkus extension deps via @IfBuildProperty on natural datasource property, not ExcludedTypeBuildItem | Quarkus extension runtime and deployment modules |
 | [engine-spi-noops-defaultbean.md](casehub/engine-spi-noops-defaultbean.md) | Engine SPI no-op defaults must use @DefaultBean — bare @ApplicationScoped collides with consumer implementations | casehub-engine runtime no-op SPI beans |
 | [work-adapter-test-subcase-group-repository.md](casehub/work-adapter-test-subcase-group-repository.md) | work-adapter @QuarkusTest requires MemorySubCaseGroupRepository in selected-alternatives | casehub-engine-work-adapter test module |
+| [work-adapter-plan-item-running-ordering.md](casehub/work-adapter-plan-item-running-ordering.md) | PlanItem must not be marked RUNNING until all resolution and validation steps succeed | casehub-engine-work-adapter outbound handlers |
+| [work-adapter-inputmapping-payload-contract.md](casehub/work-adapter-inputmapping-payload-contract.md) | Engine adapters must propagate HumanTaskTarget inputMapping output to WorkItem payload | casehub-engine-work-adapter outbound handlers |
 
 ---
 
