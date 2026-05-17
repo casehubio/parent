@@ -43,7 +43,8 @@ Key fields: `title`, `description`, `assigneeId`, `candidateUsers`, `candidateGr
 | Bean | Purpose |
 |---|---|
 | `WorkItemService` | Lifecycle management: create, start, complete, cancel, delegate, expire |
-| `WorkItemTemplateService` | Template CRUD and instantiation. `findByRef(String)` resolves UUID or name; `findByName(String)` throws `IllegalStateException` on >1 match (app-level uniqueness guard). 6-arg `instantiate` accepts `payloadOverride` — non-null/non-blank wins over `template.defaultPayload`, enabling engine adapters to inject `inputMapping` output. |
+| `WorkItemTemplateService` | Template CRUD and instantiation. `findByRef(String)` resolves UUID or name; `findByName(String)` throws `IllegalStateException` on >1 match (app-level uniqueness guard). 6-arg `instantiate` accepts `payloadOverride` — non-null/non-blank wins over `template.defaultPayload`, enabling engine adapters to inject `inputMapping` output. Snapshots `templateId` and `permittedOutcomes` onto the created WorkItem. |
+| `OutcomeCodecs` | Pure-static JSON utilities for encoding/decoding `WorkItemTemplate.outcomes` (`List<Outcome>`) and `WorkItem.permittedOutcomes` (`List<String>`). No CDI — safe to use from any layer. |
 | `WorkItemAssignmentService` | Routing via `WorkBroker` → `WorkerSelectionStrategy` |
 | `WorkItemSpawnService` | Child spawning with idempotency key; implements `SpawnPort` |
 | `FilterRegistryEngine` | JEXL/JQ condition evaluation for label-based routing |
@@ -64,7 +65,7 @@ Key fields: `title`, `description`, `assigneeId`, `candidateUsers`, `candidateGr
 
 ### CDI Events
 
-`WorkItemLifecycleEvent` fired on every status transition. Carries `callerRef` opaquely — CaseHub uses it to route completions back to the right `PlanItem`.
+`WorkItemLifecycleEvent` fired on every status transition. Carries `callerRef` opaquely — CaseHub uses it to route completions back to the right `PlanItem`. Carries `outcome` (the named completion classification from `WorkItemTemplate.outcomes`) — null for non-completion events and system-initiated completions. Engine adapters can switch on `outcome` directly without parsing `resolution` JSON.
 
 ---
 

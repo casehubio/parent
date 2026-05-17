@@ -198,6 +198,7 @@ casehub-parent              (BOM — publish first; all others import it)
 | W3C PROV-DM lineage export | `casehub-ledger` | `LedgerProvExportService` |
 | OTel trace linkage to audit entries | `casehub-ledger` | `LedgerTraceListener` auto-populates `traceId` from active OTel span |
 | Human task inbox (WorkItem lifecycle) | `casehub-work` | 10 statuses, SLA, delegation, escalation, spawn |
+| Named outcome classifications for WorkItems | `casehub-work` | `Outcome` record in `casehub-work-api`; `WorkItemTemplate.outcomes` declares valid names; `WorkItem.outcome` stores resolved name at completion; `WorkItemLifecycleEvent.outcome` carries it for engine routing without parsing `resolution` JSON |
 | M-of-N parallel WorkItem completion (group policy primitive) | `casehub-work` | `MultiInstanceCoordinator`; `WorkItemGroupLifecycleEvent`; see LAYERING.md |
 | Worker routing / selection strategies | `casehub-work-core` | `WorkBroker`, `WorkerSelectionStrategy` SPI — also used by casehub-engine |
 | Label-based queue views | `casehub-work-queues` | Optional module on casehub-work |
