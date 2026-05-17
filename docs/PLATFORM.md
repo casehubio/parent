@@ -118,6 +118,7 @@ Four tiers, always kept separate:
 | Repo | GitHub | One-liner | Tier |
 |------|--------|-----------|------|
 | `casehub-parent` | [casehubio/parent](https://github.com/casehubio/parent) | BOM, CI dashboards, full-stack build tooling | — |
+| `casehub-platform` | [casehubio/platform](https://github.com/casehubio/platform) | Zero-dep foundational SPIs — Path, Preferences, Identity | Foundation |
 | `casehub-ledger` | [casehubio/ledger](https://github.com/casehubio/ledger) | Immutable tamper-evident audit ledger + trust scoring | Foundation |
 | `casehub-work` | [casehubio/work](https://github.com/casehubio/work) | Human task lifecycle (WorkItem inbox, SLA, delegation, routing) | Foundation |
 | `casehub-qhorus` | [casehubio/qhorus](https://github.com/casehubio/qhorus) | Peer-to-peer agent communication mesh | Foundation |
@@ -134,6 +135,7 @@ Application tier (devtown, aml, clinical): see [APPLICATIONS.md](APPLICATIONS.md
 
 ```
 casehub-parent              (BOM — publish first; all others import it)
+  casehub-platform          (no casehubio deps — foundational SPIs, publishes before ledger)
   casehub-ledger            (no casehubio deps)
   casehub-connectors        (no casehubio deps)
   casehub-work              (core: zero casehubio deps; ledger module: depends on casehub-ledger)

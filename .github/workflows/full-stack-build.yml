@@ -61,6 +61,7 @@ jobs:
           mkdir -p .build-times casehub
           [ "$INCLUDE_LANGCHAIN4J" = "true" ] && \
             git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/quarkus-langchain4j.git" quarkus-langchain4j
+          git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/platform.git" casehub/platform
           git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/ledger.git" casehub/ledger
           git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/connectors.git" casehub/connectors
           git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/work.git" casehub/work
@@ -86,6 +87,22 @@ jobs:
           START=$SECONDS
           cd quarkus-langchain4j && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
           echo $((SECONDS - START)) > ../.build-times/quarkus-langchain4j
+
+      - name: "Build: platform"
+        id: platform
+        continue-on-error: true
+        env:
+          SKIP_TESTS: ${{ inputs.skip_tests }}
+          SKIP_ITS: ${{ inputs.skip_integration_tests }}
+          MAVEN_EXTRA: ${{ inputs.maven_args }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          FLAGS=""
+          [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
+          [ "$SKIP_ITS" = "true" ] && FLAGS="$FLAGS -DskipITs"
+          START=$SECONDS
+          cd casehub/platform && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
+          echo $((SECONDS - START)) > ../../.build-times/platform
 
       - name: "Build: ledger"
         id: ledger
@@ -191,6 +208,7 @@ jobs:
           SKIP_ITS: ${{ inputs.skip_integration_tests }}
           INCLUDE_LANGCHAIN4J: ${{ inputs.include_langchain4j }}
           OUTCOME_LANGCHAIN4J: ${{ steps.langchain4j.outcome }}
+          OUTCOME_PLATFORM: ${{ steps.platform.outcome }}
           OUTCOME_LEDGER: ${{ steps.ledger.outcome }}
           OUTCOME_CONNECTORS: ${{ steps.connectors.outcome }}
           OUTCOME_WORK: ${{ steps.work.outcome }}
@@ -206,9 +224,10 @@ jobs:
             TEST_MODE="full test suite"
           fi
 
-          MODULES=(quarkus-langchain4j ledger connectors work qhorus engine claudony)
+          MODULES=(quarkus-langchain4j platform ledger connectors work qhorus engine claudony)
           declare -A OUTCOMES=(
             [quarkus-langchain4j]="$OUTCOME_LANGCHAIN4J"
+            [platform]="$OUTCOME_PLATFORM"
             [ledger]="$OUTCOME_LEDGER"
             [connectors]="$OUTCOME_CONNECTORS"
             [work]="$OUTCOME_WORK"
@@ -218,6 +237,7 @@ jobs:
           )
           declare -A GH_REPO=(
             [quarkus-langchain4j]="quarkus-langchain4j"
+            [platform]="platform"
             [ledger]="ledger"
             [connectors]="connectors"
             [work]="work"

@@ -66,6 +66,7 @@ jobs:
           mkdir -p .build-times casehub
           [ "$INCLUDE_LANGCHAIN4J" = "true" ] && \
             git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/quarkus-langchain4j.git" quarkus-langchain4j
+          git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/platform.git" casehub/platform
           git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/ledger.git" casehub/ledger
           git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/connectors.git" casehub/connectors
           git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/work.git" casehub/work
@@ -82,6 +83,7 @@ jobs:
         id: shas
         run: |
           P=$(git rev-parse HEAD)
+          PL=$(git -C casehub/platform rev-parse HEAD)
           L=$(git -C casehub/ledger rev-parse HEAD)
           C=$(git -C casehub/connectors rev-parse HEAD)
           W=$(git -C casehub/work rev-parse HEAD)
@@ -90,6 +92,7 @@ jobs:
           D=$(git -C casehub/claudony rev-parse HEAD)
 
           echo "sha_parent=$P"     >> $GITHUB_OUTPUT
+          echo "sha_platform=$PL" >> $GITHUB_OUTPUT
           echo "sha_ledger=$L"     >> $GITHUB_OUTPUT
           echo "sha_connectors=$C" >> $GITHUB_OUTPUT
           echo "sha_work=$W"       >> $GITHUB_OUTPUT
@@ -133,7 +136,7 @@ jobs:
         env:
           FORCE_REBUILD: ${{ inputs.force_rebuild }}
         run: |
-          MODULES=(parent ledger connectors work qhorus engine claudony)
+          MODULES=(parent platform ledger connectors work qhorus engine claudony)
           [ "${{ inputs.include_applications }}" = "true" ] && MODULES+=(devtown aml clinical)
           if [ "$FORCE_REBUILD" = "true" ] || [ ! -f .incremental-state/shas.txt ]; then
             for m in "${MODULES[@]}"; do echo "sha_${m}=none" >> $GITHUB_OUTPUT; done
@@ -155,7 +158,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.m2/repository/io/casehub
-          key: m2-casehub-${{ steps.shas.outputs.sha_parent }}-${{ steps.shas.outputs.sha_ledger }}-${{ steps.shas.outputs.sha_connectors }}-${{ steps.shas.outputs.sha_work }}-${{ steps.shas.outputs.sha_qhorus }}-${{ steps.shas.outputs.sha_engine }}-${{ steps.shas.outputs.sha_claudony }}
+          key: m2-casehub-${{ steps.shas.outputs.sha_parent }}-${{ steps.shas.outputs.sha_platform }}-${{ steps.shas.outputs.sha_ledger }}-${{ steps.shas.outputs.sha_connectors }}-${{ steps.shas.outputs.sha_work }}-${{ steps.shas.outputs.sha_qhorus }}-${{ steps.shas.outputs.sha_engine }}-${{ steps.shas.outputs.sha_claudony }}
           restore-keys: |
             m2-casehub-
 
@@ -178,6 +181,31 @@ jobs:
       # all modules get at least TEST.
       #
       # continue-on-error: true so all modules run and we get a complete summary.
+
+      - name: "Build: platform"
+        id: platform
+        continue-on-error: true
+        env:
+          CUR: ${{ steps.shas.outputs.sha_platform }}
+          PRV: ${{ steps.prev.outputs.sha_platform }}
+          CUR_P: ${{ steps.shas.outputs.sha_parent }}
+          PRV_P: ${{ steps.prev.outputs.sha_parent }}
+          SKIP_TESTS: ${{ inputs.skip_tests }}
+          SKIP_ITS: ${{ inputs.skip_integration_tests }}
+          MAVEN_EXTRA: ${{ inputs.maven_args }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          D=$(./scripts/incremental-build-decision.sh \
+            --module platform --current-sha "$CUR" --previous-sha "${PRV:-none}" \
+            --dep "parent:${CUR_P}:${PRV_P:-none}")
+          echo "decision=$D" >> $GITHUB_OUTPUT
+          START=$SECONDS
+          if [ "$D" = "SKIP" ]; then
+            echo "⏭ Skipping platform (no changes)"
+          else
+            cd casehub/platform && mvn install --batch-mode ${SKIP_TESTS:+-DskipTests} $MAVEN_EXTRA
+          fi
+          echo $((SECONDS - START)) > ../../.build-times/platform
 
       - name: "Build: ledger"
         id: ledger

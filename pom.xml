@@ -49,6 +49,20 @@
       </dependency>
 
       <!-- ================================================================ -->
+      <!-- casehub-platform — zero-dep foundational SPIs (publishes first) -->
+      <!-- ================================================================ -->
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-platform-api</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-platform</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+
+      <!-- ================================================================ -->
       <!-- casehub-ledger                                                   -->
       <!-- ================================================================ -->
       <dependency>
