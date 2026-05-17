@@ -34,7 +34,7 @@ Designed after research into A2A, AutoGen, LangGraph, OpenAI Swarm, Letta, and C
 | `ChannelGateway` | Routes outbound messages to registered backends; handles inbound normalisation |
 | `ChannelBackend` | SPI base — `AgentChannelBackend`, `HumanParticipatingChannelBackend`, `HumanObserverChannelBackend` |
 | `QhorusChannelBackend` | Default `AgentChannelBackend` — always registered, wraps `MessageService` |
-| `InboundNormaliser` | SPI — maps raw human inbound to Qhorus `MessageType`; `@DefaultBean` always QUERY |
+| `InboundNormaliser` | SPI — translates `InboundHumanMessage` to a complete `NormalisedMessage` (type, content, senderInstanceId, correlationId, inReplyTo, artefactRefs, target); `@DefaultBean` always QUERY, passes correlationId through |
 | `Senders` | Constants in `casehub-qhorus-api`: `HUMAN = "human"` |
 
 **Fan-out:** `sendMessage` persists via `MessageService` then calls `channelGateway.fanOut()` for external backends (async, virtual threads, non-fatal failures).
