@@ -201,12 +201,15 @@ casehub-parent              (BOM — publish first; all others import it)
 | OTel trace linkage to audit entries | `casehub-ledger` | `LedgerTraceListener` auto-populates `traceId` from active OTel span |
 | Human task inbox (WorkItem lifecycle) | `casehub-work` | 10 statuses, SLA, delegation, escalation, spawn |
 | Named outcome classifications for WorkItems | `casehub-work` | `Outcome` record in `casehub-work-api`; `WorkItemTemplate.outcomes` declares valid names; `WorkItem.outcome` stores resolved name at completion; `WorkItemLifecycleEvent.outcome` carries it for engine routing without parsing `resolution` JSON |
+| Conflict-of-interest user exclusion | `casehub-work` | `ExclusionPolicy` SPI in `casehub-work-api`; `CommaSeparatedExclusionPolicy` `@DefaultBean`; `excludedUsers` TEXT field on `WorkItemTemplate` + `WorkItem`; enforced at claim, create (assigneeId), delegate, auto-assignment, and `SelectionContext` |
 | M-of-N parallel WorkItem completion (group policy primitive) | `casehub-work` | `MultiInstanceCoordinator`; `WorkItemGroupLifecycleEvent`; see LAYERING.md |
 | Worker routing / selection strategies | `casehub-work-core` | `WorkBroker`, `WorkerSelectionStrategy` SPI — also used by casehub-engine |
 | Label-based queue views | `casehub-work-queues` | Optional module on casehub-work |
 | Semantic (embedding) worker matching | `casehub-work-ai` | Optional module; `SemanticWorkerSelectionStrategy` |
 | Outbound notifications (Slack, Teams, SMS, email) | `casehub-connectors` | `Connector` SPI; `casehub-work-notifications` must delegate here |
 | Agent-to-agent messaging (typed channels + messages) | `casehub-qhorus` | 9 speech-act types, 5 channel semantics, MCP tools |
+| Channel message fan-out to external backends | `casehub-qhorus` | `ChannelBackend` SPI in `casehub-qhorus-api`; implementations in consuming repos (Claudony panel, connectors) |
+| Cross-cutting message notification | `casehub-qhorus` | `MessageObserver` SPI in `casehub-qhorus-api`; `InProcessMessageBus` CDI default (`Scope.LOCAL`); CLUSTER-scoped impls for distributed topologies |
 | Agent commitment/obligation tracking | `casehub-qhorus` | `Commitment` with 7-state lifecycle |
 | Normative audit of all agent interactions | `casehub-qhorus` | `MessageLedgerEntry` extends `LedgerEntry`; all 9 speech-act types recorded |
 | Case/process orchestration (choreography + WAITING) | `casehub-engine` | `CaseInstance`, `EventLog`, `WorkOrchestrator` |
@@ -228,7 +231,11 @@ casehub-parent              (BOM — publish first; all others import it)
 
 **Do not duplicate notification infrastructure.** `casehub-connectors` owns Slack/Teams/SMS/email. `casehub-work-notifications` must delegate here.
 
-**Do not implement Qhorus channel semantics in `claudony`.** Claudony embeds Qhorus and adds SPI implementations. It must not re-implement channel, message, or commitment logic.
+**Do not implement Qhorus channel semantics in `claudony`.** Claudony embeds Qhorus and adds SPI implementations. It must not re-implement channel, message, or commitment logic. Implementing `ChannelBackend` or `MessageObserver` SPIs from `casehub-qhorus-api` is not re-implementation — it is correct SPI usage.
+
+**Do not call `QhorusMcpTools` or `ReactiveQhorusMcpTools` from consumer service code.** Those classes are the MCP tool dispatch layer for external callers (Claude Code). Consumer service code should inject `ChannelService` / `ReactiveChannelService` or `MessageService` / `ReactiveMessageService` directly, or implement the `ChannelBackend` SPI. Going through the MCP tool class from internal code couples a service to an external protocol layer.
+
+**Choose `ChannelBackend` vs `MessageObserver` based on scope.** `ChannelBackend` is per-channel and knows its context — use it when a consumer needs to act on messages from a specific channel (e.g. Claudony panel display). `MessageObserver` is a global broadcast across all channels — use it for cross-cutting concerns (e.g. clinical PI response monitoring). For topology guidance (LOCAL CDI vs CLUSTER-scoped transport) see [`docs/repos/casehub-qhorus.md`](repos/casehub-qhorus.md) and [qhorus `docs/messaging-architecture.md`](https://github.com/casehubio/qhorus/blob/main/docs/messaging-architecture.md).
 
 **Do not put CaseHub SPI implementations in `casehub-engine`.** casehub-engine defines them; deployment-specific implementations belong in the deploying application.
 
