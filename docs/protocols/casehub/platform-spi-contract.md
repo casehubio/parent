@@ -86,17 +86,18 @@ across call sites. The `Preferences` interface surface stays minimal.
 
 ---
 
-## Rule 4 — Mock `PreferenceProvider` wires to JQ/CaseContext via `asMap()`
+## Rule 4 — Mock `PreferenceProvider` wires to CaseContext via `asMap()`
 
-`MockPreferenceProvider` returns `String` values from `@ConfigProperty`. Typed `get()` always
-returns `null` from the mock — callers must apply rule 3. `asMap()` returns the config strings,
-which flow into `CaseContext` and JQ `when` conditions:
+`MockPreferenceProvider` parses config string values to their natural Java types (Integer,
+Long, Boolean, Double, List, String) before returning from `asMap()`. Typed `get()` always
+returns `null` from the mock — callers must apply rule 3. `asMap()` returns typed values
+suitable for injection into CaseContext and any pluggable ExpressionEvaluator:
 
 ```properties
 casehub.platform.preferences.defaults.devtown.humanApprovalThreshold=500
 ```
 
-In a JQ expression: `.preferences."devtown.humanApprovalThreshold"` → `"500"` (string).
+This yields `{"devtown.humanApprovalThreshold": 500}` (Integer) in `asMap()`. Any
+ExpressionEvaluator (JQ, Lambda, or others) receives the correct Java type.
 
-Real implementations that want typed values in `asMap()` must populate the map with typed
-objects, not strings.
+Real implementations populate the map with pre-typed values — no string-to-type parsing needed.
