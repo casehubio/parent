@@ -42,6 +42,7 @@ Reconstitute this index: `grep -rl "^scope: platform\|^scope: repo" docs/protoco
 | [platform-spi-contract.md](casehub/platform-spi-contract.md) | Platform SPI implementation contract — @DefaultBean mock scope, @RequestScoped real impl scope, Preference DEFAULT constant pattern | All repos implementing casehub-platform-api SPIs |
 | [work-adapter-test-subcase-group-repository.md](casehub/work-adapter-test-subcase-group-repository.md) | work-adapter @QuarkusTest requires MemorySubCaseGroupRepository in selected-alternatives | casehub-engine-work-adapter test module |
 | [work-adapter-plan-item-running-ordering.md](casehub/work-adapter-plan-item-running-ordering.md) | PlanItem must not be marked RUNNING until all resolution and validation steps succeed | casehub-engine-work-adapter outbound handlers |
+| [plan-item-store-blocking-transactional-call-site.md](casehub/plan-item-store-blocking-transactional-call-site.md) | PlanItemStore.save() must be called from a blocking @Transactional context | casehub-engine-work-adapter handlers writing PlanItem status |
 | [work-adapter-inputmapping-payload-contract.md](casehub/work-adapter-inputmapping-payload-contract.md) | Engine adapters must propagate HumanTaskTarget inputMapping output to WorkItem payload | casehub-engine-work-adapter outbound handlers |
 
 ---
