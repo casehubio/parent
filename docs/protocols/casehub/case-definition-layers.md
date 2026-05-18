@@ -3,7 +3,7 @@ id: PP-20260518-case-definition-layers
 title: "Three-layer case definition architecture — YAML, schema model, canonical API model, fluent DSL"
 type: rule
 scope: platform
-applies_to: "casehub-engine (owns the layers); all CaseHub agentic harnesses (devtown, aml, clinical, QuarkMind) when defining CasePlanModels"
+applies_to: "casehub-engine (owns the layers); all CaseHub domain applications (devtown, aml, clinical, QuarkMind) when defining CasePlanModels"
 severity: required
 refs:
   - CNCF Serverless Workflow 1.0 specification

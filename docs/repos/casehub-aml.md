@@ -6,7 +6,7 @@
 
 ## What It Is
 
-An agentic harness for Anti-Money Laundering investigation built on the CaseHub foundation. Coordinates specialist agents (entity resolution, pattern analysis, OSINT screening), compliance officer human task gates, and adaptive investigation paths — producing a FinCEN-compliant, independently verifiable audit trail. Field showcase and tutorial for Java developers in financial services.
+An AML investigation application built on the CaseHub agentic harness. Coordinates specialist agents (entity resolution, pattern analysis, OSINT screening), compliance officer human task gates, and adaptive investigation paths — producing a FinCEN-compliant, independently verifiable audit trail. Field showcase and tutorial for Java developers in financial services.
 
 Scored 44/50 in the use-case analysis (22 market + 22 community) — the only use case strong on both dimensions simultaneously. Java dominates banking infrastructure; enterprise developers have built these systems and know what fails in practice.
 

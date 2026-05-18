@@ -3,7 +3,7 @@ id: PP-20260517-4b61ae
 title: "Do not throw IllegalStateException in REST-reachable code in casehub-work consumers"
 type: rule
 scope: application
-applies_to: All CaseHub agentic harnesses that depend on casehub-work
+applies_to: All CaseHub domain applications that depend on casehub-work
 severity: important
 refs:
   - docs/protocols/casehub/HARNESS-INDEX.md

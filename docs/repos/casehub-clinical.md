@@ -2,11 +2,11 @@
 
 **GitHub:** [casehubio/clinical](https://github.com/casehubio/clinical)
 **Tier:** Application
-**Status:** Greenfield — no code yet, epics defined
+**Status:** Active — Layers 1, 2, 4 complete; Layer 3 in progress (Epic 5)
 
 ## What It Is
 
-An agentic harness for clinical trial coordination built on the CaseHub foundation. Coordinates eligibility screening agents, safety monitoring agents, PI authorisation gates, and IRB approval gates across multiple trial sites — producing an FDA-compliant, GDPR-aware, independently verifiable audit trail. Field showcase and tutorial for Java developers in regulated healthcare (pharma, biotech, clinical research).
+A clinical trial coordination application built on the CaseHub agentic harness. Coordinates eligibility screening agents, safety monitoring agents, PI authorisation gates, and IRB approval gates across multiple trial sites — producing an FDA-compliant, GDPR-aware, independently verifiable audit trail. Field showcase and tutorial for Java developers in regulated healthcare (pharma, biotech, clinical research).
 
 GCP domain knowledge is a prerequisite for this audience — and it is standard knowledge for Java developers in that field. The same developer who evaluates CaseHub for their trial coordination system is the developer who follows the tutorial to build it.
 
@@ -20,10 +20,10 @@ The tutorial structure emerges from the natural adoption sequence. Each layer ad
 
 | Layer | Adds | Gap it closes | Status |
 |-------|------|---------------|--------|
-| 1 | Naive Java — no CaseHub | Baseline: direct service calls, no SLA, no audit | pending |
-| 2 | casehub-work | No formal SLA for adverse event review (GCP: serious AE within 24h) | pending |
-| 3 | casehub-qhorus | No formal obligation when coordinating PI authorisation and safety agents | pending |
-| 4 | casehub-ledger | No FDA tamper-evident audit trail; no GDPR Art.17 consent withdrawal | pending |
+| 1 | Naive Java — no CaseHub | Baseline: direct service calls, no SLA, no audit | complete (Epics 1+2, 2026-05-08) |
+| 2 | casehub-work | No formal SLA for adverse event review (GCP: serious AE within 24h) | complete (Epic 4, 2026-05-12) |
+| 3 | casehub-qhorus | No formal obligation when coordinating PI authorisation and safety agents | in progress (Epic 5, 2026-05-15–) |
+| 4 | casehub-ledger | No FDA tamper-evident audit trail; no GDPR Art.17 consent withdrawal | complete (Epic 4, 2026-05-12) |
 | 5 | casehub-engine | Fixed trial pipeline; no adaptive paths for grade-based escalation or IRB gates | pending |
 | 6 | Trust routing | No trust model; experienced safety agents not prioritised on complex CTCAE Grade 4+ events | pending |
 | 7 | Comparison vs ClinicalAgent | — | pending |

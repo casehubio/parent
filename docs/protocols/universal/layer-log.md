@@ -3,7 +3,7 @@ id: PP-20260514-layer-log
 title: Maintain LAYER-LOG.md as definition of done per harness layer
 type: rule
 scope: universal
-applies_to: All CaseHub agentic harnesses (casehub-aml, casehub-clinical, casehub-devtown, QuarkMind)
+applies_to: All CaseHub domain applications (casehub-aml, casehub-clinical, casehub-devtown, QuarkMind)
 severity: guidance
 refs:
   - docs/tutorial-strategy.md §2.1b
@@ -13,7 +13,7 @@ created: 2026-05-14
 
 ## Rule
 
-Every CaseHub agentic harness must maintain a `LAYER-LOG.md` at the project root.
+Every CaseHub domain application must maintain a `LAYER-LOG.md` at the project root.
 
 **Two obligations, two triggers:**
 - **Start the entry** — when any work on the layer begins

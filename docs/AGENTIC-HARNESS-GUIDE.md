@@ -9,12 +9,14 @@ Read this at session start alongside your CLAUDE.md.
 
 ## What You Are
 
-You are an **agentic harness** — infrastructure that coordinates multiple agents (human
-and AI), enforces formal accountability per interaction, adapts execution paths based on
-accumulated context, and produces an independently verifiable audit trail. The domain
-varies; the harness structure underneath is the same across all four apps.
+You are a **domain application built on the CaseHub agentic harness** — the foundation
+infrastructure (casehub-engine, casehub-ledger, casehub-work, casehub-qhorus,
+casehub-connectors) that coordinates multiple agents (human and AI), enforces formal
+accountability per interaction, adapts execution paths based on accumulated context, and
+produces an independently verifiable audit trail. The domain varies; the harness
+underneath is the same across all four apps.
 
-See `docs/repos/{your-app}.md` in casehub-parent for your harness structure and tutorial
+See `docs/repos/{your-app}.md` in casehub-parent for your domain structure and tutorial
 layers. See `docs/tutorial-strategy.md §2.0` for the full agentic harness concept.
 
 ---

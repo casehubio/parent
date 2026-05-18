@@ -27,16 +27,26 @@ Each project already has good examples, but they are siloed. The pattern is cons
 
 These apply to every example, tutorial, and walkthrough written for CaseHub.
 
-### 2.0 All CaseHub applications are agentic harnesses
+### 2.0 CaseHub is an agentic harness — domain applications build on it
 
-Every application built on CaseHub is an **agentic harness** — infrastructure that coordinates multiple agents (human and AI), enforces formal accountability per interaction, adapts paths based on accumulated context, and produces an independently verifiable audit trail. The domain is the clothes; the harness is the structure underneath.
+The **CaseHub foundation** is an agentic harness — infrastructure that coordinates multiple agents (human and AI), enforces formal accountability per interaction, adapts paths based on accumulated context, and produces an independently verifiable audit trail. The domain applications (aml, clinical, devtown, QuarkMind) are built on this harness; they are not the harness itself.
 
 This is what distinguishes CaseHub from adjacent tools:
-- **LangChain4j** makes a single agent smart (reasoning, tool use) — inside the harness
-- **Quarkus Flow** makes a single step durable (retry, backoff, state) — inside the harness
+- **LangChain4j** makes a single agent smart (reasoning, tool use) — runs inside the harness
+- **Quarkus Flow** makes a single step durable (retry, backoff, state) — runs inside the harness
 - **CaseHub** makes the full multi-agent coordination accountable — the harness itself
 
-Four harnesses currently exist across different domains:
+The foundation modules that constitute the harness:
+
+| Module | Harness function |
+|--------|-----------------|
+| casehub-qhorus | Agent communication — COMMAND creates formal obligation; DONE/DECLINE are typed outcomes |
+| casehub-work | Human-in-the-loop — SLA-bounded task gates, escalation |
+| casehub-engine | Orchestration — adaptive paths, CasePlanModel, task routing |
+| casehub-ledger | State persistence and audit — tamper-evident evidence chain, resumability |
+| casehub-connectors | External tool dispatch — Slack/Teams and other integrations |
+
+Four domain applications currently demonstrate the harness across domains:
 
 | App | Domain | Audience |
 |-----|--------|----------|
@@ -45,7 +55,7 @@ Four harnesses currently exist across different domains:
 | casehub-devtown | PR review orchestration | Java developers in software engineering |
 | QuarkMind | StarCraft II game AI | R&D / living lab |
 
-Each demonstrates that the harness pattern holds across domains — from regulated enterprise compliance to game AI. An LLM with all four as reference material can build a fifth harness in any domain without asking questions.
+Each demonstrates that the same harness holds across domains — from regulated enterprise compliance to game AI. An LLM with all four as reference material can build a fifth domain application in any domain without asking questions.
 
 ### 2.0b Every domain application is both a field showcase and a field tutorial
 

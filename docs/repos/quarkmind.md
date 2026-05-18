@@ -6,9 +6,9 @@
 
 ## What It Is
 
-An agentic harness for StarCraft II game AI built on the CaseHub foundation. Coordinates plugin agents (strategy, economics, tactics, scouting) via CaseHub's case engine and blackboard, with Drools for rule-based reasoning and Quarkus Flow for durable task execution. Explicitly a living lab — a testbed for CaseHub, Drools, and Quarkus Flow integration patterns in a real-time domain.
+A StarCraft II game AI application built on the CaseHub agentic harness. Coordinates plugin agents (strategy, economics, tactics, scouting) via CaseHub's case engine and blackboard, with Drools for rule-based reasoning and Quarkus Flow for durable task execution. Explicitly a living lab — a testbed for CaseHub, Drools, and Quarkus Flow integration patterns in a real-time domain.
 
-The SC2 game loop is domain-specific. The agentic harness underneath — CaseFile blackboard, plugin coordination, adaptive agent selection — is the same pattern as AML, clinical, and devtown. QuarkMind demonstrates that the harness holds outside regulated enterprise domains, across diverse timing characteristics (game AI operates at millisecond tick granularity vs days for case management).
+The SC2 game loop is domain-specific. The CaseHub harness underneath — CaseFile blackboard, plugin coordination, adaptive agent selection — is the same foundation as AML, clinical, and devtown. QuarkMind demonstrates that the harness holds outside regulated enterprise domains, across diverse timing characteristics (game AI operates at millisecond tick granularity vs days for case management).
 
 ## What It Owns
 
