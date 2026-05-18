@@ -94,6 +94,19 @@ Before designing or implementing: brainstorm → TDD → review before committin
 
 ---
 
+## Upstream Consistency — Serverless Workflow 1.0 and quarkus-flow
+
+CaseHub is built on top of CNCF Serverless Workflow 1.0 (via quarkus-flow). Before designing any new abstraction in casehub-engine or any harness, check whether Serverless Workflow 1.0 or quarkus-flow already defines it. Consistency with upstream is preferred over reinvention.
+
+This applies to: execution models, case/workflow definition structure, trigger types, expression evaluation, worker/activity contracts, sub-case/sub-workflow composition, and any serialization format decisions.
+
+**The check:** if a concept exists in Serverless Workflow 1.0 or quarkus-flow — use the same name, the same shape, and the same semantics. If CaseHub must diverge (e.g. to add compliance or trust concerns), document the divergence explicitly.
+
+**Known inheritors of this principle:**
+- Case definition three-layer architecture (YAML → schema model → canonical API model + fluent DSL) — see [`docs/protocols/casehub/case-definition-layers.md`](protocols/casehub/case-definition-layers.md)
+
+---
+
 ## Architectural Patterns
 
 The platform uses a deliberate blend of Clean Architecture, Hexagonal (Ports and Adapters), DDD, Event-Driven, Reactive, CQRS-lite, Strategy, Registry, Interceptor, and Observer patterns. Each tier applies a different subset. The dependency rule — source code dependencies only point inward, domain never depends on infrastructure — governs all of them.
