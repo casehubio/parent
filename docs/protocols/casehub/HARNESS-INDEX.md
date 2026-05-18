@@ -14,6 +14,7 @@ Reconstitute this index: `grep -rl "^scope: application" docs/protocols/*.md`
 | File | Rule | Applies to |
 |------|------|------------|
 | [layer-log.md](universal/layer-log.md) | Maintain LAYER-LOG.md as definition of done per harness layer — structured wiring, gotchas, and pattern-to-replicate for each layer | All CaseHub agentic harnesses |
+| [case-definition-layers.md](casehub/case-definition-layers.md) | Three-layer case definition architecture — YAML is the runtime format; extend YamlCaseHub; use fluent DSL for tests; LambdaExpressionEvaluator only in tests (not YAML-loaded definitions) | All CaseHub agentic harnesses defining CasePlanModels |
 | [casehub-work-illegal-state-exception.md](casehub/casehub-work-illegal-state-exception.md) | Do not throw IllegalStateException in REST-reachable code — casehub-work maps it to HTTP 409 via IllegalStateExceptionMapper | All harnesses using casehub-work |
 | *(pending #18)* | Hexagonal module placement — `api/` is JPA-free pure domain; `app/` owns use-case orchestration | All CaseHub agentic harnesses |
 | *(pending #19)* | casehub-work Hibernate scan packages — include both `runtime.model` and `runtime.filter` | All harnesses using casehub-work |
