@@ -82,7 +82,9 @@ Two-way bridge between casehub-work and CaseHub plan items.
 
 **Inbound** (`WorkItemLifecycleAdapter`): translates terminal `WorkItemLifecycleEvent` CDI events to `PlanItem` transitions via `BlackboardRegistry`, evaluates `outputMapping`, fires `CONTEXT_CHANGED`. Uses `CallerRef.parse()` to extract `caseId` and `planItemId` from `WorkItem.callerRef`.
 
-**Outbound** (`HumanTaskScheduleHandler`): consumes `HUMAN_TASK_SCHEDULE` events. Inline mode creates a `WorkItem` directly via `WorkItemService`. Template mode resolves the `templateRef` (UUID or name) via `WorkItemTemplateService.findByRef`, then calls `WorkItemTemplateService.instantiate` with `inputData` as `payloadOverride` — honouring `HumanTaskTarget`'s `inputMapping` contract. Template not found or ambiguous name → PlanItem left PENDING.
+**Outbound** (`HumanTaskScheduleHandler`): consumes `HUMAN_TASK_SCHEDULE` events. Annotated `@Transactional`. Inline mode creates a `WorkItem` directly via `WorkItemService`. Template mode resolves the `templateRef` (UUID or name) via `WorkItemTemplateService.findByRef`, then calls `WorkItemTemplateService.instantiate` with `inputData` as `payloadOverride` — honouring `HumanTaskTarget`'s `inputMapping` contract. Template not found or ambiguous name → PlanItem left PENDING.
+
+**Atomicity guarantee (engine#273):** Both modes follow this order: WorkItem creation → `planItemStore.save(caseId, planItemId, bindingName, RUNNING, createdAt)` → `item.markRunning()`. All three steps are inside the handler's `@Transactional` boundary. If WorkItem creation fails the transaction rolls back and `markRunning()` is never called — PlanItem stays PENDING. `PlanItemStore` is injected and defaults to `NoOpPlanItemStore` when no real store is deployed; `JpaPlanItemStore` (in this module) provides the production blocking JPA impl sharing the casehub-work datasource.
 
 `callerRef` format: `case:{caseId}/pi:{planItemId}` — use `CallerRef.encode()` / `CallerRef.parse()`.
 

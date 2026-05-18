@@ -218,6 +218,7 @@ casehub-parent              (BOM — publish first; all others import it)
 | Normative audit of all agent interactions | `casehub-qhorus` | `MessageLedgerEntry` extends `LedgerEntry`; all 9 speech-act types recorded |
 | Case/process orchestration (choreography + WAITING) | `casehub-engine` | `CaseInstance`, `EventLog`, `WorkOrchestrator` |
 | Worker provisioner SPIs (provision, lifecycle, context) | `casehub-engine` (defines) / `claudony` (implements) | `WorkerProvisioner`, `CaseChannelProvider`, `WorkerContextProvider`, `WorkerStatusListener` |
+| Durable PlanItem status (blackboard persistence) | `casehub-engine` | `PlanItemStore` (blocking) + `ReactivePlanItemStore` (Uni<>) SPIs in `casehub-engine-common`; `@DefaultBean` no-ops in `blackboard`; JPA impl (`JpaReactivePlanItemStore`) in `casehub-engine-persistence-hibernate`; blocking JPA impl (`JpaPlanItemStore`) in `casehub-engine-work-adapter` sharing the casehub-work datasource. Atomicity guarantee: `planItemStore.save(RUNNING)` and WorkItem creation are in the same `@Transactional` boundary. See engine#273. |
 | Remote Claude CLI sessions | `claudony` | `TmuxService`, `SessionRegistry`, WebSocket streaming |
 | Browser + agent authentication | `claudony` | WebAuthn passkeys + `X-Api-Key` header |
 | Ecosystem CI dashboards | `casehub-parent` | `dashboard.yml`, `pr-dashboard.yml`, `full-stack-build.yml` |
