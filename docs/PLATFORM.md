@@ -190,6 +190,10 @@ casehub-parent              (BOM — publish first; all others import it)
 
 | Capability | Owner | Notes |
 |---|---|---|
+| Hierarchical scope/label path | `casehub-platform-api` | `Path` record — strict segment validation, `isAncestorOf`, `parent`, `depth`. Foundational key type for scopes, labels, and preference resolution. Use this — do not create parallel path types. |
+| Typed preference resolution | `casehub-platform-api` | `PreferenceProvider` SPI + `Preferences` interface; `PreferenceKey<T extends Preference>` typed key with `qualifiedName()`; `SettingsScope(Path, Instant)`; `MapPreferences` utility impl. `MockPreferenceProvider` `@DefaultBean`. See [`typed-preference-keys.md`](protocols/casehub/typed-preference-keys.md). |
+| Current principal identity | `casehub-platform-api` | `CurrentPrincipal` SPI — `actorId()`, `groups()`, `roles()` (= groups by convention, wires to `@RolesAllowed`), `hasGroup()`, `isSystem()`, `isAuthenticated()`. Real impls must be `@RequestScoped`. `MockCurrentPrincipal` `@DefaultBean`. |
+| Group membership lookup | `casehub-platform-api` | `GroupMembershipProvider` SPI — `membersOf(groupName)` returns empty set for unknown groups. `MockGroupMembershipProvider` `@DefaultBean` always returns empty. |
 | Immutable entry chain (Merkle Mountain Range) | `casehub-ledger` | Domain-agnostic; consumers extend `LedgerEntry` via JPA JOINED |
 | Cryptographic tamper evidence | `casehub-ledger` | `LedgerVerificationService`, inclusion proofs, Ed25519 checkpoints |
 | Actor trust scoring (Bayesian Beta + EigenTrust) | `casehub-ledger` | `ActorTrustScore` — four score types: GLOBAL, CAPABILITY, DIMENSION, CAPABILITY_DIMENSION (✅ #76); nightly `TrustScoreJob`, `TrustScoreRoutingPublisher` CDI events |
@@ -222,6 +226,8 @@ casehub-parent              (BOM — publish first; all others import it)
 ---
 
 ## Key Boundary Rules
+
+**Do not define parallel path, scope, preference, or principal types.** `casehub-platform-api` owns `Path`, `SettingsScope`, `PreferenceKey`, `Preferences`, `PreferenceProvider`, `CurrentPrincipal`, and `GroupMembershipProvider`. Repos that need these concepts must depend on `casehub-platform-api` and implement its SPIs — they must not define their own equivalent types.
 
 **Do not add orchestration logic to `casehub-work`.** When a WorkItem completes, casehub-work fires a CDI event and stops. Homogeneous M-of-N group completion is casehub-work. Heterogeneous plan-level completion is casehub-engine. "Mark the WorkItem EXPIRED when its deadline passes" is casehub-work.
 

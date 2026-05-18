@@ -7,6 +7,7 @@ applies_to: "All casehubio SPI configuration and preference resolution — caseh
 severity: important
 refs:
   - docs/protocols/casehub/auth-retrofit-readiness.md
+  - docs/protocols/casehub/platform-spi-contract.md
   - casehubio/parent#26
 violation_hint: "get(String key, Class<T> type) in a preference or configuration SPI — string key with class parameter indicates stringly-typed lookup that should be a typed key"
 created: 2026-05-17
