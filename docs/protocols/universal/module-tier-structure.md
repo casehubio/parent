@@ -119,6 +119,23 @@ The in-memory implementation serves two purposes: (1) test isolation without a d
 - SPI method signatures take domain POJOs, not JPA entity types
 - **Dual-variant rule:** Ship both a blocking SPI and a reactive mirror (`Uni<>`) when the store is consumed from both contexts. See `casehub-qhorus` for the canonical dual-variant example.
 
+**Nuance — when `persistence-memory/` is NOT required:**
+For SPIs where a non-DB production alternative already exists (e.g. a file-based or
+config-backed provider), the in-memory implementation may be genuinely test-only.
+
+Example: `PreferenceProvider` in `casehub-platform`. The `config/` module provides a
+file-based provider for the "no DB" case — so there is no production ephemeral use case
+for in-memory preferences. Additionally, `PreferenceKey<T>` carries a `Function<String, T> parser`
+that enables `MockPreferenceProvider.get()` to return typed values from config strings directly —
+eliminating the need for a separate in-memory fixture entirely.
+
+Contrast with `WorkItemStore`: work items are transactional state with no file-based alternative,
+so `persistence-memory/` IS a production deployment target there.
+
+**Decision guide:** ask "could someone reasonably deploy with in-memory persistence in production?"
+If no (because a file/config alternative covers that scenario), the in-memory impl is test-only
+and belongs in `testing/`. If yes, it belongs in `persistence-memory/`.
+
 **Checklist when adding a new Store SPI:**
 
 - [ ] SPI interface in the correct tier (Tier 1 `api/` or Tier 2 `common/` — no JPA)
@@ -133,6 +150,9 @@ The in-memory implementation serves two purposes: (1) test isolation without a d
 - casehubio/work#191 — split InMemory stores from testing/ → persistence-memory/
 - casehubio/ledger#91 — create persistence-memory/ (currently missing entirely)
 - casehubio/qhorus#169 — split InMemory stores from testing/ → persistence-memory/
+- casehubio/platform — `PreferenceProvider` intentionally has no `persistence-memory/` module:
+  file-based `config/` module covers the non-DB scenario; typed parsing via `key.parse()` makes
+  in-memory unnecessary for tests
 
 ## Checklist when adding a new SPI
 
