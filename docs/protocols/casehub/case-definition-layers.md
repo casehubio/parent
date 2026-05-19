@@ -42,7 +42,7 @@ spec:
       capability: "code-analysis"
 ```
 
-All expressions in YAML are **strings** — they are always `JQExpressionEvaluator` instances after conversion.
+All expressions in YAML are **strings** evaluated by the declared expression language. The case definition declares its expression language at the top level (default: `jq`, following SW 1.0's `expressionLang` field). The mapper must use a pluggable `ExpressionEvaluatorFactory` — never hardcode `new JQExpressionEvaluator(string)`. This keeps the YAML format open to other expression languages without changing the canonical model or the mapper's callers.
 
 ### Layer 2 — Generated Schema Model (`io.casehub.model.*`)
 
@@ -108,7 +108,11 @@ public class PrReviewCaseHub extends YamlCaseHub {
 
 ## Rules
 
-1. **Do not bypass `CaseDefinitionYamlMapper`.** It is the single conversion point from YAML to the canonical model. Custom parsers or direct Jackson deserialization to `io.casehub.api.model.*` will break as the schema evolves.
+1. **Declare the expression language at the case definition level.** Follow SW 1.0's `expressionLang` field. Default is `jq`. The mapper reads this field and passes it to the `ExpressionEvaluatorFactory` — no hardcoded evaluator type.
+
+2. **Do not hardcode `new JQExpressionEvaluator(string)` in `CaseDefinitionYamlMapper`.** Use an `ExpressionEvaluatorFactory` so the mapper is expression-language-agnostic. This is the engine gap tracked in casehubio/engine#280 (open).
+
+3. **Do not bypass `CaseDefinitionYamlMapper`.** It is the single conversion point from YAML to the canonical model. Custom parsers or direct Jackson deserialization to `io.casehub.api.model.*` will break as the schema evolves.
 
 2. **Do not hold `io.casehub.model.*` types outside the mapper.** Generated schema models are an implementation detail. Inject or pass `CaseDefinition` (Layer 3), not schema model objects.
 
