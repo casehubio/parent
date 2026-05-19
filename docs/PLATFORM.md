@@ -194,6 +194,7 @@ casehub-parent              (BOM — publish first; all others import it)
 | `casehub-qhorus` (runtime) | `devtown` | `app` | runtime dep |
 | `casehub-engine-api` | `claudony` | `casehub` | SPI implementations |
 | `casehub-engine-api` | `devtown` | `review` | engine types |
+| `casehub-engine` (runtime) | `devtown` | `app` | YamlCaseHub, CaseHubRuntime |
 | `casehub-engine-ledger` | `claudony` | `casehub` | lineage queries |
 
 **Application tier** (aml, clinical) — consume foundation runtime artifacts; see [APPLICATIONS.md](APPLICATIONS.md) for detail.
