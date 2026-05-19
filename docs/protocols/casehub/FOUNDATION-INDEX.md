@@ -111,4 +111,5 @@ referenced here; [HARNESS-INDEX.md](HARNESS-INDEX.md) points back to this sectio
 | GE-20260512-a28ecc | Maven relative paths resolve to wrong worktree when shell cwd changes — use absolute paths |
 | [epic-close-code-merge-required.md](epic-close-code-merge-required.md) | Code must be merged to main before EPIC-CLOSED.md or issue close | All casehub repos |
 | [epic-closed-md-deletion-date.md](epic-closed-md-deletion-date.md) | EPIC-CLOSED.md must include deletion date (today + 14 days) | Workspace + project epic branches |
+| [quarkus-test-stub-reactive-cdi.md](quarkus-test-stub-reactive-cdi.md) | Unsatisfied reactive CDI deps in @QuarkusTest: use @DefaultBean stub in test sources | All casehub extension modules with non-reactive H2 test datasource |
 | [qhorus-message-observer-scope.md](qhorus-message-observer-scope.md) | MessageObserver implementations must be @ApplicationScoped | casehub-qhorus |
