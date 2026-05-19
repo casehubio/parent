@@ -15,9 +15,13 @@ Implements PP-20260519-f2e160 (reactive-blocking-tier-separation) for the Quarku
 platform. Every service capability ships in two separate @ApplicationScoped beans: a
 blocking-tier bean (no reactive imports, no Instance<T> wrappers) and a reactive-tier bean
 (Reactive*Service suffix, direct @Inject of reactive SPIs, all methods return Uni<T>).
-Reactive-tier beans are annotated @IfBuildProperty(name = "casehub.<module>.reactive.enabled",
-stringValue = "true") so they are absent from the CDI graph in JDBC-only consumers —
-preventing build-time augmentation failures without Instance<T> or NoOp fallbacks.
+Reactive-tier beans carry no gating annotation. For Quarkus **extensions** (with runtime/
+and deployment/ modules), exclusion is handled via ExcludedTypeBuildItem in @BuildStep in
+the deployment module, driven by a @ConfigRoot(phase = BUILD_TIME) property:
+`casehub.<module>.reactive.enabled` (default false). @IfBuildProperty on runtime beans is
+valid for application code but unreliable in extensions unless the property is formally
+declared as BUILD_TIME phase config. For Quarkus **applications** (no deployment module),
+@IfBuildProperty on the bean is acceptable if the property is declared BUILD_TIME.
 Consuming deployments that need reactive set the property in application.properties at
 build time. Test suites that exercise reactive paths set it in test application.properties
 alongside @DefaultBean blocking shims that satisfy reactive SPI injection points.
