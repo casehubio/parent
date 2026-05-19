@@ -55,7 +55,7 @@ Check how the same concern is handled in the two or three most similar places in
 - Ledger subclasses: JOINED inheritance, consumer-owned V1004+ migration, domain-agnostic leaf hash. See [`docs/protocols/casehub/ledger-subclass-extension.md`](protocols/casehub/ledger-subclass-extension.md).
 - CDI events: async (`@ObservesAsync`) for ledger capture; sync for routing decisions
 - Named datasources: Qhorus always on `qhorus`, domain tables never mixed in
-- Flyway numbering: V1000–V1003 = ledger; V1–V999 = domain; V1004+ = ledger subclass joins
+- Flyway numbering: V1000–V1003 = ledger; V1–V999 = domain; V1004+ = ledger subclass joins. Extensions with a named datasource should scope migrations to `db/migration/<module>/` — version numbers are then module-local with no global range coordination required. See [`docs/protocols/casehub/flyway-version-range-allocation.md`](protocols/casehub/flyway-version-range-allocation.md) Rule 4.
 - Module structure: three-tier rule — pure-Java SPI / core library (no JPA) / full extension. SPI method signatures must not expose heavy external SDK types. See [`docs/protocols/casehub/module-tier-structure.md`](/Users/mdproctor/claude/casehub/parent/docs/protocols/casehub/module-tier-structure.md).
 - **Persistence module split:** JPA entities must not co-locate with domain SPIs — forces all consumers to configure a datasource. See [`docs/protocols/casehub/module-tier-structure.md`](protocols/casehub/module-tier-structure.md).
 - No-op defaults: every SPI gets a default no-op implementation in the owning repo
@@ -274,11 +274,11 @@ casehub-parent              (BOM — publish first; all others import it)
 |---|---|---|
 | Base ledger tables | `casehub-ledger` | Flyway V1000–V1004 |
 | WorkItem tables | `casehub-work` runtime | Flyway V1–V999 |
-| Qhorus tables | `casehub-qhorus` | Flyway V1–V9, V1003 (named `qhorus` datasource; scoped to `classpath:db/migration/qhorus`) |
+| Qhorus tables | `casehub-qhorus` | Flyway V1–V10, V1003 (named `qhorus` datasource; scoped to `classpath:db/migration/qhorus`; next domain migration: V11) |
 | Engine tables | `casehub-engine` | Hibernate `drop-and-create` (no migrations yet) |
 | Ledger subclass join tables | Each consumer | Consumer-owned Flyway, V1004+ numbering |
 
-**Flyway numbering rule:** casehub-ledger owns V1000–V1003. Domain: V1–V999. Ledger subclass joins: V1004+.
+**Flyway numbering rule:** casehub-ledger owns V1000–V1003. Domain: V1–V999. Ledger subclass joins: V1004+. The qhorus V1–V10 / V1003 split reflects this: V10 is the latest domain migration; V1003 is the first ledger subclass join. Next domain migration: V11.
 
 **Named datasource rule:** Qhorus always runs on named `qhorus` datasource. Claudony uses separate `claudony` and `qhorus` persistence units.
 
