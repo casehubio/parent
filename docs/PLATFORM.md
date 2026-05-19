@@ -219,7 +219,7 @@ casehub-parent              (BOM — publish first; all others import it)
 | OTel trace linkage to audit entries | `casehub-ledger` | `LedgerTraceListener` auto-populates `traceId` from active OTel span |
 | Human task inbox (WorkItem lifecycle) | `casehub-work` | 10 statuses, SLA, delegation, escalation, spawn |
 | Named outcome classifications for WorkItems | `casehub-work` | `Outcome` record in `casehub-work-api`; `WorkItemTemplate.outcomes` declares valid names; `WorkItem.outcome` stores resolved name at completion; `WorkItemLifecycleEvent.outcome` carries it for engine routing without parsing `resolution` JSON |
-| Conflict-of-interest user exclusion | `casehub-work` | `ExclusionPolicy` SPI in `casehub-work-api`; `CommaSeparatedExclusionPolicy` `@DefaultBean`; `excludedUsers` TEXT field on `WorkItemTemplate` + `WorkItem`; enforced at claim, create (assigneeId), delegate, auto-assignment, and `SelectionContext` |
+| Conflict-of-interest user exclusion | `casehub-work` | `ExclusionPolicy` SPI in `casehub-work-api` (`check() : PolicyDecision`); `CommaSeparatedExclusionPolicy` `@DefaultBean`; `excludedUsers` TEXT field on `WorkItemTemplate` + `WorkItem`; enforced at claim, create (assigneeId), delegate, auto-assignment, and `SelectionContext`; `BlockedAttemptAuditService` writes `CLAIM_DENIED`/`DELEGATE_DENIED` audit entries via `REQUIRES_NEW` |
 | M-of-N parallel WorkItem completion (group policy primitive) | `casehub-work` | `MultiInstanceCoordinator`; `WorkItemGroupLifecycleEvent`; see LAYERING.md |
 | Worker routing / selection strategies | `casehub-work-core` | `WorkBroker`, `WorkerSelectionStrategy` SPI — also used by casehub-engine |
 | Label-based queue views | `casehub-work-queues` | Optional module on casehub-work |
