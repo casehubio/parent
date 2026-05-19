@@ -1,6 +1,6 @@
 ---
 id: PP-20260517-2cd5f0
-title: "Use typed PreferenceKey<T> for SPI configuration — never stringly-typed get(String, Class<?>)"
+title: "Use typed PreferenceKey<T> for SPI configuration — key carries namespace, name, defaultValue, and string parser"
 type: rule
 scope: platform
 applies_to: "All casehubio SPI configuration and preference resolution — casehub-platform-api and consumers"
@@ -37,10 +37,16 @@ public interface MultiValuePreference extends CasePreference {}
 
 **2 — Typed key (in casehub-platform-api)**
 ```java
-public class PreferenceKey<T extends CasePreference> {
-    private final String namespace;
-    private final String name;
-    public PreferenceKey(String namespace, String name) { ... }
+public record PreferenceKey<T extends Preference>(String namespace, String name, T defaultValue, Function<String, T> parser) {
+    public PreferenceKey {
+        Objects.requireNonNull(namespace, "namespace must not be null");
+        Objects.requireNonNull(name, "name must not be null");
+        Objects.requireNonNull(defaultValue, "defaultValue must not be null");
+        Objects.requireNonNull(parser, "parser must not be null");
+    }
+    public String qualifiedName() { return namespace + "." + name; }
+    /** Parses a raw (already-interpolated) string into a typed preference instance. */
+    public T parse(String raw) { return parser.apply(raw); }
 }
 ```
 
@@ -66,7 +72,9 @@ public record HumanApprovalThreshold(int value)
     implements SingleValuePreference {
 
     public static final PreferenceKey<HumanApprovalThreshold> KEY =
-        new PreferenceKey<>("devtown", "humanApprovalThreshold");
+        new PreferenceKey<>("devtown", "humanApprovalThreshold",
+            DEFAULT,
+            s -> new HumanApprovalThreshold(Integer.parseInt(s)));
 }
 
 public record SecurityReviewRequired(boolean value)
@@ -76,6 +84,34 @@ public record SecurityReviewRequired(boolean value)
         new PreferenceKey<>("devtown", "securityReviewRequired");
 }
 ```
+
+---
+
+## Parser contract
+
+The `parser` function receives a raw string that has **already been interpolated** — all
+`${ENV_VAR}` and `${system.property}` references are resolved before `key.parse()` is
+called. The parser is responsible only for type conversion, not interpolation.
+
+This is the casehub equivalent of Drools `ClockTypeOption.get(String)` — each option type
+knows how to construct itself from a string. The parser is colocated with the key definition
+so defaults and parsing logic are in the same place.
+
+```java
+// Good — parser colocated with key and default
+public static final PreferenceKey<HumanApprovalThreshold> KEY =
+    new PreferenceKey<>("devtown", "humanApprovalThreshold",
+        new HumanApprovalThreshold(500),              // default (null guard only)
+        s -> new HumanApprovalThreshold(Integer.parseInt(s)));  // parser
+
+// Real business defaults live in the harness preferences file, not in Java
+```
+
+**`Function` equality trap:** `PreferenceKey` is a record with a `Function` component.
+Java records include all components in `equals()`/`hashCode()`, but `Function` instances
+only have identity equality — two separately-created keys with the same namespace/name will
+NOT be `equals()`. Always use `key.qualifiedName()` as map keys, not the `PreferenceKey`
+object itself.
 
 ---
 
