@@ -71,16 +71,19 @@ deactivate the mock; CDI picks your implementation automatically.
 public record HumanApprovalThreshold(int value) implements SingleValuePreference {
     public static final HumanApprovalThreshold DEFAULT = new HumanApprovalThreshold(500);
     public static final PreferenceKey<HumanApprovalThreshold> KEY =
-        new PreferenceKey<>("devtown", "humanApprovalThreshold");
+        new PreferenceKey<>("devtown", "humanApprovalThreshold",
+            DEFAULT,
+            s -> new HumanApprovalThreshold(Integer.parseInt(s)));
 }
 
-// Call site:
-HumanApprovalThreshold t = prefs.get(HumanApprovalThreshold.KEY);
-int threshold = t != null ? t.value() : HumanApprovalThreshold.DEFAULT.value();
+// Call site — never null:
+HumanApprovalThreshold t = prefs.getOrDefault(HumanApprovalThreshold.KEY);
+int threshold = t.value();
 ```
 
-**Why:** Defaults are discoverable alongside the key definition on the record, not scattered
-across call sites. The `Preferences` interface surface stays minimal.
+**Why:** Default and parser are colocated with the key definition. `getOrDefault(key)` applies
+`key.defaultValue()` automatically — call sites are null-free. `key.parse(raw)` enables any
+string-source provider (`MockPreferenceProvider`, future `config/` module) to return typed values.
 
 **Never** use a stringly-typed fallback — see [`typed-preference-keys.md`](typed-preference-keys.md).
 
@@ -89,9 +92,11 @@ across call sites. The `Preferences` interface surface stays minimal.
 ## Rule 4 — Mock `PreferenceProvider` wires to CaseContext via `asMap()`
 
 `MockPreferenceProvider` parses config string values to their natural Java types (Integer,
-Long, Boolean, Double, List, String) before returning from `asMap()`. Typed `get()` always
-returns `null` from the mock — callers must apply rule 3. `asMap()` returns typed values
-suitable for injection into CaseContext and any pluggable ExpressionEvaluator:
+Long, Boolean, Double, List, String) for `asMap()`. `get(key)` calls `key.parse(raw)` on
+String values — returns a typed value when the config string is stored as a `String` object.
+Numeric/boolean values converted by `parseValue()` are accessible via `asMap()` but return
+`null` from `get(key)` (see Javadoc). `asMap()` returns typed values suitable for injection
+into CaseContext and any pluggable ExpressionEvaluator:
 
 ```properties
 casehub.platform.preferences.defaults.devtown.humanApprovalThreshold=500
