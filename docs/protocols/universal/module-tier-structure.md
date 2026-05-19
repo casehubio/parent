@@ -89,32 +89,50 @@ Violating this rule causes cascading datasource failures across all downstream t
 
 When a domain model needs pluggable persistence (JPA, MongoDB, in-memory, Redis), follow the **Store SPI pattern**. This is the standard mechanism across all casehubio repos.
 
-**Structure:**
+**Module layout:**
 
-| Artifact | Tier | What it contains |
-|----------|------|-----------------|
-| `WorkItemStore` interface | Tier 1 (`api/`) | SPI: `put`, `get`, `scan` — no JPA annotations |
-| `JpaWorkItemStore` | Tier 3 (`runtime/`) | Default blocking JPA/Panache implementation |
-| `InMemoryWorkItemStore` | `testing/` module | `@Alternative @Priority(1)` in-memory test impl |
-| `MongoWorkItemStore` | `persistence-mongodb/` | Alternative MongoDB implementation |
+| Module | Contains | When |
+|--------|---------|------|
+| `api/` | Store SPI interface, domain POJOs — no JPA | Always |
+| `runtime/` | Default JPA/Panache impl, Flyway migrations, REST API | Always — the Tier 3 default |
+| `persistence-memory/` | `@Alternative @Priority(1)` in-memory impl — no datasource | Required for every module with a Store SPI |
+| `persistence-<backend>/` | MongoDB, Redis, JDBC alternatives | When an alternative backend is provided |
+| `testing/` | Test utilities, base classes, fixtures — **not persistence implementations** | As needed |
 
-**Canonical example:** `casehub-work` — `WorkItemStore` SPI + JPA default + MongoDB alternative + in-memory test impl.
+**Canonical example per module:**
+
+| Artifact | Module | Notes |
+|----------|--------|-------|
+| `WorkItemStore` interface | `api/` | Pure Java, Tier 1 |
+| `JpaWorkItemStore` | `runtime/` | Default, included automatically |
+| `InMemoryWorkItemStore` | **`persistence-memory/`** | Zero datasource — test AND ephemeral install |
+| `MongoWorkItemStore` | `persistence-mongodb/` | Production alternative |
+
+**Why `persistence-memory/` and not `testing/`:**
+The in-memory implementation serves two purposes: (1) test isolation without a datasource, and (2) zero-config ephemeral installs for local evaluation. A module named `testing/` is unsuitable for purpose (2) — it signals a test-only dependency and may bundle test-framework artifacts. `persistence-memory/` is a legitimate production deployment target (data is volatile; restart means data loss, which is acceptable for evaluation and demo use cases). The `testing/` module may depend on `persistence-memory/` for convenience, but the implementations themselves belong in the persistence module.
 
 **Rules:**
 - The SPI interface is pure Java — no `@Entity`, no Panache, no JPA imports
-- The default JPA implementation lives in the Tier 3 runtime module; alternatives in their own modules
-- The in-memory implementation lives in a `testing/` module and is activated via `@Alternative @Priority(1)`
+- The default JPA implementation lives in `runtime/`; alternatives in their own `persistence-<backend>/` modules
+- **`persistence-memory/` is mandatory** for every module with a Store SPI — it enables both test isolation and ephemeral installs
+- `testing/` contains test utilities only — never persistence implementations
 - SPI method signatures take domain POJOs, not JPA entity types
-- **Dual-variant rule:** Ship both a blocking SPI (`PlanItemStore`) and a reactive mirror (`ReactivePlanItemStore`, returning `Uni<>`) when the store is consumed from both blocking and reactive contexts. Method signatures are identical except for the return type wrapper. See `ledger-sync-async-parity.md` for the canonical example (`LedgerEntryRepository` + `ReactiveLedgerEntryRepository`).
+- **Dual-variant rule:** Ship both a blocking SPI and a reactive mirror (`Uni<>`) when the store is consumed from both contexts. See `casehub-qhorus` for the canonical dual-variant example.
 
 **Checklist when adding a new Store SPI:**
 
 - [ ] SPI interface in the correct tier (Tier 1 `api/` or Tier 2 `common/` — no JPA)
-- [ ] Default JPA impl in the runtime module; JPA entities do not leak into the SPI module
-- [ ] In-memory test impl in a `testing/` module — activated via `@Alternative @Priority(1)`
+- [ ] Default JPA impl in `runtime/`; JPA entities do not leak into the SPI module
+- [ ] In-memory impl in **`persistence-memory/`** — not in `testing/` — activated via `@Alternative @Priority(1)`
+- [ ] `testing/` module depends on `persistence-memory/` so existing test consumers are unaffected
 - [ ] SPI method signatures use only domain POJOs, not JPA entity types
 - [ ] If consumed from both blocking and reactive contexts: ship blocking + reactive (`Uni<>`) variants
 - [ ] PLATFORM.md capability ownership table updated if this is a new platform capability
+
+**Open issues (tracking adoption across the platform):**
+- casehubio/work#191 — split InMemory stores from testing/ → persistence-memory/
+- casehubio/ledger#91 — create persistence-memory/ (currently missing entirely)
+- casehubio/qhorus#169 — split InMemory stores from testing/ → persistence-memory/
 
 ## Checklist when adding a new SPI
 
