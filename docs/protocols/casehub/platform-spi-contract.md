@@ -60,6 +60,42 @@ public class MyPreferenceProvider implements PreferenceProvider {
 `@DefaultBean` yields to any non-default qualifying bean. You do not need to exclude or
 deactivate the mock; CDI picks your implementation automatically.
 
+### GroupMembershipProvider — register as SecurityIdentityAugmentor too
+
+When implementing a real `GroupMembershipProvider`, also register the implementation
+as a Quarkus `SecurityIdentityAugmentor` so that `SecurityIdentity.getRoles()` reflects
+casehub group memberships. This makes `@RolesAllowed` work with casehub groups without
+manual `CurrentPrincipal.hasGroup()` checks everywhere.
+
+```java
+@ApplicationScoped
+public class LdapGroupMembershipProvider
+        implements GroupMembershipProvider, SecurityIdentityAugmentor {
+
+    // GroupMembershipProvider — inverse lookup (who is in group X?)
+    @Override
+    public Set<String> membersOf(String groupName) {
+        return ldapClient.membersOf(groupName);
+    }
+
+    // SecurityIdentityAugmentor — forward lookup (what groups is user X in?)
+    @Override
+    public Uni<SecurityIdentity> augment(SecurityIdentity identity,
+                                         AuthenticationRequestContext context) {
+        return Uni.createFrom().item(() -> {
+            String actorId = identity.getPrincipal().getName();
+            Set<String> groups = ldapClient.groupsOf(actorId);
+            return QuarkusSecurityIdentity.builder(identity)
+                    .addRoles(groups)
+                    .build();
+        });
+    }
+}
+```
+
+Same data source, two query directions. One call to `membersOf()` answers "who can do
+this task?"; augmenting `SecurityIdentity` answers "what can this user do?".
+
 ---
 
 ## Rule 3 — Preference records carry their own DEFAULT constant

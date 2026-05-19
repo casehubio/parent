@@ -115,7 +115,30 @@ public class SecurityCurrentPrincipal implements CurrentPrincipal {
 1. Implement `GroupMembershipProvider` (answers "who can do this task?")
 2. Also register as `SecurityIdentityAugmentor` (populates `SecurityIdentity.getRoles()` so `@RolesAllowed` reflects casehub group memberships)
 
-These are two different query directions over the same data source.
+These are two different query directions over the same data source. Example:
+
+```java
+@ApplicationScoped
+public class LdapGroupMembershipProvider
+        implements GroupMembershipProvider, SecurityIdentityAugmentor {
+
+    @Override
+    public Set<String> membersOf(String groupName) {
+        return ldapClient.membersOf(groupName);
+    }
+
+    @Override
+    public Uni<SecurityIdentity> augment(SecurityIdentity identity,
+                                         AuthenticationRequestContext context) {
+        Set<String> groups = ldapClient.groupsOf(identity.getPrincipal().getName());
+        return Uni.createFrom().item(() ->
+            QuarkusSecurityIdentity.builder(identity).addRoles(groups).build()
+        );
+    }
+}
+```
+
+See `platform-spi-contract.md` for the full pattern.
 
 ---
 
