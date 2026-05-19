@@ -19,55 +19,38 @@ Designed after research into A2A, AutoGen, LangGraph, OpenAI Swarm, Letta, and C
 
 | Entity | Purpose |
 |---|---|
-| `Channel` | Typed communication channel. 5 semantics: APPEND, COLLECT, BARRIER, EPHEMERAL, LAST_WRITE. Has `allowed_writers` and `admin_instances` ACLs. |
-| `Message` | Speech-act message. 9 types: QUERY, COMMAND, RESPONSE, STATUS, DECLINE, HANDOFF, DONE, FAILURE, EVENT (see ADR-0005) |
-| `Commitment` | Obligation lifecycle. 7 states: OPEN → FULFILLED / DECLINED / FAILED / DELEGATED / EXPIRED. `CommitmentService` drives transitions. |
-| `Instance` | Agent registry entry with `Capability` tags. 3 addressing modes: by id, by capability, by role. |
-| `SharedData` + `ArtefactClaim` | Shared artefact store with claim/release lifecycle. |
-| `Watchdog` | Condition-based alert registration. |
+| Channel | Typed communication channel with configurable delivery semantics and access control. |
+| Message | Speech-act message with a typed intent (query, command, response, etc.) — see ADR-0005. |
+| Commitment | Obligation with a defined lifecycle from open through resolution states. |
+| Instance | Agent registry entry with capability tags and multiple addressing modes. |
+| SharedData + ArtefactClaim | Shared artefact store with claim/release lifecycle. |
+| Watchdog | Condition-based alert registration. |
+
+See docs/DESIGN.md for channel semantics, message types, commitment state machine, and addressing modes.
 
 ### Channel Gateway
 
-| Class | Purpose |
-|---|---|
-| `ChannelGateway` | Routes outbound messages to registered backends; handles inbound normalisation |
-| `ChannelBackend` | SPI base — `AgentChannelBackend`, `HumanParticipatingChannelBackend`, `HumanObserverChannelBackend` |
-| `QhorusChannelBackend` | Default `AgentChannelBackend` — always registered, wraps `MessageService` |
-| `InboundNormaliser` | SPI — translates `InboundHumanMessage` to a complete `NormalisedMessage` (type, content, senderInstanceId, correlationId, inReplyTo, artefactRefs, target); `@DefaultBean` always QUERY, passes correlationId through |
-| `Senders` | Constants in `casehub-qhorus-api`: `HUMAN = "human"` |
+Outbound messages are routed through a channel backend SPI that supports multiple backend types: agent-to-agent (default), human-participating, and human-observer. An inbound normaliser SPI translates external human messages into the canonical message format before they enter the system. Fan-out to non-default backends is asynchronous and non-fatal. The default backend is always registered and handles all standard agent messaging.
 
-**Fan-out:** `sendMessage` persists via `MessageService` then calls `channelGateway.fanOut()` for external backends (async, virtual threads, non-fatal failures).
-**Inbound:** `HumanParticipatingChannelBackend` → `gateway.receiveHumanMessage()` → `InboundNormaliser` → `MessageService`. `HumanObserverChannelBackend` → `gateway.receiveObserverSignal()` → forced `EVENT`.
-**New MCP tools:** `list_backends`, `deregister_backend`.
+See docs/DESIGN.md for gateway class structure and SPI contracts.
 
 ### Ledger Integration
 
-| Class | Purpose |
-|---|---|
-| `MessageLedgerEntry` | `LedgerEntry` subclass (JOINED inheritance). Records **all 9 message types** as tamper-evident entries. |
-| `LedgerWriteService` | Writes `MessageLedgerEntry` on every message send (all types, non-fatal, `REQUIRES_NEW`) |
-| `MessageLedgerEntryRepository` | Queries: `listEntries` (7 filters), `findLatestByCorrelationId`, causal chain traversal, stalled detection, telemetry aggregation |
+Every message sent — regardless of type — is recorded as a tamper-evident ledger entry extending `casehub-ledger`. The ledger is the complete, immutable channel history. Telemetry data from structured event messages is extracted and indexed for aggregation queries.
 
-All 9 message types are recorded. For EVENT messages with structured JSON, `tool_name` and `duration_ms` are extracted as telemetry fields.
+See docs/DESIGN.md for ledger entry structure and query capabilities.
 
 ### MCP Tool Surface
 
-`@Tool` methods in `QhorusMcpTools` (blocking) / `ReactiveQhorusMcpTools` (reactive):
-- Instance management: `register_instance`, `deregister_instance`, `list_instances`, `get_instance`
-- Channel management: `create_channel`, `list_channels`, `get_channel`, `delete_channel`, `get_channel_digest`, `add_writer`, `remove_writer`
-- Backend management: `list_backends(channel_name)`, `deregister_backend(channel_name, backend_id)`
-- Messaging: `send_message`, `check_messages`, `read_messages`, `get_message`, `wait_for_reply`
-- Observer notification: `MessageObserver` SPI (see §Gateway section); CDI `@ObservesAsync MessageReceivedEvent` for embedded harnesses
-- Shared data: `store_data`, `get_data`, `list_data`, `claim_artefact`, `release_artefact`
-- Commitments: `open_commitment`, `acknowledge_commitment`, `fulfill_commitment`, `decline_commitment`, `fail_commitment`, `delegate_commitment`, `list_commitments`, `get_commitment`, `list_stalled_obligations`
-- Ledger queries (normative): `list_ledger_entries` (with `type_filter`, `sender`, `correlation_id`, `sort`), `get_obligation_chain`, `get_causal_chain`, `get_obligation_stats`, `get_telemetry_summary`, `get_channel_timeline`
+Qhorus exposes MCP tools across six capability groups: instance management, channel management, backend management, messaging, shared data, and commitments. Normative ledger queries are also exposed as MCP tools.
 
-Key parameter name: messages use `sender` (not `agent_id`).
+See docs/DESIGN.md for the full tool inventory.
 
 ### Store SPIs
 
-6 store interfaces (blocking + reactive mirrors):
-`ChannelStore`, `MessageStore`, `InstanceStore`, `DataStore`, `WatchdogStore`, `CommitmentStore`
+Six store interfaces (blocking and reactive mirrors) cover the full domain: channels, messages, instances, shared data, watchdogs, and commitments.
+
+See docs/DESIGN.md for SPI interfaces.
 
 ### External APIs
 
@@ -78,14 +61,14 @@ Key parameter name: messages use `sender` (not `agent_id`).
 
 ## Depends On
 
-- `casehub-ledger` — mandatory (for `MessageLedgerEntry` subclass and ledger observability)
+- `casehub-ledger` — mandatory (for ledger entry subclassing and observability)
 
 ## Depended On By
 
 | Repo | How |
 |---|---|
-| `claudony` | Embeds Qhorus directly; named `qhorus` datasource; provides `ClaudonyCaseChannelProvider` SPI impl |
-| `casehub-engine` | Future — via `CaseChannelProvider` SPI (implemented by Claudony) |
+| `claudony` | Embeds Qhorus directly; named `qhorus` datasource; provides CaseChannel SPI implementation |
+| `casehub-engine` | Future — via CaseChannelProvider SPI (implemented by Claudony) |
 
 ---
 
@@ -103,22 +86,15 @@ Key parameter name: messages use `sender` (not `agent_id`).
 
 Qhorus always runs on a named `qhorus` datasource. Never share it with domain tables.
 
-In Claudony's `application.properties`:
-```properties
-quarkus.datasource.qhorus.db-kind=h2
-quarkus.hibernate-orm.qhorus.datasource=qhorus
-quarkus.hibernate-orm.qhorus.packages=io.casehub.qhorus.runtime,io.casehub.ledger.runtime.model
-```
+See docs/DESIGN.md for datasource configuration.
 
 ---
 
-## Normative Ledger — All 9 Types Recorded
+## Normative Ledger — All Message Types Recorded
 
-Every message of all 9 types (`QUERY`, `COMMAND`, `RESPONSE`, `STATUS`, `DECLINE`, `HANDOFF`, `DONE`, `FAILURE`, `EVENT`) creates a `MessageLedgerEntry`. The ledger is the complete, immutable, tamper-evident channel history.
+Every message of every type creates a ledger entry. The ledger is the complete, immutable, tamper-evident channel history. Telemetry event messages are indexed for aggregation. Regular message reads exclude event-type messages by design; the ledger query surface provides access to the full history.
 
-For EVENT messages with structured telemetry JSON, `tool_name` and `duration_ms` are extracted as indexed fields for `get_telemetry_summary`.
-
-`check_messages` excludes EVENT messages by design. Use `list_ledger_entries` to query the full history including EVENTs. To assert EVENT delivery in tests, use `check_messages(include_events=true, reader_instance_id=<id>)` with a `register(read_only=true)` observer instance.
+See docs/DESIGN.md for ledger query capabilities.
 
 ---
 
@@ -128,7 +104,7 @@ Qhorus implements a 4-layer normative accountability framework:
 1. **Descriptive** — what happened (messages, events)
 2. **Prescriptive** — what was committed to (commitments)
 3. **Evaluative** — whether commitments were kept (commitment state transitions)
-4. **Corrective** — stalled obligation detection (`list_stalled_obligations`)
+4. **Corrective** — stalled obligation detection
 
 See [docs/normative-layer.md](https://raw.githubusercontent.com/casehubio/qhorus/main/docs/normative-layer.md).
 
@@ -137,10 +113,10 @@ See [docs/normative-layer.md](https://raw.githubusercontent.com/casehubio/qhorus
 ## Current State
 
 - 1035+ tests passing (runtime + testing + examples modules)
-- Channel backend abstraction complete: `ChannelGateway`, `QhorusChannelBackend`, `HumanParticipatingChannelBackend`, `HumanObserverChannelBackend`, `DefaultInboundNormaliser`, `Senders` — see ADR-0006
-- A2A protocol bridge complete: `A2AChannelBackend` (registered as ChannelBackend "a2a"), `A2AActorResolver` (6-step identity chain), `A2AResource` refactored as thin adapter — closed #135
-- `message.actor_type` column: explicit `ActorType` stored on every message; `MessageService.send()` requires it as the final parameter; `LedgerWriteService` uses it directly (no re-derivation)
-- Reactive store tests are `@Disabled` — require PostgreSQL with native reactive driver (Docker not always available)
+- Channel backend abstraction complete (agent, human-participating, human-observer modes) — see ADR-0006
+- A2A protocol bridge complete: backend registered, identity resolution chain implemented, resource layer refactored as thin adapter — closed #135
+- Actor type is explicitly stored on every message and propagated to ledger without re-derivation
+- Reactive store tests disabled — require PostgreSQL with native reactive driver (Docker not always available)
 
 ---
 

@@ -17,16 +17,16 @@ A `WorkItem` is deliberately NOT called `Task` — CNCF Serverless Workflow and 
 
 | Module | Type | Purpose |
 |---|---|---|
-| `casehub-work-api` | Pure-Java SPI (no Quarkus) | All SPIs: `WorkerSelectionStrategy`, `WorkerRegistry`, `WorkloadProvider`, `EscalationPolicy`, `SpawnPort`, `SkillProfile*`, `NotificationChannel` |
-| `casehub-work-core` | Jandex library (no JPA) | `WorkBroker`, `LeastLoadedStrategy`, `ClaimFirstStrategy`, `NoOpWorkerRegistry` — used directly by casehub-engine |
-| `runtime` | Full Quarkus extension | `WorkItem` entity, services, REST API, filter engine |
-| `casehub-work-ledger` | Optional module | Attaches casehub-ledger for `WorkItemLedgerEntry` |
+| `casehub-work-api` | Pure-Java SPI (no Quarkus) | All SPIs: worker selection, registry, workload provision, escalation, spawn, skill profiling, notification channel |
+| `casehub-work-core` | Jandex library (no JPA) | `WorkBroker` and built-in selection strategies — used directly by casehub-engine |
+| `runtime` | Full Quarkus extension | WorkItem entity, services, REST API, filter engine |
+| `casehub-work-ledger` | Optional module | Attaches casehub-ledger for WorkItem ledger entries |
 | `casehub-work-queues` | Optional module | Label-based queue views |
-| `casehub-work-ai` | Optional module | `SemanticWorkerSelectionStrategy`, `LowConfidenceFilterProducer` |
+| `casehub-work-ai` | Optional module | AI-backed worker selection strategy and low-confidence filter routing |
 | `casehub-work-notifications` | Optional module | Slack/Teams/webhook outbound notifications |
-| `casehub-work-reports` | Optional module | SLA compliance reporting (`/workitems/reports/*`) |
+| `casehub-work-reports` | Optional module | SLA compliance reporting |
 | `work-flow` | Optional module | Quarkus-Flow CDI bridge |
-| `casehub-work-testing` | Test utilities | `InMemoryWorkItemStore`, `InMemoryAuditEntryStore` |
+| `casehub-work-testing` | Test utilities | In-memory stores for WorkItem and audit entries |
 
 ---
 
@@ -34,40 +34,27 @@ A `WorkItem` is deliberately NOT called `Task` — CNCF Serverless Workflow and 
 
 ### WorkItem Entity
 
-10 statuses: PENDING → ASSIGNED → IN_PROGRESS → COMPLETED / CANCELLED / EXPIRED / DELEGATED / REJECTED / ON_HOLD / CLAIM_EXPIRED
+10-status lifecycle from creation through terminal states (pending, assigned, in-progress, completed, cancelled, expired, delegated, rejected, on-hold, claim-expired).
 
-Key fields: `title`, `description`, `assigneeId`, `candidateUsers`, `candidateGroups`, `priority`, `category`, `deadline`, `claimDeadline`, `labels`, `callerRef` (opaque — CaseHub stores `case:{id}/pi:{planItemId}` here), `formSchemaId`, `formPayload`
+See `docs/DESIGN.md` for status enumeration and field model.
 
 ### Core Services
 
-| Bean | Purpose |
-|---|---|
-| `WorkItemService` | Lifecycle management: create, start, complete, cancel, delegate, expire. Validates `payload` against `WorkItem.inputDataSchema` at create and `resolution` against `WorkItem.outputDataSchema` at complete (both snapshotted from template at instantiation). `completeFromSystem()` bypasses schema validation. |
-| `WorkItemTemplateService` | Template CRUD and instantiation. `findByRef(String)` resolves UUID or name; `findByName(String)` throws `IllegalStateException` on >1 match (app-level uniqueness guard). 6-arg `instantiate` accepts `payloadOverride` — non-null/non-blank wins over `template.defaultPayload`, enabling engine adapters to inject `inputMapping` output. Snapshots `templateId` and `permittedOutcomes` onto the created WorkItem. |
-| `OutcomeCodecs` | Pure-static JSON utilities for encoding/decoding `WorkItemTemplate.outcomes` (`List<Outcome>`) and `WorkItem.permittedOutcomes` (`List<String>`). No CDI — safe to use from any layer. |
-| `ExclusionPolicy` | SPI in `casehub-work-api`: `check(String userId, String excludedUsers) : PolicyDecision`. Returns `PolicyDecision.ALLOW` or `PolicyDecision.deny(reason)` — the reason flows to audit entries and exception messages. `CommaSeparatedExclusionPolicy` is the `@DefaultBean`. Override with `@Alternative @Priority(1)` for custom exclusion logic (LDAP, role-based, time-window — see #185). `excludedUsers` field on template + WorkItem; snapshotted at instantiation. |
-| `BlockedAttemptAuditService` | Writes `CLAIM_DENIED` and `DELEGATE_DENIED` audit entries in `@Transactional(REQUIRES_NEW)` transactions, committing independently of the outer transaction that rolls back on rejection. Called at `claim()` and `delegate()` enforcement points before throwing. Always returns normally — audit write failures are logged and swallowed to preserve the 409/400 response semantics. |
-| `WorkItemAssignmentService` | Routing via `WorkBroker` → `WorkerSelectionStrategy` |
-| `WorkItemSpawnService` | Child spawning with idempotency key; implements `SpawnPort` |
-| `FilterRegistryEngine` | JEXL/JQ condition evaluation for label-based routing |
-| `MultiInstanceSpawnService` | Creates parent + spawn group + N children for M-of-N templates |
-| `MultiInstanceCoordinator` | `@ObservesAsync` — drives group policy on child terminal events |
-| `MultiInstanceGroupPolicy` | OCC M-of-N counter update and parent transition |
+Services cover: WorkItem lifecycle management (create, claim, complete, delegate, expire, cancel) with schema validation against templates; template CRUD and instantiation with payload override support; worker assignment via pluggable selection strategies; conflict-of-interest exclusion policy; M-of-N parallel group completion coordination; child spawning with idempotency; label-based filter routing; and SLA compliance reporting.
+
+See `docs/DESIGN.md` for service class structure and the M-of-N coordination model.
 
 ### REST API
 
-- `GET/POST /workitems` — inbox + creation
-- `GET /workitems/inbox` — always returns thread roots (`parentId IS NULL`) with aggregate stats; coordinator parents visible via descendant assignment
-- `POST /workitems/{id}/start|complete|cancel|delegate`
-- `GET /workitems/{id}/audit` — audit history
-- `GET /workitems/{id}/instances` — child instances with group summary (M-of-N progress)
-- `GET /workitems/reports` — SLA compliance reporting
-- `GET/POST /filter-rules` — dynamic filter rules
-- `POST /workitems/{id}/spawn` — child WorkItem creation
+REST endpoints cover: WorkItem inbox and creation, lifecycle transitions (start, complete, cancel, delegate), audit history, child instance queries with group progress, SLA compliance reports, dynamic filter rules, and child WorkItem spawning.
+
+See `docs/DESIGN.md` for the full endpoint inventory.
 
 ### CDI Events
 
-`WorkItemLifecycleEvent` fired on every status transition. Carries `callerRef` opaquely — CaseHub uses it to route completions back to the right `PlanItem`. Carries `outcome` (the named completion classification from `WorkItemTemplate.outcomes`) — null for non-completion events and system-initiated completions. Engine adapters can switch on `outcome` directly without parsing `resolution` JSON.
+A lifecycle event fires on every status transition, carrying the transition details and an optional named outcome (the named completion classification from the WorkItem's template). The outcome field lets downstream adapters switch on completion type without parsing the resolution payload.
+
+See `docs/DESIGN.md` for event payload shape.
 
 ---
 
@@ -87,7 +74,7 @@ Key fields: `title`, `description`, `assigneeId`, `candidateUsers`, `candidateGr
 ## What This Repo Explicitly Does NOT Do
 
 - Orchestrate — it fires events and provides primitives. It does not decide what completing a WorkItem means.
-- **Heterogeneous plan-item completion** — whether named plan items A, B, and C have all completed to advance a Stage; that is CaseHub (see LAYERING.md). Homogeneous M-of-N group completion IS casehub-work (`MultiInstanceCoordinator`).
+- **Heterogeneous plan-item completion** — whether named plan items A, B, and C have all completed to advance a Stage; that is CaseHub (see LAYERING.md). Homogeneous M-of-N group completion IS casehub-work (multi-instance coordinator).
 - Interpret `callerRef` — stored and echoed opaquely.
 - Provision or manage AI agents (that is CaseHub/Claudony).
 - Know when to spawn child WorkItems (callers drive spawn via `SpawnPort`).
@@ -104,7 +91,7 @@ The `WorkBroker` is generic: it routes any work unit, not just WorkItems.
 
 ## Notification Concern
 
-`casehub-work-notifications` currently ships Slack/Teams/webhook directly. This overlaps with `casehub-connectors`. Future direction: delegate to `casehub-connectors` `Connector` SPI rather than maintaining a parallel implementation.
+`casehub-work-notifications` currently ships Slack/Teams/webhook directly. This overlaps with `casehub-connectors`. Future direction: delegate to `casehub-connectors` connector SPI rather than maintaining a parallel implementation.
 
 ---
 

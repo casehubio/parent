@@ -34,7 +34,7 @@ LAYER-LOG.md in the project root is the authoritative layer-by-layer record with
 - PR review `CasePlanModel` — goals, bindings, content-driven routing from code analysis findings
 - Merge queue `CasePlanModel` (casehub-refinery) — batch-then-bisect strategy as binding conditions
 - Cross-repo coordinated merge — parent case + per-repo sub-cases with automatic rollback on fault
-- `TrustWeightedSelectionStrategy` for code review domain
+- Trust-weighted selection strategy for code review domain. See docs/DESIGN.md for implementation detail.
 - Post-merge trust feedback — FLAGGED attestation when production incident traced to missed review
 - GitHub integration — PR webhook receiver, CI status reader, merge executor worker
 

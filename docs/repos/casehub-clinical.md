@@ -44,7 +44,7 @@ The tutorial structure emerges from the natural adoption sequence. Each layer ad
 ClinicalAgent (peer-reviewed baseline) structurally cannot provide:
 - Adverse event SLA enforcement (GCP: serious events within 24h) — WorkItem `claimDeadline`
 - Protocol deviation authorisation by named PI — COMMAND commitment lifecycle
-- Consent withdrawal (GDPR Art.17) — `LedgerErasureService` + `DecisionContextSanitiser`
+- Consent withdrawal (GDPR Art.17) — ledger erasure and decision context sanitisation. See docs/DESIGN.md for implementation classes.
 - Multi-site independence with trial-level rollup — sub-case orchestration
 - FDA tamper-evident audit trail — Merkle MMR + Ed25519-signed checkpoints
 - Trust-weighted safety agent routing — Bayesian Beta from outcome attestations
@@ -62,7 +62,7 @@ casehub-clinical
 
 ## Critical Foundation Gap
 
-`casehub-work-adapter` HITL wiring — WorkItem `COMPLETED` must signal plan item transition from WAITING to active. Without this, the IRB approval gate cannot complete. Raise issue in casehub-work before implementing Epic 6.
+`casehub-work-adapter` HITL wiring — WorkItem completion must signal plan item transition from WAITING to active. Without this, the IRB approval gate cannot complete. Raise issue in casehub-work before implementing Epic 6.
 
 ## Key Epics
 

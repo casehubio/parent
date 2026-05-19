@@ -1,4 +1,4 @@
-# casehub-connectors — Platform Deep Dive
+# casehub-connectors
 
 **GitHub:** [casehubio/connectors](https://github.com/casehubio/connectors)  
 **Platform doc:** [PLATFORM.md](https://raw.githubusercontent.com/casehubio/parent/main/docs/PLATFORM.md)
@@ -17,20 +17,7 @@ This is the **canonical outbound notification infrastructure** for the platform.
 
 ### SPI
 
-```java
-public interface Connector {
-    String id();                      // "slack", "teams", "twilio-sms", etc.
-    void send(ConnectorMessage msg);
-}
-
-public record ConnectorMessage(
-    String destination,   // webhook URL, phone number, etc.
-    String title,
-    String body
-) {}
-```
-
-Custom connectors implement `Connector` as `@ApplicationScoped` CDI beans — auto-discovered.
+The `Connector` CDI SPI has two methods: an id accessor and a send method that takes a message with destination, title, and body. Custom connectors implement it as CDI beans — auto-discovered. See docs/DESIGN.md for method signatures and the ConnectorMessage type.
 
 ### Built-in Implementations
 
@@ -44,16 +31,7 @@ Custom connectors implement `Connector` as `@ApplicationScoped` CDI beans — au
 
 ### Configuration
 
-```properties
-casehub.connectors.twilio.account-sid=ACxx...
-casehub.connectors.twilio.auth-token=...
-casehub.connectors.twilio.from=+14155552671
-
-casehub.connectors.whatsapp.api-token=EAAxx...
-casehub.connectors.whatsapp.phone-number-id=12345678901234
-```
-
-Slack and Teams: no config — webhook URL is the `destination` field.
+Twilio and WhatsApp require account credentials in config. Slack and Teams: no config — webhook URL is passed as the destination at call time. See docs/DESIGN.md for configuration property names.
 
 ---
 
@@ -89,7 +67,7 @@ Nothing in the casehubio ecosystem. Pure Java (`java.net.http.HttpClient`) + opt
 
 ## Current State
 
-- Lightweight and early-stage — no `CLAUDE.md` or `docs/DESIGN.md` yet
+- Lightweight and early-stage — no `CLAUDE.md` yet; `docs/DESIGN.md` stub exists
 - Recently added to the ecosystem CI dashboards
 - Published to GitHub Packages at `0.2-SNAPSHOT`
 - GroupId: `io.casehub`
@@ -99,15 +77,4 @@ Nothing in the casehubio ecosystem. Pure Java (`java.net.http.HttpClient`) + opt
 
 ## Usage
 
-```java
-@Inject @Any Instance<Connector> connectors;
-
-connectors.stream()
-    .filter(c -> "slack".equals(c.id()))
-    .findFirst()
-    .ifPresent(c -> c.send(new ConnectorMessage(
-        "https://hooks.slack.com/services/...",
-        "WorkItem Assigned",
-        "Loan #1234 assigned to alice"
-    )));
-```
+Callers inject all `Connector` beans, filter by id, and call send with a destination, title, and body. See docs/DESIGN.md for a usage example.

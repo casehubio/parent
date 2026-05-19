@@ -41,7 +41,7 @@ The tutorial structure emerges from the natural adoption sequence — each layer
 Current agentic AML systems cannot provide:
 - Auditable evidence chains (FinCEN requirement) — `causedByEntryId` chain per agent finding
 - Formal obligation per investigation task — COMMAND creates Commitment, DECLINE ≠ FAILED
-- GDPR Art.17 erasure on transaction PII — `LedgerErasureService`
+- GDPR Art.17 erasure on transaction PII — ledger erasure service. See docs/DESIGN.md for implementation detail.
 - Tamper-evident investigation record — Merkle inclusion proofs, independently verifiable
 - Trust-weighted routing — experienced analysts on complex cases, auto-updated from SAR outcomes
 

@@ -15,39 +15,33 @@ Domain-agnostic, immutable, cryptographically tamper-evident audit ledger for an
 
 ### Core Model
 
-| Class | Role |
+| Concept | Role |
 |---|---|
-| `LedgerEntry` | Abstract `@Entity` with `@Inheritance(JOINED)`. Core fields: `subjectId`, `sequenceNumber`, `entryType` (COMMAND/EVENT/ATTESTATION), `actorId`, `actorType` (HUMAN/AGENT/SYSTEM), `actorRole`, `occurredAt`, `traceId`, `causedByEntryId`, `digest`, `supplementJson` |
-| `LedgerAttestation` | Peer verdict: SOUND / FLAGGED / ENDORSED / CHALLENGED, with `confidence` and `evidence` |
-| `ActorTrustScore` | Per-actor trust score keyed by `(actorId, capabilityKey, dimensionKey)`; four `ScoreType` values: GLOBAL, CAPABILITY, DIMENSION, CAPABILITY_DIMENSION. Bayesian Beta fields (`alpha`, `beta`, `trustScore`) for binary types; `trustScore` only for continuous types |
-| `LedgerMerkleFrontier` | Stored MMR frontier (≤log₂(N) rows per subject) |
-| `ActorIdentity` | Token↔identity mapping for pseudonymisation |
+| `LedgerEntry` | Abstract base entity for all tamper-evident audit records |
+| `LedgerAttestation` | Peer verdict record (SOUND / FLAGGED / ENDORSED / CHALLENGED) with confidence and evidence |
+| `ActorTrustScore` | Per-actor trust score keyed by actor, capability, and dimension; supports Bayesian and continuous score types |
+| `LedgerMerkleFrontier` | Stored MMR frontier enabling incremental Merkle tree operations per subject |
+| `ActorIdentity` | Token-to-identity mapping for pseudonymisation |
 
-### Services (CDI Beans)
+See `docs/DESIGN.md` for field model and entry type vocabulary.
 
-| Bean | Purpose |
-|---|---|
-| `LedgerVerificationService` | `verify(UUID subjectId)`, `inclusionProof(UUID entryId)` |
-| `LedgerMerkleTree` | Pure static RFC 9162 MMR: `leafHash()`, `append()`, `treeRoot()`, `inclusionProof()`, `verifyProof()` |
-| `LedgerMerklePublisher` | Opt-in Ed25519 tlog-checkpoint publisher |
-| `LedgerProvExportService` | W3C PROV-DM JSON-LD export per subject |
-| `LedgerErasureService` | GDPR Art.17 token-severing erasure |
-| `TrustScoreJob` | `@Scheduled` nightly trust recomputation; includes bootstrap pre-pass for new actors when `casehub.ledger.trust-score.bootstrap.enabled=true` |
-| `TrustScoreRoutingPublisher` | CDI events post-compute: `TrustScoreFullPayload`, `TrustScoreDeltaPayload`, `TrustScoreComputedAt` |
-| `TrustExportService` | Trust score read-model: `exportAll(minScore)`, `exportActor(actorId)`, `exportDelta(since)` → `TrustExportPayload` |
-| `TrustBootstrapService` | Seeds Beta(α,β) priors for first-time actors via `TrustBootstrapSource` SPI + `TrustImportService` |
+### Services
+
+The ledger provides services for: cryptographic verification and inclusion proofs, Merkle tree operations (RFC 9162 MMR), optional Ed25519 tlog-checkpoint publishing, W3C PROV-DM lineage export, GDPR Art.17 token-severing erasure, nightly trust score recomputation with CDI routing events, trust score read-model export, and trust bootstrapping for new actors.
+
+See `docs/DESIGN.md` for service class structure.
 
 ### SPIs (Consumer-Implemented or Built-In Alternatives)
 
 | SPI | Default | Built-in Alternative | Purpose |
 |---|---|---|---|
-| `LedgerEntryRepository` / `ReactiveLedgerEntryRepository` | — | `JpaLedgerEntryRepository` | Persistence for ledger entries |
-| `ActorTrustScoreRepository` | — | `JpaActorTrustScoreRepository` | Persistence for trust scores |
-| `ActorIdentityProvider` | — | `InternalActorIdentityProvider` | Tokenise / resolve / erase actor identities (GDPR) |
+| `LedgerEntryRepository` / `ReactiveLedgerEntryRepository` | — | JPA default | Persistence for ledger entries |
+| `ActorTrustScoreRepository` | — | JPA default | Persistence for trust scores |
+| `ActorIdentityProvider` | — | JPA default | Tokenise / resolve / erase actor identities (GDPR) |
 | `DecisionContextSanitiser` | no-op | — | Sanitise PII from decision context JSON before storage |
 | `LedgerTraceIdProvider` | OTel span | — | Override OTel trace ID extraction |
-| `TrustImportService` | `NoOpTrustImportService` | `JpaTrustImportService` (seed-if-absent) | Import trust scores from external payload |
-| `TrustBootstrapSource` | `NoOpTrustBootstrapSource` | — | Fetch prior trust data for first-time actors |
+| `TrustImportService` | no-op default | JPA default (seed-if-absent) | Import trust scores from external payload |
+| `TrustBootstrapSource` | no-op default | — | Fetch prior trust data for first-time actors |
 
 ### Supplements (Optional Attachments)
 
@@ -78,9 +72,9 @@ Nothing in the casehubio ecosystem. Quarkus + Hibernate ORM only.
 
 | Repo | How |
 |---|---|
-| `casehub-work` | Optional `casehub-work-ledger` module — `WorkItemLedgerEntry` subclass |
-| `casehub-qhorus` | Mandatory — `AgentMessageLedgerEntry` subclass; `LedgerWriteService` |
-| `casehub-engine` | Optional `casehub-ledger` module — `CaseLedgerEntry` subclass |
+| `casehub-work` | Optional ledger module — extends `LedgerEntry` to record work item events |
+| `casehub-qhorus` | Mandatory — extends `LedgerEntry` to record agent messages; provides ledger write integration |
+| `casehub-engine` | Optional ledger module — extends `LedgerEntry` to record case events |
 | `claudony` | Transitively via Qhorus and casehub-ledger |
 
 ---
@@ -103,7 +97,7 @@ Consumers:
 3. Wire a CDI observer to capture domain events as ledger entries
 4. Optionally attach `ComplianceSupplement` or `ProvenanceSupplement`
 
-Leaf hash canonical form: `subjectId|seqNum|entryType|actorId|actorRole|occurredAt` — domain subclass fields excluded so the chain stays domain-agnostic.
+See `docs/DESIGN.md` for the leaf hash scheme.
 
 ---
 

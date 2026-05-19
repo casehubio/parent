@@ -17,9 +17,9 @@ Two modes from one binary: **server** (owns sessions, WebSocket streaming, dashb
 
 | Module | Purpose |
 |---|---|
-| `claudony-core` | `TmuxService`, `SessionRegistry`, `ExpiryPolicy` SPI + scheduler |
-| `claudony-casehub` | Implements all 4 casehub-engine worker provisioner SPIs |
-| `claudony-app` | Quarkus application: auth, fleet, MCP server, dashboard frontend |
+| `claudony-core` | Session lifecycle management — tmux session control, registry, and expiry policy SPI |
+| `claudony-casehub` | Implements the 4 casehub-engine worker provisioner SPIs |
+| `claudony-app` | Quarkus application: authentication, session API, WebSocket streaming, MCP server, fleet management, browser dashboard |
 
 ---
 
@@ -27,34 +27,25 @@ Two modes from one binary: **server** (owns sessions, WebSocket streaming, dashb
 
 ### Core (`claudony-core`)
 
-| Class | Purpose |
-|---|---|
-| `TmuxService` | `ProcessBuilder` wrappers for all tmux commands |
-| `SessionRegistry` | In-memory `ConcurrentHashMap<UUID, Session>` |
-| `ExpiryPolicy` | SPI with 3 implementations: user-interaction, terminal-output, status-aware |
-| `SessionIdleScheduler` | `@Scheduled` expiry enforcement |
+Manages tmux session lifecycle: starting, stopping, and expiring sessions. A pluggable expiry policy SPI controls when sessions are considered idle. On restart, the registry is repopulated from live tmux sessions — tmux is the source of truth, independent of the Quarkus process.
 
-**tmux is the source of truth.** Sessions live in tmux independent of the Quarkus process. On restart, `ServerStartup.bootstrapRegistry()` repopulates from `tmux list-sessions` (sessions with `claudony-` prefix).
+See `docs/DESIGN.md` for class structure and expiry policy implementations.
 
 ### CaseHub SPI Implementations (`claudony-casehub`)
 
-| Implementation | SPI | Behaviour |
-|---|---|---|
-| `ClaudonyWorkerProvisioner` | `WorkerProvisioner` | Creates tmux session running `claude` binary |
-| `ClaudonyCaseChannelProvider` | `CaseChannelProvider` | Creates Qhorus channel named `case-{caseId}/{purpose}` |
-| `ClaudonyWorkerContextProvider` | `WorkerContextProvider` | Builds Claude startup prompt from ledger lineage + channel name |
-| `ClaudonyWorkerStatusListener` | `WorkerStatusListener` | Maps tmux lifecycle → CaseHub worker states; fires `WorkerStalledEvent` |
-| `CaseLineageQuery` | Interface | Prior worker query — default: `EmptyCaseLineageQuery` (no-op); swap for JPA impl with casehub datasource |
+Implements all 4 casehub-engine worker provisioner SPIs:
+- **WorkerProvisioner** — creates a tmux session running the Claude CLI
+- **CaseChannelProvider** — creates a Qhorus channel per case/purpose
+- **WorkerContextProvider** — builds the Claude startup prompt from ledger lineage
+- **WorkerStatusListener** — maps tmux lifecycle events to CaseHub worker states
+
+See `docs/DESIGN.md` for the implementation details and the ledger lineage query interface.
 
 ### Application (`claudony-app`)
 
-| Area | Classes | Purpose |
-|---|---|---|
-| Sessions | `SessionResource`, `TerminalWebSocket` | REST `/api/sessions`, WebSocket `/ws/{id}` (pipe-pane + FIFO streaming) |
-| Auth | `ApiKeyAuthMechanism`, `AuthResource`, `CredentialStore` | WebAuthn passkeys (browser) + `X-Api-Key` (agent) |
-| MCP | `McpServer` | 8 MCP tools for session management — exposes to controller Claude |
-| Fleet | `PeerRegistry`, `PeerHealthScheduler`, `PeerResource` | Multi-node peer discovery and health |
-| Dashboard | `index.html`, `dashboard.js` | Session cards, PR/CI status, service health |
+REST and WebSocket endpoints for session management and terminal streaming. WebAuthn passkey authentication for browser access; API key authentication for agent access. An MCP server exposes session management tools to a controller Claude instance. Fleet management handles multi-node peer discovery and health monitoring. A browser dashboard surfaces session cards, PR/CI status, and service health.
+
+See `docs/DESIGN.md` for the endpoint inventory and authentication mechanism detail.
 
 ---
 
@@ -64,7 +55,7 @@ Two modes from one binary: **server** (owns sessions, WebSocket streaming, dashb
 |---|---|
 | `casehub-qhorus` | Embedded directly; named `qhorus` datasource |
 | `casehub-engine` | Implements its 4 worker provisioner SPIs |
-| `casehub-ledger` | Transitively via Qhorus (`AgentMessageLedgerEntry`) and casehub-ledger |
+| `casehub-ledger` | Transitively via Qhorus (agent message ledger entries) and casehub-ledger |
 
 ## Depended On By
 
@@ -80,38 +71,32 @@ Nothing — Claudony is the integration terminus.
 - Manage human task inboxes (that is casehub-work)
 - Reimplement channel, message, or commitment logic — Qhorus handles all of that
 
-`TmuxService` and `SessionRegistry` are deliberately kept free of CaseHub/Qhorus concepts. The CaseHub wiring lives in `claudony-casehub` as a clean SPI implementation layer.
+The tmux session layer is deliberately kept free of CaseHub/Qhorus concepts. The CaseHub wiring lives in `claudony-casehub` as a clean SPI implementation layer.
 
 ---
 
 ## Persistence Model
 
-Three named persistence units:
-- `claudony` datasource — auth, sessions (in-memory `SessionRegistry` + file `~/.claudony/credentials.json`)
-- `qhorus` datasource — Qhorus H2 file database (`~/.claudony/qhorus`)
-- Optional engine datasource — when CaseHub active
+Three named persistence units: `claudony` (auth, sessions), `qhorus` (Qhorus message store), and an optional engine datasource when CaseHub is active.
 
-```properties
-quarkus.hibernate-orm.qhorus.packages=io.casehub.qhorus.runtime,io.quarkiverse.ledger.runtime.model,io.casehub.ledger.model
-quarkus.flyway.qhorus.migrate-at-start=true
-```
+See `docs/DESIGN.md` for datasource configuration.
 
 ---
 
 ## Terminal Streaming (No PTY)
 
-tmux does not expose a PTY to ProcessBuilder. Streaming uses:
+tmux does not expose a PTY to the Quarkus process. Streaming uses:
 - **Output:** `tmux pipe-pane` → FIFO → Java virtual thread → WebSocket
-- **Input:** `tmux send-keys -t name -l "text"` (`-l` flag = literal mode, critical)
-- **History on reconnect:** `tmux capture-pane -e -p -S -100` — sent synchronously before starting pipe-pane to avoid race conditions
+- **Input:** `tmux send-keys` in literal mode
+- **History on reconnect:** captured synchronously before starting pipe-pane to avoid race conditions
 
 ---
 
 ## Authentication
 
-- Browser: WebAuthn passkeys via `quarkus-security-webauthn` + `LenientNoneAttestation`
-- Agent→Server: `X-Api-Key` header via `ApiKeyAuthMechanism`
-- Rate limiting: sliding-window `AuthRateLimiter` on WebAuthn paths
+- Browser: WebAuthn passkeys via `quarkus-security-webauthn`
+- Agent→Server: `X-Api-Key` header
+- Rate limiting: sliding-window rate limiter on WebAuthn paths
 
 ---
 
@@ -124,8 +109,8 @@ tmux does not expose a PTY to ProcessBuilder. Streaming uses:
 ## Known Gaps
 
 - Three-panel dashboard (CaseHub case graph + terminal + side panel) not yet built
-- Worker↔Session↔Channel triple-link not stored on `Session` model (needed for the case graph panel)
-- `ClaudonyWorkerProvisioner.provision()` does not store `caseWorkerId` on the session
+- Worker↔Session↔Channel triple-link not stored on the session model (needed for the case graph panel)
+- Worker provisioner does not store the CaseHub worker ID on the session
 - `casehub-work-casehub` adapter — planned bridge from WorkItemLifecycleEvent to CaseHub; blocked on CaseHub stability
 
 ---

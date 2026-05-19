@@ -17,12 +17,12 @@ Hybrid choreography+orchestration coordination engine for multi-agent work. Impl
 
 | Module | Type | Purpose |
 |---|---|---|
-| `engine-model` | Pure POJOs (no Quarkus) | `CaseMetaModel`, `CaseInstance`, `EventLog`; persistence SPIs |
+| `engine-model` | Pure POJOs (no Quarkus) | Core domain model — case definitions, running case state, and persistence SPIs |
 | `engine` | Quarkus module | Choreography handlers, orchestration, worker scheduling, Quartz integration |
 | `api` | SPI definitions | 8 worker provisioner SPIs (4 blocking + 4 reactive) |
 | `casehub-blackboard` | Optional module | CMMN/Blackboard orchestration layer |
-| `casehub-ledger` | Optional module | `CaseLedgerEntry` subclass of `LedgerEntry`; `CaseLedgerEventCapture` |
-| `casehub-work-adapter` | Module | Bridges `WorkItemLifecycleEvent` → `PlanItem` transitions |
+| `casehub-ledger` | Optional module | Tamper-evident case lifecycle ledger; extends the ledger entry model |
+| `casehub-work-adapter` | Module | Bridges work item lifecycle events to plan item transitions |
 | `casehub-persistence-hibernate` | Module | JPA/Panache persistence implementations |
 
 ---
@@ -31,24 +31,17 @@ Hybrid choreography+orchestration coordination engine for multi-agent work. Impl
 
 ### Core Model (`engine-model`)
 
-| Class | Purpose |
-|---|---|
-| `CaseMetaModel` | Case definition — capabilities, workers, bindings, goals, milestones (YAML DSL) |
-| `CaseInstance` | Running case — status: PENDING / RUNNING / WAITING / COMPLETED / FAULTED / CANCELLED |
-| `EventLog` | Append-only decision audit trail (engine-internal; used for restart recovery) |
-| `CaseLifecycleEvent` | CDI event fired async on case transitions |
+The core model covers: case definitions (capabilities, workers, bindings, goals, milestones in YAML DSL), running case instances with lifecycle status, an append-only internal audit trail for restart recovery, and CDI lifecycle events fired on case status transitions.
+
+See `docs/DESIGN.md` for class structure and status enumeration.
 
 ### Engine Handlers
 
-| Bean | Purpose |
-|---|---|
-| `CaseContextChangedEventHandler` | Choreography path — evaluates bindings on context change |
-| `WorkerScheduleEventHandler` | Schedules work via Quartz |
-| `WorkflowExecutionCompletedHandler` | Resumes WAITING cases |
-| `WorkOrchestrator` | `submitAndWait()` — orchestration: suspends case, returns `CompletionStage<WorkResult>` |
-| `PendingWorkRegistry` | Restart-durable orchestration correlation |
+The engine contains CDI handlers for the two execution paths: choreography (evaluates bindings on context change) and orchestration (suspends case, awaits worker completion, resumes). Worker scheduling runs via Quartz. A restart-durable correlation registry bridges the orchestration path across restarts.
 
 `WorkBroker` (from `casehub-work-core`) is used for worker selection. casehub-engine does NOT depend on the casehub-work runtime.
+
+See `docs/DESIGN.md` for handler responsibilities and the choreography vs orchestration decision boundary.
 
 ### Worker Provisioner SPIs (`api/spi/`)
 
@@ -61,32 +54,21 @@ These are operational contracts — environment-specific implementations belong 
 | `CaseChannelProvider` / `ReactiveCaseChannelProvider` | Open/close/post to backend-agnostic channels |
 | `WorkerContextProvider` / `ReactiveWorkerContextProvider` | Build worker startup context from ledger lineage |
 
-Default no-op/empty implementations (all `@DefaultBean @ApplicationScoped` via `io.quarkus.arc.DefaultBean` — yield automatically to consumer implementations):
-- Blocking: `NoOpWorkerProvisioner`, `NoOpWorkerStatusListener`, `NoOpCaseChannelProvider`, `EmptyWorkerContextProvider`
-- Reactive: `NoOpReactiveWorkerProvisioner`, `NoOpReactiveCaseChannelProvider`, `NoOpReactiveWorkerStatusListener`, `EmptyReactiveWorkerContextProvider`
+Each SPI ships with a no-op default implementation that yields automatically to any consumer-supplied implementation via CDI priority rules.
 
-`ContextDiffStrategy` is selected via `casehub.engine.diff-strategy` config (`none` | `top-level` | `json-patch`, default `none`). A `@Produces @DefaultBean` producer instantiates the chosen POJO — consumer `@ApplicationScoped` impl still wins. See protocol `PP-20260514-engine-spi-noops-defaultbean`.
+See `docs/DESIGN.md` for default implementations and configuration.
 
 ### Ledger Integration (`casehub-ledger`)
 
-| Class | Purpose |
-|---|---|
-| `CaseLedgerEntry` | `LedgerEntry` subclass with `caseId`, `commandType`, `eventType`, `caseStatus` |
-| `CaseLedgerEventCapture` | `@ObservesAsync CaseLifecycleEvent` → writes ledger entry |
+An optional module that records case lifecycle events as tamper-evident ledger entries, extending `casehub-ledger`'s entry model. Not yet merged to main.
 
-Status: `casehub-ledger` module exists in a `feat/casehub-ledger-integration` branch — not yet merged to main.
+See `docs/DESIGN.md` for the ledger entry structure.
 
 ### Work Adapter (`casehub-work-adapter`)
 
-Two-way bridge between casehub-work and CaseHub plan items.
+Two-way bridge between casehub-work and CaseHub plan items. Inbound: translates WorkItem lifecycle events into PlanItem transitions and fires context-change events. Outbound: handles human task scheduling — creates WorkItems directly or from templates, with atomicity guarantees between WorkItem creation and PlanItem state.
 
-**Inbound** (`WorkItemLifecycleAdapter`): translates terminal `WorkItemLifecycleEvent` CDI events to `PlanItem` transitions via `BlackboardRegistry`, evaluates `outputMapping`, fires `CONTEXT_CHANGED`. Uses `CallerRef.parse()` to extract `caseId` and `planItemId` from `WorkItem.callerRef`.
-
-**Outbound** (`HumanTaskScheduleHandler`): consumes `HUMAN_TASK_SCHEDULE` events. Annotated `@Transactional`. Inline mode creates a `WorkItem` directly via `WorkItemService`. Template mode resolves the `templateRef` (UUID or name) via `WorkItemTemplateService.findByRef`, then calls `WorkItemTemplateService.instantiate` with `inputData` as `payloadOverride` — honouring `HumanTaskTarget`'s `inputMapping` contract. Template not found or ambiguous name → PlanItem left PENDING.
-
-**Atomicity guarantee (engine#273):** Both modes follow this order: WorkItem creation → `planItemStore.save(caseId, planItemId, bindingName, RUNNING, createdAt)` → `item.markRunning()`. All three steps are inside the handler's `@Transactional` boundary. If WorkItem creation fails the transaction rolls back and `markRunning()` is never called — PlanItem stays PENDING. `PlanItemStore` is injected and defaults to `NoOpPlanItemStore` when no real store is deployed; `JpaPlanItemStore` (in this module) provides the production blocking JPA impl sharing the casehub-work datasource.
-
-`callerRef` format: `case:{caseId}/pi:{planItemId}` — use `CallerRef.encode()` / `CallerRef.parse()`.
+See `docs/DESIGN.md` for the adapter contracts and atomicity guarantees (engine#273).
 
 ---
 
@@ -117,23 +99,16 @@ Two-way bridge between casehub-work and CaseHub plan items.
 
 ## Schema Management
 
-No Flyway — Hibernate `drop-and-create` only:
-```properties
-quarkus.hibernate-orm.schema-management.strategy=drop-and-create
-```
-No Quartz JDBC store — RAM store only:
-```properties
-quarkus.quartz.store-type=ram
-```
+No Flyway — Hibernate drop-and-create only. No Quartz JDBC store — RAM store only. See `docs/DESIGN.md` for configuration details.
 
 ---
 
 ## Two Audit Mechanisms (Known Gap)
 
-- `EventLog` — engine-internal, append-only, used for restart recovery via `PendingWorkRegistry`
-- `CaseLedgerEntry` — external, tamper-evident, written via `@ObservesAsync CaseLifecycleEvent`
+- **EventLog** — engine-internal, append-only, used for restart recovery
+- **CaseLedgerEntry** — external, tamper-evident, written on case lifecycle events
 
-These are complementary, not redundant. A lifecycle transition that doesn't fire `CaseLifecycleEvent` won't be captured in the external ledger.
+These are complementary, not redundant. A lifecycle transition that doesn't fire a case lifecycle event won't be captured in the external ledger.
 
 ---
 
