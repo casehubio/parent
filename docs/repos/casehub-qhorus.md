@@ -24,7 +24,6 @@ Designed after research into A2A, AutoGen, LangGraph, OpenAI Swarm, Letta, and C
 | `Commitment` | Obligation lifecycle. 7 states: OPEN → FULFILLED / DECLINED / FAILED / DELEGATED / EXPIRED. `CommitmentService` drives transitions. |
 | `Instance` | Agent registry entry with `Capability` tags. 3 addressing modes: by id, by capability, by role. |
 | `SharedData` + `ArtefactClaim` | Shared artefact store with claim/release lifecycle. |
-| `PendingReply` | `wait_for_reply` long-poll correlation with SSE keepalives. |
 | `Watchdog` | Condition-based alert registration. |
 
 ### Channel Gateway
@@ -67,8 +66,8 @@ Key parameter name: messages use `sender` (not `agent_id`).
 
 ### Store SPIs
 
-7 store interfaces (blocking + reactive mirrors):
-`ChannelStore`, `MessageStore`, `InstanceStore`, `DataStore`, `WatchdogStore`, `PendingReplyStore`, `CommitmentStore`
+6 store interfaces (blocking + reactive mirrors):
+`ChannelStore`, `MessageStore`, `InstanceStore`, `DataStore`, `WatchdogStore`, `CommitmentStore`
 
 ### External APIs
 
