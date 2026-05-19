@@ -1,14 +1,28 @@
 ---
 id: PP-20260517-15bf75
-title: "New ledger service methods must ship both blocking and reactive variants"
+title: "RETIRED — superseded by PP-20260519-f2e160 and PP-20260519-39a9a5"
 type: principle
 scope: platform
-applies_to: "LedgerVerificationService, LedgerEntryRepository, KeyRotationService, and any future ledger service SPI"
-severity: important
+applies_to: "Retired 2026-05-19"
+severity: guidance
 refs:
-  - docs/repos/casehub-ledger.md
-violation_hint: "A new method added to a ledger service with no Uni<T> counterpart, or a new reactive method with no blocking counterpart"
+  - docs/protocols/universal/reactive-blocking-tier-separation.md
+  - docs/protocols/casehub/reactive-service-build-gating.md
+violation_hint: "n/a — retired"
 created: 2026-05-17
 ---
 
-casehub-ledger deliberately supports two API stacks — blocking (`LedgerEntryRepository`) and reactive (`ReactiveLedgerEntryRepository`). Any new capability added to only one stack creates an inconsistency that downstream consumers discover at integration time, not design time. When adding a method to any ledger service or SPI, provide both a blocking variant and a `Uni<T>` reactive variant unless one stack is demonstrably unsuitable (e.g. pure in-memory computation with no I/O has no async benefit; a true streaming operation may have no blocking equivalent). Discovered during #83 when `verifyAgentSignature()` was found to have no reactive counterpart.
+**RETIRED 2026-05-19.** The narrow ledger-specific framing was generalised into two
+replacement protocols:
+
+- **PP-20260519-f2e160** (`universal/reactive-blocking-tier-separation.md`) — the universal
+  principle: service beans must not carry dependencies on capabilities optional in consuming
+  deployments; blocking and reactive tiers are separate beans.
+
+- **PP-20260519-39a9a5** (`casehub/reactive-service-build-gating.md`) — the Quarkus/casehub
+  mechanism: `Reactive*Service` naming, `@IfBuildProperty` gating,
+  `casehub.<module>.reactive.enabled` property, `@DefaultBean` test shims.
+
+The parity requirement (both variants must exist when a capability is meaningful in both
+deployment contexts) is preserved in the replacement protocols. Co-location on the same
+service class is no longer required — each tier lives in its own bean.

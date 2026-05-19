@@ -43,3 +43,4 @@ Reconstitute: `grep -rl "^scope: universal" docs/protocols/universal/*.md`
 | File | Rule | Applies to |
 |------|------|------------|
 | [layer-log.md](layer-log.md) | Maintain LAYER-LOG.md as definition of done per adoption layer | Any layered application built on a platform |
+| [reactive-blocking-tier-separation.md](reactive-blocking-tier-separation.md) | Service beans must not carry dependencies on capabilities optional in consuming deployments — blocking and reactive tiers are separate beans | Any extension library with heterogeneous deployment contexts |
