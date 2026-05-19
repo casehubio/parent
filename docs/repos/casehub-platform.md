@@ -32,7 +32,7 @@ a domain record with strict validation, not a filesystem path.
 
 **Harness convention:** Build scope paths as `Path.of("casehubio", "<app>", "<case-type>")` — org segment, app segment, case-type segment. This convention makes scope inheritance work correctly: `casehubio/devtown` inherits from `casehubio`, `casehubio/devtown/pr-review` inherits from both.
 
-**JAX-RS integration (recommended future):** Register a `@Provider ParamConverter<Path>` so REST endpoints can accept and return `Path` as a `@PathParam` or `@QueryParam` without manual string conversion in handlers.
+**JAX-RS integration:** `PathParamConverter` and `PathParamConverterProvider` are shipped in `platform/` (`io.casehub.platform.converter`). REST endpoints can declare `@PathParam` and `@QueryParam` of type `Path` directly — no manual string conversion needed.
 
 ---
 
