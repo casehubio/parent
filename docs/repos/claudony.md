@@ -45,6 +45,8 @@ See `docs/DESIGN.md` for the implementation details and the ledger lineage query
 
 REST and WebSocket endpoints for session management and terminal streaming. WebAuthn passkey authentication for browser access; API key authentication for agent access. An MCP server exposes session management tools to a controller Claude instance. Fleet management handles multi-node peer discovery and health monitoring. A browser dashboard surfaces session cards, PR/CI status, and service health.
 
+`MeshResource` exposes the Qhorus mesh data to the dashboard via `QhorusDashboardService` — the correct consumer integration tier for dashboard/UI code (not `ReactiveQhorusMcpTools`, which is the MCP protocol dispatch layer for Claude Code). See `docs/protocols/casehub/qhorus-consumer-integration-pattern.md`.
+
 See `docs/DESIGN.md` for the endpoint inventory and authentication mechanism detail.
 
 ---
@@ -117,7 +119,7 @@ tmux does not expose a PTY to the Quarkus process. Streaming uses:
 
 ## Current State
 
-- 339+ tests passing (38 in `claudony-casehub` + 301 in `claudony-app`)
+- 475+ tests passing (4 in `claudony-core` + 130 in `claudony-casehub` + 341 in `claudony-app`)
 - Core complete: session management, WebSocket streaming, WebAuthn, fleet, CaseHub SPI wiring
 - ADR-0005: CaseHub integration is optional — Claudony works as a standalone session manager without CaseHub
 

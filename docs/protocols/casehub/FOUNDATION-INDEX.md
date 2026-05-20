@@ -51,6 +51,7 @@ Reconstitute this index: `grep -rl "^scope: platform\|^scope: repo" docs/protoco
 | [work-adapter-inputmapping-payload-contract.md](casehub/work-adapter-inputmapping-payload-contract.md) | Engine adapters must propagate HumanTaskTarget inputMapping output to WorkItem payload | casehub-engine-work-adapter outbound handlers |
 | [casehub-engine-inputdata-map-convention.md](casehub/casehub-engine-inputdata-map-convention.md) | Internal inputData is Map<String,Object> (post-evaluation); public entry points should accept Object per engine#302 | casehub-engine handlers, executors, schedulers |
 | [claudony-reactive-spi-variants.md](casehub/claudony-reactive-spi-variants.md) | Claudony SPI implementations must use Reactive* variants — blocking variants throw BlockingOperationNotAllowedException on IO thread | claudony-casehub — WorkerContextProvider, WorkerProvisioner, CaseChannelProvider |
+| [qhorus-consumer-integration-pattern.md](casehub/qhorus-consumer-integration-pattern.md) | Consumer service code must use `QhorusDashboardService` for dashboard views, not `ReactiveQhorusMcpTools` or raw entity services | Any REST resource or service in a consumer repo reading/writing Qhorus channels, instances, or messages |
 
 ---
 
