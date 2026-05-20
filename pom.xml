@@ -66,6 +66,11 @@
         <artifactId>casehub-platform-testing</artifactId>
         <version>${casehub.version}</version>
       </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-platform-config</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
 
       <!-- ================================================================ -->
       <!-- casehub-ledger                                                   -->
