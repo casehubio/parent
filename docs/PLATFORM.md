@@ -210,7 +210,7 @@ casehub-parent              (BOM — publish first; all others import it)
 | Current principal identity | `casehub-platform-api` | `CurrentPrincipal` SPI — `actorId()`, `groups()`, `roles()` (= groups by convention, wires to `@RolesAllowed`), `hasGroup()`, `isSystem()`, `isAuthenticated()`. Real impls must be `@RequestScoped`. `MockCurrentPrincipal` `@DefaultBean`. |
 | Group membership lookup | `casehub-platform-api` | `GroupMembershipProvider` SPI — `membersOf(groupName)` returns empty set for unknown groups. `MockGroupMembershipProvider` `@DefaultBean` always returns empty. |
 | Immutable entry chain (Merkle Mountain Range) | `casehub-ledger` | Domain-agnostic; consumers extend `LedgerEntry` via JPA JOINED |
-| Cryptographic tamper evidence | `casehub-ledger` | `LedgerVerificationService`, inclusion proofs, Ed25519 checkpoints |
+| Cryptographic tamper evidence | `casehub-ledger` | `LedgerVerificationService` (Merkle: treeRoot/inclusionProof/verify), `AgentSignatureVerificationService` (blocking Ed25519), `ReactiveAgentSignatureVerificationService` (reactive Ed25519), `AgentCryptographicVerifier` (shared static utility) |
 | Actor trust scoring (Bayesian Beta + EigenTrust) | `casehub-ledger` | `ActorTrustScore` — four score types: GLOBAL, CAPABILITY, DIMENSION, CAPABILITY_DIMENSION (✅ #76); nightly `TrustScoreJob`, `TrustScoreRoutingPublisher` CDI events |
 | Trust score export read-model | `casehub-ledger` | `TrustExportService` (`exportAll`/`exportActor`/`exportDelta`) — consumed by dashboards and upper layers |
 | Trust score import SPI | `casehub-ledger` | `TrustImportService` SPI; `JpaTrustImportService` seed-if-absent `@Alternative`; `NoOpTrustImportService` `@DefaultBean` |
