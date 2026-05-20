@@ -78,19 +78,16 @@ Known SPIs to comply:
 
 | Repo | SPI | Status |
 |------|-----|--------|
-| claudony | `CaseChannelLayout` | Verify |
-| claudony | `MeshParticipationStrategy` | Verify |
-| claudony | `CaseWorkerUpdateStrategy` (planned) | Must comply at definition |
-| engine | `WorkerProvisioner` | Verify |
-| engine | `WorkerContextProvider` | Verify |
-| engine | `CaseChannelProvider` | Verify |
-| qhorus | `MessageTypePolicy` | Verify |
-| qhorus | `InstanceActorIdProvider` | Verify |
+| claudony | `CaseChannelLayout` | ✅ `channelsFor(UUID caseId, ...)` |
+| claudony | `MeshParticipationStrategy` | ✅ `WorkerContext` carries `UUID caseId` |
+| claudony | `CaseWorkerUpdateStrategy` | ✅ `onLifecycleEvent(String caseId)`, `subscribe(String caseId, ...)` |
+| engine | `WorkerProvisioner` | ✅ `ProvisionContext` carries `UUID caseId` |
+| engine | `WorkerContextProvider` | ✅ `buildContext(String workerId, UUID caseId, ...)` |
+| engine | `CaseChannelProvider` | ✅ `openChannel(UUID caseId, ...)`, `listChannels(UUID caseId)` |
+| qhorus | `MessageTypePolicy` | ✅ validates per channel semantic, not per case — caseId not needed |
+| qhorus | `InstanceActorIdProvider` | ✅ session→persona mapping, not case-scoped — caseId not needed |
 
-"Verify" means: check whether `caseId` is already present in method signatures. If not,
-raise an issue in that repo to add it before any new implementations are written. Do not
-retrofit existing call sites unless adding a new implementation — the rule applies to new
-SPIs from today and to existing SPIs before their first new implementation is added.
+All existing SPIs comply as of 2026-05-20. This rule governs **new** strategy SPIs going forward.
 
 ---
 
