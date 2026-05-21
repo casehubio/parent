@@ -7,7 +7,7 @@ applies_to: "All casehub modules using Flyway"
 severity: critical
 refs:
   - docs/protocols/universal/flyway-migration-rules.md
-violation_hint: "Overlapping version numbers cause FlywayException at startup even on a fresh greenfield install — uniqueness is enforced before any data is touched"
+violation_hint: "Overlapping version numbers cause FlywayException at startup even on a fresh greenfield install — uniqueness is enforced before any data is touched. Placing extension migrations inside db/migration/<module>/ (a subdirectory of the default path) causes the same failure: Flyway scans recursively, so any datasource scanning classpath:db/migration will also find them."
 created: 2026-05-08
 updated: 2026-05-18
 ---
