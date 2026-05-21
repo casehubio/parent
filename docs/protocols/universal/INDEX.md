@@ -44,3 +44,4 @@ Reconstitute: `grep -rl "^scope: universal" docs/protocols/universal/*.md`
 |------|------|------------|
 | [layer-log.md](layer-log.md) | Maintain LAYER-LOG.md as definition of done per adoption layer | Any layered application built on a platform |
 | [reactive-blocking-tier-separation.md](reactive-blocking-tier-separation.md) | Service beans must not carry dependencies on capabilities optional in consuming deployments — blocking and reactive tiers are separate beans | Any extension library with heterogeneous deployment contexts |
+| [reactive-vs-blocking-selection.md](reactive-vs-blocking-selection.md) | Choose reactive vs blocking based on I/O profile and concurrency model — never mix within a request path; persistence model must follow execution model | Any Quarkus/Vert.x-based module choosing an execution model |
