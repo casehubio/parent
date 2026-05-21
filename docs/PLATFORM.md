@@ -195,6 +195,8 @@ casehub-parent              (BOM — publish first; all others import it)
 | `casehub-engine-api` | `claudony` | `casehub` | SPI implementations |
 | `casehub-engine-api` | `devtown` | `review` | engine types |
 | `casehub-engine` (runtime) | `devtown` | `app` | YamlCaseHub, CaseHubRuntime |
+| `casehub-engine-work-adapter` | `devtown` | `app` | HITL bridge — HumanTaskScheduleHandler + WorkItemLifecycleAdapter |
+| `casehub-engine-blackboard` | `devtown` | `app` | BlackboardRegistry — transitive via work-adapter; required for plan item tracking |
 | `casehub-engine-ledger` | `claudony` | `casehub` | lineage queries |
 
 **Application tier** (aml, clinical) — consume foundation runtime artifacts; see [APPLICATIONS.md](APPLICATIONS.md) for detail.
