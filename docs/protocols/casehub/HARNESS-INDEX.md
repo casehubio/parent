@@ -20,7 +20,7 @@ Reconstitute this index: `grep -rl "^scope: application" docs/protocols/*.md`
 | [qhorus-inbound-normaliser-channel-scope.md](casehub/qhorus-inbound-normaliser-channel-scope.md) | `InboundNormaliser` implementations must scope to relevant channel patterns — check `ChannelRef.name()` before applying domain-specific detection; default unrecognised channels to `MessageType.QUERY` | Any harness implementing `InboundNormaliser` |
 | [qhorus-per-entity-governance-channels.md](casehub/qhorus-per-entity-governance-channels.md) | Name governance oversight channels after the entity being governed, not the actor — channel name is the only reliable entity correlator until qhorus#154 ships | Any harness issuing COMMANDs via qhorus for governance decisions |
 | *(pending #18)* | Hexagonal module placement — `api/` is JPA-free pure domain; `app/` owns use-case orchestration | All CaseHub domain applications |
-| *(pending #19)* | casehub-work Hibernate scan packages — include both `runtime.model` and `runtime.filter` | All harnesses using casehub-work |
+| [casehub-work-hibernate-packages.md](casehub/casehub-work-hibernate-packages.md) | casehub-work Hibernate scan requires both `runtime.model` and `runtime.filter` — omitting filter causes silent `FilterRule entity not found` at startup | All harnesses using casehub-work |
 | *(pending)* | Layered adoption approach — one foundation module at a time; each layer independently runnable with a single HTTP call | All CaseHub domain applications |
 | *(pending)* | Production-first — do not design or architect for the tutorial; the tutorial documents what you built | All CaseHub domain applications |
 
