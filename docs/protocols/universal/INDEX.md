@@ -19,6 +19,12 @@ Reconstitute: `grep -rl "^scope: universal" docs/protocols/universal/*.md`
 | [maven-submodule-folder-naming.md](maven-submodule-folder-naming.md) | Submodule folder names are short — no parent prefix; `api`, `runtime`, `deployment` | Any multi-module Maven project |
 | [artifact-rename-propagation.md](artifact-rename-propagation.md) | Artifact rename propagation — update all consumers before shipping | Any multi-repo Maven project |
 
+## Java / API Design
+
+| File | Rule | Applies to |
+|------|------|------------|
+| [varargs-type-capture.md](varargs-type-capture.md) | Consider varargs type capture over `Class<T>` when type flows only into a lambda — eliminates explicit class argument at call site | Any Java API accepting `Class<T>` solely for lambda type inference |
+
 ## Java / Architecture
 
 | File | Rule | Applies to |
