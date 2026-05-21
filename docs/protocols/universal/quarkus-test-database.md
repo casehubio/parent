@@ -25,12 +25,18 @@ quarkus.datasource.db-kind=h2
 quarkus.datasource.jdbc.url=jdbc:h2:mem:<module>;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
 quarkus.hibernate-orm.database.generation=none
 quarkus.flyway.migrate-at-start=true
+quarkus.flyway.locations=classpath:db/migration   # pin explicitly — see note below
 quarkus.scheduler.enabled=false
 ```
 
 **`MODE=PostgreSQL` is mandatory.** It makes H2 reject non-standard SQL types (e.g. bare `DOUBLE`) at test time, catching migration compatibility bugs before they reach production.
 
 Use a unique database name per module (e.g. `testdb`, `reportstest`, `ledgertest`) to prevent state leakage when running tests from multiple modules in the same JVM.
+
+**Always pin `quarkus.flyway.locations` explicitly.** Flyway's classpath scan is recursive — any future dependency jar that adds a `db/migration/` entry will be picked up silently, potentially causing V-number conflicts or unexpected schema changes. Explicit pinning makes the intent clear and protects against classpath drift. For named datasources that must scan multiple paths (e.g. a qhorus PU that also manages ledger entities), list them explicitly:
+```properties
+quarkus.flyway.qhorus.locations=classpath:db/qhorus/migration,classpath:db/ledger/migration
+```
 
 ## Multiple @QuarkusTest classes in one module
 
