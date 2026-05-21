@@ -52,6 +52,9 @@ See `docs/DESIGN.md` for service class structure.
 
 ### Flyway Migrations
 
+Path: `classpath:db/ledger/migration` (moved from `classpath:db/migration` in ledger#95).
+Consumers must add this path to their `quarkus.flyway.locations` config.
+
 | Version | Contents |
 |---|---|
 | V1000 | `ledger_entry` + `ledger_attestation` tables |
@@ -59,8 +62,11 @@ See `docs/DESIGN.md` for service class structure.
 | V1002 | Supplement tables |
 | V1003 | `ledger_entry_archive` table |
 | V1004 | `actor_identity` pseudonymisation table |
+| V1005 | `agent_signature` + `agent_public_key` columns on `ledger_entry` |
+| V1006 | `agent_key_ref` column on `ledger_entry` |
+| V1007 | `key_rotation_entry` subclass table |
 
-**Consumers** own V1004+ for their own subclass join tables.
+**Consumers** own V1008+ for their own subclass join tables (V1004–V1007 are now ledger base).
 
 ---
 
