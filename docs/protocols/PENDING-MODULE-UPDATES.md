@@ -39,12 +39,6 @@ that should later be replaced with a reference to the parent convention file.
 - casehub/ledger/CLAUDE.md — any note about Panache `find()` bare field name requirement
 - casehub/engine/CLAUDE.md — any note about Panache `find()` bare field name requirement
 
-## quarkus-junit-not-junit5.md
-- casehub/work/CLAUDE.md — any note about `quarkus-junit5` deprecation warning
-- casehub/ledger/CLAUDE.md — any note about `quarkus-junit5` deprecation warning
-- casehub/connectors/CLAUDE.md — any note about `quarkus-junit5` deprecation warning
-- casehub/qhorus/CLAUDE.md — any note about `quarkus-junit5` deprecation warning
-
 ## cdi-observesasync-transactional-delegation.md
 - casehub/ledger/CLAUDE.md — section describing `@ObservesAsync` + `@Transactional` delegation pattern
 - casehub/work/CLAUDE.md — any note about async observer transactional delegation

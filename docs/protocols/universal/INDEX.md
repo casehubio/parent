@@ -38,6 +38,7 @@ Reconstitute: `grep -rl "^scope: universal" docs/protocols/universal/*.md`
 
 | File | Rule | Applies to |
 |------|------|------------|
+| [quarkus-junit-not-junit5.md](quarkus-junit-not-junit5.md) | Use quarkus-junit not quarkus-junit5 in all new Quarkus modules | All Maven modules with quarkus-junit5 test dep |
 | [quarkus-test-database.md](quarkus-test-database.md) | Database configuration for @QuarkusTest suites | Any Quarkus app with @QuarkusTest |
 | [quarkus-test-security-http-only.md](quarkus-test-security-http-only.md) | Only add @TestSecurity to @QuarkusTest classes that exercise HTTP endpoints | Any Quarkus app with @TestSecurity |
 | [quartz-ram-store-configuration.md](quartz-ram-store-configuration.md) | Use Quartz RAM store — no JDBC store, no Quartz tables | Any Quarkus app using Quartz |
