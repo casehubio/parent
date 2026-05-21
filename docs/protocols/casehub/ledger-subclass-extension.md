@@ -40,14 +40,14 @@ public class WorkItemLedgerEntry extends LedgerEntry { ... }
 
 ---
 
-## Flyway Version Numbering: V1004+
+## Flyway Version Numbering: V2000+
 
-`casehub-ledger` owns the Flyway version range V1000–V1003 for its own base schema. **Consumer repos that add ledger subclass join tables must use V1004 or higher**, using their own allocated range from the flyway-version-range-allocation protocol.
+`casehub-ledger` owns the Flyway version range V1000–V1007 for its own base schema at `classpath:db/ledger/migration`. **Consumer repos that add ledger subclass join tables must use V2000 or higher**, using their own allocated range from the flyway-version-range-allocation protocol. V2000+ provides a safe buffer above the ledger base range.
 
 ```
-casehub-ledger base schema:    V1000–V1003
-casehub-work subclass joins:   V4000+ (within casehub-work's allocated block)
-casehub-qhorus subclass joins: V3000+ (within casehub-qhorus's allocated block)
+casehub-ledger base schema:    V1000–V1007  (classpath:db/ledger/migration)
+casehub-qhorus subclass joins: V2000+       (V2000__agent_message_ledger_entry — reference implementation)
+casehub-work subclass joins:   V4000+       (within casehub-work's allocated block)
 ```
 
 Each consumer owns its own join table migration — it must not be in casehub-ledger.
@@ -88,7 +88,7 @@ The join table migration depends on the base table existing. If `casehub-ledger`
 
 - [ ] Inheritance strategy is `JOINED` — not `SINGLE_TABLE` or `TABLE_PER_CLASS`
 - [ ] Join table migration is in the consumer repo, not `casehub-ledger`
-- [ ] Migration version is ≥ V1004 and within the consumer repo's allocated range
+- [ ] Migration version is ≥ V2000 and within the consumer repo's allocated range
 - [ ] Leaf hash computation excludes subclass-specific columns
 - [ ] New SPI method added to `LedgerEntryRepository`? → follow `ledger-spi-propagation.md` checklist
 - [ ] `LedgerEntryType` enum updated if a new entry type was introduced
