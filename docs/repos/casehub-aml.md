@@ -26,6 +26,12 @@ The tutorial structure emerges from the natural adoption sequence — each layer
 | 6 | Trust routing | No trust model; random agent selection | pending (blocked: engine P1.3) |
 | 7 | Comparison vs IBM AMLSim | — | pending |
 
+## Module Structure
+
+Follows hexagonal architecture ([PP-20260512-9b8847](../protocols/casehub/hexagonal-application-service-placement.md)):
+- `api/` — domain layer: pure Java records and service interfaces, zero framework dependencies
+- `app/` — application + infrastructure layer: CDI beans, REST resources, Quarkus integration
+
 ## What It Owns
 
 - AML domain model: `SuspiciousTransaction`, `AmlInvestigationCase`, `SuspiciousActivityReport`
