@@ -35,7 +35,7 @@ The tutorial structure emerges from the natural adoption sequence. Each layer ad
 - Trust dimensions: `safety-accuracy`, `eligibility-precision`, `protocol-adherence`
 - Multi-site trial `CasePlanModel` — site-level sub-cases with trial-level aggregation
 - Adverse event escalation — 24h/7d GCP SLA WorkItems with CTCAE grading
-- PI authorisation — formal COMMAND creates Commitment; deviation requires named PI approval
+- PI authorisation — formal COMMAND creates Commitment; deviation requires named PI approval; MAJOR deviations trigger GCP §4.5 sponsor notification via `SponsorNotifier` SPI (casehub-connectors-core)
 - IRB/ethics committee gate — WorkItem with SLA
 - 3-site showcase scenario vs ClinicalAgent
 
@@ -57,7 +57,7 @@ casehub-clinical
   → casehub-ledger   (FDA Merkle audit, GDPR erasure, EU AI Act Art.12, trust scoring)
   → casehub-work     (IRB/PI WorkItems with SLA and escalation)
   → casehub-qhorus   (COMMAND to PI, commitment lifecycle, safety agent channels)
-  → casehub-connectors (DSMB notifications, adverse event alerts)
+  → casehub-connectors-core (sponsor notification delivery — clinical#13; DSMB/AE alerts planned — clinical#11)
 ```
 
 ## Critical Foundation Gap
