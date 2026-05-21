@@ -21,6 +21,7 @@ Reconstitute this index: `grep -rl "^scope: application" docs/protocols/*.md`
 | [qhorus-per-entity-governance-channels.md](casehub/qhorus-per-entity-governance-channels.md) | Name governance oversight channels after the entity being governed, not the actor — channel name is the only reliable entity correlator until qhorus#154 ships | Any harness issuing COMMANDs via qhorus for governance decisions |
 | [hexagonal-application-service-placement.md](casehub/hexagonal-application-service-placement.md) | Use-case orchestration lives in `app/`, `api/` stays pure domain with zero foundation deps — result types crossing the boundary are primitive-only Java records | Application-tier repos (aml, clinical, devtown) |
 | [casehub-work-hibernate-packages.md](casehub/casehub-work-hibernate-packages.md) | casehub-work Hibernate scan requires both `runtime.model` and `runtime.filter` — omitting filter causes silent `FilterRule entity not found` at startup | All harnesses using casehub-work |
+| [flyway-consumer-numbering.md](casehub/flyway-consumer-numbering.md) | Apps embedding casehub-work must start domain migrations at V100+ — casehub-work owns V1–V99; no build-time warning exists for collisions | All harnesses embedding casehub-work |
 | *(pending)* | Layered adoption approach — one foundation module at a time; each layer independently runnable with a single HTTP call | All CaseHub domain applications |
 | *(pending)* | Production-first — do not design or architect for the tutorial; the tutorial documents what you built | All CaseHub domain applications |
 
