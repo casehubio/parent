@@ -101,12 +101,26 @@ See docs/DESIGN.md for ledger query capabilities.
 ## Normative Layer
 
 Qhorus implements a 4-layer normative accountability framework:
-1. **Descriptive** — what happened (messages, events)
-2. **Prescriptive** — what was committed to (commitments)
-3. **Evaluative** — whether commitments were kept (commitment state transitions)
-4. **Corrective** — stalled obligation detection
+1. **Illocutionary** — what was said (speech act type, channel)
+2. **Commitment** — what was obligated (Commitment record, OPEN → FULFILLED/FAILED/EXPIRED)
+3. **Temporal** — when obligations become stale (Watchdog, deadline enforcement)
+4. **Enforcement** — casehub-engine orchestration reacts to commitment outcomes via CDI events
 
-See [docs/normative-layer.md](https://raw.githubusercontent.com/casehubio/qhorus/main/docs/normative-layer.md).
+See [docs/normative-layer.md](https://raw.githubusercontent.com/casehibio/qhorus/main/docs/normative-layer.md).
+
+### Normative Channel Layout
+
+The agent mesh framework defines a 3-channel normative layout implemented via `NormativeChannelLayout` (Claudony SPI) and enforced at channel creation:
+
+| Channel suffix | Semantics | `allowedTypes` |
+|----------------|-----------|----------------|
+| `/work` | Task assignment and completion (prescriptive) | `COMMAND, RESPONSE, DONE, DECLINE, EXPIRED` |
+| `/observe` | Passive monitoring and state sharing (descriptive) | `EVENT, QUERY, INFORM` |
+| `/oversight` | Human governance gates (commitment-based) | `COMMAND, RESPONSE` |
+
+`allowedTypes` on `Channel` is enforced at message send time — messages outside the declared set are rejected with a protocol violation error. This is what makes the normative layer machine-checkable rather than advisory.
+
+See the full agent mesh framework spec: [`casehubio/claudony docs/superpowers/specs/2026-04-27-claudony-agent-mesh-framework.md`](https://github.com/casehubio/claudony/blob/main/docs/superpowers/specs/2026-04-27-claudony-agent-mesh-framework.md).
 
 ---
 

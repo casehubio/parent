@@ -61,6 +61,7 @@ Check how the same concern is handled in the two or three most similar places in
 - **SPI defaults — two patterns:** *Operational SPIs* (`WorkerProvisioner`, `CaseChannelProvider`, `WorkerStatusListener`) get a no-op default — skipping the operation leaves the system functional. *Vocabulary/registry SPIs* (`CapabilityRegistry` and equivalents) get a *populated* default expressing domain vocabulary — an empty implementation breaks routing and selection immediately. Decision rule: can the system function correctly with an empty/do-nothing implementation? Yes → no-op. No → populated default. Both live in the same pure-Java module as the SPI; the app module provides the `@ApplicationScoped` wrapper.
 - **Application tier rule:** domain logic (git, PRs, clinical protocols, AML investigations) belongs in application repos. Foundation repos must remain domain-agnostic. If it requires knowledge of a specific business domain, it does not belong in foundation.
 - **Submodule folder naming:** short descriptive names — no repo prefix. `api` not `casehub-work-api`; `runtime` not `casehub-ledger-runtime`. See [`docs/protocols/universal/maven-submodule-folder-naming.md`](protocols/universal/maven-submodule-folder-naming.md).
+- **Agent mesh alignment:** when implementing a new MCP tool or channel interaction, verify it aligns with the normative 3-channel layout (work/observe/oversight) and 4-layer accountability framework. See [`docs/repos/claudony.md`](repos/claudony.md) §Agent Mesh Framework and the [Claudony mesh spec](https://github.com/casehubio/claudony/blob/main/docs/superpowers/specs/2026-04-27-claudony-agent-mesh-framework.md).
 - **Trust routing cold-start:** any application using trust-based routing must implement the four-phase maturity model — Phase 0 is availability routing (Gastown parity), phases advance automatically as `minimumObservations` thresholds are crossed, every capability must declare a `fallbackType`. Never block on missing trust data. See [`docs/protocols/casehub/trust-maturity-model.md`](protocols/casehub/trust-maturity-model.md).
 - **Auth retrofit readiness:** RBAC is not yet implemented but must not be foreclosed. No auth or principal logic in domain or service layers. REST resources must stay thin enough for `@RolesAllowed`. Queries need a structurally injectable filter. SPI signatures must stay free of auth types. See [`docs/protocols/casehub/auth-retrofit-readiness.md`](protocols/casehub/auth-retrofit-readiness.md).
 - **Case definition three-layer architecture:** YAML (classpath resource) → generated schema model (`io.casehub.model.*`) → canonical API model (`CaseDefinition`). Fluent DSL builders target the same canonical model and additionally support `LambdaExpressionEvaluator` (not expressible in YAML). All YAML definitions ⊂ fluent DSL; reverse is not true. Runtime: extend `YamlCaseHub`. Tests: build `CaseDefinition` directly via builders. Never bypass `CaseDefinitionYamlMapper`. Inherited from CNCF Serverless Workflow 1.0 / quarkus-flow. See [`docs/protocols/casehub/case-definition-layers.md`](protocols/casehub/case-definition-layers.md).
@@ -315,6 +316,24 @@ All GDPR concerns centralised in `casehub-ledger`:
 ### Agent Identity
 
 Format: `{model-family}:{persona}@{major}` — e.g. `"claude:analyst@v1"`. Defined in casehub-ledger ADR 0004. Major version bump resets trust baseline.
+
+### Agent Communication Mesh
+
+The platform uses a normative 3-channel layout for agent-to-agent and agent-to-human interactions:
+
+| Channel | Purpose | Primary speech acts |
+|---------|---------|---------------------|
+| `work` | Task assignment and completion (prescriptive) | COMMAND, RESPONSE, DONE, DECLINE, EXPIRED |
+| `observe` | Passive monitoring and state sharing (descriptive) | EVENT, QUERY, INFORM |
+| `oversight` | Human governance gates (commitment-based) | COMMAND → human, RESPONSE from human |
+
+These map to the 4-layer normative accountability framework implemented by casehub-qhorus:
+1. **Illocutionary** — what was said (speech act type, channel)
+2. **Commitment** — what was obligated (Commitment record, OPEN → FULFILLED/FAILED/EXPIRED)
+3. **Temporal** — when obligations become stale (Watchdog, deadline enforcement)
+4. **Enforcement** — casehub-engine orchestration reacts to commitment outcomes via CDI events
+
+When implementing a new MCP tool or channel interaction: **does this align with the normative mesh patterns?** See the full framework spec: [`casehubio/claudony docs/superpowers/specs/2026-04-27-claudony-agent-mesh-framework.md`](https://github.com/casehubio/claudony/blob/main/docs/superpowers/specs/2026-04-27-claudony-agent-mesh-framework.md).
 
 ### Implementation Protocols
 

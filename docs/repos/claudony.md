@@ -117,6 +117,30 @@ tmux does not expose a PTY to the Quarkus process. Streaming uses:
 
 ---
 
+## Agent Mesh Framework
+
+Claudony is the normative reference implementation of the CaseHub agent mesh framework — the pattern for how Claude instances communicate with each other and with the platform in a production multi-agent deployment.
+
+**Key SPIs (defined in `claudony-casehub`):**
+- `CaseChannelLayout` — declares the channel topology for a case type: which channels to create, their semantics (work / observe / oversight), and allowed speech-act types per channel
+- `MeshParticipationStrategy` — governs how a Claude instance joins and leaves the mesh: channel subscription, capability announcement, session lifecycle hooks
+
+**Normative channel layout (3-channel pattern):**
+
+| Channel suffix | Semantics | Agent speech acts |
+|----------------|-----------|-------------------|
+| `/work` | Task assignment and completion | COMMAND, RESPONSE, DONE, DECLINE |
+| `/observe` | Passive state broadcast | EVENT, INFORM |
+| `/oversight` | Human governance gate | COMMAND (to human), RESPONSE (from human) |
+
+`allowedTypes` on each `Channel` enforces this at the Qhorus layer — messages outside the declared types are rejected.
+
+Full specification: [`docs/superpowers/specs/2026-04-27-claudony-agent-mesh-framework.md`](https://github.com/casehubio/claudony/blob/main/docs/superpowers/specs/2026-04-27-claudony-agent-mesh-framework.md)
+
+Related epics: [claudony#86](https://github.com/casehubio/claudony/issues/86) (framework epic), [claudony#90](https://github.com/casehubio/claudony/issues/90) (`sessionMeta` caseId propagation requirement).
+
+---
+
 ## Current State
 
 - 475+ tests passing (4 in `claudony-core` + 130 in `claudony-casehub` + 341 in `claudony-app`)

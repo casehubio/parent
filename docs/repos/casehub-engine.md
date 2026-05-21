@@ -103,6 +103,19 @@ No Flyway — Hibernate drop-and-create only. No Quartz JDBC store — RAM store
 
 ---
 
+## Agent Mesh — Layer 4 (Enforcement)
+
+casehub-engine is Layer 4 (Enforcement) in the Qhorus normative accountability framework. It reacts to commitment outcomes published as CDI events by Qhorus and takes orchestration decisions:
+
+- `FULFILLED` commitment → case continues to the next worker or step
+- `FAILED` / `EXPIRED` commitment → recovery policy triggers (escalation, reprovision, cancel)
+
+**`sessionMeta` caseId propagation ([claudony#90](https://github.com/casehubio/claudony/issues/90)):** Every worker session must carry the `caseId` in its `sessionMeta` so that cross-repo ledger correlation and Claudony dashboard correlation work correctly. `CaseContextChangedEventHandler` is the integration point — it must populate `sessionMeta.caseId` when provisioning workers via `WorkerProvisioner`. This is a required field; omitting it silently breaks Claudony dashboard correlation and prevents the three-way Worker↔Session↔Channel join.
+
+See the full agent mesh framework spec: [`casehubio/claudony docs/superpowers/specs/2026-04-27-claudony-agent-mesh-framework.md`](https://github.com/casehubio/claudony/blob/main/docs/superpowers/specs/2026-04-27-claudony-agent-mesh-framework.md).
+
+---
+
 ## Two Audit Mechanisms (Known Gap)
 
 - **EventLog** — engine-internal, append-only, used for restart recovery
