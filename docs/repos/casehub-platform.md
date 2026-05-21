@@ -100,7 +100,9 @@ public class SecurityCurrentPrincipal implements CurrentPrincipal {
 
 1. Real `CurrentPrincipal` → `@RequestScoped`, delegates to `SecurityIdentity`
 2. `GroupMembershipProvider` real implementation → registers as `SecurityIdentityAugmentor` to populate `SecurityIdentity.getRoles()` from the casehub group store — this makes `@RolesAllowed` work with casehub group memberships, not just what came from the OIDC token
-3. `SettingsScope` derivation should pull from `TenantContext` (quarkiverse multitenancy) when multi-tenant deployments land
+3. `tenancyId()` on `CurrentPrincipal` provides tenant identity — real implementations read from the JWT claim. Multi-tenant scope derivation via quarkiverse `TenantContext` is deferred (closed casehubio/platform#14 as won't-do-until-needed)
+
+**`tenancyId()` and `isCrossTenantAdmin()` are abstract.** Every implementor must provide them — compile error if missing. Single-tenant deployments return `TenancyConstants.DEFAULT_TENANT_ID` (configurable via `casehub.tenancy.default-id`); real OIDC-backed implementations read from the JWT `tenancyId` claim. `TenancyConstants` is a utility class in `platform-api` exposing `DEFAULT_TENANT_ID` and `PLATFORM_TENANT_ID` as importable constants. See protocols `PP-20260520-439daf` (no conditional tenancy filtering) and `PP-20260520-e6a5f0` (bind tenancy in data access layer only).
 
 **`isSystem()` checks `actorId == "system"`.** The `"anonymous"` sentinel marks unauthenticated; `"system"` marks the platform acting on its own behalf. These are casehub conventions, not Quarkus conventions.
 
@@ -159,7 +161,7 @@ All three SPIs get `@DefaultBean @ApplicationScoped` mocks in `platform/`. The p
 
 `casehub-platform-testing` provides `@Alternative @Priority(1)` test fixtures for identity SPIs:
 
-- `FixedCurrentPrincipal` — programmatic actorId/groups control
+- `FixedCurrentPrincipal` — programmatic actorId/groups/tenancyId/crossTenantAdmin control with `reset()` support
 - `InMemoryGroupMembershipProvider` — in-memory group membership store
 
 **No `InMemoryPreferenceProvider`.** Because `PreferenceKey<T>` carries a `parser`, `MockPreferenceProvider.get(key)` calls `key.parse(raw)` on config strings — typed values come from `application.properties` without a separate test fixture. This is why the testing module has identity fixtures but not preference fixtures.
@@ -197,7 +199,7 @@ Add as a test-scoped dependency:
 | `platform-api/` | ✅ shipped | Zero-dep SPIs |
 | `platform/` | ✅ shipped | @DefaultBean mocks |
 | `testing/` | ✅ shipped | @Alternative identity fixtures |
-| `config/` | 🔜 #5 | Scope-aware YAML + env var provider (as SmallRye ConfigSource) |
+| `config/` | ✅ shipped | Scope-aware YAML + SmallRye Config overrides — displaces mock when on classpath |
 | `persistence-jpa/` | 🔜 #6 | JPA-backed scoped preference overrides |
 | `persistence-mongodb/` | 🔜 #7 | MongoDB alternative |
 | `preferences-editor/` | 🔜 #8 | Admin write path — REST API, separate from providers |
