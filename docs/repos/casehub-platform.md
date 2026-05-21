@@ -14,9 +14,13 @@ This document answers the question developers will always ask: *"Why does casehu
 platform-api/   ← Tier 1: zero dependencies — pure Java interfaces and records
 platform/       ← Tier 3: Quarkus @DefaultBean mocks, @ConfigProperty
 testing/        ← companion: @Alternative @Priority(1) test fixtures (CDI API only)
+config/         ← optional: scope-aware YAML + SmallRye Config preference provider
+oidc/           ← optional: @RequestScoped CurrentPrincipal backed by SecurityIdentity + JWT
 ```
 
 `platform-api/` must never import Quarkus, CDI, JPA, or any casehubio artifact. This constraint is what makes the SPIs useful to every module in the stack — including modules that have no Quarkus dependency of their own.
+
+`config/` and `oidc/` are optional — consumers add them as compile-scope dependencies to activate the capability. Each displaces its corresponding `@DefaultBean` mock automatically via CDI without exclusion config.
 
 ---
 
@@ -96,11 +100,11 @@ public class SecurityCurrentPrincipal implements CurrentPrincipal {
 
 **`roles()` defaults to `groups()`.** This wires directly to `@RolesAllowed` without an interface change when RBAC is implemented. Override `roles()` in the real implementation if RBAC roles and group memberships need to diverge.
 
-**Auth retrofit path:** When authentication is implemented:
+**Auth retrofit path:** `casehub-platform-oidc` ships the OIDC-backed `CurrentPrincipal`:
 
-1. Real `CurrentPrincipal` → `@RequestScoped`, delegates to `SecurityIdentity`
-2. `GroupMembershipProvider` real implementation → registers as `SecurityIdentityAugmentor` to populate `SecurityIdentity.getRoles()` from the casehub group store — this makes `@RolesAllowed` work with casehub group memberships, not just what came from the OIDC token
-3. `tenancyId()` on `CurrentPrincipal` provides tenant identity — real implementations read from the JWT claim. Multi-tenant scope derivation via quarkiverse `TenantContext` is deferred (closed casehubio/platform#14 as won't-do-until-needed)
+1. `OidcCurrentPrincipal` → `@RequestScoped`, reads `actorId`/`groups` from `SecurityIdentity`, reads `tenancyId` (required) and `crossTenantAdmin` (optional, defaults `false`) from fixed JWT claims. Anonymous identity returns sentinels without touching the JWT. Add `casehub-platform-oidc` as a compile dependency to activate — displaces the mock automatically.
+2. `GroupMembershipProvider` real implementation (not yet shipped) → registers as `SecurityIdentityAugmentor` to populate `SecurityIdentity.getRoles()` from the casehub group store — this makes `@RolesAllowed` work with casehub group memberships, not just what came from the OIDC token.
+3. Multi-tenant scope derivation via quarkiverse `TenantContext` is deferred (closed casehubio/platform#14 as won't-do-until-needed).
 
 **`tenancyId()` and `isCrossTenantAdmin()` are abstract.** Every implementor must provide them — compile error if missing. Single-tenant deployments return `TenancyConstants.DEFAULT_TENANT_ID` (configurable via `casehub.tenancy.default-id`); real OIDC-backed implementations read from the JWT `tenancyId` claim. `TenancyConstants` is a utility class in `platform-api` exposing `DEFAULT_TENANT_ID` and `PLATFORM_TENANT_ID` as importable constants. See protocols `PP-20260520-439daf` (no conditional tenancy filtering) and `PP-20260520-e6a5f0` (bind tenancy in data access layer only).
 
@@ -200,6 +204,7 @@ Add as a test-scoped dependency:
 | `platform/` | ✅ shipped | @DefaultBean mocks |
 | `testing/` | ✅ shipped | @Alternative identity fixtures |
 | `config/` | ✅ shipped | Scope-aware YAML + SmallRye Config overrides — displaces mock when on classpath |
+| `oidc/` | ✅ shipped | @RequestScoped CurrentPrincipal backed by SecurityIdentity + JWT — displaces mock when on classpath |
 | `persistence-jpa/` | 🔜 #6 | JPA-backed scoped preference overrides |
 | `persistence-mongodb/` | 🔜 #7 | MongoDB alternative |
 | `preferences-editor/` | 🔜 #8 | Admin write path — REST API, separate from providers |
