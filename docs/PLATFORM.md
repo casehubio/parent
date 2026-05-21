@@ -192,6 +192,8 @@ casehub-parent              (BOM — publish first; all others import it)
 | `casehub-qhorus-api` | `devtown` | `review` | channel routing |
 | `casehub-qhorus` (runtime) | `claudony` | `app` | runtime dep |
 | `casehub-qhorus` (runtime) | `devtown` | `app` | runtime dep |
+| `casehub-qhorus-api` | `casehub-clinical` | `api` | SPI types / MessageReceivedEvent |
+| `casehub-qhorus` (runtime) | `casehub-clinical` | `runtime` | runtime dep |
 | `casehub-engine-api` | `claudony` | `casehub` | SPI implementations |
 | `casehub-engine-api` | `devtown` | `review` | engine types |
 | `casehub-engine` (runtime) | `devtown` | `app` | YamlCaseHub, CaseHubRuntime |
