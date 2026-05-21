@@ -133,8 +133,14 @@ Extensions that operate on their own **named datasource** can use a scoped migra
 instead of claiming a version range block. Version numbers become module-local, eliminating the
 need for global coordination:
 
-- Place migrations in `db/migration/<module>/` (e.g. `db/migration/qhorus/`)
-- Configure: `quarkus.flyway.<datasource>.locations=classpath:db/migration/<module>`
+- Place migrations in `db/<module>/migration/` (e.g. `db/qhorus/migration/`)
+- Configure: `quarkus.flyway.<datasource>.locations=classpath:db/<module>/migration`
 
-**`casehub-qhorus`** uses this pattern. Rules 1–3 above apply only to shared-datasource modules.
-Modules with isolated named datasources should prefer this approach.
+**⚠️ The path must be outside `db/migration/` entirely.** Flyway scans classpath locations
+recursively — placing migrations at `db/migration/<module>/` puts them inside the default
+datasource's scan root. Any app that has a second Flyway datasource scanning `classpath:db/migration`
+will find both sets of files and fail with "Found more than one migration with version N" even
+though the named datasource is correctly scoped. Use `db/<module>/migration/` as the root.
+
+**`casehub-qhorus`** uses this pattern (`db/qhorus/migration/`). Rules 1–3 above apply only
+to shared-datasource modules. Modules with isolated named datasources should prefer this approach.
