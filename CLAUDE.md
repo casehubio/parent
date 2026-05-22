@@ -106,7 +106,7 @@ mvn --batch-mode deploy -DskipTests
 
 ## Cross-Repo Conventions
 
-Conventions shared across all modules live in `docs/protocols/`. Each file is self-contained. See `docs/protocols/INDEX.md` for the full list.
+Conventions shared across all modules live in the **casehub garden** (`../garden/docs/protocols/`). Each file is self-contained. See `../garden/docs/protocols/INDEX.md` for the full list. Do not write protocol files in this repo — they belong in `casehub/garden` so they always land on main regardless of what branch parent is on.
 
 **Critical:** Never commit or push to peer repo directories (`../ledger`, `../work`, etc.). Each repo has its own Claude session. For cross-repo fixes, create a GitHub issue on the target repo instead.
 
