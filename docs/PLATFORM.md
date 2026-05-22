@@ -236,6 +236,7 @@ casehub-parent              (BOM — publish first; all others import it)
 | Agent-to-agent messaging (typed channels + messages) | `casehub-qhorus` | 9 speech-act types, 5 channel semantics, MCP tools |
 | Dashboard read/write API (composed views: channel with message count, instance with capability tags, timeline mapping, human message send) | `casehub-qhorus` | `QhorusDashboardService` in `io.casehub.qhorus.runtime.dashboard` — inject this for dashboard/UI consumers needing composed views. Do NOT inject raw entity services for this use case. |
 | Channel message fan-out to external backends | `casehub-qhorus` | `ChannelBackend` SPI in `casehub-qhorus-api`; implementations in consuming repos (Claudony panel, connectors) |
+| Real-time channel feed to Claudony browser panel | `claudony` | `ClaudonyChannelBackend` implements `ChannelBackend` SPI — per-channel scope; fan-out to browser dashboard over WebSocket |
 | Cross-cutting message notification | `casehub-qhorus` | `MessageObserver` SPI in `casehub-qhorus-api`; `InProcessMessageBus` CDI default (`Scope.LOCAL`); CLUSTER-scoped impls for distributed topologies |
 | Agent commitment/obligation tracking | `casehub-qhorus` | `Commitment` with 7-state lifecycle |
 | Normative audit of all agent interactions | `casehub-qhorus` | `MessageLedgerEntry` extends `LedgerEntry`; all 9 speech-act types recorded |
