@@ -1,4 +1,5 @@
 # parent Workspace
+**Name:** CaseHub Parent
 
 **Physical path:** `/Users/mdproctor/claude/casehub/parent/CLAUDE.md`
 **Symlinked at:** `/Users/mdproctor/claude/public/casehub/CLAUDE.md`
