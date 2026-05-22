@@ -154,7 +154,7 @@ casehub-parent              (BOM — publish first; all others import it)
   casehub-platform          (no casehubio deps — foundational SPIs, publishes before ledger)
   casehub-ledger            (no casehubio deps)
   casehub-connectors        (no casehubio deps)
-  casehub-work              (core: zero casehubio deps; ledger module: depends on casehub-ledger)
+  casehub-work              (api: depends on casehub-platform-api; core: zero other casehubio deps; ledger module: depends on casehub-ledger)
   casehub-qhorus            (depends on casehub-ledger)
   casehub-engine            (depends on casehub-work-core + optionally casehub-ledger)
   claudony                  (depends on casehub-qhorus + implements casehub-engine SPIs)
@@ -226,6 +226,7 @@ casehub-parent              (BOM — publish first; all others import it)
 | W3C PROV-DM lineage export | `casehub-ledger` | `LedgerProvExportService` |
 | OTel trace linkage to audit entries | `casehub-ledger` | `LedgerTraceListener` auto-populates `traceId` from active OTel span |
 | Human task inbox (WorkItem lifecycle) | `casehub-work` | 10 statuses, SLA, delegation, escalation, spawn |
+| SLA breach policy | `casehub-work-api` | `SlaBreachPolicy` SPI — replaces `EscalationPolicy`; returns `BreachDecision` (Fail / EscalateTo / Extend) with `thenOnBreach` fallback chaining; `SlaBreachContext(BreachType, BreachedTask, Path, Preferences)`; casehub-work executes the decision, fires `SlaBreachEvent` CDI event for side-effect observers. See casehubio/work#213 |
 | Named outcome classifications for WorkItems | `casehub-work` | `Outcome` record in `casehub-work-api`; `WorkItemTemplate.outcomes` declares valid names; `WorkItem.outcome` stores resolved name at completion; `WorkItemLifecycleEvent.outcome` carries it for engine routing without parsing `resolution` JSON |
 | Conflict-of-interest user exclusion | `casehub-work` | `ExclusionPolicy` SPI in `casehub-work-api` (`check() : PolicyDecision`); `CommaSeparatedExclusionPolicy` `@DefaultBean`; `excludedUsers` TEXT field on `WorkItemTemplate` + `WorkItem`; enforced at claim, create (assigneeId), delegate, auto-assignment, and `SelectionContext`; `BlockedAttemptAuditService` writes `CLAIM_DENIED`/`DELEGATE_DENIED` audit entries via `REQUIRES_NEW` |
 | M-of-N parallel WorkItem completion (group policy primitive) | `casehub-work` | `MultiInstanceCoordinator`; `WorkItemGroupLifecycleEvent`; see LAYERING.md |
@@ -251,6 +252,8 @@ casehub-parent              (BOM — publish first; all others import it)
 ---
 
 ## Key Boundary Rules
+
+**Any casehub repo may depend on `casehub-platform-api`.** It is a zero-external-dependency pure-Java module — taking a compile dependency on it does not force Quarkus, JPA, or any framework onto consumers. Foundation repos (`casehub-work-api`, `casehub-ledger-api`, etc.) may use `Path`, `Preferences`, `CurrentPrincipal` and other platform types in their own SPI signatures.
 
 **Do not define parallel path, scope, preference, or principal types.** `casehub-platform-api` owns `Path`, `SettingsScope`, `PreferenceKey`, `Preferences`, `PreferenceProvider`, `CurrentPrincipal`, and `GroupMembershipProvider`. Repos that need these concepts must depend on `casehub-platform-api` and implement its SPIs — they must not define their own equivalent types.
 
