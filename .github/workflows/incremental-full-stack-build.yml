@@ -68,6 +68,7 @@ jobs:
             git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/quarkus-langchain4j.git" quarkus-langchain4j
           git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/platform.git" casehub/platform
           git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/ledger.git" casehub/ledger
+          git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/eidos.git" casehub/eidos
           git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/connectors.git" casehub/connectors
           git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/work.git" casehub/work
           git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/qhorus.git" casehub/qhorus
@@ -85,6 +86,7 @@ jobs:
           P=$(git rev-parse HEAD)
           PL=$(git -C casehub/platform rev-parse HEAD)
           L=$(git -C casehub/ledger rev-parse HEAD)
+          EI=$(git -C casehub/eidos rev-parse HEAD)
           C=$(git -C casehub/connectors rev-parse HEAD)
           W=$(git -C casehub/work rev-parse HEAD)
           Q=$(git -C casehub/qhorus rev-parse HEAD)
@@ -94,6 +96,7 @@ jobs:
           echo "sha_parent=$P"     >> $GITHUB_OUTPUT
           echo "sha_platform=$PL" >> $GITHUB_OUTPUT
           echo "sha_ledger=$L"     >> $GITHUB_OUTPUT
+          echo "sha_eidos=$EI"     >> $GITHUB_OUTPUT
           echo "sha_connectors=$C" >> $GITHUB_OUTPUT
           echo "sha_work=$W"       >> $GITHUB_OUTPUT
           echo "sha_qhorus=$Q"     >> $GITHUB_OUTPUT
@@ -112,6 +115,7 @@ jobs:
           echo "::group::SHA manifest (pin these to reproduce this build)"
           echo "parent:     $P"
           echo "ledger:     $L"
+          echo "eidos:      $EI"
           echo "connectors: $C"
           echo "work:       $W"
           echo "qhorus:     $Q"
@@ -136,7 +140,7 @@ jobs:
         env:
           FORCE_REBUILD: ${{ inputs.force_rebuild }}
         run: |
-          MODULES=(parent platform ledger connectors work qhorus engine claudony)
+          MODULES=(parent platform ledger eidos connectors work qhorus engine claudony)
           [ "${{ inputs.include_applications }}" = "true" ] && MODULES+=(devtown aml clinical)
           if [ "$FORCE_REBUILD" = "true" ] || [ ! -f .incremental-state/shas.txt ]; then
             for m in "${MODULES[@]}"; do echo "sha_${m}=none" >> $GITHUB_OUTPUT; done
@@ -158,7 +162,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.m2/repository/io/casehub
-          key: m2-casehub-${{ steps.shas.outputs.sha_parent }}-${{ steps.shas.outputs.sha_platform }}-${{ steps.shas.outputs.sha_ledger }}-${{ steps.shas.outputs.sha_connectors }}-${{ steps.shas.outputs.sha_work }}-${{ steps.shas.outputs.sha_qhorus }}-${{ steps.shas.outputs.sha_engine }}-${{ steps.shas.outputs.sha_claudony }}
+          key: m2-casehub-${{ steps.shas.outputs.sha_parent }}-${{ steps.shas.outputs.sha_platform }}-${{ steps.shas.outputs.sha_ledger }}-${{ steps.shas.outputs.sha_eidos }}-${{ steps.shas.outputs.sha_connectors }}-${{ steps.shas.outputs.sha_work }}-${{ steps.shas.outputs.sha_qhorus }}-${{ steps.shas.outputs.sha_engine }}-${{ steps.shas.outputs.sha_claudony }}
           restore-keys: |
             m2-casehub-
 
@@ -239,6 +243,39 @@ jobs:
               cd casehub/ledger && mvn install --batch-mode $F $MAVEN_EXTRA ;;
           esac
           echo $((SECONDS - START)) > .build-times/ledger
+
+      - name: "Build: eidos"
+        id: eidos
+        continue-on-error: true
+        env:
+          CUR: ${{ steps.shas.outputs.sha_eidos }}
+          PRV: ${{ steps.prev.outputs.sha_eidos }}
+          CUR_L: ${{ steps.shas.outputs.sha_ledger }}
+          PRV_L: ${{ steps.prev.outputs.sha_ledger }}
+          SKIP_TESTS: ${{ inputs.skip_tests }}
+          SKIP_ITS: ${{ inputs.skip_integration_tests }}
+          MAVEN_EXTRA: ${{ inputs.maven_args }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          D=$(./scripts/incremental-build-decision.sh \
+            --module eidos --current-sha "$CUR" --previous-sha "${PRV:-none}" \
+            --dep "ledger:${CUR_L}:${PRV_L:-none}")
+          echo "decision=$D" >> $GITHUB_OUTPUT
+          START=$SECONDS
+          case "$D" in
+            SKIP) echo "⏭️  eidos: SKIP" ;;
+            TEST)
+              if [ "$SKIP_TESTS" = "true" ]; then echo "⏭️  eidos: SKIP (TEST — tests disabled)"
+              else
+                ITS=""; [ "$SKIP_ITS" = "true" ] && ITS="-DskipITs"
+                cd casehub/eidos && mvn test --batch-mode $ITS $MAVEN_EXTRA
+              fi ;;
+            BUILD)
+              F=""; [ "$SKIP_TESTS" = "true" ] && F="-DskipTests"
+              [ "$SKIP_ITS" = "true" ] && F="$F -DskipITs"
+              cd casehub/eidos && mvn install --batch-mode $F $MAVEN_EXTRA ;;
+          esac
+          echo $((SECONDS - START)) > .build-times/eidos
 
       - name: "Build: connectors"
         id: connectors
