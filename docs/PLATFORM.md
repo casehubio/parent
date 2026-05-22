@@ -182,6 +182,7 @@ casehub-parent              (BOM — publish first; all others import it)
 | `casehub-ledger` (runtime) | `casehub-work` | `ledger` | audit writes |
 | `casehub-ledger` (runtime) | `casehub-engine` | `ledger` | case audit writes |
 | `casehub-ledger` (runtime) | `devtown` | `app` | runtime dep |
+| `casehub-platform-expression` | `casehub-work` | `queues` | JQ expression evaluation (JQEvaluator) |
 | `casehub-connectors-core` | `casehub-work` | `notifications` | delivery SPI impl |
 | `casehub-connectors-core` | `devtown` | `app` | notification delivery |
 | `casehub-connectors-core` | `casehub-clinical` | `runtime` | sponsor notification delivery |
@@ -351,6 +352,7 @@ Rules that apply across all casehubio modules:
 | [Optional module pattern](protocols/optional-module-pattern.md) | Jandex library module; zero cost when absent |
 | [Quarkus test database](protocols/quarkus-test-database.md) | H2 `MODE=PostgreSQL`; Testcontainers for dialect validation |
 | [Submodule folder naming](protocols/universal/maven-submodule-folder-naming.md) | Short names — no repo prefix. `api` not `casehub-work-api` |
+| [Reactive-service parity](protocols/casehub/reactive-service-build-gating.md) | Every `Reactive*Service` must mirror its blocking counterpart — enforced in `casehub-ledger` via `BlockingReactiveParityTest` (ArchUnit 1.4.1) |
 
 Full index: [`docs/protocols/INDEX.md`](protocols/INDEX.md)
 

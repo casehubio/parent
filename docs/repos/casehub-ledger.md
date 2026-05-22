@@ -117,7 +117,8 @@ Bump criteria: model family change, persona behaviour change, scope change. Do N
 
 ## Current State
 
-- 192+ tests passing, native image validated
+- 449 tests passing, native image validated
+- Reactive/blocking service parity enforced at build time via `BlockingReactiveParityTest` (ArchUnit 1.4.1) — auto-discovers all `Reactive*Service` classes and asserts bidirectional method parity and `Uni<T>` returns
 - All epics complete: MMR, PROV-DM, privacy/pseudonymisation, EigenTrust, trust routing signals, OTel auto-wiring
 - No deployed production instances — schema migrations can be rewritten in place (no incremental migration scripts needed)
 - Quarkiverse submission pending (eligibility discussion ongoing)
