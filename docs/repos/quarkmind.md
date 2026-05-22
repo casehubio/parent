@@ -1,14 +1,17 @@
 # QuarkMind
 
 **GitHub:** [mdproctor/quarkmind](https://github.com/mdproctor/quarkmind)
-**Tier:** Application
-**Status:** Active R&D — living lab
+**Tier:** Application — Living Lab
+**Status:** Active — SC2 layer through Phase 6 (replay-accurate emulation); harness layer documentation in progress
+**Note:** In the `mdproctor/` namespace, not `casehubio/` — a personal project using the CaseHub pattern. Does not participate in the casehubio CI pipeline.
 
 ## What It Is
 
 A StarCraft II game AI application built on the CaseHub agentic harness. Coordinates plugin agents (strategy, economics, tactics, scouting) via CaseHub's case engine and blackboard, with Drools for rule-based reasoning and Quarkus Flow for durable task execution. Explicitly a living lab — a testbed for CaseHub, Drools, and Quarkus Flow integration patterns in a real-time domain.
 
 The SC2 game loop is domain-specific. The CaseHub harness underneath — CaseFile blackboard, plugin coordination, adaptive agent selection — is the same foundation as AML, clinical, and devtown. QuarkMind demonstrates that the harness holds outside regulated enterprise domains, across diverse timing characteristics (game AI operates at millisecond tick granularity vs days for case management).
+
+Its primary value in the application family is as a **proof of generality**: the same harness pattern that coordinates AML investigation specialists and clinical trial monitors also coordinates real-time game AI agents — without changing the foundation.
 
 ## What It Owns
 
@@ -53,6 +56,10 @@ quarkmind
   → Drools           (rule-based strategy, tactics, scouting)
   → Quarkus Flow     (durable economics build order execution)
 ```
+
+## Current State
+
+Phase 6 complete: replay-accurate `EmulatedGame` with sub-tick train-timing calibrated from replay ground truth (`SC2TrainTimeCalibrationTest` — range-bounded modal calibration from 29 AI Arena replays). `ReplayValidationHarness` shows `firstUnitDivergenceTick=150`; remaining gap is vespene income model (#148). Harness LAYER-LOG documentation pending.
 
 ## What It Does NOT Own
 

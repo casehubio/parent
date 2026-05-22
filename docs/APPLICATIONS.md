@@ -27,6 +27,7 @@ The pattern: **bring your domain, use the platform, modify nothing below.**
 | `casehub-devtown` | [casehubio/devtown](https://github.com/casehubio/devtown) | AI-assisted software development — PR review, merge queue, trust-weighted reviewer routing | Active |
 | `casehub-aml` | [casehubio/aml](https://github.com/casehubio/aml) | Anti-money laundering investigation — FinCEN-compliant audit, SAR workflow, adaptive investigation paths | Active |
 | `casehub-clinical` | [casehubio/clinical](https://github.com/casehubio/clinical) | Clinical trial coordination — GCP/FDA compliance, multi-site sub-cases, adverse event escalation | Active |
+| `quarkmind` | [mdproctor/quarkmind](https://github.com/mdproctor/quarkmind) | StarCraft II game AI — living lab proving the CaseHub harness pattern at millisecond game-loop granularity outside regulated domains | Active |
 
 ---
 
@@ -52,6 +53,7 @@ See [PLATFORM.md — Build Order](PLATFORM.md) for the full dependency graph.
 | Software dev domain logic (PR review, merge queue, capability tags) | `casehub-devtown` |
 | AML domain logic (investigation, SAR workflow, FinCEN compliance) | `casehub-aml` |
 | Clinical trial domain logic (protocol, site management, GCP/FDA) | `casehub-clinical` |
+| SC2 game AI (strategy, economics, tactics, scouting plugin agents) | `quarkmind` |
 
 All other capabilities live in the foundation. See [PLATFORM.md — Capability Ownership](PLATFORM.md).
 
@@ -81,3 +83,4 @@ foundation, not as a shared application library.
 | `casehub-devtown` | https://raw.githubusercontent.com/casehubio/parent/main/docs/repos/casehub-devtown.md |
 | `casehub-aml` | https://raw.githubusercontent.com/casehubio/parent/main/docs/repos/casehub-aml.md |
 | `casehub-clinical` | https://raw.githubusercontent.com/casehubio/parent/main/docs/repos/casehub-clinical.md |
+| `quarkmind` | https://raw.githubusercontent.com/casehubio/parent/main/docs/repos/quarkmind.md |
