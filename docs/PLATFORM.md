@@ -355,7 +355,7 @@ Rules that apply across all casehubio modules:
 | [Optional module pattern](protocols/optional-module-pattern.md) | Jandex library module; zero cost when absent |
 | [Quarkus test database](protocols/quarkus-test-database.md) | H2 `MODE=PostgreSQL`; Testcontainers for dialect validation |
 | [Submodule folder naming](protocols/universal/maven-submodule-folder-naming.md) | Short names — no repo prefix. `api` not `casehub-work-api` |
-| [Reactive-service parity](protocols/casehub/reactive-service-build-gating.md) | Every `Reactive*Service` must mirror its blocking counterpart — enforced in `casehub-ledger` via `BlockingReactiveParityTest` (ArchUnit 1.4.1) |
+| [Reactive-service build gating](protocols/casehub/reactive-service-build-gating.md) | Extensions gate the reactive tier via `@IfBuildProperty(name="casehub.<module>.reactive.enabled", stringValue="true")` backed by a `@ConfigRoot(phase=BUILD_TIME)` config in deployment/. Default false — blocking-only consumers pay no Hibernate Reactive cost. Write methods use `@WithTransaction`; no `withSafeContext` wrapper needed with Panache repos. Every `Reactive*Service` must mirror its blocking counterpart (ArchUnit 1.4.1, casehub-ledger). |
 | [Persistence-backend CDI priority](protocols/universal/persistence-backend-cdi-priority.md) | `@DefaultBean` → `@ApplicationScoped` → `@Alternative @Priority(1)` — backend activates by classpath presence, no consumer changes |
 
 Full index: [`docs/protocols/INDEX.md`](protocols/INDEX.md)
