@@ -59,6 +59,7 @@ Check how the same concern is handled in the two or three most similar places in
 - Module structure: three-tier rule — pure-Java SPI / core library (no JPA) / full extension. SPI method signatures must not expose heavy external SDK types. See [`docs/protocols/universal/module-tier-structure.md`](/Users/mdproctor/claude/casehub/parent/docs/protocols/universal/module-tier-structure.md).
 - **Persistence module split:** JPA entities must not co-locate with domain SPIs — forces all consumers to configure a datasource. See [`docs/protocols/universal/module-tier-structure.md`](protocols/universal/module-tier-structure.md).
 - **SPI defaults — two patterns:** *Operational SPIs* (`WorkerProvisioner`, `CaseChannelProvider`, `WorkerStatusListener`) get a no-op default — skipping the operation leaves the system functional. *Vocabulary/registry SPIs* (`CapabilityRegistry` and equivalents) get a *populated* default expressing domain vocabulary — an empty implementation breaks routing and selection immediately. Decision rule: can the system function correctly with an empty/do-nothing implementation? Yes → no-op. No → populated default. Both live in the same pure-Java module as the SPI; the app module provides the `@ApplicationScoped` wrapper.
+- **`casehub-platform-api` is not a shared types bucket.** It exists to avoid duplication of shared concepts across repos that should not depend on each other. A type belongs there only if multiple peer repos need it AND cannot share it by depending on a single domain `*-api` module. `ActorType`, `CurrentPrincipal`, `Path`, `PreferenceKey` qualify. Domain types like `AgentDescriptor`, `WorkItem`, or `LedgerEntry` do not — repos that need them depend on the domain's own `api/` module (`casehub-eidos-api`, `casehub-work-api`, `casehub-ledger-api`). See [`docs/protocols/casehub/platform-api-scope.md`](protocols/casehub/platform-api-scope.md).
 - **Application tier rule:** domain logic (git, PRs, clinical protocols, AML investigations) belongs in application repos. Foundation repos must remain domain-agnostic. If it requires knowledge of a specific business domain, it does not belong in foundation.
 - **Submodule folder naming:** short descriptive names — no repo prefix. `api` not `casehub-work-api`; `runtime` not `casehub-ledger-runtime`. See [`docs/protocols/universal/maven-submodule-folder-naming.md`](protocols/universal/maven-submodule-folder-naming.md).
 - **Agent mesh alignment:** when implementing a new MCP tool or channel interaction, verify it aligns with the normative 3-channel layout (work/observe/oversight) and 4-layer accountability framework. See [`docs/repos/claudony.md`](repos/claudony.md) §Agent Mesh Framework and the [Claudony mesh spec](https://github.com/casehubio/claudony/blob/main/docs/superpowers/specs/2026-04-27-claudony-agent-mesh-framework.md).
@@ -141,6 +142,7 @@ Four tiers, always kept separate:
 | `casehub-connectors` | [casehubio/connectors](https://github.com/casehubio/connectors) | Outbound message connectors (Slack, Teams, SMS, email) | Foundation |
 | `casehub-engine` | [casehubio/engine](https://github.com/casehubio/engine) | Hybrid choreography+blackboard orchestration engine | Orchestration |
 | `claudony` | [casehubio/claudony](https://github.com/casehubio/claudony) | Remote Claude CLI sessions + unified ecosystem dashboard | Integration |
+| `casehub-eidos` | [casehubio/eidos](https://github.com/casehubio/eidos) | Agent identity — descriptor, discovery registry, vocabulary system, system prompt generation | Foundation |
 | `casehub-poc` | [casehubio/casehub](https://github.com/casehubio/casehub) | **Retiring** — original POC; no new features | — |
 
 Application tier (devtown, aml, clinical): see [APPLICATIONS.md](APPLICATIONS.md).
@@ -156,7 +158,8 @@ casehub-parent              (BOM — publish first; all others import it)
   casehub-connectors        (no casehubio deps)
   casehub-work              (api: depends on casehub-platform-api; core: zero other casehubio deps; ledger module: depends on casehub-ledger)
   casehub-qhorus            (depends on casehub-ledger)
-  casehub-engine            (depends on casehub-work-core + optionally casehub-ledger)
+  casehub-eidos             (depends on casehub-ledger; casehub-eidos-api depends on nothing)
+  casehub-engine            (depends on casehub-work-core + optionally casehub-ledger + optionally casehub-eidos-api)
   claudony                  (depends on casehub-qhorus + implements casehub-engine SPIs)
 
   — Application tier (opt-in, off by default in CI): see APPLICATIONS.md —
