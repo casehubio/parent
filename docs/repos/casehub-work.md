@@ -17,7 +17,7 @@ A `WorkItem` is deliberately NOT called `Task` — CNCF Serverless Workflow and 
 
 | Module | Type | Purpose |
 |---|---|---|
-| `casehub-work-api` | Pure-Java SPI (no Quarkus) | All SPIs: worker selection, registry, workload provision, escalation, spawn, skill profiling, notification channel |
+| `casehub-work-api` | Pure-Java SPI (no Quarkus) | All SPIs: worker selection, registry, workload provision, SLA breach policy, spawn, skill profiling, notification channel. Depends on `casehub-platform-api` for `Path` and `Preferences` used in `SlaBreachContext`. |
 | `casehub-work-core` | Jandex library (no JPA) | `WorkBroker` and built-in selection strategies — used directly by casehub-engine |
 | `runtime` | Full Quarkus extension | WorkItem entity, services, REST API, filter engine |
 | `casehub-work-ledger` | Optional module | Attaches casehub-ledger for WorkItem ledger entries |
@@ -36,6 +36,8 @@ A `WorkItem` is deliberately NOT called `Task` — CNCF Serverless Workflow and 
 
 10-status lifecycle from creation through terminal states (pending, assigned, in-progress, completed, cancelled, expired, delegated, rejected, on-hold, claim-expired).
 
+**Key field:** `scope VARCHAR(255)` (V31 migration) — hierarchical scope path for SLA preference resolution via `casehub-platform-api`'s `Path` type; null = org root. Set by callers; propagated from casehub-engine via `HumanTaskTarget.scope` (engine#330).
+
 See `docs/DESIGN.md` for status enumeration and field model.
 
 ### Core Services
@@ -43,6 +45,8 @@ See `docs/DESIGN.md` for status enumeration and field model.
 Services cover: WorkItem lifecycle management (create, claim, complete, delegate, expire, cancel) with schema validation against templates; template CRUD and instantiation with payload override support; worker assignment via pluggable selection strategies; conflict-of-interest exclusion policy; M-of-N parallel group completion coordination; child spawning with idempotency; label-based filter routing; and SLA compliance reporting.
 
 See `docs/DESIGN.md` for service class structure and the M-of-N coordination model.
+
+**Inbox query:** `WorkItemStore.scanRoots(assignee, candidateUser, candidateGroups)` — three independent OR predicates; returns root WorkItems (no `parentId`) including parents of visible children.
 
 ### REST API
 
@@ -56,11 +60,25 @@ A lifecycle event fires on every status transition, carrying the transition deta
 
 See `docs/DESIGN.md` for event payload shape.
 
+### SPI Reference (casehub-work-api)
+
+| SPI | Method | Description |
+|---|---|---|
+| `WorkerSelectionStrategy` | `select(SelectionContext, List<WorkerCandidate>)` | Pluggable routing — LeastLoaded (default), ClaimFirst, RoundRobin built-in |
+| `WorkerRegistry` | `resolveGroup(String)` | Resolves candidateGroup names to `WorkerCandidate` objects |
+| `WorkloadProvider` | `getActiveWorkCount(String)` | Active WorkItem count per worker (used by LeastLoaded) |
+| `SlaBreachPolicy` | `onBreach(SlaBreachContext) → BreachDecision` | SLA breach handling: returns `Fail`, `EscalateTo(groups, deadline)`, `Extend(by)`, or `Chained`. Replaces removed `EscalationPolicy`. |
+| `ExclusionPolicy` | `check(userId, excludedUsers) → PolicyDecision` | Conflict-of-interest user exclusion |
+| `SpawnPort` | `spawn(SpawnRequest) → SpawnResult` | Child WorkItem creation with idempotency |
+| `AssignmentTrigger` | enum | Values: `CREATED`, `RELEASED`, `DELEGATED`, `SLA_ESCALATED` — strategies subscribe via `triggers()` |
+
 ---
 
 ## Depends On
 
-- `casehub-ledger` — optional only, via `casehub-work-ledger` module. Core has zero casehubio deps.
+- `casehub-platform-api` — production dep in `casehub-work-api` for `Path` and `Preferences` types in `SlaBreachContext`. Zero-dep pure-Java; does not force Quarkus on consumers.
+- `casehub-platform` (mock module) — `test` scope only in `runtime` and `casehub-work-queues`; provides `MockPreferenceProvider @DefaultBean` for `@QuarkusTest` augmentation.
+- `casehub-ledger` — optional only, via `casehub-work-ledger` module. Core has zero other casehubio deps.
 
 ## Depended On By
 
@@ -97,7 +115,7 @@ The `WorkBroker` is generic: it routes any work unit, not just WorkItems.
 
 ## Current State
 
-- 637+ tests passing in runtime module; native image validated at 0.084s startup
+- 737+ tests passing in runtime module; native image validated at 0.084s startup
 - All major epics complete: Business-Hours Deadlines (#101), SLA Compliance Reporting (#104), Multi-Instance Tasks (#106)
 - Pending: `casehub-work-qhorus` adapter (MCP tools for agent-driven approval flows)
 
