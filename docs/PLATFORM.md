@@ -353,6 +353,7 @@ Rules that apply across all casehubio modules:
 | [Quarkus test database](protocols/quarkus-test-database.md) | H2 `MODE=PostgreSQL`; Testcontainers for dialect validation |
 | [Submodule folder naming](protocols/universal/maven-submodule-folder-naming.md) | Short names — no repo prefix. `api` not `casehub-work-api` |
 | [Reactive-service parity](protocols/casehub/reactive-service-build-gating.md) | Every `Reactive*Service` must mirror its blocking counterpart — enforced in `casehub-ledger` via `BlockingReactiveParityTest` (ArchUnit 1.4.1) |
+| [Persistence-backend CDI priority](protocols/universal/persistence-backend-cdi-priority.md) | `@DefaultBean` → `@ApplicationScoped` → `@Alternative @Priority(1)` — backend activates by classpath presence, no consumer changes |
 
 Full index: [`docs/protocols/INDEX.md`](protocols/INDEX.md)
 
