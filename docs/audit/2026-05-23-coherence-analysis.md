@@ -17,9 +17,9 @@
 | M8 | Normative enforcement | 30, 32 | 2/2 ✅ |
 | L1 | Verification required | 5 | 1/1 ✅ |
 | L2 | Documentation + patterns | 11, 12 | 2/2 ✅ |
-| L3 | Structural debt | 13, 19, 27 | 0/3 |
+| L3 | Structural debt | 13, 19, 27 | 3/3 ✅ |
 
-**Total:** 20 / 23 findings complete
+**Total:** 23 / 23 findings complete ✅
 
 ## Findings
 
@@ -1262,3 +1262,173 @@ like work) would get an `AmbiguousResolutionException` at startup — two beans 
 ### Issue
 
 casehubio/parent#58
+
+---
+
+## Batch L3 — Structural debt (findings 13, 19, 27)
+
+---
+
+## Finding 13 — No cross-repo transaction coordination
+
+**Status:** Confirmed as a structural constraint; failure modes not documented
+**Batch:** L3
+**Repos:** casehub-engine, casehub-ledger, quarkus-work
+
+### Verification
+
+- **Code read:** `CaseLedgerEventCapture.java` (engine), `LedgerEventCapture.java` (work)
+- **Evidence:**
+  - `CaseLedgerEventCapture.onCaseLifecycleEvent()` is `@ObservesAsync @Transactional` —
+    writes in a **separate transaction** from the case state update. Javadoc explicitly
+    documents this: "Each write is in its own transaction — eventual consistency with respect
+    to the case state update is acceptable for an audit log."
+  - `LedgerEventCapture.onWorkItemEvent()` (work) is `@Observes @Transactional` — runs in
+    the **same transaction** as the lifecycle event. WorkItem state and ledger are consistent.
+  - There is no distributed transaction coordinator (XA, saga, outbox) anywhere in the platform.
+  - If the engine async ledger write fails after the case state commits, the audit ledger is
+    incomplete. No retry mechanism, no dead letter queue for ledger writes specifically, no
+    alert on ledger write failure (only a `LOG.warnf`).
+
+### Root Cause
+
+The platform consists of separate services with separate databases. Distributed transactions
+(XA) are impractical at this scale. The design choice (eventual consistency for ledger, same-tx
+for work) is correct but the failure path — what happens when the eventual write fails — is
+neither documented nor handled beyond a log warning.
+
+### Blast Radius
+
+A `CaseLedgerEventCapture` failure produces a case state without a corresponding ledger entry.
+This is a compliance gap: the case ran but has no audit record of the transition. The failure
+is silent (LOG.warn, not an alert). Under the dual-trail audit protocol (parent#52), the ledger
+trail is the compliance record — a missing entry means a missing compliance record.
+
+### Implementation Guidance
+
+This is a structural constraint with no cheap fix. Options in ascending cost:
+
+1. **Document the failure path (immediate):** Add to the garden protocol
+   (`dual-trail-audit-pattern.md`) a section on the eventual consistency gap: what can fail,
+   what the observable symptom is, and how to detect missing ledger entries
+   (e.g. cross-check `EventLog` vs `CaseLedgerEntry` count for a case).
+2. **Retry on failure (low cost):** Change the `LOG.warnf` in `CaseLedgerEventCapture` to
+   also fire a `LedgerWriteFailedEvent` that a retry handler can observe with back-off.
+3. **Outbox pattern (medium cost):** Write ledger entries to an `outbox` table in the primary
+   transaction; a background job reliably moves them to the ledger. Guarantees at-least-once
+   without distributed transactions.
+
+**Scale:** XS (documentation) / S (retry) / M (outbox)
+**Complexity:** Low (docs) / Med (outbox — schema change, background job)
+
+### Issue
+
+casehubio/parent#59
+
+---
+
+## Finding 19 — Three independent deadline enforcement implementations
+
+**Status:** Stale — three schedulers enforce distinct concerns; unification would be over-abstraction
+**Batch:** L3
+**Repos:** casehub-engine (resilience), quarkus-work (runtime), quarkus-qhorus (runtime)
+
+### Verification
+
+- **Code read:** `ExpiryCleanupJob.java`, `CaseTimeoutEnforcer.java`, `WatchdogScheduler.java`
+- **Evidence:**
+  - `ExpiryCleanupJob` (work): polls `WorkItem.expiresAt` and claim deadlines → fires
+    `ExpiryLifecycleService` → SlaBreachPolicy decision (EXPIRE/ESCALATE/EXTEND).
+  - `CaseTimeoutEnforcer` (engine): polls all cached `CaseInstance` in `RUNNING` state →
+    checks `PropagationContext.budget` → faults cases that exceed their total budget.
+  - `WatchdogScheduler` (qhorus): evaluates agent obligation conditions (BARRIER_STUCK,
+    APPROVAL_PENDING, AGENT_STALE, CHANNEL_IDLE, QUEUE_DEPTH) → fires alerts to channels.
+  - These enforce **three different time constraints on three different resources**:
+    WorkItem SLA deadlines, case execution budgets, and agent obligation monitoring.
+    They share no code because they share no domain.
+
+### Root Cause
+
+The audit characterised these as "three independent deadline enforcement implementations"
+based on surface similarity (all run on a scheduler). The underlying concerns are not the same.
+
+### Assessment
+
+The finding is overstated. Unifying `ExpiryCleanupJob`, `CaseTimeoutEnforcer`, and
+`WatchdogScheduler` into a single "deadline enforcement framework" would be premature
+abstraction — each has different trigger conditions, different policies, different actions.
+No issue is warranted. The real structural note: all three use a poll model; none use a push
+(event-driven) model. For high workloads, event-driven would scale better, but that is a
+performance concern, not a coherence concern.
+
+**Scale:** N/A — no action recommended
+**Complexity:** N/A
+
+### Issue
+
+None — finding is stale. No architectural unification is warranted.
+
+---
+
+## Finding 27 — No inbound connector
+
+**Status:** Confirmed
+**Batch:** L3
+**Repos:** casehub-connectors
+
+### Verification
+
+- **Code read:** `Connector.java` (connectors/core), connectors module structure
+- **Evidence:**
+  - `casehub-connectors` contains two modules: `core` and `email`. No `slack`, `teams`,
+    `sms`, or `webhook` inbound modules exist.
+  - `Connector` interface has two methods: `id()` and `send(ConnectorMessage)` — outbound only.
+    Search for `receive` in connectors: **zero results**.
+  - No `InboundConnector` SPI, no webhook handler, no routing mechanism for inbound events.
+  - The human input paths analysis (finding 24 — parent#53) confirmed: all human input
+    requires direct API calls or Qhorus messages (via claudony). No path from external
+    Slack/email/SMS to WorkItem creation or case start exists.
+
+### Root Cause
+
+`casehub-connectors` was built to solve the outbound delivery problem (send notifications).
+The inbound problem — receive a message from Slack/email and create a WorkItem or start a case
+— was never addressed. claudony partially fills this for MCP-connected Claude agents, but
+there's no equivalent for human-initiated messages from external systems.
+
+### Blast Radius
+
+Platform automation workflows cannot be triggered by external events. Examples that cannot be
+built without custom integration code:
+- Customer emails support@domain → a CaseHub case is created
+- Slack message in an alert channel → a WorkItem is created and assigned
+- SMS reply → a Qhorus COMMAND is dispatched
+
+Inbound connectors are required for bidirectional integration with human-facing channels.
+
+### Implementation Guidance
+
+1. Define `InboundConnector` SPI in `casehub-connectors/core`:
+   ```java
+   public interface InboundConnector {
+       String id();
+       void subscribe(InboundMessageHandler handler);
+   }
+   public interface InboundMessageHandler {
+       void onMessage(InboundMessage message); // includes sender, content, channelRef
+   }
+   ```
+2. Implement `WebhookInboundConnector` — a generic webhook receiver that maps inbound HTTP
+   POST to `InboundMessage`. Slack, Teams, and email providers implement this via their
+   webhook formats.
+3. Route `InboundMessage` to: (a) `WorkItemService.create()` for task initiation, or (b)
+   `CaseHubRuntime.startCase()` for case initiation, or (c) `MessageService.dispatch()` for
+   Qhorus message injection.
+4. Routing could be configured per connector via channel mappings.
+
+**Scale:** M — new SPI + one generic webhook implementation + routing
+**Complexity:** Med — inbound routing requires mapping decisions (to work? to engine? to qhorus?)
+
+### Issue
+
+casehubio/connectors#4
