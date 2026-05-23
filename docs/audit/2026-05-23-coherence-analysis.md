@@ -9,7 +9,7 @@
 |-------|-------|----------|------|
 | M1 | Worker selection intelligence | 2, 14, 15 | 3/3 ✅ |
 | M2 | Audit trail documentation | 4, 6 | 2/2 ✅ |
-| M3 | Notification + signal silo | 8, 9, 24, 25 | 0/4 |
+| M3 | Notification + signal silo | 8, 9, 24, 25 | 4/4 ✅ |
 | M4 | Integration boundary semantics | 16, 17 | 0/2 |
 | M5 | SpawnGroup / Stage gap | 20 | 0/1 |
 | M6 | Provenance + observability | 23, 29 | 0/2 |
@@ -19,7 +19,7 @@
 | L2 | Documentation + patterns | 11, 12 | 0/2 |
 | L3 | Structural debt | 13, 19, 27 | 0/3 |
 
-**Total:** 5 / 23 findings complete
+**Total:** 9 / 23 findings complete
 
 ## Findings
 
@@ -326,3 +326,198 @@ computation (which reads only from the ledger) — wrong scores, wrong routing d
 ### Issue
 
 casehubio/parent#52
+
+---
+
+## Batch M3 — Notification + signal silo (findings 8, 9, 24, 25)
+
+Cross-finding note: all four findings are facets of the same broken pipeline. The platform has
+the pieces — WatchdogScheduler, Connector SPI, CaseHubReactor.signal(), WorkEventType — but they
+are not connected. Findings 8 and 9 are the output/input gaps at the boundaries of quarkus-qhorus
+and quarkus-work respectively; finding 24 is the architectural consequence of both gaps; finding
+25 is the vocabulary gap that results from signals having no lifecycle representation in work.
+
+Findings 8, 9, 24 are filed as a single cross-repo issue. Finding 25 is filed separately in work.
+
+---
+
+## Finding 8 — Watchdog alerts reach Qhorus channels only, not human-facing delivery
+
+**Status:** Confirmed
+**Batch:** M3
+**Repos:** quarkus-qhorus, casehub-connectors
+
+### Verification
+
+- **Code read:** `WatchdogEvaluationService.fireAlert()`, `WatchdogScheduler.evaluate()`
+- **Evidence:**
+  - `fireAlert()` calls `channelService.findByName(w.notificationChannel)` then
+    `messageService.dispatch(MessageDispatch.builder().channelId(...).type(STATUS)...)`.
+  - `MessageDispatch` goes to a Qhorus internal `Channel` — an in-process message bus for agents.
+    No bridge to `casehub-connectors` exists anywhere in `WatchdogEvaluationService`.
+  - If `w.notificationChannel` doesn't exist, `fireAlert()` returns silently — no fallback.
+
+### Root Cause
+
+`WatchdogEvaluationService` was written targeting Qhorus channels as its notification primitive.
+`casehub-connectors` (the human-facing delivery SPI) was never wired to the watchdog output path.
+
+### Blast Radius
+
+Stalled-obligation alerts, stuck barrier alerts, approval-pending warnings, agent staleness, and
+queue depth alerts all fire into internal channels that only connected agents can observe. Human
+operators are never notified. The watchdog is functionally invisible to humans.
+
+### Implementation Guidance
+
+1. Add an optional `Connector` delivery path to `WatchdogEvaluationService`: inject
+   `@Any Instance<Connector>` and call `send(ConnectorMessage)` for each active connector.
+2. Alternatively, emit a `WatchdogAlertEvent` CDI event from `fireAlert()`; a `ConnectorAlertBridge`
+   bean in a separate integration module observes it and dispatches via `Connector`. Keeps
+   qhorus core free of the connectors dependency.
+3. **Depends on parent#5** — the right Connector API should be in place before wiring.
+
+**Scale:** M — new integration bridge between qhorus and connectors
+**Complexity:** Med — clean path once parent#5 lands
+
+### Issue
+
+casehubio/parent#53
+
+---
+
+## Finding 9 — WorkItem escalation has no path back to CaseHubReactor
+
+**Status:** Confirmed
+**Batch:** M3
+**Repos:** quarkus-work, casehub-engine
+
+### Verification
+
+- **Code read:** `ExpiryLifecycleService.executeEscalateTo()`, `CaseHubReactor.signal()`,
+  `PendingWorkRegistry`
+- **Evidence:**
+  - `executeEscalateTo()` calls `fireLifecycleEvent("ESCALATED", item)` and
+    `slaBreachEventBus.fire(new SlaBreachEvent(...))` — both stay within quarkus-work CDI context.
+  - `CaseHubReactor.signal()` exists in engine, exposed via `CaseHubRuntimeImpl.signal()`, but
+    nothing in quarkus-work calls it.
+  - `PendingWorkRegistry` future is only completed on success or failure — not on escalation.
+    A case waiting on an escalated WorkItem remains in `WAITING` state indefinitely.
+
+### Root Cause
+
+`ExpiryLifecycleService` handles escalation within the quarkus-work domain. No adapter bridges
+the escalation event to the engine's signal path. `PendingWorkRegistry` has no escalation slot.
+
+### Blast Radius
+
+Cases in `WAITING` freeze when their WorkItem escalates. The engine cannot react (reroute, extend
+deadline, fault the case). Any case definition expecting to handle escalation is broken.
+
+### Implementation Guidance
+
+1. Define `CaseSignalSink` SPI in `casehub-engine-api` (or `quarkus-work-api`):
+   `void onWorkItemEscalated(UUID workItemId, String correlationKey, List<String> groups)`.
+2. Implement in `casehub-engine`: look up the case awaiting `correlationKey` in
+   `PendingWorkRegistry`, call `CaseHubReactor.signal(caseId, "escalation", payload)`.
+3. In `ExpiryLifecycleService.executeEscalateTo()`, inject `@Any Instance<CaseSignalSink>`
+   and call if present. quarkus-work acquires no hard dependency on engine.
+
+**Scale:** M — new SPI + engine implementation + one call site in work
+**Complexity:** High — cross-repo SPI design; must not create hard dependency work→engine
+
+### Issue
+
+casehubio/parent#53
+
+---
+
+## Finding 24 — Three disconnected human input paths
+
+**Status:** Confirmed
+**Batch:** M3
+**Repos:** casehub-engine, quarkus-qhorus, quarkus-work
+
+### Verification
+
+- **Code read:** `CaseHubReactor.signal()`, `CaseHubRuntimeImpl.signal()`,
+  `MessageService.dispatch()`, `PendingWorkRegistry`
+- **Evidence:**
+  1. **WorkItem completion** → `PendingWorkRegistry.complete(correlationKey)` → engine future.
+     Works only for work the engine explicitly submitted and is awaiting.
+  2. **Qhorus human message** → `MessageService.dispatch()` → Qhorus `Channel` only.
+     No bridge to `CaseHubReactor.signal()`.
+  3. **Direct signal** → `CaseHubRuntimeImpl.signal()` → Vert.x `SIGNAL_RECEIVED`. Works if
+     the caller knows `caseId` and `path`, but nothing in Qhorus or escalation path calls it.
+  - Paths 1 and 3 reach the engine; path 2 does not. Paths 2 and 3 do not interact with the
+    WorkItem lifecycle. Nothing unifies them.
+
+### Root Cause
+
+Each path was built independently to solve a specific problem. No unifying design was ever
+produced; each is a vertical slice with no lateral bridges.
+
+### Blast Radius
+
+Human operators cannot inject decisions into running cases via Qhorus messages. WorkItem
+escalation doesn't return control to the engine. Any use case requiring cross-path coordination
+(e.g. "human responds in Qhorus to unblock a waiting case") cannot be built without new wiring.
+
+### Implementation Guidance
+
+**Short term:**
+1. Bridge Qhorus message → engine: when a `Message` arrives on a channel carrying a `caseId`
+   header, call `CaseHubRuntimeImpl.signal(caseId, ...)`. A `QhorusCaseBridge` bean in a
+   `casehub-engine-qhorus` integration module observes `MessageDispatchedEvent`.
+2. Bridge WorkItem escalation → engine via `CaseSignalSink` SPI (finding 9).
+
+**Long term:**
+A `CaseSignalBus` SPI — single point of entry for all external inputs to a running case. Paths
+1, 2, and 3 become adapters over the bus. Case definitions handle `onSignal(Signal)` regardless
+of origin.
+
+**Scale:** L — three-path unification; short-term bridges are M each
+**Complexity:** High — cross-repo coordination; signal semantics must be defined first
+
+### Issue
+
+casehubio/parent#53
+
+---
+
+## Finding 25 — WorkEventType has no SIGNAL_RECEIVED
+
+**Status:** Confirmed
+**Batch:** M3
+**Repos:** quarkus-work
+
+### Verification
+
+- **Code read:** `WorkEventType.java`
+- **Evidence:** Values: CREATED, ASSIGNED, STARTED, COMPLETED, REJECTED, DELEGATED, RELEASED,
+  SUSPENDED, RESUMED, CANCELLED, EXPIRED, CLAIM_EXPIRED, SPAWNED, ESCALATED. No SIGNAL_RECEIVED.
+
+### Root Cause
+
+Signals as a WorkItem concept don't exist yet — the input paths are not wired (finding 24).
+The vocabulary gap is a direct consequence of the architectural gap.
+
+### Blast Radius
+
+When findings 9 and 24 are resolved and signals can flow into WorkItems, the `WorkItemLedgerEntry`
+and `AuditEntry` trails will have no event type to record signal receipt. A signal that changes
+WorkItem routing or state will leave no record in the compliance trail.
+
+### Implementation Guidance
+
+1. Add `SIGNAL_RECEIVED` to `WorkEventType` — trivial enum addition, zero risk.
+2. When the signal input path exists, call `audit()` and fire `WorkItemLifecycleEvent` with
+   `SIGNAL_RECEIVED` on receipt.
+3. **Implement after finding 24** — the enum can be added now; the wiring waits.
+
+**Scale:** XS — one enum value; lifecycle wiring is XS–S on top
+**Complexity:** Low — purely additive
+
+### Issue
+
+casehubio/work#221
