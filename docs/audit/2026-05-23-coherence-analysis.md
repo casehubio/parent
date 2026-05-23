@@ -8,7 +8,7 @@
 | Batch | Theme | Findings | Done |
 |-------|-------|----------|------|
 | M1 | Worker selection intelligence | 2, 14, 15 | 3/3 ✅ |
-| M2 | Audit trail documentation | 4, 6 | 0/2 |
+| M2 | Audit trail documentation | 4, 6 | 2/2 ✅ |
 | M3 | Notification + signal silo | 8, 9, 24, 25 | 0/4 |
 | M4 | Integration boundary semantics | 16, 17 | 0/2 |
 | M5 | SpawnGroup / Stage gap | 20 | 0/1 |
@@ -19,7 +19,7 @@
 | L2 | Documentation + patterns | 11, 12 | 0/2 |
 | L3 | Structural debt | 13, 19, 27 | 0/3 |
 
-**Total:** 3 / 23 findings complete
+**Total:** 5 / 23 findings complete
 
 ## Findings
 
@@ -205,3 +205,124 @@ becomes likely and debugging is difficult.
 ### Issue
 
 casehubio/work#220
+
+---
+
+## Batch M2 — Audit trail documentation (findings 4, 6)
+
+Cross-finding note: findings 4 and 6 are the same undocumented pattern in two different repos.
+Both repos have an operational trail (EventLog / AuditEntry) and a compliance ledger
+(CaseLedgerEntry / WorkItemLedgerEntry). The split makes architectural sense but is invisible
+to anyone reading the code. Both are addressed by the same protocol and the same javadoc fix.
+
+---
+
+## Finding 4 — casehub-engine has two audit trails, split undocumented
+
+**Status:** Confirmed
+**Batch:** M2
+**Repos:** casehub-engine, casehub-ledger
+
+### Verification
+
+- **Code read:** `EventLog.java`, `CaseLedgerEntry.java`, `CaseLedgerEventCapture.java`,
+  `EventLogRepository`, `WorkerContextProvider` javadoc
+- **Evidence:**
+  - `EventLog`: plain domain object with `caseId`, `eventType` (`CaseHubEventType` enum),
+    `workerId`, `timestamp`, `metadata (JsonNode)`. No hash chain. Written synchronously by
+    `WorkOrchestrator` and `CaseStatusChangedHandler` via `EventLogRepository`. Javadoc says
+    "Plain domain object for an **immutable** audit event" — no hash-chain, so "immutable"
+    means only append-only, not tamper-evident.
+  - `CaseLedgerEntry`: extends `LedgerEntry` (Merkle-chained, `sequenceNumber`, `digest`,
+    `supplements`). Written by `CaseLedgerEventCapture` via `@ObservesAsync CaseLifecycleEvent`
+    in its **own transaction** — eventual consistency with respect to case state is explicit.
+    Optional module: `LedgerConfig.enabled()` gates every write.
+  - `WorkerContextProvider` javadoc contains the only hint of the split: "query
+    `CaseLedgerEntryRepository` (not EventLog) for prior worker" — scattered and easy to miss.
+  - No class, protocol, or design doc states the governing rule.
+
+### Root Cause
+
+`EventLog` predates the ledger module. When `casehub-ledger` was introduced for tamper-evident
+compliance records, no protocol was written documenting the split. The javadoc on `EventLog`
+uses the word "immutable" in the wrong sense (append-only, not hash-chained), making it appear
+to satisfy compliance requirements it cannot actually meet.
+
+### Blast Radius
+
+A developer building a compliance feature queries `EventLogRepository` — obvious choice from the
+name. They get append-only records with no tamper-evidence. The compliance requirement fails
+silently: data looks correct, but a determined actor could alter `EventLog` rows without breaking
+any integrity check. Separately, a developer adding a new lifecycle event doesn't know whether to
+write to `EventLog`, fire a `CaseLifecycleEvent`, or both.
+
+### Implementation Guidance
+
+1. **Correct `EventLog` javadoc** — replace "immutable audit event" with "operational event log
+   entry — for observability and runtime queries. Not tamper-evident; do not use for compliance
+   or regulatory audit."
+2. **Add a parallel note to `EventLogRepository`** javadoc.
+3. **Publish a garden protocol: `dual-trail-audit-pattern.md`** — governing rule:
+   - All case lifecycle transitions MUST fire a `CaseLifecycleEvent` → ledger captures automatically
+   - `EventLog` MUST be used only for operational events (WORK_SUBMITTED, monitoring, replay)
+   - Compliance/regulatory queries MUST read from `CaseLedgerEntryRepository`
+   - Note the eventual-consistency gap: ledger write is in a separate transaction; compliance
+     queries requiring strong consistency with case state must account for the lag
+4. Cross-reference finding 6 — same protocol governs quarkus-work.
+
+**Scale:** S — javadoc fixes + one garden protocol
+**Complexity:** Low — no runtime behaviour changes
+
+### Issue
+
+casehubio/parent#52
+
+---
+
+## Finding 6 — quarkus-work has two audit trails, split undocumented
+
+**Status:** Confirmed — identical pattern to finding 4
+**Batch:** M2
+**Repos:** quarkus-work, casehub-ledger
+
+### Verification
+
+- **Code read:** `AuditEntry.java`, `WorkItemLedgerEntry.java`, `LedgerEventCapture.java`,
+  `WorkItemService.audit()` helper
+- **Evidence:**
+  - `AuditEntry`: JPA entity, `workItemId / event (String) / actor / detail (TEXT) / occurredAt`.
+    Written by `WorkItemService.audit()` private helper. No hash chain. Javadoc says "Immutable
+    audit log entry recording a lifecycle event" — append-only, not tamper-evident.
+  - `WorkItemLedgerEntry`: extends `LedgerEntry` (Merkle-chained, JOINED inheritance,
+    `commandType + eventType` CQRS encoding). Written by `LedgerEventCapture` CDI observer.
+    Has REST endpoint via `LedgerResource`. Feeds trust score computation in `TrustScoreJob`.
+  - No documentation states which to use for compliance.
+
+### Root Cause
+
+Same as finding 4: `AuditEntry` predates the ledger module. The javadoc framing is identical
+in its misleading implication. Additionally: `AuditEntry` is written by explicit `audit()` calls;
+`WorkItemLedgerEntry` is written by a CDI observer. If a new state transition calls `audit()` but
+forgets to fire the CDI event, the operational log gets an entry but the compliance ledger does
+not. No test currently enforces that both trails receive every lifecycle event.
+
+### Blast Radius
+
+Same as finding 4, plus the symmetry gap: divergence between the two trails is possible and
+undetected. A lifecycle transition missing from `WorkItemLedgerEntry` silently breaks trust score
+computation (which reads only from the ledger) — wrong scores, wrong routing decisions downstream.
+
+### Implementation Guidance
+
+1. **Correct `AuditEntry` javadoc** — clarify it is operational, not tamper-evident.
+2. **Add a note to `AuditEntryStore` javadoc.**
+3. **Add an integration test** asserting that for every WorkItem lifecycle transition, both an
+   `AuditEntry` and a `WorkItemLedgerEntry` are written. Divergence becomes a test failure.
+4. The garden protocol from finding 4 covers the cross-repo rule.
+
+**Scale:** S — javadoc fixes + one integration test assertion
+**Complexity:** Low
+
+### Issue
+
+casehubio/parent#52
