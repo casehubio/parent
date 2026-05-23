@@ -25,7 +25,7 @@ Org-level parent POM and BOM for the [casehubio](https://github.com/casehubio) e
 |:-----------|:------:|
 | [casehub-devtown](https://github.com/casehubio/devtown) | [![casehub-devtown](https://github.com/casehubio/devtown/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/devtown/actions/workflows/publish.yml) |
 | [casehub-aml](https://github.com/casehubio/aml) | [![casehub-aml](https://github.com/casehubio/aml/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/casehubio/aml/actions/workflows/build.yml) |
-| [casehub-clinical](https://github.com/casehubio/clinical) | — |
+| [casehub-clinical](https://github.com/casehubio/clinical) | [![casehub-clinical](https://github.com/casehubio/clinical/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/clinical/actions/workflows/publish.yml) |
 
 > Full detail: [Build Status Dashboard](https://github.com/casehubio/parent/actions/workflows/dashboard.yml) &nbsp;|&nbsp; [PR Dashboard](https://github.com/casehubio/parent/actions/workflows/pr-dashboard.yml) &nbsp;|&nbsp; [▶ Run Full Stack Build](https://github.com/casehubio/parent/actions/workflows/full-stack-build.yml)
 
