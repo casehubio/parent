@@ -28,9 +28,17 @@ Designed after research into A2A, AutoGen, LangGraph, OpenAI Swarm, Letta, and C
 
 See docs/DESIGN.md for channel semantics, message types, commitment state machine, and addressing modes.
 
+### Dispatch Gate
+
+All channel writes flow through a single enforcement gate: `MessageService.dispatch(MessageDispatch)`. In order: paused check → `AllowedWritersPolicy` ACL → `RateLimiter` → LAST_WRITE overwrite semantics → `LedgerWriteService.record()` → `ChannelGateway.fanOut()`. There is no bypass path. `ReactiveMessageService` mirrors this with `dispatch(MessageDispatch) → Uni<DispatchResult>`.
+
+`MessageDispatch` is the unified request object: `sender`, `type`, `content`, `correlationId`, `inReplyTo`, `artefactRefs`, `target`, `actorType`, `deadline` (all except sender/type/content optional). `DispatchResult` carries `messageId`, `channelName`, `ledgerOutcome`. Builds via `MessageDispatch.builder(channelId, sender, type, content)`.
+
+See docs/DESIGN.md for dispatch builder and enforcement gate detail.
+
 ### Channel Gateway
 
-Outbound messages are routed through a channel backend SPI that supports multiple backend types: agent-to-agent (default), human-participating, and human-observer. An inbound normaliser SPI translates external human messages into the canonical message format before they enter the system. Fan-out to non-default backends is asynchronous and non-fatal. The default backend is always registered and handles all standard agent messaging.
+Outbound messages are routed through a channel backend SPI that supports multiple backend types: agent-to-agent (default), human-participating, and human-observer. An inbound normaliser SPI translates external human messages into the canonical message format before they enter the system. Fan-out to non-default backends is asynchronous and non-fatal. The default backend is always registered and handles all standard agent messaging. `MessageObserver` implementations may use any normal CDI scope.
 
 See docs/DESIGN.md for gateway class structure and SPI contracts.
 
@@ -128,8 +136,11 @@ See the full agent mesh framework spec: [`casehubio/claudony docs/superpowers/sp
 
 - 1035+ tests passing (runtime + testing + examples modules)
 - Channel backend abstraction complete (agent, human-participating, human-observer modes) — see ADR-0006
-- A2A protocol bridge complete: backend registered, identity resolution chain implemented, resource layer refactored as thin adapter — closed #135
-- Actor type is explicitly stored on every message and propagated to ledger without re-derivation
+- A2A protocol bridge complete: backend, identity resolution chain, and resource layer — closed #135
+- Dispatch unification complete: `MessageService.send()` replaced by `dispatch(MessageDispatch)`; single enforcement gate covers all channel writes — closed #184
+- Deadline enforcement: `MessageDispatch.deadline` propagated to `Message.deadline` for all types — closed #192
+- `ReactiveMessageService` uses `dispatch(MessageDispatch) → Uni<DispatchResult>`; full enforcement parity (#193) deferred — service currently `@Disabled`
+- Actor type explicitly stored on every message and propagated to ledger without re-derivation
 - Reactive store tests disabled — require PostgreSQL with native reactive driver (Docker not always available)
 
 ---
