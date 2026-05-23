@@ -16,7 +16,7 @@ Org-level parent POM and BOM for the [casehubio](https://github.com/casehubio) e
 | [casehub-qhorus](https://github.com/casehubio/qhorus) | [![casehub-qhorus](https://github.com/casehubio/qhorus/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/qhorus/actions/workflows/publish.yml) |
 | [casehub-eidos](https://github.com/casehubio/eidos) | [![casehub-eidos](https://github.com/casehubio/eidos/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/eidos/actions/workflows/publish.yml) |
 | [casehub-engine](https://github.com/casehubio/engine) | [![casehub-engine](https://github.com/casehubio/engine/actions/workflows/maven.yml/badge.svg?branch=main)](https://github.com/casehubio/engine/actions/workflows/maven.yml) |
-| [claudony](https://github.com/casehubio/claudony) | [![claudony](https://github.com/casehubio/claudony/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/casehubio/claudony/actions/workflows/ci.yml) |
+| [casehub-claudony](https://github.com/casehubio/claudony) | [![casehub-claudony](https://github.com/casehubio/claudony/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/casehubio/claudony/actions/workflows/ci.yml) |
 | [quarkus-langchain4j](https://github.com/casehubio/quarkus-langchain4j) | [![quarkus-langchain4j](https://github.com/casehubio/quarkus-langchain4j/actions/workflows/casehub-publish.yml/badge.svg?branch=main)](https://github.com/casehubio/quarkus-langchain4j/actions/workflows/casehub-publish.yml) |
 
 **Applications**
@@ -114,7 +114,7 @@ Each project in the ecosystem has its own Maven parent (casehub projects use int
 | `casehub-work` | `io.casehub` | `casehubio/work` |
 | `casehub-qhorus` | `io.casehub` | `casehubio/qhorus` |
 | `casehub-engine` | `io.casehub` | `casehubio/engine` |
-| `claudony` | `dev.claudony` | `casehubio/claudony` |
+| `casehub-claudony` | `dev.claudony` | `casehubio/claudony` |
 | `quarkus-langchain4j` | (upstream fork) | `casehubio/quarkus-langchain4j` |
 
 Dependency order (each project may depend on those above it):
@@ -126,7 +126,7 @@ casehub-work
     ↑
 casehub-qhorus    casehub-engine
     ↑                   ↑
-         claudony
+       casehub-claudony
 ```
 
 ---
@@ -176,7 +176,7 @@ casehub-ledger      → (no casehub deps)
 casehub-work        → casehub-ledger
 casehub-qhorus      → casehub-ledger, casehub-work
 casehub-engine      → casehub-ledger, casehub-work
-claudony            → casehub-ledger, casehub-work, casehub-qhorus
+casehub-claudony    → casehub-ledger, casehub-work, casehub-qhorus
 ```
 
 Example output:
@@ -187,7 +187,7 @@ Example output:
     casehub-work         TEST    (dep changed, rerun tests against new artifacts)
     casehub-qhorus       TEST    (dep changed, rerun tests against new artifacts)
     casehub-engine       TEST    (dep changed, rerun tests against new artifacts)
-    claudony             SKIP    (SHA and all deps unchanged)
+    casehub-claudony     SKIP    (SHA and all deps unchanged)
 
 ==> Installing: casehub-ledger
 ==> Retesting against updated deps: casehub-work,casehub-qhorus,casehub-engine
@@ -215,7 +215,7 @@ casehub-ledger=a2636e132b43bc0faad66cf587ab5b30996ff3df
 casehub-work=e085d64c1f2a93b7d0f4e89a3c12d45e678f901a
 casehub-qhorus=ef89aaa3b7c1d20f4e5a67b89c0d12e3f456789a
 casehub-engine=fccb647d8e2f31a05b6c78d90e1f23a4b5678901
-claudony=3fbeac7e9f0a12b34c56d78e90f1a2b3c4567890
+casehub-claudony=3fbeac7e9f0a12b34c56d78e90f1a2b3c4567890
 ```
 
 The most recent log is used as the cache manifest for the next build. Build logs are committed to this repository as a permanent record of what built together successfully.
@@ -294,7 +294,7 @@ Because each project publishes independently, upstream artifacts must be availab
 3. `casehub-work` → depends on BOM + `casehub-ledger`
 4. `casehub-qhorus` → depends on BOM + `casehub-ledger` + `casehub-work`
 5. `casehub-engine` → depends on BOM + `casehub-ledger` + `casehub-work`
-6. `claudony` → depends on BOM + `casehub-qhorus`
+6. `casehub-claudony` → depends on BOM + `casehub-qhorus`
 
 If `casehub-ledger` CI hasn't published yet when `casehub-work` CI runs, `casehub-work` will fail with `Could not resolve io.casehub:casehub-ledger:0.2-SNAPSHOT`. Re-running the failing job after the upstream publish completes resolves this.
 
