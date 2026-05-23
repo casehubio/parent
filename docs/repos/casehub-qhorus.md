@@ -123,7 +123,7 @@ The agent mesh framework defines a 3-channel normative layout implemented via `N
 | Channel suffix | Semantics | `allowedTypes` |
 |----------------|-----------|----------------|
 | `/work` | Task assignment and completion (prescriptive) | `COMMAND, RESPONSE, DONE, DECLINE, EXPIRED` |
-| `/observe` | Passive monitoring and state sharing (descriptive) | `EVENT, QUERY, INFORM` |
+| `/observe` | Passive monitoring and state sharing (descriptive) | `EVENT, QUERY, STATUS` |
 | `/oversight` | Human governance gates (commitment-based) | `COMMAND, RESPONSE` |
 
 `allowedTypes` on `Channel` is enforced at message send time — messages outside the declared set are rejected with a protocol violation error. This is what makes the normative layer machine-checkable rather than advisory.
