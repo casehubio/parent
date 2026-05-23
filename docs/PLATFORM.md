@@ -243,7 +243,7 @@ casehub-parent              (BOM — publish first; all others import it)
 | Label-based queue views | `casehub-work-queues` | Optional module on casehub-work |
 | Semantic (embedding) worker matching | `casehub-work-ai` | Optional module; `SemanticWorkerSelectionStrategy` |
 | Outbound notifications (Slack, Teams, SMS, email) | `casehub-connectors` | `Connector` SPI; `casehub-work-notifications` must delegate here |
-| Agent-to-agent messaging (typed channels + messages) | `casehub-qhorus` | 9 speech-act types, 5 channel semantics, MCP tools |
+| Agent-to-agent messaging (typed channels + messages) | `casehub-qhorus` | 9 speech-act types, 5 channel semantics, MCP tools. All writes flow through `MessageService.dispatch(MessageDispatch)` — single gate for ACL, rate limit, LAST_WRITE, ledger, and fan-out. `MessageDispatch` builder carries sender, type, content, correlationId, inReplyTo, artefactRefs, target, actorType, deadline. `DispatchResult` carries messageId, channelName, ledgerOutcome. |
 | Dashboard read/write API (composed views: channel with message count, instance with capability tags, timeline mapping, human message send) | `casehub-qhorus` | `QhorusDashboardService` in `io.casehub.qhorus.runtime.dashboard` — inject this for dashboard/UI consumers needing composed views. Do NOT inject raw entity services for this use case. |
 | Channel message fan-out to external backends | `casehub-qhorus` | `ChannelBackend` SPI in `casehub-qhorus-api`; implementations in consuming repos (Claudony panel, connectors) |
 | Real-time channel feed to Claudony browser panel | `claudony` | `ClaudonyChannelBackend` implements `ChannelBackend` SPI — per-channel scope; fan-out to browser dashboard over WebSocket |
@@ -345,7 +345,7 @@ The platform uses a normative 3-channel layout for agent-to-agent and agent-to-h
 | Channel | Purpose | Primary speech acts |
 |---------|---------|---------------------|
 | `work` | Task assignment and completion (prescriptive) | COMMAND, RESPONSE, DONE, DECLINE, EXPIRED |
-| `observe` | Passive monitoring and state sharing (descriptive) | EVENT, QUERY, INFORM |
+| `observe` | Passive monitoring and state sharing (descriptive) | EVENT, QUERY, STATUS |
 | `oversight` | Human governance gates (commitment-based) | COMMAND → human, RESPONSE from human |
 
 These map to the 4-layer normative accountability framework implemented by casehub-qhorus:
