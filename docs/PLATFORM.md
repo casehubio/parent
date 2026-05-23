@@ -207,6 +207,7 @@ casehub-parent              (BOM — publish first; all others import it)
 | `casehub-engine-work-adapter` | `devtown` | `app` | HITL bridge — HumanTaskScheduleHandler + WorkItemLifecycleAdapter |
 | `casehub-engine-blackboard` | `devtown` | `app` | BlackboardRegistry — transitive via work-adapter; required for plan item tracking |
 | `casehub-engine-ledger` | `claudony` | `casehub` | lineage queries |
+| `casehub-eidos-api` | `casehub-engine` | `engine-api` | optional capability probe — `AgentDescriptor` on `Worker`; `CapabilityHealth.probe()` in `WorkOrchestrator` |
 
 **Application tier** (aml, clinical) — consume foundation runtime artifacts; see [APPLICATIONS.md](APPLICATIONS.md) for detail.
 
@@ -256,7 +257,7 @@ casehub-parent              (BOM — publish first; all others import it)
 | Agent registry (store + discover by slot/capability) | `casehub-eidos` | `AgentRegistry` (blocking) + `ReactiveAgentRegistry` (reactive, build-gated `casehub.eidos.reactive.enabled`); `InMemoryAgentRegistry` for ephemeral installs via `casehub-eidos-memory` |
 | Vocabulary registry (term resolution + cross-vocab equivalence) | `casehub-eidos` | `VocabularyRegistry` SPI + `CdiVocabularyRegistry` @DefaultBean; discovers `@Produces Vocabulary` CDI beans at startup |
 | Well-known vocabularies (SVO, Conscientiousness, CasehubSlot) | `casehub-eidos-vocab` | Optional module — add as dependency to activate; Jandex-indexed for CDI bean discovery |
-| Agent capability health (declared vs operable) | `casehub-eidos` | `CapabilityHealth` SPI — `probe(AgentDescriptor, capabilityTag, ProbeContext)` returns Ready/Unavailable/EpistemicallyWeak; `DefaultCapabilityHealth` checks declared capabilities + epistemic domain confidence; configurable `casehub.eidos.epistemic.weak-threshold` (default 0.3); `ReactiveCapabilityHealth` for reactive parity (build-gated) |
+| Agent capability health (declared vs operable) | `casehub-eidos` | `CapabilityHealth` SPI — `probe(AgentDescriptor, capabilityTag, ProbeContext)` returns Ready/Unavailable/EpistemicallyWeak/Degraded; `DefaultCapabilityHealth` checks declared capabilities + epistemic domain confidence; configurable `casehub.eidos.epistemic.weak-threshold` (default 0.3); `ReactiveCapabilityHealth` for reactive parity (build-gated). **Engine integration (engine#341):** `WorkOrchestrator` calls `probe()` at dispatch time for workers that carry an `AgentDescriptor` (via `Worker.agentDescriptor()`, guarded by `Worker.hasDescriptor()`); workers without a descriptor skip the probe and are assumed capable (non-agent workers). Engine provides `NoOpCapabilityHealth @DefaultBean` — deployments without eidos get no filtering. **ProbeContext semantics:** `taskDomain` is the *subject domain* of the task (e.g. `"rust"` within a `"code-review"` capability) — distinct from `capabilityTag`. Pass actual task subject context in `taskDomain`; use `taskMetadata` for additional attributes. Conflating `taskDomain` with `capabilityTag` prevents `EpistemicallyWeak` from triggering correctly. |
 
 ---
 
@@ -285,6 +286,8 @@ casehub-parent              (BOM — publish first; all others import it)
 **Do not use `casehub-work` runtime in `casehub-engine`.** The engine depends on `casehub-work-core` only.
 
 **Do not add domain logic to foundation repos.** If the capability requires knowledge of software development, clinical trials, or financial crime, it belongs in an application repo.
+
+**Do not re-implement CapabilityHealth probe semantics in casehub-engine.** Engine calls `CapabilityHealth.probe()` via the `casehub-eidos-api` SPI contract from `WorkOrchestrator`. Engine provides a `NoOpCapabilityHealth @DefaultBean` for deployments without eidos — that is the full extent of engine's responsibility. Do not add `AgentDescriptor`, vocabulary, or epistemic domain logic to engine types. `Worker` carries an optional `AgentDescriptor` field for probe dispatch only — not for identity, registry, or vocabulary operations.
 
 ---
 
@@ -380,6 +383,7 @@ Full index: [`docs/protocols/INDEX.md`](protocols/INDEX.md)
 
 | Repo | Local path |
 |------|-----------|
+| `casehub-eidos` | `repos/casehub-eidos.md` |
 | `casehub-ledger` | `repos/casehub-ledger.md` |
 | `casehub-work` | `repos/casehub-work.md` |
 | `casehub-qhorus` | `repos/casehub-qhorus.md` |

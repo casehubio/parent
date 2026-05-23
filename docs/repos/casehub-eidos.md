@@ -1,0 +1,118 @@
+# casehub-eidos — Platform Deep Dive
+
+**GitHub:** [casehubio/eidos](https://github.com/casehubio/eidos) (local: `~/claude/casehub/eidos`)  
+**Platform doc:** [PLATFORM.md](https://raw.githubusercontent.com/casehubio/parent/main/docs/PLATFORM.md)
+
+---
+
+## Purpose
+
+Structured agent identity for LLM agents on the CaseHub platform. Any Quarkus app that depends on `casehub-eidos` can register agents with four-layer descriptors (identity, slot, capabilities, disposition), discover agents by slot or capability, probe whether a declared capability is currently operable, and render system prompts from descriptors.
+
+---
+
+## Module Structure
+
+| Module | artifactId | Type | Purpose |
+|---|---|---|---|
+| `api/` | `casehub-eidos-api` | Pure Java, no CDI | SPIs and domain types — `AgentDescriptor`, `AgentRegistry`, `CapabilityHealth`, `VocabularyRegistry`, `SystemPromptRenderer` |
+| `runtime/` | `casehub-eidos` | Quarkus extension | CDI registry, health implementations, renderer; `@DefaultBean` for all SPIs |
+| `persistence-memory/` | `casehub-eidos-memory` | Optional module | `InMemoryAgentRegistry` — `@Alternative @Priority(1)`; activate by adding as dep |
+| `deployment/` | `casehub-eidos-deployment` | Quarkus build step | `EidosProcessor` + `EidosBuildTimeConfig` |
+| `vocab/` | `casehub-eidos-vocab` | Optional module | Well-known vocabularies: SVO, Conscientiousness, CasehubSlot |
+| `examples/agent-scenarios/` | — | Test-only | `@QuarkusTest` integration examples covering team, cross-vocab, epistemic, tenancy, disposition |
+
+---
+
+## Key Abstractions
+
+### AgentDescriptor
+
+Four-layer record: identity (`id`, `name`, `agentId`), slot (open `String` — domain-defined, e.g. `"planner"` or `"reviewer"`), capabilities (`AgentCapability` list with `qualityHint` and `epistemicDomains`), disposition (`AgentDisposition` with open-String axes + `canDelegate`).
+
+`tenancyId` is always required. `domainVocabulary` sets the default vocabulary URI for all fields; per-field overrides: `slotVocabulary`, `dispositionVocabulary`.
+
+**Slot is deliberately open** — platform never constrains. `casehub-eidos-vocab` provides starting-point vocabularies (SVO, Conscientiousness, CasehubSlot) but they are entirely optional.
+
+### AgentCapability
+
+Declares a named capability with an optional `qualityHint` (Double, 0–1) and `epistemicDomains` map (domain → confidence, e.g. `{"java": 0.95, "rust": 0.42}`). The `epistemicDomains` map qualifies *how well* the agent handles the declared capability in specific subject domains — it is not a list of separate capabilities.
+
+### AgentRegistry / ReactiveAgentRegistry
+
+SPIs for register, findById, and find(AgentQuery). `AgentQuery` carries: `slot`, `capabilityName`, and `tenancyId` (required — all queries are tenancy-scoped). `JpaAgentRegistry` is the `@ApplicationScoped` default; `JpaReactiveAgentRegistry` is build-gated via `casehub.eidos.reactive.enabled`. `InMemoryAgentRegistry` activates from `casehub-eidos-memory`.
+
+### CapabilityHealth / ReactiveCapabilityHealth
+
+SPI: `probe(AgentDescriptor, capabilityTag, ProbeContext)` → `CapabilityStatus`. Four statuses: `Ready`, `Degraded(DegradationReason, detail)`, `Unavailable(reason)`, `EpistemicallyWeak(domain, confidence)`.
+
+`DefaultCapabilityHealth` checks declared capabilities + compares `ProbeContext.taskDomain` against `epistemicDomains`; fires `EpistemicallyWeak` when confidence is below `casehub.eidos.epistemic.weak-threshold` (default 0.3).
+
+**ProbeContext:** `taskDomain` is the *subject domain* of the task — e.g. `"rust"` within a `"code-review"` capability. It is semantically distinct from `capabilityTag`. Conflating them prevents `EpistemicallyWeak` from triggering. `taskMetadata` carries additional task context.
+
+**Engine integration:** `WorkOrchestrator` calls `probe()` at dispatch time for workers where `Worker.hasDescriptor()` is true. Workers without a descriptor skip the probe and are assumed capable. Engine provides `NoOpCapabilityHealth @DefaultBean` — deployments without eidos receive no filtering.
+
+### VocabularyRegistry
+
+SPI for term registration, resolution, and cross-vocabulary equivalence. `CdiVocabularyRegistry` (`@DefaultBean`) discovers `Instance<Vocabulary>` CDI beans at startup — any bean that implements `Vocabulary` is auto-discovered.
+
+### SystemPromptRenderer (Phase 3)
+
+SPI: `render(AgentDescriptor, RenderContext)` → `RenderedPrompt`. `ClaudeMarkdownRenderer` is the `@DefaultBean`. Format-agnostic from day one — `RenderFormat` selects output format. Generates CLAUDE.md sections (or any LLM system prompt) from descriptor + case goal. Not yet implemented.
+
+---
+
+## Depends On
+
+| Repo | How |
+|---|---|
+| `casehub-ledger` | Runtime dep — `casehub-eidos` (runtime) depends on it; `casehub-eidos-api` depends on nothing |
+
+## Depended On By
+
+| Repo | Module | Nature |
+|---|---|---|
+| `casehub-engine` | `engine-api` | Optional compile dep — `AgentDescriptor` on `Worker`; `CapabilityHealth.probe()` in `WorkOrchestrator` |
+
+---
+
+## What This Repo Explicitly Does NOT Do
+
+- Trust scoring — that is `casehub-ledger`
+- Agent-to-agent messaging — that is `casehub-qhorus`
+- Work item or case orchestration — that is `casehub-engine`
+- Constrain slot or disposition vocabulary — consumers define their own; `casehub-eidos-vocab` is optional
+- Put `AgentDescriptor` or vocabulary types in `casehub-platform-api` — descriptor types are Eidos domain types; repos that need them depend on `casehub-eidos-api` directly
+
+---
+
+## Reactive Build Gating
+
+Both `ReactiveAgentRegistry` and `ReactiveCapabilityHealth` are gated on `casehub.eidos.reactive.enabled=true` (build-time config in `deployment/`). Default false — blocking-only consumers pay no Hibernate Reactive cost. Pattern mirrors the platform-wide reactive build gating protocol.
+
+---
+
+## Tenancy
+
+`AgentDescriptor.tenancyId` is always required. All registry queries are tenancy-scoped — `AgentQuery.tenancyId` is mandatory. The registry never returns descriptors across tenancy boundaries.
+
+---
+
+## Schema Management
+
+JPA/Flyway — version range V1–V999 in `classpath:db/eidos/migration`. No Flyway migrations created yet (no deployed instances). All schema changes go directly into base migration files — treat every change as clean-slate design.
+
+---
+
+## Current State
+
+- Phases 1 and 2 complete and merged to main (96 tests across 7 modules, all green).
+- Phase 3 — `SystemPromptRenderer` + `ClaudeMarkdownRenderer` + runtime state probing for `Degraded` status — next up (eidos#5).
+- Engine integration (`Worker.agentDescriptor`, `NoOpCapabilityHealth`, `WorkOrchestrator` probe dispatch) — engine#341, design agreed.
+
+---
+
+## Design Documents
+
+- [CLAUDE.md](https://raw.githubusercontent.com/casehubio/eidos/main/CLAUDE.md) — stack, module coordinates, key design decisions
+- [examples/README.md](https://raw.githubusercontent.com/casehubio/eidos/main/examples/README.md) — capability coverage table across test scenarios
