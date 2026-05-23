@@ -11,7 +11,7 @@
 | M2 | Audit trail documentation | 4, 6 | 2/2 ✅ |
 | M3 | Notification + signal silo | 8, 9, 24, 25 | 4/4 ✅ |
 | M4 | Integration boundary semantics | 16, 17 | 2/2 ✅ |
-| M5 | SpawnGroup / Stage gap | 20 | 0/1 |
+| M5 | SpawnGroup / Stage gap | 20 | 1/1 ✅ |
 | M6 | Provenance + observability | 23, 29 | 0/2 |
 | M7 | Architecture placement | 26 | 0/1 |
 | M8 | Normative enforcement | 30, 32 | 0/2 |
@@ -19,7 +19,7 @@
 | L2 | Documentation + patterns | 11, 12 | 0/2 |
 | L3 | Structural debt | 13, 19, 27 | 0/3 |
 
-**Total:** 11 / 23 findings complete
+**Total:** 12 / 23 findings complete
 
 ## Findings
 
@@ -652,3 +652,76 @@ done; the WorkItem still shows them in the delegation chain as `owner`.
 ### Issue
 
 casehubio/parent#54
+
+---
+
+## Batch M5 — SpawnGroup / Stage gap (finding 20)
+
+Note: the original audit's "Stage concept" framing is misleading. No new CaseHub abstraction
+is needed. This is a missing CDI observer in an existing adapter. The event infrastructure was
+explicitly designed for engine routing (the javadoc says so) but never wired.
+
+---
+
+## Finding 20 — WorkItemGroupLifecycleEvent has no observer in casehub-engine
+
+**Status:** Confirmed — scope correction: no new Stage concept needed; missing observer only
+**Batch:** M5
+**Repos:** casehub-engine (work-adapter), quarkus-work
+
+### Verification
+
+- **Code read:** `WorkItemGroupLifecycleEvent.java`, `WorkItemSpawnGroup.java`,
+  `MultiInstanceGroupPolicy.java`, `WorkItemLifecycleAdapter.java`, engine `work-adapter` module
+- **Evidence:**
+  - `WorkItemGroupLifecycleEvent` javadoc: "Consumers subscribe to this for group-level
+    outcomes: dashboards, notifications, **CaseHub routing**. The `callerRef` is echoed from
+    the parent WorkItem so CaseHub can route outcomes without a query."
+  - `callerRef` carries the `case:{caseId}/pi:{planItemId}` format that `WorkItemLifecycleAdapter`
+    already parses for individual WorkItem events.
+  - Engine search for `WorkItemGroupLifecycleEvent` observer: **zero results**.
+  - Engine search for `SpawnGroup` or `multiInstance`: **zero results** — engine has no
+    awareness of multi-instance WorkItem groups at all.
+  - `WorkItemLifecycleAdapter` handles individual `WorkItemLifecycleEvent` only (line 65:
+    `onWorkItemLifecycle(@ObservesAsync WorkItemLifecycleEvent event)`).
+  - `WorkItemSpawnGroup` M-of-N completion: when `completedCount >= requiredCount`, fires
+    `WorkItemGroupLifecycleEvent` with `groupStatus = COMPLETED` and the parent `callerRef`.
+    The engine never sees this.
+
+### Root Cause
+
+`WorkItemGroupLifecycleEvent` was designed with CaseHub as an explicit consumer — the event
+carries `callerRef` specifically for engine routing. The implementation was never wired. The
+adapter that bridges work events to engine reactions (`WorkItemLifecycleAdapter`) was not
+extended to handle the group-level event alongside the individual one.
+
+### Blast Radius
+
+A case definition cannot use multi-instance WorkItems (spawn N, wait for M to complete) as an
+orchestration primitive. If a case spawns a SpawnGroup, the engine only sees individual child
+WorkItem completions, not the group outcome. The case has no way to detect that M-of-N was
+reached and continue. Any parallel-task pattern (fan-out to multiple reviewers, quorum decisions,
+parallel document processing) is impossible to implement at the case level via quarkus-work.
+
+### Implementation Guidance
+
+This requires only a new observer method in `WorkItemLifecycleAdapter` — no new concept:
+
+1. Add `@ObservesAsync WorkItemGroupLifecycleEvent groupEvent` handler in
+   `WorkItemLifecycleAdapter`.
+2. Parse `groupEvent.callerRef()` using the same `CallerRef.parse()` already used for
+   individual events — the format is identical (`case:{caseId}/pi:{planItemId}`).
+3. Look up the `PlanItem` from `BlackboardRegistry`. Based on `groupEvent.groupStatus()`:
+   - `COMPLETED` → `item.markCompleted()`
+   - `REJECTED` → `item.markFaulted()` (or `item.markRejected()` pending finding 16)
+4. Apply output mapping from the parent WorkItem's `resolution` field (same as individual path).
+5. Fire `CONTEXT_CHANGED` to trigger engine re-evaluation.
+6. If `groupEvent.groupStatus() == COMPLETED` and `onThresholdReached` is `CANCEL`,
+   remaining children are handled by quarkus-work internally — no engine action needed.
+
+**Scale:** S — one new observer method + existing CallerRef parsing reused
+**Complexity:** Low — the event carries all needed data; the adapter pattern is established
+
+### Issue
+
+casehubio/engine#339
