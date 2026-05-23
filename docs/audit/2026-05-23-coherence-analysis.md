@@ -10,7 +10,7 @@
 | M1 | Worker selection intelligence | 2, 14, 15 | 3/3 ✅ |
 | M2 | Audit trail documentation | 4, 6 | 2/2 ✅ |
 | M3 | Notification + signal silo | 8, 9, 24, 25 | 4/4 ✅ |
-| M4 | Integration boundary semantics | 16, 17 | 0/2 |
+| M4 | Integration boundary semantics | 16, 17 | 2/2 ✅ |
 | M5 | SpawnGroup / Stage gap | 20 | 0/1 |
 | M6 | Provenance + observability | 23, 29 | 0/2 |
 | M7 | Architecture placement | 26 | 0/1 |
@@ -19,7 +19,7 @@
 | L2 | Documentation + patterns | 11, 12 | 0/2 |
 | L3 | Structural debt | 13, 19, 27 | 0/3 |
 
-**Total:** 9 / 23 findings complete
+**Total:** 11 / 23 findings complete
 
 ## Findings
 
@@ -521,3 +521,134 @@ WorkItem routing or state will leave no record in the compliance trail.
 ### Issue
 
 casehubio/work#221
+
+---
+
+## Batch M4 — Integration boundary semantics (findings 16, 17)
+
+Cross-finding note: both findings are about the same class of problem — terminology used
+differently at repo boundaries, creating implicit contracts that diverge silently. Finding 16 is
+a collapse of semantically distinct work states into one engine state. Finding 17 is a terminal-
+semantics mismatch hidden behind the same vocabulary in two repos.
+
+---
+
+## Finding 16 — WorkItem REJECTED, EXPIRED, ESCALATED all map to CaseHub FAULTED
+
+**Status:** Confirmed — broader than described; three states collapse, not two
+**Batch:** M4
+**Repos:** casehub-engine (work-adapter), quarkus-work
+
+### Verification
+
+- **Code read:** `WorkItemLifecycleAdapter.applyStatus()`, `WorkItemStatus.isTerminal()`,
+  `PlanItem.markFaulted()`
+- **Evidence:**
+  - `WorkItemLifecycleAdapter.applyStatus()` line 172:
+    `case REJECTED, EXPIRED, ESCALATED -> item.markFaulted()`
+  - `WorkItemStatus.REJECTED` javadoc: "WorkItem was rejected by the assignee or a reviewer."
+    This is an **intentional refusal**, not a technical failure.
+  - `WorkItemStatus.EXPIRED` javadoc: "WorkItem's deadline passed without resolution." Time-based.
+  - `WorkItemStatus.ESCALATED` javadoc: "WorkItem was escalated due to expiry or policy breach."
+    Routing event — the work may still be completable by a different group.
+  - All three become `CaseStatus.FAULTED` via `markFaulted()` → `markCancelled()` does not.
+  - Case definitions have no way to distinguish REJECTED (refused) from EXPIRED (timed out) from
+    ESCALATED (rerouted). The outcome of a WorkItem collapses to: COMPLETED, CANCELLED, or FAULTED.
+
+### Root Cause
+
+`WorkItemLifecycleAdapter` was written when the only semantically meaningful distinction was
+COMPLETED vs everything-else-bad. REJECTED, EXPIRED, and ESCALATED were all treated as
+"something went wrong." As the platform matured, these three states acquired distinct meanings
+that the adapter never revisited.
+
+### Blast Radius
+
+A case definition cannot implement:
+- "If the worker refused (REJECTED), offer the task to a different group"
+- "If the task timed out (EXPIRED), fault the case; if escalated, continue waiting"
+- "On ESCALATED, record the escalation group and resume case with adjusted deadline"
+All such requirements silently fault the case regardless of the actual work outcome. Case authors
+have no recourse within the engine's reaction model.
+
+### Implementation Guidance
+
+1. In `WorkItemLifecycleAdapter.applyOutputMapping()` (or in a new pre-step before firing
+   `CONTEXT_CHANGED`), write the actual `WorkItemStatus` string to the case context under a
+   reserved key: `context.set("_workItemOutcome", status.name())`.
+2. Case definitions can then gate conditions on `_workItemOutcome`:
+   `{ "REJECTED": [...], "EXPIRED": [...], "ESCALATED": [...] }`.
+3. Longer term: add `PlanItemStatus.REJECTED` alongside `COMPLETED`, `FAULTED`, `CANCELLED`
+   so the plan model reflects the distinction structurally. This requires a `markRejected()` on
+   `PlanItem` and handling in `SubCaseCompletionStrategy`.
+4. `ESCALATED` specifically should not immediately fault — it should leave the PlanItem in a
+   non-terminal state and fire `CONTEXT_CHANGED` so the case can re-evaluate routing.
+
+**Scale:** S (context variable approach) or M (PlanItemStatus extension)
+**Complexity:** Med — the context approach is safe and additive; the PlanItemStatus approach
+requires changes to SubCaseCompletionStrategy and all callers
+
+### Issue
+
+casehubio/engine#338
+
+---
+
+## Finding 17 — CommitmentState.DELEGATED (Qhorus, terminal) ≠ WorkItemStatus.DELEGATED (work, non-terminal)
+
+**Status:** Confirmed — original finding's "back-to-pool" framing inaccurate; real mismatch is
+terminal semantics
+**Batch:** M4
+**Repos:** quarkus-qhorus, quarkus-work
+
+### Verification
+
+- **Code read:** `MessageType.HANDOFF`, `CommitmentState.DELEGATED`, `CommitmentService.delegate()`,
+  `WorkItemService.delegate()`, `WorkItemStatus.isTerminal()`
+- **Evidence:**
+  - **Qhorus HANDOFF:** `MessageDispatch` requires a named `target`. On dispatch,
+    `commitmentService.delegate(correlationId, target)` transitions the original Commitment to
+    `CommitmentState.DELEGATED` (terminal for the original obligor) and creates a child
+    Commitment for the target. HANDOFF is final for the sender.
+  - **WorkItem DELEGATED:** `WorkItemService.delegate(id, toAssigneeId, actorId)` names a specific
+    recipient, builds a `delegationChain`, sets `status = WorkItemStatus.PENDING` for the
+    recipient to claim, and fires `lifecycleEvent("DELEGATED")`. `WorkItemStatus.isTerminal()`
+    returns **false** for DELEGATED — the work is ongoing.
+  - The original finding's "back-to-pool" characterisation is wrong — work DELEGATED names a
+    specific recipient (not anonymous). The real mismatch: Qhorus DELEGATED = terminal; work
+    DELEGATED = non-terminal continuation.
+
+### Root Cause
+
+Both systems model obligation transfer independently. In Qhorus, HANDOFF/DELEGATED follows the
+normative commitment model where delegation ends the original obligation. In quarkus-work,
+DELEGATED is a workflow transition that continues the item's lifecycle. Neither system was
+designed with the other's vocabulary in mind.
+
+### Blast Radius
+
+Any integration code or documentation that bridges Qhorus HANDOFF to WorkItem delegation will
+misapply terminal semantics. A developer reasoning about a case where an agent HANDOFFs a task
+to a WorkItem DELEGATED path will expect the original obligation to end when work is delegated —
+it does not. This creates invisible tracking gaps: the original obligor in Qhorus thinks they're
+done; the WorkItem still shows them in the delegation chain as `owner`.
+
+### Implementation Guidance
+
+1. **Document the distinction clearly** in both codebases' javadoc:
+   - `CommitmentState.DELEGATED`: "Terminal for the original obligor. Obligation fully
+     transferred. Original Commitment is closed."
+   - `WorkItemStatus.DELEGATED`: "Non-terminal. Work reassigned to a named actor; item remains
+     active until completed, rejected, or cancelled."
+2. **Consider renaming for clarity:**
+   - Qhorus: `CommitmentState.TRANSFERRED` (makes the finality explicit)
+   - Work: `WorkItemStatus.REASSIGNED` (distinguishes from the normative concept)
+3. **Any future bridge between Qhorus HANDOFF and WorkItem delegation** must account for the
+   terminal-semantics gap: the Qhorus side closes the obligation; the work side does not.
+
+**Scale:** S — javadoc (immediate); renaming is M (cross-repo rename refactor)
+**Complexity:** Low (docs only) to Med (rename requires protocol update and cross-repo sweep)
+
+### Issue
+
+casehubio/parent#54
