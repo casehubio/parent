@@ -15,11 +15,11 @@
 | M6 | Provenance + observability | 23, 29 | 2/2 ✅ |
 | M7 | Architecture placement | 26 | 1/1 ✅ |
 | M8 | Normative enforcement | 30, 32 | 2/2 ✅ |
-| L1 | Verification required | 5 | 0/1 |
+| L1 | Verification required | 5 | 1/1 ✅ |
 | L2 | Documentation + patterns | 11, 12 | 0/2 |
 | L3 | Structural debt | 13, 19, 27 | 0/3 |
 
-**Total:** 17 / 23 findings complete
+**Total:** 18 / 23 findings complete
 
 ## Findings
 
@@ -1057,3 +1057,81 @@ routing all suffer from this fragmentation.
 ### Issue
 
 casehubio/parent#56
+
+---
+
+## Batch L1 — Verification required (finding 5)
+
+---
+
+## Finding 5 — LedgerTraceListener likely does not propagate traceId to CaseLedgerEntry
+
+**Status:** Confirmed — bug is real, not just a coverage gap
+**Batch:** L1
+**Repos:** casehub-engine (ledger module), casehub-ledger
+
+### Verification
+
+- **Code read:** `LedgerTraceListener.java`, `LedgerTraceListenerIT.java`,
+  `CaseLedgerEventCapture.java`, `CaseLedgerEntry.java`
+- **Evidence:**
+  - `LedgerTraceListener` is a JPA `@EntityListeners` on `LedgerEntry`. `CaseLedgerEntry`
+    extends `LedgerEntry` — the listener IS inherited by JPA spec. The engine imports
+    casehub-ledger, so the CDI bean is in scope.
+  - `CaseLedgerEventCapture.onCaseLifecycleEvent()` is annotated `@ObservesAsync`. It
+    runs on a **separate managed executor thread**, not on the original HTTP request thread.
+  - `LedgerTraceListenerIT` includes an explicit test case: `traceId_nullWhenNoActiveSpan()`
+    confirms that `LedgerEntry.traceId` is null when no OTel span is active at persist time.
+  - OTel context is bound to thread locals and does NOT automatically propagate to
+    `@ObservesAsync` handler threads unless explicit context propagation is configured.
+  - No test in casehub-engine verifies that `CaseLedgerEntry.traceId` is non-null after a
+    lifecycle event fires within an active HTTP span.
+  - **Conclusion:** `CaseLedgerEntry.traceId` is likely always null — the span active on the
+    HTTP request thread is not inherited by the async observer thread.
+
+### Root Cause
+
+`CaseLedgerEventCapture` uses `@ObservesAsync` to avoid blocking Vert.x handlers. This
+correctly prevents main-thread blocking but silently severs the OTel trace context. The
+`LedgerTraceListener` fires correctly on the async thread, but finds no active span — so
+`traceId` is never populated.
+
+### Blast Radius
+
+All `CaseLedgerEntry` records have null `traceId`. Case lifecycle events (CASE_STARTED,
+CASE_COMPLETED, CASE_FAULTED, etc.) cannot be correlated with the HTTP request spans that
+triggered them in Jaeger/Grafana. The cross-service trace for "start case → events → completion"
+is broken at the case ledger layer. This affects the OTel integration that finding 28 (now closed
+via engine#185) was specifically designed to enable.
+
+### Implementation Guidance
+
+1. Add a `@QuarkusTest` integration test in `casehub-engine/ledger`:
+   - Start an OTel span
+   - Fire a `CaseLifecycleEvent` (or call `CaseLedgerEventCapture` directly)
+   - Wait for async persistence
+   - Assert `CaseLedgerEntry.traceId` == active span's trace ID
+
+2. If the test fails (expected), fix `CaseLedgerEventCapture` by capturing the OTel context
+   before firing async and restoring it on the handler thread:
+   ```java
+   final Context otelCtx = Context.current(); // capture on calling thread
+   Event<CaseLifecycleEvent>.fireAsync(event, NotificationOptions.builder()
+       .setExecutor(executor.withContext(otelCtx))  // propagate
+       .build());
+   ```
+   Or: set `entry.traceId` explicitly in `CaseLedgerEventCapture.onCaseLifecycleEvent()`
+   by calling `LedgerTraceIdProvider.currentTraceId()` before the async boundary (while
+   still on the Vert.x handler thread).
+
+3. The simplest fix: move the `LedgerTraceIdProvider.currentTraceId()` call into
+   `CaseLedgerEventCapture.onCaseLifecycleEvent()` and set `entry.traceId` directly,
+   bypassing the listener for this case. The listener's general purpose is preserved for
+   all other `LedgerEntry` subclasses.
+
+**Scale:** XS (integration test) + XS (explicit traceId set in CaseLedgerEventCapture)
+**Complexity:** Low — once the test confirms the bug, the fix is one line
+
+### Issue
+
+casehubio/engine#342
