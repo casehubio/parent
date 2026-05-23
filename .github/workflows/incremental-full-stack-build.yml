@@ -29,7 +29,7 @@ on:
         type: boolean
         default: false
       include_applications:
-        description: "Include application repos (devtown, aml, clinical) — off by default"
+        description: "Include application repos (devtown, aml, clinical, quarkmind) — off by default"
         type: boolean
         default: false
       force_rebuild:
@@ -60,6 +60,7 @@ jobs:
       - name: Clone repositories
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
           INCLUDE_LANGCHAIN4J: ${{ inputs.include_langchain4j }}
           INCLUDE_APPLICATIONS: ${{ inputs.include_applications }}
         run: |
@@ -78,6 +79,7 @@ jobs:
             git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/devtown.git"  casehub/devtown
             git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/aml.git"     casehub/aml
             git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/clinical.git" casehub/clinical
+            git clone --quiet "https://x-access-token:${GH_TOKEN}@github.com/mdproctor/quarkmind.git"   casehub/quarkmind
           fi
 
       - name: Collect SHAs
@@ -104,16 +106,19 @@ jobs:
           echo "sha_claudony=$D"   >> $GITHUB_OUTPUT
 
           if [ "${{ inputs.include_applications }}" = "true" ]; then
-            DT=$(git -C casehub/devtown  rev-parse HEAD)
-            AM=$(git -C casehub/aml      rev-parse HEAD)
-            CL=$(git -C casehub/clinical rev-parse HEAD)
-            echo "sha_devtown=$DT"  >> $GITHUB_OUTPUT
-            echo "sha_aml=$AM"      >> $GITHUB_OUTPUT
-            echo "sha_clinical=$CL" >> $GITHUB_OUTPUT
+            DT=$(git -C casehub/devtown    rev-parse HEAD)
+            AM=$(git -C casehub/aml        rev-parse HEAD)
+            CL=$(git -C casehub/clinical   rev-parse HEAD)
+            QM=$(git -C casehub/quarkmind  rev-parse HEAD)
+            echo "sha_devtown=$DT"    >> $GITHUB_OUTPUT
+            echo "sha_aml=$AM"        >> $GITHUB_OUTPUT
+            echo "sha_clinical=$CL"   >> $GITHUB_OUTPUT
+            echo "sha_quarkmind=$QM"  >> $GITHUB_OUTPUT
           fi
 
           echo "::group::SHA manifest (pin these to reproduce this build)"
           echo "parent:     $P"
+          echo "platform:   $PL"
           echo "ledger:     $L"
           echo "eidos:      $EI"
           echo "connectors: $C"
@@ -121,7 +126,7 @@ jobs:
           echo "qhorus:     $Q"
           echo "engine:     $E"
           echo "claudony:   $D"
-          [ "${{ inputs.include_applications }}" = "true" ] && { echo "devtown:    $DT"; echo "aml:        $AM"; echo "clinical:   $CL"; }
+          [ "${{ inputs.include_applications }}" = "true" ] && { echo "devtown:    $DT"; echo "aml:        $AM"; echo "clinical:   $CL"; echo "quarkmind:  $QM"; }
           echo "::endgroup::"
 
       # Restore state from last run on this branch.
@@ -141,7 +146,7 @@ jobs:
           FORCE_REBUILD: ${{ inputs.force_rebuild }}
         run: |
           MODULES=(parent platform ledger eidos connectors work qhorus engine claudony)
-          [ "${{ inputs.include_applications }}" = "true" ] && MODULES+=(devtown aml clinical)
+          [ "${{ inputs.include_applications }}" = "true" ] && MODULES+=(devtown aml clinical quarkmind)
           if [ "$FORCE_REBUILD" = "true" ] || [ ! -f .incremental-state/shas.txt ]; then
             for m in "${MODULES[@]}"; do echo "sha_${m}=none" >> $GITHUB_OUTPUT; done
           else
@@ -561,6 +566,52 @@ jobs:
           esac
           echo $((SECONDS - START)) > .build-times/aml
 
+      - name: "Build: quarkmind"
+        id: quarkmind
+        if: inputs.include_applications
+        continue-on-error: true
+        env:
+          CUR: ${{ steps.shas.outputs.sha_quarkmind }}
+          PRV: ${{ steps.prev.outputs.sha_quarkmind }}
+          CUR_P: ${{ steps.shas.outputs.sha_parent }}
+          PRV_P: ${{ steps.prev.outputs.sha_parent }}
+          CUR_L: ${{ steps.shas.outputs.sha_ledger }}
+          PRV_L: ${{ steps.prev.outputs.sha_ledger }}
+          CUR_W: ${{ steps.shas.outputs.sha_work }}
+          PRV_W: ${{ steps.prev.outputs.sha_work }}
+          CUR_Q: ${{ steps.shas.outputs.sha_qhorus }}
+          PRV_Q: ${{ steps.prev.outputs.sha_qhorus }}
+          CUR_E: ${{ steps.shas.outputs.sha_engine }}
+          PRV_E: ${{ steps.prev.outputs.sha_engine }}
+          SKIP_TESTS: ${{ inputs.skip_tests }}
+          SKIP_ITS: ${{ inputs.skip_integration_tests }}
+          MAVEN_EXTRA: ${{ inputs.maven_args }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          D=$(./scripts/incremental-build-decision.sh \
+            --module quarkmind --current-sha "$CUR" --previous-sha "${PRV:-none}" \
+            --dep "parent:${CUR_P}:${PRV_P:-none}" \
+            --dep "ledger:${CUR_L}:${PRV_L:-none}" \
+            --dep "work:${CUR_W}:${PRV_W:-none}" \
+            --dep "qhorus:${CUR_Q}:${PRV_Q:-none}" \
+            --dep "engine:${CUR_E}:${PRV_E:-none}")
+          echo "decision=$D" >> $GITHUB_OUTPUT
+          START=$SECONDS
+          case "$D" in
+            SKIP) echo "⏭️  quarkmind: SKIP" ;;
+            TEST)
+              if [ "$SKIP_TESTS" = "true" ]; then echo "⏭️  quarkmind: SKIP (TEST — tests disabled)"
+              else
+                ITS=""; [ "$SKIP_ITS" = "true" ] && ITS="-DskipITs"
+                cd casehub/quarkmind && mvn test --batch-mode $ITS $MAVEN_EXTRA
+              fi ;;
+            BUILD)
+              F=""; [ "$SKIP_TESTS" = "true" ] && F="-DskipTests"
+              [ "$SKIP_ITS" = "true" ] && F="$F -DskipITs"
+              cd casehub/quarkmind && mvn install --batch-mode $F $MAVEN_EXTRA ;;
+          esac
+          echo $((SECONDS - START)) > .build-times/quarkmind
+
       - name: "Build: clinical"
         id: clinical
         if: inputs.include_applications
@@ -617,7 +668,9 @@ jobs:
         if: always()
         env:
           SHA_PARENT: ${{ steps.shas.outputs.sha_parent }}
+          SHA_PLATFORM: ${{ steps.shas.outputs.sha_platform }}
           SHA_LEDGER: ${{ steps.shas.outputs.sha_ledger }}
+          SHA_EIDOS: ${{ steps.shas.outputs.sha_eidos }}
           SHA_CONNECTORS: ${{ steps.shas.outputs.sha_connectors }}
           SHA_WORK: ${{ steps.shas.outputs.sha_work }}
           SHA_QHORUS: ${{ steps.shas.outputs.sha_qhorus }}
@@ -626,8 +679,11 @@ jobs:
           SHA_DEVTOWN: ${{ steps.shas.outputs.sha_devtown }}
           SHA_AML: ${{ steps.shas.outputs.sha_aml }}
           SHA_CLINICAL: ${{ steps.shas.outputs.sha_clinical }}
+          SHA_QUARKMIND: ${{ steps.shas.outputs.sha_quarkmind }}
           PREV_PARENT: ${{ steps.prev.outputs.sha_parent }}
+          PREV_PLATFORM: ${{ steps.prev.outputs.sha_platform }}
           PREV_LEDGER: ${{ steps.prev.outputs.sha_ledger }}
+          PREV_EIDOS: ${{ steps.prev.outputs.sha_eidos }}
           PREV_CONNECTORS: ${{ steps.prev.outputs.sha_connectors }}
           PREV_WORK: ${{ steps.prev.outputs.sha_work }}
           PREV_QHORUS: ${{ steps.prev.outputs.sha_qhorus }}
@@ -636,8 +692,11 @@ jobs:
           PREV_DEVTOWN: ${{ steps.prev.outputs.sha_devtown }}
           PREV_AML: ${{ steps.prev.outputs.sha_aml }}
           PREV_CLINICAL: ${{ steps.prev.outputs.sha_clinical }}
+          PREV_QUARKMIND: ${{ steps.prev.outputs.sha_quarkmind }}
           INCLUDE_APPLICATIONS: ${{ inputs.include_applications }}
+          OUTCOME_PLATFORM: ${{ steps.platform.outcome }}
           OUTCOME_LEDGER: ${{ steps.ledger.outcome }}
+          OUTCOME_EIDOS: ${{ steps.eidos.outcome }}
           OUTCOME_CONNECTORS: ${{ steps.connectors.outcome }}
           OUTCOME_WORK: ${{ steps.work.outcome }}
           OUTCOME_QHORUS: ${{ steps.qhorus.outcome }}
@@ -646,6 +705,7 @@ jobs:
           OUTCOME_DEVTOWN: ${{ steps.devtown.outcome }}
           OUTCOME_AML: ${{ steps.aml.outcome }}
           OUTCOME_CLINICAL: ${{ steps.clinical.outcome }}
+          OUTCOME_QUARKMIND: ${{ steps.quarkmind.outcome }}
         run: |
           mkdir -p .incremental-state
 
@@ -660,16 +720,19 @@ jobs:
 
           {
             echo "parent=${SHA_PARENT}"
+            record platform   "$SHA_PLATFORM"   "${PREV_PLATFORM:-none}"   "$OUTCOME_PLATFORM"
             record ledger     "$SHA_LEDGER"     "${PREV_LEDGER:-none}"     "$OUTCOME_LEDGER"
+            record eidos      "$SHA_EIDOS"      "${PREV_EIDOS:-none}"      "$OUTCOME_EIDOS"
             record connectors "$SHA_CONNECTORS" "${PREV_CONNECTORS:-none}" "$OUTCOME_CONNECTORS"
             record work       "$SHA_WORK"       "${PREV_WORK:-none}"       "$OUTCOME_WORK"
             record qhorus     "$SHA_QHORUS"     "${PREV_QHORUS:-none}"     "$OUTCOME_QHORUS"
             record engine     "$SHA_ENGINE"     "${PREV_ENGINE:-none}"     "$OUTCOME_ENGINE"
             record claudony   "$SHA_CLAUDONY"   "${PREV_CLAUDONY:-none}"   "$OUTCOME_CLAUDONY"
             if [ "$INCLUDE_APPLICATIONS" = "true" ]; then
-              record devtown  "$SHA_DEVTOWN"  "${PREV_DEVTOWN:-none}"  "$OUTCOME_DEVTOWN"
-              record aml      "$SHA_AML"      "${PREV_AML:-none}"      "$OUTCOME_AML"
-              record clinical "$SHA_CLINICAL" "${PREV_CLINICAL:-none}" "$OUTCOME_CLINICAL"
+              record devtown   "$SHA_DEVTOWN"   "${PREV_DEVTOWN:-none}"   "$OUTCOME_DEVTOWN"
+              record aml       "$SHA_AML"       "${PREV_AML:-none}"       "$OUTCOME_AML"
+              record clinical  "$SHA_CLINICAL"  "${PREV_CLINICAL:-none}"  "$OUTCOME_CLINICAL"
+              record quarkmind "$SHA_QUARKMIND" "${PREV_QUARKMIND:-none}" "$OUTCOME_QUARKMIND"
             fi
           } > .incremental-state/shas.txt
 
@@ -692,7 +755,9 @@ jobs:
           SKIP_TESTS: ${{ inputs.skip_tests }}
           SKIP_ITS: ${{ inputs.skip_integration_tests }}
           FORCE_REBUILD: ${{ inputs.force_rebuild }}
+          DECISION_PLATFORM: ${{ steps.platform.outputs.decision }}
           DECISION_LEDGER: ${{ steps.ledger.outputs.decision }}
+          DECISION_EIDOS: ${{ steps.eidos.outputs.decision }}
           DECISION_CONNECTORS: ${{ steps.connectors.outputs.decision }}
           DECISION_WORK: ${{ steps.work.outputs.decision }}
           DECISION_QHORUS: ${{ steps.qhorus.outputs.decision }}
@@ -701,8 +766,11 @@ jobs:
           DECISION_DEVTOWN: ${{ steps.devtown.outputs.decision }}
           DECISION_AML: ${{ steps.aml.outputs.decision }}
           DECISION_CLINICAL: ${{ steps.clinical.outputs.decision }}
+          DECISION_QUARKMIND: ${{ steps.quarkmind.outputs.decision }}
           INCLUDE_APPLICATIONS: ${{ inputs.include_applications }}
+          OUTCOME_PLATFORM: ${{ steps.platform.outcome }}
           OUTCOME_LEDGER: ${{ steps.ledger.outcome }}
+          OUTCOME_EIDOS: ${{ steps.eidos.outcome }}
           OUTCOME_CONNECTORS: ${{ steps.connectors.outcome }}
           OUTCOME_WORK: ${{ steps.work.outcome }}
           OUTCOME_QHORUS: ${{ steps.qhorus.outcome }}
@@ -711,6 +779,7 @@ jobs:
           OUTCOME_DEVTOWN: ${{ steps.devtown.outcome }}
           OUTCOME_AML: ${{ steps.aml.outcome }}
           OUTCOME_CLINICAL: ${{ steps.clinical.outcome }}
+          OUTCOME_QUARKMIND: ${{ steps.quarkmind.outcome }}
         run: |
           if [ "$SKIP_TESTS" = "true" ]; then
             TEST_MODE="compile check only"
@@ -721,10 +790,12 @@ jobs:
           fi
           [ "$FORCE_REBUILD" = "true" ] && TEST_MODE="$TEST_MODE — forced rebuild"
 
-          MODULES=(ledger connectors work qhorus engine claudony)
-          [ "$INCLUDE_APPLICATIONS" = "true" ] && MODULES+=(devtown aml clinical)
+          MODULES=(platform ledger eidos connectors work qhorus engine claudony)
+          [ "$INCLUDE_APPLICATIONS" = "true" ] && MODULES+=(devtown aml clinical quarkmind)
           declare -A DECISIONS=(
+            [platform]="$DECISION_PLATFORM"
             [ledger]="$DECISION_LEDGER"
+            [eidos]="$DECISION_EIDOS"
             [connectors]="$DECISION_CONNECTORS"
             [work]="$DECISION_WORK"
             [qhorus]="$DECISION_QHORUS"
@@ -733,9 +804,12 @@ jobs:
             [devtown]="$DECISION_DEVTOWN"
             [aml]="$DECISION_AML"
             [clinical]="$DECISION_CLINICAL"
+            [quarkmind]="$DECISION_QUARKMIND"
           )
           declare -A OUTCOMES=(
+            [platform]="$OUTCOME_PLATFORM"
             [ledger]="$OUTCOME_LEDGER"
+            [eidos]="$OUTCOME_EIDOS"
             [connectors]="$OUTCOME_CONNECTORS"
             [work]="$OUTCOME_WORK"
             [qhorus]="$OUTCOME_QHORUS"
@@ -744,6 +818,7 @@ jobs:
             [devtown]="$OUTCOME_DEVTOWN"
             [aml]="$OUTCOME_AML"
             [clinical]="$OUTCOME_CLINICAL"
+            [quarkmind]="$OUTCOME_QUARKMIND"
           )
 
           {
@@ -769,7 +844,9 @@ jobs:
               *)        icon="—" ;;
             esac
 
-            echo "| [$module](https://github.com/casehubio/$module) | $decision | $icon | $duration |" \
+            repo_org="casehubio"
+            [ "$module" = "quarkmind" ] && repo_org="mdproctor"
+            echo "| [$module](https://github.com/$repo_org/$module) | $decision | $icon | $duration |" \
               >> "$GITHUB_STEP_SUMMARY"
           done
 

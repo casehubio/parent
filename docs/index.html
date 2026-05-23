@@ -214,7 +214,7 @@
 
 <section>
   <div class="section-header">
-    <h2>Build Status</h2>
+    <h2>Platform Build Status</h2>
     <span class="count" id="builds-count">—</span>
   </div>
   <div class="table-wrap">
@@ -229,6 +229,29 @@
         </tr>
       </thead>
       <tbody id="builds-body">
+        <tr class="state-row"><td colspan="5">Loading…</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="section-header">
+    <h2>Applications</h2>
+    <span class="count" id="apps-count">—</span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Repository</th>
+          <th>Status</th>
+          <th>Branch</th>
+          <th>Last run</th>
+          <th>Commit</th>
+        </tr>
+      </thead>
+      <tbody id="apps-body">
         <tr class="state-row"><td colspan="5">Loading…</td></tr>
       </tbody>
     </table>
@@ -261,15 +284,29 @@
 <script>
   const ORG   = 'casehubio';
   const API   = 'https://api.github.com';
-  const REPOS = [
-    'quarkus-langchain4j',
-    'quarkus-ledger',
-    'quarkus-work',
-    'quarkus-qhorus',
+
+  // Platform repos (casehubio org)
+  const PLATFORM_REPOS = [
+    'parent',
+    'platform',
+    'ledger',
+    'eidos',
+    'connectors',
+    'work',
+    'qhorus',
     'engine',
     'claudony',
-    'casehub-parent',
   ];
+
+  // Application repos — may span multiple orgs
+  const APP_REPOS = [
+    { org: 'casehubio', name: 'devtown' },
+    { org: 'casehubio', name: 'aml' },
+    { org: 'casehubio', name: 'clinical' },
+    { org: 'mdproctor',  name: 'quarkmind' },
+  ];
+
+  const REPOS = PLATFORM_REPOS; // legacy alias used by fetchRepos()
   const REFRESH_MS = 15 * 60 * 1000; // 15 minutes
 
   let refreshTimer = null;
@@ -323,18 +360,24 @@
   // ── Fetch ecosystem repos ────────────────────────────────────────────────────
 
   async function fetchRepos() {
-    const results = await Promise.all(REPOS.map(name => get(`/repos/${ORG}/${name}`)));
+    const results = await Promise.all(PLATFORM_REPOS.map(name => get(`/repos/${ORG}/${name}`)));
     return results.filter(Boolean);
   }
 
-  // ── Build status ────────────────────────────────────────────────────────────
+  async function fetchAppRepos() {
+    const results = await Promise.all(APP_REPOS.map(r => get(`/repos/${r.org}/${r.name}`)));
+    return results.filter(Boolean);
+  }
 
-  async function renderBuilds(repos) {
-    const tbody = document.getElementById('builds-body');
+  // ── Build status (shared renderer) ──────────────────────────────────────────
+
+  async function renderBuildTable(repos, tbodyId, countId) {
+    const tbody = document.getElementById(tbodyId);
     tbody.innerHTML = '<tr class="state-row"><td colspan="5">Loading…</td></tr>';
 
     const rows = await Promise.all(repos.map(async repo => {
-      const data = await get(`/repos/${ORG}/${repo.name}/actions/runs?branch=main&event=push&per_page=1`);
+      const repoOrg = repo.full_name.split('/')[0];
+      const data = await get(`/repos/${repo.full_name}/actions/runs?branch=main&event=push&per_page=1`);
       const run  = data?.workflow_runs?.[0];
       if (!run) return null;
 
@@ -353,11 +396,19 @@
     }));
 
     const valid = rows.filter(Boolean);
-    document.getElementById('builds-count').textContent = valid.length;
+    document.getElementById(countId).textContent = valid.length;
 
     tbody.innerHTML = valid.length
       ? valid.join('')
       : '<tr class="state-row"><td colspan="5">No build runs found.</td></tr>';
+  }
+
+  async function renderBuilds(repos) {
+    return renderBuildTable(repos, 'builds-body', 'builds-count');
+  }
+
+  async function renderApps(repos) {
+    return renderBuildTable(repos, 'apps-body', 'apps-count');
   }
 
   // ── PR status ───────────────────────────────────────────────────────────────
@@ -367,11 +418,11 @@
     tbody.innerHTML = '<tr class="state-row"><td colspan="5">Loading…</td></tr>';
 
     const perRepo = await Promise.all(repos.map(async repo => {
-      const prs = await get(`/repos/${ORG}/${repo.name}/pulls?state=open&per_page=100`);
+      const prs = await get(`/repos/${repo.full_name}/pulls?state=open&per_page=100`);
       if (!prs || prs.length === 0) return [];
 
       return Promise.all(prs.map(async pr => {
-        const checks = await get(`/repos/${ORG}/${repo.name}/commits/${pr.head.sha}/check-runs?per_page=100`);
+        const checks = await get(`/repos/${repo.full_name}/commits/${pr.head.sha}/check-runs?per_page=100`);
         const runs   = checks?.check_runs ?? [];
 
         const nFail = runs.filter(c => c.conclusion === 'failure' || c.conclusion === 'timed_out').length;
@@ -422,7 +473,7 @@
     clearTimeout(refreshTimer);
 
     try {
-      const repos = await fetchRepos();
+      const [repos, appRepos] = await Promise.all([fetchRepos(), fetchAppRepos()]);
 
       if (!repos.length) {
         banner.textContent = `Could not load repos for org "${ORG}". GitHub API rate limit may have been hit.`;
@@ -430,9 +481,11 @@
         return;
       }
 
+      const allRepos = [...repos, ...appRepos];
       await Promise.all([
         renderBuilds(repos),
-        renderPRs(repos),
+        renderApps(appRepos),
+        renderPRs(allRepos),
       ]);
 
       document.getElementById('updated').textContent =

@@ -32,7 +32,9 @@
 
   <modules>
     <!-- All repos are siblings of this parent under ~/claude/casehub/ -->
+    <module>../platform</module>
     <module>../ledger</module>
+    <module>../eidos</module>
     <module>../connectors</module>
     <module>../work</module>
     <module>../qhorus</module>
@@ -46,6 +48,15 @@
       <id>langchain4j</id>
       <modules>
         <module>../../quarkus-langchain4j</module>
+      </modules>
+    </profile>
+    <profile>
+      <!-- Activate with -Papps — include application repos (devtown, aml, clinical) -->
+      <id>apps</id>
+      <modules>
+        <module>../devtown</module>
+        <module>../aml</module>
+        <module>../clinical</module>
       </modules>
     </profile>
   </profiles>

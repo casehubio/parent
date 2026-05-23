@@ -21,7 +21,21 @@ jobs:
           set -euo pipefail
 
           # Explicit ecosystem repo list — avoids demo/scratch repos polluting the dashboard
-          REPOS=$(printf '%s\n' parent connectors engine ledger work qhorus claudony devtown)
+          # Format: org/repo (quarkmind is in mdproctor org, all others in casehubio)
+          REPOS=$(printf '%s\n' \
+            casehubio/parent \
+            casehubio/platform \
+            casehubio/ledger \
+            casehubio/eidos \
+            casehubio/connectors \
+            casehubio/work \
+            casehubio/qhorus \
+            casehubio/engine \
+            casehubio/claudony \
+            casehubio/devtown \
+            casehubio/aml \
+            casehubio/clinical \
+            mdproctor/quarkmind)
 
           if [ -z "$REPOS" ]; then
             echo "::error::REPOS list is empty."
@@ -40,8 +54,9 @@ jobs:
           TOTAL_PRS=0
           FAILING_PRS=0
 
-          while IFS= read -r repo; do
-            PRS=$(gh api "/repos/$ORG/$repo/pulls?state=open&per_page=100" \
+          while IFS= read -r full_repo; do
+            repo="${full_repo##*/}"
+            PRS=$(gh api "/repos/$full_repo/pulls?state=open&per_page=100" \
               --jq '.[] | [.number, .title, .user.login, .head.sha, .html_url] | @tsv' \
               2>/dev/null | tr -d '\000-\010\013-\037\177' || true)
 
@@ -54,7 +69,7 @@ jobs:
 
               # Aggregate check-runs for the PR head commit
               # Sanitize control characters before jq to handle emoji in check names
-              CHECKS=$(gh api "/repos/$ORG/$repo/commits/$pr_sha/check-runs?per_page=100" \
+              CHECKS=$(gh api "/repos/$full_repo/commits/$pr_sha/check-runs?per_page=100" \
                 2>/dev/null | tr -d '\000-\010\013-\037\177' | jq -r '.check_runs' 2>/dev/null || echo "[]")
 
               check_count=$(echo "$CHECKS" | jq 'length')
@@ -91,7 +106,7 @@ jobs:
                 pr_title="${pr_title:0:52}..."
               fi
 
-              echo "| [$repo](https://github.com/$ORG/$repo) | [#${pr_number} ${pr_title}](${pr_url}) | @${pr_author} | ${ci_icon} ${ci_label} | ${check_summary} |" \
+              echo "| [$repo](https://github.com/$full_repo) | [#${pr_number} ${pr_title}](${pr_url}) | @${pr_author} | ${ci_icon} ${ci_label} | ${check_summary} |" \
                 >> "$GITHUB_STEP_SUMMARY"
             done <<< "$PRS"
           done <<< "$REPOS"

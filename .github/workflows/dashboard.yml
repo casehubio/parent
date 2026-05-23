@@ -23,7 +23,21 @@ jobs:
           set -euo pipefail
 
           # Explicit ecosystem repo list — avoids demo/scratch repos polluting the dashboard
-          REPOS=$(printf '%s\n' parent connectors engine ledger eidos work qhorus claudony devtown)
+          # Format: org/repo (quarkmind is in mdproctor org, all others in casehubio)
+          REPOS=$(printf '%s\n' \
+            casehubio/parent \
+            casehubio/platform \
+            casehubio/ledger \
+            casehubio/eidos \
+            casehubio/connectors \
+            casehubio/work \
+            casehubio/qhorus \
+            casehubio/engine \
+            casehubio/claudony \
+            casehubio/devtown \
+            casehubio/aml \
+            casehubio/clinical \
+            mdproctor/quarkmind)
 
           if [ -z "$REPOS" ]; then
             echo "::error::REPOS list is empty — check workflow configuration."
@@ -43,13 +57,14 @@ jobs:
           NO_RUNS_COUNT=0
           PASS_COUNT=0
 
-          while IFS= read -r repo; do
+          while IFS= read -r full_repo; do
+            repo="${full_repo##*/}"
             # Check latest push-triggered run on main regardless of workflow name.
             # Filtering by workflow name misses repos that use different filenames
             # (e.g. engine uses maven.yml, not publish.yml).
             # Strip control chars (U+0000-U+001F except \n) before jq to handle
             # emoji/special chars in commit messages that break JSON parsing.
-            RUN=$(gh api "/repos/$ORG/$repo/actions/runs?branch=main&event=push&per_page=1" \
+            RUN=$(gh api "/repos/$full_repo/actions/runs?branch=main&event=push&per_page=1" \
               2>/dev/null \
               | tr -d '\000-\010\013-\037\177' \
               | jq -r '.workflow_runs[0] // empty' 2>/dev/null || true)
@@ -58,7 +73,7 @@ jobs:
               # No push runs on main yet — flag as warning, not silent skip
               NO_RUNS_COUNT=$((NO_RUNS_COUNT + 1))
               FAIL_COUNT=$((FAIL_COUNT + 1))
-              echo "| [$repo](https://github.com/$ORG/$repo) | ⚠️ no runs | — | \`main\` | — | — |" \
+              echo "| [$repo](https://github.com/$full_repo) | ⚠️ no runs | — | \`main\` | — | — |" \
                 >> "$GITHUB_STEP_SUMMARY"
               continue
             fi
@@ -84,7 +99,7 @@ jobs:
               FAIL_COUNT=$((FAIL_COUNT + 1))
             fi
 
-            echo "| [$repo](https://github.com/$ORG/$repo) | [$icon $conclusion]($run_url) | $wf_name | \`$branch\` | $updated | \`$sha\` |" \
+            echo "| [$repo](https://github.com/$full_repo) | [$icon $conclusion]($run_url) | $wf_name | \`$branch\` | $updated | \`$sha\` |" \
               >> "$GITHUB_STEP_SUMMARY"
           done <<< "$REPOS"
 

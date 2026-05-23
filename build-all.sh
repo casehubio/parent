@@ -15,11 +15,12 @@
 #   ~/claude/quarkus-langchain4j/  ← outside casehub/
 #
 # Usage:
-#   ./build-all.sh              # incremental build
-#   ./build-all.sh --no-cache   # force full rebuild
+#   ./build-all.sh                  # incremental build
+#   ./build-all.sh --no-cache       # force full rebuild
 #   ./build-all.sh --skip-tests
 #   ./build-all.sh -DskipTests
 #   ./build-all.sh -T 1C
+#   ./build-all.sh --include-apps   # also build devtown, aml, clinical
 
 set -euo pipefail
 
@@ -32,57 +33,83 @@ LOG_FILE="$LOG_DIR/$TIMESTAMP.shas"
 # Repo name → local directory (relative to this script)
 declare -A REPO_DIR
 REPO_DIR[quarkus-langchain4j]="../../quarkus-langchain4j"
+REPO_DIR[platform]="../platform"
 REPO_DIR[ledger]="../ledger"
+REPO_DIR[eidos]="../eidos"
 REPO_DIR[connectors]="../connectors"
 REPO_DIR[work]="../work"
 REPO_DIR[qhorus]="../qhorus"
 REPO_DIR[engine]="../engine"
 REPO_DIR[claudony]="../claudony"
+REPO_DIR[devtown]="../devtown"
+REPO_DIR[aml]="../aml"
+REPO_DIR[clinical]="../clinical"
 
 # Repo name → GitHub repo name (for cloning)
 declare -A REPO_GH
 REPO_GH[quarkus-langchain4j]="quarkus-langchain4j"
+REPO_GH[platform]="platform"
 REPO_GH[ledger]="ledger"
+REPO_GH[eidos]="eidos"
 REPO_GH[connectors]="connectors"
 REPO_GH[work]="work"
 REPO_GH[qhorus]="qhorus"
 REPO_GH[engine]="engine"
 REPO_GH[claudony]="claudony"
+REPO_GH[devtown]="devtown"
+REPO_GH[aml]="aml"
+REPO_GH[clinical]="clinical"
 
 # Dependency graph
 declare -A DEPS
 DEPS[quarkus-langchain4j]=""
-DEPS[ledger]=""
-DEPS[connectors]=""
+DEPS[platform]=""
+DEPS[ledger]="platform"
+DEPS[eidos]="ledger"
+DEPS[connectors]="platform"
 DEPS[work]="ledger connectors"
 DEPS[qhorus]="ledger work"
 DEPS[engine]="quarkus-langchain4j ledger work"
 DEPS[claudony]="ledger work qhorus"
+DEPS[devtown]="ledger work qhorus engine"
+DEPS[aml]="ledger work qhorus engine"
+DEPS[clinical]="ledger work qhorus engine"
 
-# Build order (topological)
-REPOS=(quarkus-langchain4j ledger connectors work qhorus engine claudony)
+# Core build order (topological) — apps added below if --include-apps
+REPOS=(quarkus-langchain4j platform ledger eidos connectors work qhorus engine claudony)
 
 # Aggregator module paths (match aggregator.xml <module> entries)
 declare -A MODULE_PATH
 MODULE_PATH[quarkus-langchain4j]="../../quarkus-langchain4j"
+MODULE_PATH[platform]="../platform"
 MODULE_PATH[ledger]="../ledger"
+MODULE_PATH[eidos]="../eidos"
 MODULE_PATH[connectors]="../connectors"
 MODULE_PATH[work]="../work"
 MODULE_PATH[qhorus]="../qhorus"
 MODULE_PATH[engine]="../engine"
 MODULE_PATH[claudony]="../claudony"
+MODULE_PATH[devtown]="../devtown"
+MODULE_PATH[aml]="../aml"
+MODULE_PATH[clinical]="../clinical"
 
 # Parse flags
 NO_CACHE=false
 SKIP_TESTS=false
+INCLUDE_APPS=false
 MVN_ARGS=()
 for arg in "$@"; do
   case "$arg" in
-    --no-cache)    NO_CACHE=true ;;
-    --skip-tests)  SKIP_TESTS=true ;;
-    *)             MVN_ARGS+=("$arg") ;;
+    --no-cache)      NO_CACHE=true ;;
+    --skip-tests)    SKIP_TESTS=true ;;
+    --include-apps)  INCLUDE_APPS=true ;;
+    *)               MVN_ARGS+=("$arg") ;;
   esac
 done
+
+if [ "$INCLUDE_APPS" = true ]; then
+  REPOS+=(devtown aml clinical)
+fi
 
 mkdir -p "$LOG_DIR"
 { echo "# casehubio full-stack build"; echo "# timestamp: $TIMESTAMP"; echo ""; } > "$LOG_FILE"
