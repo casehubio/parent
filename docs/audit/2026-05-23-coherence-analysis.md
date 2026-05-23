@@ -16,10 +16,10 @@
 | M7 | Architecture placement | 26 | 1/1 ✅ |
 | M8 | Normative enforcement | 30, 32 | 2/2 ✅ |
 | L1 | Verification required | 5 | 1/1 ✅ |
-| L2 | Documentation + patterns | 11, 12 | 0/2 |
+| L2 | Documentation + patterns | 11, 12 | 2/2 ✅ |
 | L3 | Structural debt | 13, 19, 27 | 0/3 |
 
-**Total:** 18 / 23 findings complete
+**Total:** 20 / 23 findings complete
 
 ## Findings
 
@@ -1135,3 +1135,130 @@ via engine#185) was specifically designed to enable.
 ### Issue
 
 casehubio/engine#342
+
+---
+
+## Batch L2 — Documentation + patterns (findings 11, 12)
+
+---
+
+## Finding 11 — claudony auth not documented as gateway pattern; other repos have no security
+
+**Status:** Confirmed — documentation gap; the security implementation IS there, but not explained
+**Batch:** L2
+**Repos:** claudony, quarkus-qhorus, casehub-engine, quarkus-work
+
+### Verification
+
+- **Code read:** `MeshResource.java`, `SessionResource.java`, `ApiKeyAuthMechanism.java`,
+  `CredentialStore.java`; qhorus-wide search for `@RolesAllowed`, `@Authenticated`
+- **Evidence:**
+  - Claudony has WebAuthn + API key authentication. `MeshResource` is `@Authenticated`.
+    `SecurityIdentity.getPrincipal().getName()` is used to build the actor sender ID.
+    `ApiKeyAuthMechanism` validates API keys per request. This is a full auth layer.
+  - Qhorus REST resources: **zero `@RolesAllowed` or `@Authenticated`** annotations.
+    Qhorus accepts messages from any caller with no authentication.
+  - casehub-engine, quarkus-work: same — no auth annotations on REST resources.
+  - There is no document (PLATFORM.md, APPLICATIONS.md, README, garden protocol) that
+    states: "claudony is the auth gateway — deploy it in front of qhorus for human-facing
+    operations. Other repos assume they are called by trusted internal services."
+  - Garden protocol `auth-retrofit-readiness.md` exists but describes adding auth to
+    individual repos, not the gateway topology.
+
+### Root Cause
+
+Security was added to claudony because it's the human-facing entry point (Claude Code agents
+connect to it). The other repos were built as internal services with no direct human access
+assumed. The implicit deployment contract (claudony authenticates, passes identity via sender
+field, other repos trust) was never written down.
+
+### Blast Radius
+
+Any developer who deploys `quarkus-qhorus` standalone (or mounts it without claudony in front)
+gets an unauthenticated Qhorus server. All COMMAND/HANDOFF/DONE messages can be sent by anyone.
+Without documentation of the gateway pattern, this is an invisible security risk in custom
+deployment topologies. The risk is amplified by the A2A endpoint (qhorus#197), which exposes
+an external API surface with no authentication.
+
+### Implementation Guidance
+
+1. Add a section to `docs/PLATFORM.md` (or a new `docs/auth-architecture.md`) documenting
+   the gateway pattern:
+   - claudony = authenticated entry point for human operators and Claude agents
+   - Qhorus, engine, work = internal services; assume callers are trusted (mTLS, network
+     policy, or claudony authentication upstream)
+   - Standalone deployment without claudony requires deploying an auth proxy or adding
+     Quarkus OIDC/JWT to the relevant repos
+2. Update the garden protocol `auth-retrofit-readiness.md` to reference the gateway pattern
+   and when it applies vs when per-repo auth is needed.
+3. Document the A2A endpoint (qhorus) security posture explicitly — currently unauthenticated.
+
+**Scale:** XS — documentation only
+**Complexity:** Low — design is clear; writing it down is the work
+
+### Issue
+
+casehubio/parent#57
+
+---
+
+## Finding 12 — @Alternative pattern inverted across repos
+
+**Status:** Partially Confirmed — the inversion is real but intentional; documentation is the fix
+**Batch:** L2
+**Repos:** casehub-ledger, quarkus-work, quarkus-qhorus
+
+### Verification
+
+- **Code read:** `JpaLedgerEntryRepository.java` (ledger), `WorkItemStore.java` (work),
+  `SemanticWorkerSelectionStrategy.java` (work-ai), SPI javadoc across both repos
+- **Evidence:**
+  - **casehub-ledger:** `JpaLedgerEntryRepository` is `@Alternative`. Extensions (e.g.
+    `JpaWorkItemLedgerEntryRepository`, `JpaWorkItemLedgerEntryRepository`) are NOT
+    `@Alternative` — they are normal `@ApplicationScoped` beans that subclass the base.
+    Pattern: **base = `@Alternative`, extension = default bean**.
+  - **quarkus-work:** Base implementations (`JpaWorkItemStore`, `PanacheAuditEntryStore`)
+    are NOT `@Alternative`. Overrides (MongoDB, InMemory test, Postgres broadcaster,
+    `SemanticWorkerSelectionStrategy`) ARE `@Alternative @Priority(1)`.
+    Pattern: **base = default bean, extension = `@Alternative`**.
+  - The inversion is intentional: ledger's base is `@Alternative` to avoid CDI ambiguity
+    when both `JpaLedgerEntryRepository` and a domain-specific subclass (e.g.
+    `JpaWorkItemLedgerEntryRepository`) are on the classpath. Without the base being
+    `@Alternative`, two beans satisfy `LedgerEntryRepository` → `AmbiguousResolutionException`.
+  - Work does not have this ambiguity problem — each SPI has exactly one default implementation.
+  - Neither codebase documents WHY their `@Alternative` convention is what it is.
+
+### Root Cause
+
+The two repos solve different extensibility problems:
+- Ledger: polymorphic extension via inheritance (subclassing the base). Base must be
+  `@Alternative` to prevent CDI ambiguity when the subclass is present.
+- Work: replacement via CDI priority (different implementation, same interface). Base is
+  the active default; alternatives replace it with a higher priority.
+
+Both patterns are correct for their use cases but are opposite in direction. No document
+explains this, so developers moving between repos apply the wrong pattern.
+
+### Blast Radius
+
+A developer extending a ledger repository WITHOUT subclassing (using `@Alternative @Priority`
+like work) would get an `AmbiguousResolutionException` at startup — two beans for
+`LedgerEntryRepository`. A developer extending a work SPI VIA subclassing (not using
+`@Alternative`) would get CDI ambiguity too. The mismatch is a trap for cross-repo developers.
+
+### Implementation Guidance
+
+1. Add a javadoc block to `JpaLedgerEntryRepository` explaining WHY it is `@Alternative`:
+   "This base is `@Alternative` to prevent CDI ambiguity when a domain-specific subclass is
+   present. Do not override via `@Alternative @Priority` — subclass this class instead."
+2. Add a javadoc block to `WorkItemStore` (and other work SPIs) explaining the opposite:
+   "Override via `@Alternative @Priority(1)` — do not subclass the default implementation."
+3. Add a garden protocol: `alternative-extension-patterns.md` — document both patterns,
+   when to use each, and why they differ.
+
+**Scale:** XS — javadoc additions + one garden protocol
+**Complexity:** Low — design is clear; documentation is the output
+
+### Issue
+
+casehubio/parent#58
