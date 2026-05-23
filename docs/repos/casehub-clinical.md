@@ -2,7 +2,7 @@
 
 **GitHub:** [casehubio/clinical](https://github.com/casehubio/clinical)
 **Tier:** Application
-**Status:** Active — Layers 1, 2, 4 complete; Layer 3 in progress (Epic 5)
+**Status:** Active — Layers 1–5 complete; Layer 6 blocked on engine#112
 
 ## What It Is
 
@@ -22,10 +22,10 @@ The tutorial structure emerges from the natural adoption sequence. Each layer ad
 |-------|------|---------------|--------|
 | 1 | Naive Java — no CaseHub | Baseline: direct service calls, no SLA, no audit | complete (Epics 1+2, 2026-05-08) |
 | 2 | casehub-work | No formal SLA for adverse event review (GCP: serious AE within 24h) | complete (Epic 4, 2026-05-12) |
-| 3 | casehub-qhorus | No formal obligation when coordinating PI authorisation and safety agents | in progress (Epic 5, 2026-05-15–) |
+| 3 | casehub-qhorus | No formal obligation when coordinating PI authorisation and safety agents | complete (Epic 5, 2026-05-15) |
 | 4 | casehub-ledger | No FDA tamper-evident audit trail; no GDPR Art.17 consent withdrawal | complete (Epic 4, 2026-05-12) |
-| 5 | casehub-engine | Fixed trial pipeline; no adaptive paths for grade-based escalation or IRB gates | pending |
-| 6 | Trust routing | No trust model; experienced safety agents not prioritised on complex CTCAE Grade 4+ events | pending |
+| 5 | casehub-engine | Fixed trial pipeline; no adaptive paths for grade-based escalation or IRB gates | complete (Epic 6, 2026-05-23) |
+| 6 | Trust routing | No trust model; experienced safety agents not prioritised on complex CTCAE Grade 4+ events | blocked on engine#112 |
 | 7 | Comparison vs ClinicalAgent | — | pending |
 
 ## What It Owns
@@ -36,7 +36,8 @@ The tutorial structure emerges from the natural adoption sequence. Each layer ad
 - Multi-site trial `CasePlanModel` — site-level sub-cases with trial-level aggregation
 - Adverse event escalation — 24h/7d GCP SLA WorkItems with CTCAE grading
 - PI authorisation — formal COMMAND creates Commitment; deviation requires named PI approval; MAJOR deviations trigger GCP §4.5 sponsor notification via `SponsorNotifier` SPI (casehub-connectors-core)
-- IRB/ethics committee gate — WorkItem with SLA
+- IRB/ethics committee gate — `ClinicalDeviationCaseHub` + `deviation-review.yaml`: CRITICAL protocol deviation + PI approval → 72h WorkItem → four terminal outcomes (APPROVED/REJECTED/DEFERRED/EXPIRED); `IrbDecisionListener` bridges WorkItem lifecycle to `IrbApproval` entity + ledger
+- AE escalation policy SPI — `AdverseEventEscalationPolicy` + `DefaultAdverseEventEscalationPolicy` (CTCAE-based): Grade 3 → senior monitor gate; Grade 4+ → senior monitor + DSMB in parallel; `ClinicalAdverseEventCaseHub` + `ae-escalation.yaml` drives adaptive routing via `contextChange.filter`
 - 3-site showcase scenario vs ClinicalAgent
 
 ## The Compliance Gap It Closes
@@ -44,34 +45,31 @@ The tutorial structure emerges from the natural adoption sequence. Each layer ad
 ClinicalAgent (peer-reviewed baseline) structurally cannot provide:
 - Adverse event SLA enforcement (GCP: serious events within 24h) — WorkItem `claimDeadline`
 - Protocol deviation authorisation by named PI — COMMAND commitment lifecycle
-- Consent withdrawal (GDPR Art.17) — ledger erasure and decision context sanitisation. See docs/DESIGN.md for implementation classes.
+- Consent withdrawal (GDPR Art.17) — ledger erasure and decision context sanitisation
 - Multi-site independence with trial-level rollup — sub-case orchestration
 - FDA tamper-evident audit trail — Merkle MMR + Ed25519-signed checkpoints
 - Trust-weighted safety agent routing — Bayesian Beta from outcome attestations
+- Adaptive protocol paths — IRB gate and grade-based AE escalation via casehub-engine `CasePlanModel`
 
 ## Dependencies
 
 ```
 casehub-clinical
-  → casehub-engine   (multi-site sub-case orchestration, CasePlanModel, stage gating)
+  → casehub-engine   (IRB gate, AE escalation, CasePlanModel, stage gating; multi-site sub-cases pending engine#112)
   → casehub-ledger   (FDA Merkle audit, GDPR erasure, EU AI Act Art.12, trust scoring)
   → casehub-work     (IRB/PI WorkItems with SLA and escalation)
   → casehub-qhorus   (COMMAND to PI, commitment lifecycle, safety agent channels)
   → casehub-connectors-core (sponsor notification delivery — clinical#13; DSMB/AE alerts planned — clinical#11)
 ```
 
-## Critical Foundation Gap
-
-`casehub-work-adapter` HITL wiring — WorkItem completion must signal plan item transition from WAITING to active. Without this, the IRB approval gate cannot complete. Raise issue in casehub-work before implementing Epic 6.
-
 ## Key Epics
 
-1. Project scaffold
-2. Domain model — clinical trial entities and capability tags
-3. Multi-site sub-case structure
-4. Adverse event escalation — 24h and 7d GCP SLAs
-5. PI authorisation — formal commitment for protocol deviations
-6. IRB/ethics committee gate
+1. Project scaffold — complete
+2. Domain model — clinical trial entities and capability tags — complete
+3. Multi-site sub-case structure — pending (blocked on engine#112)
+4. Adverse event escalation — 24h and 7d GCP SLAs — complete
+5. PI authorisation — formal commitment for protocol deviations — complete
+6. IRB/ethics committee gate + AE escalation policy SPI (casehub-engine) — complete
 7. GDPR and regulatory compliance — patient data
 8. Trust-weighted safety agent routing
 9. LLM supervisor mode — protocol amendment analysis
