@@ -1,74 +1,91 @@
 # casehub-engine — Platform Deep Dive
 
-**GitHub:** [casehubio/engine](https://github.com/casehubio/engine) (local: `casehub-engine`)  
+**GitHub:** [casehubio/engine](https://github.com/casehubio/engine) (local: `casehub-engine`)
 **Platform doc:** [PLATFORM.md](https://raw.githubusercontent.com/casehubio/parent/main/docs/PLATFORM.md)
-
-> **Note:** The original `casehub` repo (local: `~/claude/casehub-poc`) is retiring. Do not add features there. All active development is in `casehub-engine`.
 
 ---
 
 ## Purpose
 
-Hybrid choreography+orchestration coordination engine for multi-agent work. Implements the Blackboard Architecture with CMMN terminology. Coordinates workers (AI agents, humans) via case definitions, binding rules, and optional synchronous orchestration.
+Hybrid choreography+orchestration coordination engine for multi-agent work. Implements the Blackboard Architecture (Hayes-Roth, 1985) with CMMN terminology. Coordinates workers (AI agents, humans) via case definitions, binding rules, and optional synchronous orchestration.
 
 ---
 
 ## Module Structure
 
-| Module | Type | Purpose |
-|---|---|---|
-| `engine-model` | Pure POJOs (no Quarkus) | Core domain model — case definitions, running case state, and persistence SPIs |
-| `engine` | Quarkus module | Choreography handlers, orchestration, worker scheduling, Quartz integration |
-| `api` | SPI definitions | 8 worker provisioner SPIs (4 blocking + 4 reactive) |
-| `casehub-blackboard` | Optional module | CMMN/Blackboard orchestration layer |
-| `casehub-ledger` | Optional module | Tamper-evident case lifecycle ledger; extends the ledger entry model |
-| `casehub-work-adapter` | Module | Bridges work item lifecycle events to plan item transitions |
-| `casehub-persistence-hibernate` | Module | JPA/Panache persistence implementations |
+| Module | Folder | Type | Purpose |
+|---|---|---|---|
+| `casehub-engine-api` | `api` | Pure Java + langchain4j | SPI interfaces, domain model (`Worker`, `Binding`, `Capability`, `HumanTaskTarget`), `Agent` wrapper |
+| `casehub-engine-common` | `common` | Pure Java (no CDI) | Domain objects (`CaseMetaModel`, `CaseInstance`), persistence SPIs, `JQEvaluator`, `EventLog` |
+| `casehub-engine` | `runtime` | Quarkus module | Choreography handlers, orchestration, worker scheduling, expression engine |
+| `casehub-engine-blackboard` | `blackboard` | Optional module | CMMN/Blackboard orchestration — `BlackboardRegistry`, `PlanItem`, `SubCase` lifecycle |
+| `casehub-engine-work-adapter` | `work-adapter` | Module | Bridges casehub-work WorkItem lifecycle to blackboard PlanItem transitions |
+| `casehub-engine-resilience` | `resilience` | Optional module | Dead Letter Queue, PoisonPill detection, backoff strategies, case timeout |
+| `casehub-engine-ledger` | `ledger` | Optional module | Tamper-evident case lifecycle ledger; extends `casehub-ledger` entry model |
+| `casehub-engine-scheduler-quartz` | `scheduler-quartz` | Module | Quartz-based worker execution (RAM store) |
+| `casehub-engine-schema` | `schema` | Build-time | `CaseDefinition.yaml` JSON Schema → generated Java model via jsonschema2pojo |
+| `casehub-engine-persistence-hibernate` | `persistence-hibernate` | Module | JPA/Panache persistence (PostgreSQL) |
+| `casehub-engine-persistence-memory` | `persistence-memory` | Test module | In-memory thread-safe persistence for `@QuarkusTest` without Docker |
+| `casehub-engine-codegen` | `codegen` | Build-time | Code generation utilities |
+| `casehub-engine-testing` | `testing` | Test module | Shared test utilities |
 
 ---
 
 ## Key Abstractions
 
-### Core Model (`engine-model`)
+### YAML DSL (`CaseDefinition.yaml`)
 
-The core model covers: case definitions (capabilities, workers, bindings, goals, milestones in YAML DSL), running case instances with lifecycle status, an append-only internal audit trail for restart recovery, and CDI lifecycle events fired on case status transitions.
+Cases are defined declaratively: namespace, name, version, capabilities, workers, bindings, goals, milestones, completion conditions. `CaseDefinitionYamlMapper` converts the JSON Schema–generated model to the runtime API model.
 
-See `docs/DESIGN.md` for class structure and status enumeration.
+**Binding target types** (mutually exclusive per binding):
+- `capability` — routes to a worker by capability match
+- `subCase` — spawns a child case
+- `humanTask` — creates a WorkItem in casehub-work (inline or template mode). Supports `scope` (hierarchical path for SLA preference resolution), `inputMapping`/`outputMapping` (JQ), `candidateGroups`, `candidateUsers`, `expiresIn`.
+
+**Trigger types:** `contextChange` (with optional `filter` and binding-level `when` guard), `schedule`/`timer`.
 
 ### Engine Handlers
 
-The engine contains CDI handlers for the two execution paths: choreography (evaluates bindings on context change) and orchestration (suspends case, awaits worker completion, resumes). Worker scheduling runs via Quartz. A restart-durable correlation registry bridges the orchestration path across restarts.
+Two execution paths: choreography (evaluates bindings on context change) and orchestration (suspends case, awaits worker completion, resumes).
 
-`WorkBroker` (from `casehub-work-core`) is used for worker selection. casehub-engine does NOT depend on the casehub-work runtime.
-
-See `docs/DESIGN.md` for handler responsibilities and the choreography vs orchestration decision boundary.
+- `CaseContextChangedEventHandler` — evaluates `contextChange.filter` AND `binding.when()` to find eligible bindings, selects via `PlanningStrategyLoopControl`, dispatches by target type
+- `WorkerScheduleEventHandler` — opens channel, builds `CommandContent`, dispatches via `postToChannel` with `correlationId` and `deadline` as first-class SPI params
+- `WorkOrchestrator` — synchronous dispatch path using `WorkBroker` for candidate selection; integrates `CapabilityHealth` probe to filter/sort agent-backed candidates before selection
 
 ### Worker Provisioner SPIs (`api/spi/`)
 
-These are operational contracts — environment-specific implementations belong in the deploying app (Claudony):
+Eight operational SPIs (4 blocking + 4 reactive mirrors):
 
 | SPI | Purpose |
 |---|---|
 | `WorkerProvisioner` / `ReactiveWorkerProvisioner` | Provision and terminate workers |
 | `WorkerStatusListener` / `ReactiveWorkerStatusListener` | Worker lifecycle callbacks (started, completed, stalled) |
-| `CaseChannelProvider` / `ReactiveCaseChannelProvider` | Open/close/post to backend-agnostic channels |
+| `CaseChannelProvider` / `ReactiveCaseChannelProvider` | Open/close/post to backend-agnostic channels. `postToChannel` is 6-param: `(channel, from, content, MessageType, correlationId, deadline)` |
 | `WorkerContextProvider` / `ReactiveWorkerContextProvider` | Build worker startup context from ledger lineage |
 
-Each SPI ships with a no-op default implementation that yields automatically to any consumer-supplied implementation via CDI priority rules.
+All eight ship with `@DefaultBean @ApplicationScoped` no-op defaults that yield automatically to consumer-provided implementations.
 
-See `docs/DESIGN.md` for default implementations and configuration.
+### Blackboard / PlanItem Lifecycle
 
-### Ledger Integration (`casehub-ledger`)
+`BlackboardRegistry` tracks `CasePlanModel` per case. Each binding creates a `PlanItem` that transitions through: `PENDING` → `DELEGATED` (control handed to external system, e.g. human task) or `RUNNING` (Quartz-executed capability worker) → terminal.
 
-An optional module that records case lifecycle events as tamper-evident ledger entries, extending `casehub-ledger`'s entry model. Not yet merged to main.
-
-See `docs/DESIGN.md` for the ledger entry structure.
+`SubCase` lifecycle: parent PlanItem stays `DELEGATED` until child case completes; `SubCaseCompletionService` handles the callback.
 
 ### Work Adapter (`casehub-work-adapter`)
 
-Two-way bridge between casehub-work and CaseHub plan items. Inbound: translates WorkItem lifecycle events into PlanItem transitions and fires context-change events. Outbound: handles human task scheduling — creates WorkItems directly or from templates, with atomicity guarantees between WorkItem creation and PlanItem state.
+Two-way bridge:
+- **Outbound** (`HumanTaskScheduleHandler`) — creates WorkItems from `HumanTaskTarget` bindings (inline or template mode), sets `callerRef`, `scope`, `payload`. Atomicity: WorkItem creation + `planItemStore.save(DELEGATED)` + `markDelegated()` in single `@Transactional`.
+- **Inbound** (`WorkItemLifecycleAdapter`) — translates terminal `WorkItemLifecycleEvent` to PlanItem transitions, evaluates `outputMapping`, fires `CONTEXT_CHANGED`.
 
-See `docs/DESIGN.md` for the adapter contracts and atomicity guarantees (engine#273).
+### CapabilityHealth Integration
+
+Optional integration with `casehub-eidos-api`. `WorkOrchestrator` probes agent-backed workers via `CapabilityHealth.probe()` before candidate selection:
+- `Unavailable` → hard filter (removed from candidates)
+- `EpistemicallyWeak` → preference demotion (sorted last, not removed)
+- `Degraded` → keep, sort after `Ready`
+- No descriptor → skip probe, assume capable
+
+`NoOpCapabilityHealth` `@DefaultBean` returns `Ready` for all probes when eidos is not on the classpath.
 
 ---
 
@@ -77,13 +94,20 @@ See `docs/DESIGN.md` for the adapter contracts and atomicity guarantees (engine#
 | Repo | How |
 |---|---|
 | `casehub-work-core` | `WorkBroker` and selection strategies — NOT the casehub-work runtime |
-| `casehub-ledger` | Optional, via `casehub-ledger` module |
+| `casehub-work-api` | `WorkloadProvider`, `WorkerCandidate`, `WorkerSelectionStrategy` |
+| `casehub-ledger` | Optional, via `casehub-engine-ledger` module |
+| `casehub-qhorus-api` | `MessageType` enum for channel messaging |
+| `casehub-platform-api` | `ActorType`, `PreferenceProvider`, `Path` (transitive via ledger) |
+| `casehub-platform-expression` | `JQEvaluator` for expression evaluation |
+| `casehub-eidos-api` | Optional — `AgentDescriptor`, `CapabilityHealth` for agent health probing |
 
 ## Depended On By
 
-| Repo | How |
-|---|---|
-| `claudony` | Implements the 4 worker provisioner SPIs in `claudony-casehub` module |
+| Repo | Module | How |
+|---|---|---|
+| `claudony` | `claudony-casehub` | Implements the 4 worker provisioner SPIs, provides `ClaudonyReactiveCaseChannelProvider` |
+| `devtown` | `app` | Runtime dep — `casehub-engine-work-adapter` + `casehub-engine-blackboard` for HITL |
+| `casehub-clinical` | `runtime` | Runtime dep — adverse event case coordination |
 
 ---
 
@@ -93,13 +117,13 @@ See `docs/DESIGN.md` for the adapter contracts and atomicity guarantees (engine#
 - Handle agent-to-agent messaging protocols (that is casehub-qhorus)
 - Provide a terminal/session UI (that is claudony)
 - Implement worker provisioner SPIs — only defines the contracts
-- Include Flyway migrations (Hibernate `drop-and-create` for now — no prod instances)
+- Agent identity/discovery/vocabulary (that is casehub-eidos)
 
 ---
 
 ## Schema Management
 
-No Flyway — Hibernate drop-and-create only. No Quartz JDBC store — RAM store only. See `docs/DESIGN.md` for configuration details.
+No Flyway for engine tables — Hibernate `drop-and-create` only (no prod instances to migrate). `casehub-engine-ledger` uses Flyway migrations from `casehub-ledger` (`db/ledger/migration/V1000+`) plus its own `V2000__case_ledger_entry.sql`. Quartz uses RAM store, not JDBC.
 
 ---
 
@@ -110,32 +134,25 @@ casehub-engine is Layer 4 (Enforcement) in the Qhorus normative accountability f
 - `FULFILLED` commitment → case continues to the next worker or step
 - `FAILED` / `EXPIRED` commitment → recovery policy triggers (escalation, reprovision, cancel)
 
-**`sessionMeta` caseId propagation ([claudony#90](https://github.com/casehubio/claudony/issues/90)):** Every worker session must carry the `caseId` in its `sessionMeta` so that cross-repo ledger correlation and Claudony dashboard correlation work correctly. `CaseContextChangedEventHandler` is the integration point — it must populate `sessionMeta.caseId` when provisioning workers via `WorkerProvisioner`. This is a required field; omitting it silently breaks Claudony dashboard correlation and prevents the three-way Worker↔Session↔Channel join.
-
-See the full agent mesh framework spec: [`casehubio/claudony docs/superpowers/specs/2026-04-27-claudony-agent-mesh-framework.md`](https://github.com/casehubio/claudony/blob/main/docs/superpowers/specs/2026-04-27-claudony-agent-mesh-framework.md).
-
----
-
-## Two Audit Mechanisms (Known Gap)
-
-- **EventLog** — engine-internal, append-only, used for restart recovery
-- **CaseLedgerEntry** — external, tamper-evident, written on case lifecycle events
-
-These are complementary, not redundant. A lifecycle transition that doesn't fire a case lifecycle event won't be captured in the external ledger.
+**`sessionMeta` caseId propagation:** Every worker session must carry the `caseId` in its `sessionMeta` for cross-repo ledger correlation and Claudony dashboard correlation.
 
 ---
 
 ## Current State
 
-- Active development. Core choreography and orchestration done.
-- WAITING state durability (restart-safe) done.
-- `casehub-ledger` integration done but unmerged.
-- Worker↔Session↔Channel triple correlation (for Claudony dashboard) not yet stored.
-- Human worker integration, escalation rules, lineage-driven planning still ahead.
+- Core choreography and orchestration: done
+- WAITING state durability (restart-safe): done
+- `casehub-ledger` integration: merged
+- Human worker integration (`humanTask` YAML binding): done — inline + template modes, `scope` for SLA preference routing
+- `casehub-work-adapter`: done — two-way bridge with atomicity guarantees
+- `CapabilityHealth` integration: in progress (engine#341)
+- Resilience module (DLQ, PoisonPill, timeout): done
+- Worker↔Session↔Channel triple correlation: not yet stored
+- Escalation rules, lineage-driven planning: ahead
 
 ---
 
 ## Design Documents
 
-- [docs/DESIGN.md](https://raw.githubusercontent.com/casehubio/engine/main/docs/DESIGN.md) — choreography+orchestration models, worker SPI contracts, ledger integration
-- [adr/INDEX.md](https://raw.githubusercontent.com/casehubio/engine/main/adr/INDEX.md) — architectural decision records (ADR-0003 naming, ADR-0004 claim SLA, ADR-0005 provisioner SPI placement, ADR-0006 worker registration as normative act)
+- [docs/DESIGN.md](https://raw.githubusercontent.com/casehubio/engine/main/docs/DESIGN.md) — choreography+orchestration models, worker SPI contracts, blackboard lifecycle
+- [docs/adr/INDEX.md](https://raw.githubusercontent.com/casehubio/engine/main/docs/adr/INDEX.md) — architectural decision records
