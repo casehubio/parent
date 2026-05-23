@@ -252,6 +252,11 @@ casehub-parent              (BOM — publish first; all others import it)
 | Browser + agent authentication | `claudony` | WebAuthn passkeys + `X-Api-Key` header |
 | Ecosystem CI dashboards | `casehub-parent` | `dashboard.yml`, `pr-dashboard.yml`, `full-stack-build.yml` |
 | Application domain logic (devtown, aml, clinical) | Application tier | See [APPLICATIONS.md](APPLICATIONS.md) |
+| Agent descriptor (structured 4-layer identity) | `casehub-eidos` | `AgentDescriptor` record — identity, slot, capabilities, disposition; `tenancyId` always required; `AgentQuery` for criteria-based discovery |
+| Agent registry (store + discover by slot/capability) | `casehub-eidos` | `AgentRegistry` (blocking) + `ReactiveAgentRegistry` (reactive, build-gated `casehub.eidos.reactive.enabled`); `InMemoryAgentRegistry` for ephemeral installs via `casehub-eidos-memory` |
+| Vocabulary registry (term resolution + cross-vocab equivalence) | `casehub-eidos` | `VocabularyRegistry` SPI + `CdiVocabularyRegistry` @DefaultBean; discovers `@Produces Vocabulary` CDI beans at startup |
+| Well-known vocabularies (SVO, Conscientiousness, CasehubSlot) | `casehub-eidos-vocab` | Optional module — add as dependency to activate; Jandex-indexed for CDI bean discovery |
+| Agent capability health (declared vs operable) | `casehub-eidos` | `CapabilityHealth` SPI; `NoOpCapabilityHealth` @DefaultBean (Phase 2: real probing against trust scores) |
 
 ---
 
