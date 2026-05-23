@@ -12,14 +12,14 @@
 | M3 | Notification + signal silo | 8, 9, 24, 25 | 4/4 ✅ |
 | M4 | Integration boundary semantics | 16, 17 | 2/2 ✅ |
 | M5 | SpawnGroup / Stage gap | 20 | 1/1 ✅ |
-| M6 | Provenance + observability | 23, 29 | 0/2 |
+| M6 | Provenance + observability | 23, 29 | 2/2 ✅ |
 | M7 | Architecture placement | 26 | 0/1 |
 | M8 | Normative enforcement | 30, 32 | 0/2 |
 | L1 | Verification required | 5 | 0/1 |
 | L2 | Documentation + patterns | 11, 12 | 0/2 |
 | L3 | Structural debt | 13, 19, 27 | 0/3 |
 
-**Total:** 12 / 23 findings complete
+**Total:** 14 / 23 findings complete
 
 ## Findings
 
@@ -725,3 +725,137 @@ This requires only a new observer method in `WorkItemLifecycleAdapter` — no ne
 ### Issue
 
 casehubio/engine#339
+
+---
+
+## Batch M6 — Provenance + observability (findings 23, 29)
+
+Cross-finding note: finding 23 is a small, focused gap in ledger capture — `callerRef` is
+available but unused. Finding 29 is a larger structural gap — Qhorus has no OTel integration
+at all. They share the theme of missing cross-repo observability. Different scope, different fix.
+
+---
+
+## Finding 23 — ProvenanceSupplement.hadPrimarySource not attached for case-spawned WorkItems
+
+**Status:** Confirmed — one-line fix; the data is already in scope
+**Batch:** M6
+**Repos:** quarkus-work (casehub-work-ledger)
+
+### Verification
+
+- **Code read:** `LedgerEventCapture.onWorkItemEvent()`, `WorkItemSpawnGroup.javadoc`,
+  `LedgerProvSerializer.hadPrimarySource`, `WorkItem.callerRef`
+- **Evidence:**
+  - `LedgerEventCapture` loads the full `WorkItem` via `workItemStore.get(event.workItemId())`
+    on every lifecycle event. The `WorkItem.callerRef` field contains
+    `case:{caseId}/pi:{planItemId}` for WorkItems spawned from a CaseHub case.
+  - `LedgerEventCapture` attaches a `ComplianceSupplement` (rationale, planRef, detail,
+    decisionContext) but never reads `callerRef` or attaches a `ProvenanceSupplement`.
+  - `LedgerProvSerializer.hadPrimarySource` serialises `ProvenanceSupplement.hadPrimarySource`
+    into PROV-DM export. For CaseHub-spawned WorkItems, this field is always absent.
+  - The SPAWNED event handler sets `causedByEntryId` on child ledger entries (entry-to-entry
+    causal chain) but this is an internal ledger link, not a PROV-DM `hadPrimarySource`.
+  - Examples (`CreditDecisionScenario`, `ContentModerationScenario`) manually attach
+    `ProvenanceSupplement` — demonstrating the API works but is never called automatically.
+
+### Root Cause
+
+`LedgerEventCapture` was written to capture operational compliance data (rationale, planRef,
+decisionContext). PROV-DM provenance linking to an external source (the originating case) was
+not included when the observer was written. The `callerRef` is parsed by `WorkItemLifecycleAdapter`
+in the engine module but never by `LedgerEventCapture` in the ledger module.
+
+### Blast Radius
+
+PROV-DM provenance export for CaseHub-orchestrated WorkItems is structurally incomplete.
+A `GET /ledger/prov/{workItemId}` response never contains `hadPrimarySource` for these items,
+even though the relationship to the originating case exists and is known at write time. Any
+downstream system consuming PROV-DM for audit or lineage (compliance, data governance) receives
+an incomplete provenance graph — the link from WorkItem to the case that generated it is absent.
+
+### Implementation Guidance
+
+In `LedgerEventCapture.onWorkItemEvent()`, after the compliance supplement is attached, check
+`callerRef` on the loaded `WorkItem` and attach a `ProvenanceSupplement` when present:
+
+```java
+workItemOpt.ifPresent(wi -> {
+    if (wi.callerRef != null && !wi.callerRef.isBlank()) {
+        final var prov = new ProvenanceSupplement();
+        prov.hadPrimarySource = wi.callerRef; // e.g. "case:{uuid}/pi:{uuid}"
+        entry.attach(prov);
+    }
+});
+```
+
+This is the complete fix. The `callerRef` is already available; `ProvenanceSupplement` is
+already imported and used elsewhere in the module. Zero new infrastructure needed.
+
+**Scale:** XS — three lines inside an existing method
+**Complexity:** Low — data is in scope; pattern established in examples
+
+### Issue
+
+casehubio/work#223
+
+---
+
+## Finding 29 — Qhorus EVENT telemetry stored in DB columns, not OTel spans
+
+**Status:** Confirmed
+**Batch:** M6
+**Repos:** quarkus-qhorus
+
+### Verification
+
+- **Code read:** `MessageType.java`, qhorus-wide search for `OpenTelemetry`, `traceId`
+- **Evidence:**
+  - `MessageType.EVENT` javadoc: "telemetry only, not delivered to agents." `isAgentVisible()`
+    returns false for EVENT. EVENT messages go into the same `Message` / `MessageLedgerEntry`
+    table as all other message types.
+  - Full-project search for `OpenTelemetry` in qhorus: **zero results**.
+  - Full-project search for `traceId` in qhorus: **zero results**.
+  - No W3C trace context propagation in any Qhorus REST resource or message handler.
+  - EVENT messages are stored as DB rows keyed to a `channelId` — they cannot be queried
+    from Jaeger, Grafana Tempo, or any OTel-compatible backend.
+
+### Root Cause
+
+Qhorus was built as a standalone agent communication layer with its own persistence model.
+OTel instrumentation was never added. The EVENT message type was intended to capture telemetry
+but was implemented as a DB-backed record rather than an OTel span. There is no bridge between
+Qhorus agent activity and the distributed trace context established by casehub-engine
+(which does propagate W3C trace IDs via `PropagationContext.traceId`).
+
+### Blast Radius
+
+Agent decisions, COMMAND dispatches, HANDOFF chains, and DONE/FAILURE outcomes are invisible in
+distributed traces. Correlating Qhorus agent activity with engine case execution (which has
+proper OTel integration) requires manual DB joins — not possible in Jaeger/Grafana. Post-incident
+analysis of cases that involved agents cannot trace agent decisions through the execution graph.
+Any observability dashboard that relies on OTel traces for end-to-end case visibility is blind to
+the Qhorus layer.
+
+### Implementation Guidance
+
+**Minimum viable (propagate context only):**
+1. Extract W3C trace parent from HTTP headers on incoming Qhorus REST requests (MicroProfile
+   or Quarkus OTel extension does this automatically if OTel is added to the classpath).
+2. Add `traceId` and `spanId` fields to `MessageLedgerEntry` — populate from OTel context at
+   write time. This makes EVENT records correlatable to the active trace without rewriting the
+   storage model.
+
+**Full OTel instrumentation:**
+1. Emit OTel spans for COMMAND dispatch (`COMMAND sent → DONE/FAILURE received` = one span).
+2. Emit OTel span events for HANDOFF chains (child spans per delegation hop).
+3. Emit EVENT messages as OTel span events on the active span rather than (or in addition to)
+   DB rows. This makes Qhorus telemetry natively visible in Jaeger.
+4. Propagate trace context when Qhorus sends outbound HTTP calls (to agents, to casehub-engine).
+
+**Scale:** M (context propagation only) or L (full instrumentation)
+**Complexity:** Med (context propagation) to High (full span model for the message protocol)
+
+### Issue
+
+casehubio/qhorus#197
