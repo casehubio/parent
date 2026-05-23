@@ -35,7 +35,7 @@ See `docs/DESIGN.md` for class structure and expiry policy implementations.
 
 Implements all 4 casehub-engine worker provisioner SPIs:
 - **WorkerProvisioner** — creates a tmux session running the Claude CLI
-- **CaseChannelProvider** — creates a Qhorus channel per case/purpose
+- **CaseChannelProvider** — creates a Qhorus channel per case/purpose; `postToChannel` receives `correlationId` and `deadline` as first-class params (engine#343) — no longer parsed from content JSON
 - **WorkerContextProvider** — builds the Claude startup prompt from ledger lineage
 - **WorkerStatusListener** — maps tmux lifecycle events to CaseHub worker states
 

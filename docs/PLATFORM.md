@@ -250,7 +250,7 @@ casehub-parent              (BOM — publish first; all others import it)
 | Agent commitment/obligation tracking | `casehub-qhorus` | `Commitment` with 7-state lifecycle |
 | Normative audit of all agent interactions | `casehub-qhorus` | `MessageLedgerEntry` extends `LedgerEntry`; all 9 speech-act types recorded |
 | Case/process orchestration (choreography + WAITING) | `casehub-engine` | `CaseInstance`, `EventLog`, `WorkOrchestrator` |
-| Worker provisioner SPIs (provision, lifecycle, context) | `casehub-engine` (defines) / `claudony` (implements) | `WorkerProvisioner`, `CaseChannelProvider`, `WorkerContextProvider`, `WorkerStatusListener` |
+| Worker provisioner SPIs (provision, lifecycle, channels, context) | `casehub-engine` (defines) / `claudony` (implements) | `WorkerProvisioner`, `CaseChannelProvider`, `WorkerContextProvider`, `WorkerStatusListener`. **`postToChannel` is 6-param** (engine#343): `(channel, from, content, MessageType, correlationId, deadline)` — `correlationId` and `deadline` are first-class SPI params, not parsed from content JSON. 3-param convenience default delegates with three nulls. |
 | Durable PlanItem status (blackboard persistence) | `casehub-engine` | `PlanItemStore` (blocking) + `ReactivePlanItemStore` (Uni<>) SPIs in `casehub-engine-common`; `@DefaultBean` no-ops in `blackboard`; JPA impl (`JpaReactivePlanItemStore`) in `casehub-engine-persistence-hibernate`; blocking JPA impl (`JpaPlanItemStore`) in `casehub-engine-work-adapter` sharing the casehub-work datasource. Atomicity guarantee: `planItemStore.save(RUNNING)` and WorkItem creation are in the same `@Transactional` boundary. See engine#273. |
 | Remote Claude CLI sessions | `claudony` | `TmuxService`, `SessionRegistry`, WebSocket streaming |
 | Browser + agent authentication | `claudony` | WebAuthn passkeys + `X-Api-Key` header |
@@ -386,6 +386,7 @@ Full index: [`docs/protocols/INDEX.md`](protocols/INDEX.md)
 
 | Repo | Local path |
 |------|-----------|
+| `casehub-platform` | `repos/casehub-platform.md` |
 | `casehub-eidos` | `repos/casehub-eidos.md` |
 | `casehub-ledger` | `repos/casehub-ledger.md` |
 | `casehub-work` | `repos/casehub-work.md` |
@@ -396,5 +397,6 @@ Full index: [`docs/protocols/INDEX.md`](protocols/INDEX.md)
 | `casehub-devtown` | `repos/casehub-devtown.md` |
 | `casehub-aml` | `repos/casehub-aml.md` |
 | `casehub-clinical` | `repos/casehub-clinical.md` |
+| `quarkmind` | `repos/quarkmind.md` |
 
 Application tier: see [APPLICATIONS.md](APPLICATIONS.md)
