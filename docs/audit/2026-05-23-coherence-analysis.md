@@ -14,12 +14,12 @@
 | M5 | SpawnGroup / Stage gap | 20 | 1/1 ✅ |
 | M6 | Provenance + observability | 23, 29 | 2/2 ✅ |
 | M7 | Architecture placement | 26 | 1/1 ✅ |
-| M8 | Normative enforcement | 30, 32 | 0/2 |
+| M8 | Normative enforcement | 30, 32 | 2/2 ✅ |
 | L1 | Verification required | 5 | 0/1 |
 | L2 | Documentation + patterns | 11, 12 | 0/2 |
 | L3 | Structural debt | 13, 19, 27 | 0/3 |
 
-**Total:** 15 / 23 findings complete
+**Total:** 17 / 23 findings complete
 
 ## Findings
 
@@ -931,3 +931,129 @@ Do NOT move the qhorus A2A endpoint. Instead:
 
 casehubio/engine#340 — filed for the missing CaseInstance A2A endpoint (not the misattributed
 placement finding from the original audit)
+
+---
+
+## Batch M8 — Normative enforcement (findings 30, 32)
+
+Cross-finding note: finding 30 is a missing call to an existing service; finding 32 is a
+missing aggregation endpoint. Both are about the normative layer not enforcing what it knows.
+Finding 30 has a precise fix; finding 32 requires a new query surface.
+
+---
+
+## Finding 30 — Trust threshold not enforced at COMMAND creation
+
+**Status:** Confirmed — TrustGateService exists, is in scope, is never called
+**Batch:** M8
+**Repos:** quarkus-qhorus, casehub-ledger
+
+### Verification
+
+- **Code read:** `CommitmentService.open()`, `TrustGateService.java`, qhorus `runtime/pom.xml`
+- **Evidence:**
+  - `CommitmentService.open()` creates a Commitment unconditionally — `obligor` is accepted
+    without any validation. No trust check, no threshold gate, no rejection path.
+  - `TrustGateService` exists in `casehub-ledger` with `meetsThreshold(actorId, minTrust)` —
+    javadoc: "Single query point for trust decisions." Purpose-built for this gate.
+  - `quarkus-qhorus/runtime/pom.xml` imports `casehub-ledger` as a direct dependency.
+    `TrustGateService` is therefore in the Qhorus CDI context and injectable.
+  - Full search for `TrustGateService` in qhorus: **zero results** — it is never called.
+
+### Root Cause
+
+Trust scoring was added to casehub-ledger as an evaluative layer. Qhorus's normative layer
+(CommitmentService) was not updated to consult the evaluative layer before accepting obligors.
+The two layers are in the same CDI context (same deployment — qhorus imports ledger) but were
+built independently with no enforcement bridge.
+
+### Blast Radius
+
+The normative layer accepts any obligor regardless of trust score. A low-trust or untrusted
+agent can receive COMMANDs and accumulate obligations with no check. Trust scores are computed
+and published but have no effect on obligation acceptance — they influence routing only where
+specifically called (e.g. a trust-weighted `WorkerSelectionStrategy` if implemented).
+The prescriptive/evaluative disconnect from the original audit (findings 1, 31 — now closed)
+partially persists here: scores exist but don't constrain who receives obligations.
+
+### Implementation Guidance
+
+1. In `CommitmentService.open()` (or in `MessageService` before it calls `open()`), inject
+   `@Any Instance<TrustGateService>` — this is optional (no hard dependency if ledger absent).
+2. Add config property: `casehub.qhorus.commitment.min-obligor-trust` (default `0.0` = disabled,
+   preserves all existing behaviour when not configured).
+3. When a COMMAND is dispatched and `minObligorTrust > 0` and `TrustGateService` is available:
+   - Call `trustGate.meetsThreshold(obligor, minObligorTrust)`
+   - If not met: reject with an error response (or auto-DECLINE the commitment)
+4. Optional: per-channel override via `QhorusConfig` for fine-grained control.
+
+**Scale:** S — one inject + one config check in `MessageService` or `CommitmentService`
+**Complexity:** Low — `TrustGateService` is already in scope; gate is a config-guarded if block
+
+### Issue
+
+casehubio/qhorus#199
+
+---
+
+## Finding 32 — No unified actor state view
+
+**Status:** Confirmed
+**Batch:** M8
+**Repos:** casehub-engine, quarkus-qhorus, quarkus-work, casehub-ledger
+
+### Verification
+
+- **Code read:** `CommitmentStore`, `ActorTrustScoreRepository`, `WorkItemStore`,
+  `CaseInstanceRepository`; project-wide search for `ActorState`
+- **Evidence:**
+  - `CommitmentStore.findOpenByObligor(actorId, channelId)` — active obligations in qhorus
+  - `ActorTrustScoreRepository.findByActorId(actorId)` — trust score in ledger
+  - `WorkItemStore` / `WorkItemService` — active WorkItems in quarkus-work
+  - `CaseInstanceRepository` — running cases in casehub-engine
+  - Project-wide search for `ActorState`: **zero results** — no unified view class, no
+    aggregation endpoint, no query service that joins these sources.
+  - Each data source has its own REST API. No endpoint returns a cross-repo actor summary.
+
+### Root Cause
+
+Each repo was built to answer questions about its own domain. No cross-cutting actor query
+surface was ever designed. Answering "what is actor X currently doing across the platform"
+requires calling four separate APIs and joining the results in the caller — there is no
+platform-level aggregation point.
+
+### Blast Radius
+
+Operator dashboards, audit queries, and trust governance decisions require manual REST calls
+to four separate services. "Is this actor overloaded?" requires querying open Commitments (qhorus)
++ active WorkItems (work) + running cases (engine) and joining by actorId. "Should I trust this
+actor?" requires the trust score (ledger) plus the full activity context. Neither query is
+achievable through a single platform API call. Monitoring, capacity planning, and trust-gated
+routing all suffer from this fragmentation.
+
+### Implementation Guidance
+
+1. Add `GET /actors/{actorId}/state` in casehub-engine — the natural home (has access to
+   case data and imports ledger):
+   ```
+   {
+     "actorId": "...",
+     "trustScore": 0.82,           // from ActorTrustScoreRepository
+     "openCommitments": [...],      // REST call to qhorus /commitments?obligor={actorId}
+     "activeWorkItems": [...],      // REST call to work /workitems?assignee={actorId}&status=ASSIGNED,IN_PROGRESS
+     "activeCases": [...]           // CaseInstanceRepository.findByWorkerId(actorId)
+   }
+   ```
+2. The cross-repo calls (qhorus, work) are REST — engine calls their existing APIs.
+   Ledger data is in the same CDI context (engine imports casehub-ledger).
+3. Start simple: the endpoint can return empty arrays for sources not available, with a
+   `sources` field indicating which were reachable. Build out progressively.
+4. Long term: a dedicated `ActorStateService` SPI that each module implements, collected
+   by engine — avoids hard REST dependencies and enables mock testing.
+
+**Scale:** M — new REST endpoint + REST client calls to qhorus and work
+**Complexity:** Med — cross-repo REST calls; partial results when sources unavailable
+
+### Issue
+
+casehubio/parent#56
