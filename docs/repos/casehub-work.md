@@ -17,16 +17,24 @@ A `WorkItem` is deliberately NOT called `Task` — CNCF Serverless Workflow and 
 
 | Module | Type | Purpose |
 |---|---|---|
-| `casehub-work-api` | Pure-Java SPI (no Quarkus) | All SPIs: worker selection, registry, workload provision, SLA breach policy, spawn, skill profiling, notification channel. Depends on `casehub-platform-api` for `Path` and `Preferences` used in `SlaBreachContext`. |
+| `casehub-work-api` | Pure-Java SPI (no Quarkus) | All SPIs: worker selection, registry, workload provision, SLA breach policy, spawn, skill profiling, notification channel. Depends on `casehub-platform-api` for `Path` and `Preferences` used in `SlaBreachContext`. Also owns `ActorType` / `ActorTypeResolver` via `casehub-platform-api` (moved there in ledger#88). |
 | `casehub-work-core` | Jandex library (no JPA) | `WorkBroker` and built-in selection strategies — used directly by casehub-engine |
 | `runtime` | Full Quarkus extension | WorkItem entity, services, REST API, filter engine |
-| `casehub-work-ledger` | Optional module | Attaches casehub-ledger for WorkItem ledger entries |
-| `casehub-work-queues` | Optional module | Label-based queue views |
-| `casehub-work-ai` | Optional module | AI-backed worker selection strategy and low-confidence filter routing |
-| `casehub-work-notifications` | Optional module | Slack/Teams/webhook outbound notifications |
-| `casehub-work-reports` | Optional module | SLA compliance reporting |
-| `work-flow` | Optional module | Quarkus-Flow CDI bridge |
-| `casehub-work-testing` | Test utilities | In-memory stores for WorkItem and audit entries |
+| `deployment` | Quarkus extension deployment | Build-time processor (`@BuildStep`); pairs with `runtime` |
+| `casehub-work-testing` | Test utilities | In-memory stores (WorkItem, audit, notes, issue links); zero-datasource alternative to JPA stores |
+| `casehub-work-ledger` | Optional module | Attaches casehub-ledger for WorkItem ledger entries, trust scoring, and peer attestation. Requires both `db/migration` and `db/ledger/migration` Flyway locations in test config (since ledger#95 moved base migrations). |
+| `casehub-work-queues` | Optional module | Label-based queue views with JEXL/JQ filter expressions |
+| `casehub-work-queues-dashboard` | Optional module | SSE-based queue dashboard UI |
+| `casehub-work-queues-postgres-broadcaster` | Optional module | Distributed SSE for queue events via PostgreSQL LISTEN/NOTIFY |
+| `casehub-work-ai` | Optional module | Embedding-based semantic worker selection; confidence-gated filter routing |
+| `casehub-work-notifications` | Optional module | Slack/Teams/webhook outbound notifications on lifecycle events |
+| `casehub-work-reports` | Optional module | SLA compliance reporting (breach rates, actor performance, throughput, queue health) |
+| `casehub-work-issue-tracker` | Optional module | Links WorkItems to GitHub/Jira issues; inbound webhook handler for close/reopen events |
+| `casehub-work-postgres-broadcaster` | Optional module | Distributed SSE for WorkItem events via PostgreSQL LISTEN/NOTIFY |
+| `casehub-work-persistence-mongodb` | Optional module | MongoDB-backed `WorkItemStore` alternative |
+| `work-flow` | Optional module | Quarkus-Flow CDI bridge (`HumanTaskFlowBridge`, `PendingWorkItemRegistry`) |
+| `casehub-work-examples` | Runnable scenarios | Demo scenarios (credit, moderation, audit search, spawn, business hours, etc.) |
+| `integration-tests` | Black-box test suite | `@QuarkusIntegrationTest` + native image validation (25 tests) |
 
 ---
 
@@ -71,21 +79,23 @@ See `docs/DESIGN.md` for event payload shape.
 | `ExclusionPolicy` | `check(userId, excludedUsers) → PolicyDecision` | Conflict-of-interest user exclusion |
 | `SpawnPort` | `spawn(SpawnRequest) → SpawnResult` | Child WorkItem creation with idempotency |
 | `AssignmentTrigger` | enum | Values: `CREATED`, `RELEASED`, `DELEGATED`, `SLA_ESCALATED` — strategies subscribe via `triggers()` |
+| `SlaBreachPolicy` | `onBreach(SlaBreachContext) → BreachDecision` | `SlaBreachContext` carries `BreachType` (CLAIM_EXPIRED / COMPLETION_EXPIRED), `BreachedTask`, `Path scope`, and `Preferences`. `SLA_ESCALATED` trigger fires after `EscalateTo` execution — strategies pre-assign before `put()`. |
 
 ---
 
 ## Depends On
 
-- `casehub-platform-api` — production dep in `casehub-work-api` for `Path` and `Preferences` types in `SlaBreachContext`. Zero-dep pure-Java; does not force Quarkus on consumers.
-- `casehub-platform` (mock module) — `test` scope only in `runtime` and `casehub-work-queues`; provides `MockPreferenceProvider @DefaultBean` for `@QuarkusTest` augmentation.
+- `casehub-platform-api` — production dep in `casehub-work-api` for `Path`, `Preferences`, `ActorType`, and `ActorTypeResolver`. Zero-dep pure-Java; does not force Quarkus on consumers. `ActorType`/`ActorTypeResolver` moved here from `casehub-ledger` in ledger#88 — any module using these types must import from `io.casehub.platform.api.identity`, not `io.casehub.ledger.api.model`.
+- `casehub-platform` (mock module) — `test` scope in library/extension modules; `runtime` scope in application modules running `quarkus:build`. Provides `MockPreferenceProvider @DefaultBean` so `@QuarkusTest` augmentation satisfies the `PreferenceProvider` CDI dep. Must be Jandex-indexed.
 - `casehub-ledger` — optional only, via `casehub-work-ledger` module. Core has zero other casehubio deps.
 
 ## Depended On By
 
 | Repo | How |
 |---|---|
-| `casehub-engine` | `casehub-work-core` only — `WorkBroker` for worker selection. NOT the full runtime. |
+| `casehub-engine` | `casehub-work-core` only — `WorkBroker` for worker selection. NOT the full runtime. Also receives `WorkItemLifecycleEvent` via CDI adapter to drive plan-item transitions. |
 | `claudony` | Future, via `casehub-work-casehub` adapter (currently blocked on CaseHub stability) |
+| `casehub-clinical` | Layer 2 — adverse event WorkItems with GCP SLA (24h Grade≥3, 1h Grade 5); first consumer of `SlaBreachPolicy` with DSMB escalation |
 
 ---
 
@@ -113,10 +123,28 @@ The `WorkBroker` is generic: it routes any work unit, not just WorkItems.
 
 ---
 
+## Flyway Version Ranges
+
+Each optional module owns a dedicated V-number range to prevent collision when multiple modules are loaded together:
+
+| Range | Module |
+|---|---|
+| V1–V999 | `runtime` (sequential; currently at V31) |
+| V2000–V2999 | `casehub-work-queues` and `casehub-work-ledger` |
+| V3000–V3999 | `casehub-work-notifications` |
+| V4000–V4999 | `casehub-work-ai` |
+| V5000–V5999 | `casehub-work-issue-tracker` |
+| V6000+ | next new optional module |
+
+**casehub-ledger#95 note:** ledger base migrations now live at `classpath:db/ledger/migration/` (not `db/migration/`). Any module consuming `casehub-work-ledger` must configure `quarkus.flyway.locations=db/migration,db/ledger/migration` in test `application.properties`.
+
+---
+
 ## Current State
 
-- 737+ tests passing in runtime module; native image validated at 0.084s startup
-- All major epics complete: Business-Hours Deadlines (#101), SLA Compliance Reporting (#104), Multi-Instance Tasks (#106)
+- 746 tests in runtime module; 60 in api; 84 in queues; 73 in reports; 76 in ledger; 93 in issue-tracker; 25 integration tests. Native image validated.
+- All major epics complete through #218 (CI fixes, platform-api scope rules)
+- Blocking: engine#330 — `HumanTaskTarget.scope` propagation (small, unblocked)
 - Pending: `casehub-work-qhorus` adapter (MCP tools for agent-driven approval flows)
 
 ---
@@ -124,5 +152,5 @@ The `WorkBroker` is generic: it routes any work unit, not just WorkItems.
 ## Design Documents
 
 - [docs/DESIGN.md](https://raw.githubusercontent.com/casehubio/work/main/docs/DESIGN.md) — implementation-tracking design doc
-- [docs/architecture/LAYERING.md](https://raw.githubusercontent.com/casehubio/work/main/docs/architecture/LAYERING.md) — definitive boundary statement between casehub-work and CaseHub
+- [docs/ARCHITECTURE.md](https://raw.githubusercontent.com/casehubio/work/main/docs/ARCHITECTURE.md) — module graph, domain model, SPI contracts
 - [adr/INDEX.md](https://raw.githubusercontent.com/casehubio/work/main/adr/INDEX.md) — architectural decision records
