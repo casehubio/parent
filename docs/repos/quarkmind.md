@@ -2,7 +2,7 @@
 
 **GitHub:** [mdproctor/quarkmind](https://github.com/mdproctor/quarkmind)
 **Tier:** Application — Living Lab
-**Status:** Active — SC2 layer through Phase 6 (replay-accurate emulation); harness layer documentation in progress
+**Status:** Active — SC2 layer through replay-accurate multi-base mining model (690 tests); harness layer documentation in progress
 **Note:** In the `mdproctor/` namespace, not `casehubio/` — a personal project using the CaseHub pattern. Does not participate in the casehubio CI pipeline.
 
 ## What It Is
@@ -15,12 +15,16 @@ Its primary value in the application family is as a **proof of generality**: the
 
 ## What It Owns
 
-- SC2 domain model: game state, units, buildings, actions, intents
+- SC2 domain model: game state, units, buildings, actions, intents; `SC2Data` — all game constants (costs, timings, ranges, armour, attributes)
 - Plugin seam interfaces: `StrategyTask`, `EconomicsTask`, `TacticsTask`, `ScoutingTask` — each extends CaseHub's `TaskDefinition`
-- Active plugin implementations: `DroolsStrategyTask`, `FlowEconomicsTask`, `DroolsTacticsTask`, `BasicScoutingTask`
+- Active plugin implementations: `DroolsStrategyTask`, `FlowEconomicsTask`, `DroolsTacticsTask`, `DroolsScoutingTask`
 - `QuarkMindCaseFile` — all CaseFile key constants; never use raw string keys
-- SC2 engine seam: `IntentQueue`, `GameStarted`/`GameStopped` events
+- SC2 engine seam: `IntentQueue`, `GameStarted`/`GameStopped` events, sealed `Intent` interface (switch exhaustiveness at compile time)
 - Mock, emulated, replay, and real SC2 profiles
+- `EmulatedGame` — full physics simulation: probe-driven mining (per-base, saturation model), parallel training queues, sub-tick train timing (`TimedIntent`, `completesAt`), building cost deduction, vespene harvesting, combat (damage, armour, Hardened Shield), blink mechanics, auto-engage, enemy AI (`EnemyBehavior`, `TechTree`, `ReactiveStrategy`)
+- `ReplayValidationHarness` — replay ground truth vs `EmulatedGame` per-tick economic divergence; `SC2TrainTimeCalibrationTest` — range-bounded modal calibration from replay datasets
+- `TerrainGrid` (HIGH/LOW/RAMP/WALL height model), `AStarPathfinder`, `MovementStrategy`
+- Three.js 3D visualiser: 65+ unit/building sprites across all 3 races, fog of war, terrain shading, click-to-inspect panel, replay scrub control, Electron wrapper
 - Electron visualiser for replay and emulated mode
 
 ## Agentic Harness Structure
@@ -59,7 +63,24 @@ quarkmind
 
 ## Current State
 
-Phase 6 complete: replay-accurate `EmulatedGame` with sub-tick train-timing calibrated from replay ground truth (`SC2TrainTimeCalibrationTest` — range-bounded modal calibration from 29 AI Arena replays). `ReplayValidationHarness` shows `firstUnitDivergenceTick=150`; remaining gap is vespene income model (#148). Harness LAYER-LOG documentation pending.
+690 tests passing. The SC2 emulation layer is substantially complete for the Protoss vs Protoss / Terran matchup:
+
+**Emulation accuracy (post-Phase 6 calibration):**
+- Sub-tick train timing: `TimedIntent` with `completesAt` derived from `SC2Data.trainTimeInLoops` (integer-loop rounding calibrated from replays — #149); `firstUnitDivergenceTick ≥ 80`, `maxUnitDelta ≤ 2`
+- Per-base probe mining: saturation model (#141) + per-base `miningProbesPerBase` auto-computed in `tick()` with one-shot harness override (#152, #143); sqrt→squared distance fix (#153)
+- Vespene income: synced from ground truth for gas-unit training in `ReplayValidationHarness` (#148)
+- Building cost + mineral timing: `injectReplayBuildingWithCost` for replay harness accuracy (#146)
+- Parallel training queues: per-building queues with supply reservation and `drainBuildingQueues` per tick (#128)
+- Auto-engage: all units fire at enemies in range without an explicit `AttackIntent` (#129)
+- Enemy AI: `EnemyBehavior` with `TechTree` prerequisite gating and `ReactiveStrategy` — counter-picks dominant player unit every 50 frames
+
+**Visualiser (emulated + replay profiles):**
+- Three.js 3D terrain with height shading, fog of war, mineral patches, geysers, creep
+- 65+ canvas sprites across all 3 races; directional facing, teamColour decals
+- Click-to-inspect unit/building panel; HP/shield bars; replay scrub control
+- `ReplayVisualizerIT` pixel tests; Playwright end-to-end suite (218+ tests)
+
+**Harness layer (Layer 2 active):** `AgentOrchestrator` dispatches plugins via `casehub-engine` CaseFile per tick. Layer-by-layer tutorial documentation pending (LAYER-LOG.md entry for Layer 1 + 2 not yet written).
 
 ## What It Does NOT Own
 
