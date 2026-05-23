@@ -13,13 +13,13 @@
 | M4 | Integration boundary semantics | 16, 17 | 2/2 ✅ |
 | M5 | SpawnGroup / Stage gap | 20 | 1/1 ✅ |
 | M6 | Provenance + observability | 23, 29 | 2/2 ✅ |
-| M7 | Architecture placement | 26 | 0/1 |
+| M7 | Architecture placement | 26 | 1/1 ✅ |
 | M8 | Normative enforcement | 30, 32 | 0/2 |
 | L1 | Verification required | 5 | 0/1 |
 | L2 | Documentation + patterns | 11, 12 | 0/2 |
 | L3 | Structural debt | 13, 19, 27 | 0/3 |
 
-**Total:** 14 / 23 findings complete
+**Total:** 15 / 23 findings complete
 
 ## Findings
 
@@ -859,3 +859,75 @@ the Qhorus layer.
 ### Issue
 
 casehubio/qhorus#197
+
+---
+
+## Batch M7 — Architecture placement (finding 26)
+
+---
+
+## Finding 26 — A2A task endpoint placement
+
+**Status:** Stale — current placement is correct; the real gap is a missing endpoint elsewhere
+**Batch:** M7
+**Repos:** quarkus-qhorus (current location), casehub-engine (missing endpoint)
+
+### Verification
+
+- **Code read:** `A2AResource.java`, `ReactiveA2AResource.java`, `A2ATaskState.java`,
+  claudony codebase (gateway-only, no A2A)
+- **Evidence:**
+  - The audit attributed this finding to `claudony` — incorrect. The A2A endpoint is in
+    `quarkus-qhorus` (`/a2a/message:send`, `/a2a/tasks/{id}`).
+  - `A2AResource` injects: `QhorusConfig`, `A2AChannelBackend`, `CommitmentService`,
+    `MessageService`, `ChannelService`. No CaseInstance, WorkItem, or engine dependency.
+  - `A2ATaskState` maps `CommitmentState` → A2A states (submitted/working/completed/failed).
+    The mapping is semantically correct for Qhorus Commitments.
+  - `claudony` is a human-observer gateway — it registers `ClaudonyChannelBackend` against
+    Qhorus channels. It has no A2A endpoint of its own.
+  - `casehub-engine` has zero A2A references.
+
+### Root Cause of Stale Finding
+
+The original audit argued that "A2A task semantics are closer to CaseInstance/WorkItem." This
+conflates two different use cases:
+- **Delegating to a Qhorus agent via A2A** → mapped to Commitment lifecycle (qhorus, correct)
+- **Starting a CaseHub case from an A2A orchestrator** → would map to CaseInstance lifecycle
+  (casehub-engine, missing)
+
+The current qhorus endpoint is correctly placed for its use case. Moving it to engine would
+create a hard qhorus→engine dependency and break the optional-module pattern. The audit
+finding misidentified the placement issue.
+
+### Actual Gap Identified
+
+There is no A2A entry point for casehub-engine. An external A2A orchestrator can delegate tasks
+to Qhorus agents but cannot start CaseHub cases via A2A. The qhorus endpoint maps `taskId` to a
+Qhorus `correlationId` and tracks state via `CommitmentState`. A CaseInstance-level A2A endpoint
+would map `taskId` to a `caseId` and track state via `CaseStatus`. These are different endpoints
+for different destinations — not a placement conflict.
+
+### Blast Radius of Actual Gap
+
+External A2A orchestrators (e.g. Google A2A-compliant systems) cannot start CaseHub case
+workflows via the A2A protocol. The only supported A2A delegation target is a Qhorus agent.
+Platform-to-platform automation via A2A is blocked at the case orchestration layer.
+
+### Implementation Guidance
+
+Do NOT move the qhorus A2A endpoint. Instead:
+1. Add a separate A2A endpoint in `casehub-engine` (`/a2a/tasks/{id}`, `/a2a/message:send`)
+   that maps A2A requests to CaseInstance lifecycle.
+2. `POST /a2a/message:send` → start a CaseInstance with the message content as input
+3. `GET /a2a/tasks/{id}` → map `taskId` to `caseId`, return `CaseStatus` as A2A state
+   (RUNNING→working, COMPLETED→completed, FAULTED/CANCELLED→failed)
+4. Optionally: a unified A2A gateway in `claudony` that routes by `contextId` — to qhorus if
+   the target is an agent channel, to engine if the target is a case definition name.
+
+**Scale:** M — new REST resource in engine (or claudony gateway)
+**Complexity:** Low — the A2A protocol model is simple; CaseStatus → A2A state mapping is trivial
+
+### Issue
+
+casehubio/engine#340 — filed for the missing CaseInstance A2A endpoint (not the misattributed
+placement finding from the original audit)
