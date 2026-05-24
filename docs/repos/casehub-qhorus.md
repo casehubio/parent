@@ -32,13 +32,28 @@ See docs/DESIGN.md for channel semantics, message types, commitment state machin
 
 All channel writes flow through a single enforcement gate: `MessageService.dispatch(MessageDispatch)`. In order: paused check → `AllowedWritersPolicy` ACL → `RateLimiter` → LAST_WRITE overwrite semantics → `LedgerWriteService.record()` → `ChannelGateway.fanOut()`. There is no bypass path. `ReactiveMessageService` mirrors this with `dispatch(MessageDispatch) → Uni<DispatchResult>`.
 
-`MessageDispatch` is the unified request object: `sender`, `type`, `content`, `correlationId`, `inReplyTo`, `artefactRefs`, `target`, `actorType`, `deadline` (all except sender/type/content optional). `DispatchResult` carries `messageId`, `channelName`, `ledgerOutcome`. Builds via `MessageDispatch.builder(channelId, sender, type, content)`.
+`MessageDispatch` is the unified request object: `sender`, `type`, `content`, `correlationId`, `inReplyTo`, `artefactRefs`, `target`, `actorType`, `deadline` (all except sender/type/content optional). Builds via `MessageDispatch.builder(channelId, sender, type, content)`.
+
+**Builder protocol invariants** — enforced at `build()`, not downstream:
+- `DONE`, `DECLINE`, `FAILURE`, `HANDOFF`, `RESPONSE` require `inReplyTo`
+- `DONE`, `DECLINE`, `FAILURE`, `HANDOFF`, `RESPONSE` require `correlationId`
+- `HANDOFF` requires `target` (named recipient)
+
+`DispatchResult` carries: `ledgerEntryId` (UUID of the `MessageLedgerEntry` written), `subjectId` (resolved domain aggregate), `causedByEntryId` (causal chain link), `parentReplyCount`.
+
+**`subjectId` / `causedByEntryId` propagation priority:** explicit caller value → correlation root lookup (earliest in thread by `sequenceNumber ASC`) → `channelId` fallback. This lets domain consumers group all ledger entries for one investigation by `subjectId` without join logic.
 
 See docs/DESIGN.md for dispatch builder and enforcement gate detail.
 
 ### Channel Gateway
 
 Outbound messages are routed through a channel backend SPI that supports multiple backend types: agent-to-agent (default), human-participating, and human-observer. An inbound normaliser SPI translates external human messages into the canonical message format before they enter the system. Fan-out to non-default backends is asynchronous and non-fatal. The default backend is always registered and handles all standard agent messaging. `MessageObserver` implementations may use any normal CDI scope.
+
+**`ChannelInitialisedEvent`** — a record in `casehub-qhorus-api` (`io.casehub.qhorus.api.gateway`) fired by `ChannelGateway.initChannel()` on every call — both on channel creation and on startup recovery. External backends observe this via `@Observes ChannelInitialisedEvent` to re-register without implementing their own restart recovery logic.
+
+**Startup recovery** — `ChannelGateway` rebuilds its in-memory registry from the channel store on `@Observes StartupEvent`. Previously the registry was empty after restart until channels were re-created or re-accessed. Each channel init is exception-isolated so a broken observer cannot abort the startup sequence.
+
+**`findByNamePrefix`** — `ChannelService` and `ReactiveChannelService` expose `findByNamePrefix(prefix)`. The JPA path emits `LIKE 'prefix%' ESCAPE '!'` (metachar-safe, index-eligible). Use when listing channels by namespace prefix (e.g. all channels for a case) without a full table scan.
 
 See docs/DESIGN.md for gateway class structure and SPI contracts.
 
@@ -70,6 +85,7 @@ See docs/DESIGN.md for SPI interfaces.
 ## Depends On
 
 - `casehub-ledger` — mandatory (for ledger entry subclassing and observability)
+- `casehub-platform-api` — direct compile dependency (`ActorType`, `ActorTypeResolver` from `io.casehub.platform.api.identity`)
 
 ## Depended On By
 
@@ -138,8 +154,10 @@ See the full agent mesh framework spec: [`casehubio/claudony docs/superpowers/sp
 - Channel backend abstraction complete (agent, human-participating, human-observer modes) — see ADR-0006
 - A2A protocol bridge complete: backend, identity resolution chain, and resource layer — closed #135
 - Dispatch unification complete: `MessageService.send()` replaced by `dispatch(MessageDispatch)`; single enforcement gate covers all channel writes — closed #184
+- `DispatchResult` carries `ledgerEntryId`, `subjectId`, `causedByEntryId`, `parentReplyCount`; `subjectId`/`causedByEntryId` propagated via correlation root lookup — closed #184
 - Deadline enforcement: `MessageDispatch.deadline` propagated to `Message.deadline` for all types — closed #192
-- `ReactiveMessageService` uses `dispatch(MessageDispatch) → Uni<DispatchResult>`; full enforcement parity (#193) deferred — service currently `@Disabled`
+- `ReactiveMessageService.dispatch(MessageDispatch) → Uni<DispatchResult>` replaces `send()`; full enforcement parity deferred (#193) — service currently `@Disabled`
+- Startup recovery via `@Observes StartupEvent` in `ChannelGateway`; `ChannelInitialisedEvent` fires on every `initChannel()` for backend re-registration — closed #181
 - Actor type explicitly stored on every message and propagated to ledger without re-derivation
 - Reactive store tests disabled — require PostgreSQL with native reactive driver (Docker not always available)
 

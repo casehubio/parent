@@ -178,6 +178,8 @@ casehub-parent              (BOM — publish first; all others import it)
 |-------------------|---------------|-----------------|--------|
 | `casehub-platform-api` | `casehub-work` | `api` | `Path`, `Preferences`, `ActorType`, `ActorTypeResolver` in SPI signatures |
 | `casehub-platform-api` | `casehub-ledger` | `api` | `ActorType`, `ActorTypeResolver` (moved from ledger in ledger#88) |
+| `casehub-platform-api` | `casehub-qhorus` | `api` | `ActorType`, `ActorTypeResolver` (identity primitives from `io.casehub.platform.api.identity`) |
+| `casehub-platform-api` | `casehub-qhorus` | `runtime` | transitive via api |
 | `casehub-ledger-api` | `casehub-qhorus` | `api` | SPI types |
 | `casehub-ledger-api` | `casehub-qhorus` | `runtime` | runtime dep |
 | `casehub-ledger-api` | `casehub-work` | `ledger` | audit integration |
@@ -212,6 +214,12 @@ casehub-parent              (BOM — publish first; all others import it)
 | `casehub-engine-ledger` | `claudony` | `casehub` | lineage queries |
 | `casehub-eidos-api` | `casehub-engine` | `engine-api` | optional capability probe — `AgentDescriptor` on `Worker`; `CapabilityHealth.probe()` in `WorkOrchestrator` |
 
+| `casehub-platform` | `casehub-clinical` | `runtime` | `@DefaultBean` mocks for casehub-engine CDI wiring |
+| `casehub-platform-expression` | `casehub-clinical` | `runtime` | `JQEvaluator` for engine expression evaluation |
+| `casehub-engine` | `casehub-clinical` | `runtime` | case orchestration (`CasePlanModel`, IRB gate, AE escalation) |
+| `casehub-engine-work-adapter` | `casehub-clinical` | `runtime` | `HumanTaskScheduleHandler` + `WorkItemLifecycleAdapter` |
+| `casehub-engine-scheduler-quartz` | `casehub-clinical` | `runtime` | Quartz worker execution (Layer 5) |
+
 **Application tier** (aml, clinical) — consume foundation runtime artifacts; see [APPLICATIONS.md](APPLICATIONS.md) for detail.
 
 ---
@@ -243,7 +251,7 @@ casehub-parent              (BOM — publish first; all others import it)
 | Label-based queue views | `casehub-work-queues` | Optional module on casehub-work |
 | Semantic (embedding) worker matching | `casehub-work-ai` | Optional module; `SemanticWorkerSelectionStrategy` |
 | Outbound notifications (Slack, Teams, SMS, email) | `casehub-connectors` | `Connector` SPI; `casehub-work-notifications` must delegate here |
-| Agent-to-agent messaging (typed channels + messages) | `casehub-qhorus` | 9 speech-act types, 5 channel semantics, MCP tools. All writes flow through `MessageService.dispatch(MessageDispatch)` — single gate for ACL, rate limit, LAST_WRITE, ledger, and fan-out. `MessageDispatch` builder carries sender, type, content, correlationId, inReplyTo, artefactRefs, target, actorType, deadline. `DispatchResult` carries messageId, channelName, ledgerOutcome. |
+| Agent-to-agent messaging (typed channels + messages) | `casehub-qhorus` | 9 speech-act types, 5 channel semantics, MCP tools. All writes flow through `MessageService.dispatch(MessageDispatch)` — single gate for ACL, rate limit, LAST_WRITE, ledger, and fan-out. `MessageDispatch` builder carries sender, type, content, correlationId, inReplyTo, artefactRefs, target, actorType, deadline; builder validates protocol invariants at `build()` (DONE/DECLINE/FAILURE/HANDOFF/RESPONSE require inReplyTo + correlationId; HANDOFF requires target). `DispatchResult` carries ledgerEntryId, subjectId, causedByEntryId, parentReplyCount. |
 | Dashboard read/write API (composed views: channel with message count, instance with capability tags, timeline mapping, human message send) | `casehub-qhorus` | `QhorusDashboardService` in `io.casehub.qhorus.runtime.dashboard` — inject this for dashboard/UI consumers needing composed views. Do NOT inject raw entity services for this use case. |
 | Channel message fan-out to external backends | `casehub-qhorus` | `ChannelBackend` SPI in `casehub-qhorus-api`; implementations in consuming repos (Claudony panel, connectors) |
 | Real-time channel feed to Claudony browser panel | `claudony` | `ClaudonyChannelBackend` implements `ChannelBackend` SPI — per-channel scope; fan-out to browser dashboard over WebSocket |
@@ -281,7 +289,7 @@ casehub-parent              (BOM — publish first; all others import it)
 
 **Do not implement Qhorus channel semantics in `claudony`.** Claudony embeds Qhorus and adds SPI implementations. It must not re-implement channel, message, or commitment logic. Implementing `ChannelBackend` or `MessageObserver` SPIs from `casehub-qhorus-api` is not re-implementation — it is correct SPI usage.
 
-**Do not call `QhorusMcpTools` or `ReactiveQhorusMcpTools` from consumer service code.** Those classes are the MCP tool dispatch layer for external callers (Claude Code); they carry `@WrapBusinessError` exception semantics that internal consumers must not be exposed to. Consumer service code has three correct integration points: (1) **Dashboard/UI consumers** needing composed views (channel with message count, instance with capability tags, timeline entries) — inject `QhorusDashboardService`. (2) **Service-layer integrations** needing raw entity access (e.g. SPI implementations, background workers) — inject `ReactiveChannelService` / `ReactiveMessageService` directly. (3) **Reactive event-driven integrations** — implement `ChannelBackend` or `MessageObserver` SPI. Note: injecting entity services directly is also wrong for dashboard consumers — `ReactiveChannelService.listAll()` returns entities without message counts, requiring store-layer injection and creating worse coupling. See `docs/protocols/casehub/qhorus-consumer-integration-pattern.md`.
+**Do not call `QhorusMcpTools` or `ReactiveQhorusMcpTools` from consumer service code.** Those classes are the MCP tool dispatch layer for external callers (Claude Code); they carry `@WrapBusinessError` exception semantics that internal consumers must not be exposed to. Consumer service code has three correct integration points: (1) **Dashboard/UI consumers** needing composed views (channel with message count, instance with capability tags, timeline entries) — inject `QhorusDashboardService`. (2) **Service-layer integrations** that need to send messages — call `MessageService.dispatch(MessageDispatch)` (blocking) or `ReactiveMessageService.dispatch(MessageDispatch) → Uni<DispatchResult>` (reactive). These are the enforcement gates: paused check, ACL, rate limiting, LAST_WRITE semantics, ledger write, and fan-out all happen inside `dispatch()`. Do not bypass to entity stores for write operations. (3) **Reactive event-driven integrations** — implement `ChannelBackend` or `MessageObserver` SPI. Note: injecting entity services directly is also wrong for dashboard consumers — `ReactiveChannelService.listAll()` returns entities without message counts, requiring store-layer injection and creating worse coupling. See `docs/protocols/casehub/qhorus-consumer-integration-pattern.md`.
 
 **Choose `ChannelBackend` vs `MessageObserver` based on scope.** `ChannelBackend` is per-channel and knows its context — use it when a consumer needs to act on messages from a specific channel (e.g. Claudony panel display). `MessageObserver` is a global broadcast across all channels — use it for cross-cutting concerns (e.g. clinical PI response monitoring). For topology guidance (LOCAL CDI vs CLUSTER-scoped transport) see [`docs/repos/casehub-qhorus.md`](repos/casehub-qhorus.md) and [qhorus `docs/messaging-architecture.md`](https://github.com/casehubio/qhorus/blob/main/docs/messaging-architecture.md).
 
@@ -320,12 +328,15 @@ casehub-parent              (BOM — publish first; all others import it)
 
 ### Authentication
 
+**Gateway topology:** Claudony is the single authenticated entry point for all human operators and Claude agent sessions. Internal foundation services (Qhorus, casehub-engine, casehub-work) carry no auth annotations on their REST resources — they trust callers implicitly, relying on network policy or mTLS for isolation. This contract is only valid when Claudony sits in front. A standalone deployment of Qhorus, engine, or work without Claudony requires an auth proxy or Quarkus OIDC/JWT before any external traffic is admitted. The A2A endpoint on Qhorus (`POST /a2a/message:send`) extends this posture to the agent surface — no token auth is applied at the Qhorus layer; the caller is trusted. See [`docs/protocols/casehub/auth-retrofit-readiness.md`](protocols/casehub/auth-retrofit-readiness.md) for rules on keeping services auth-retrofit-ready while this remains implicit.
+
 | Context | Owner | Mechanism |
 |---|---|---|
 | Extension-level | Consuming app | Extensions provide no auth |
 | Browser → Claudony | `claudony` | WebAuthn passkeys |
 | Agent → Claudony | `claudony` | `X-Api-Key` header |
 | Channel write ACL | `casehub-qhorus` | `allowed_writers` on `Channel` |
+| Internal service-to-service | Network boundary | Trust implicit — no token auth on Qhorus, engine, or work REST resources |
 
 ### Privacy (GDPR)
 
