@@ -55,12 +55,30 @@ ClinicalAgent (peer-reviewed baseline) structurally cannot provide:
 
 ```
 casehub-clinical
-  → casehub-engine   (IRB gate, AE escalation, CasePlanModel, stage gating; multi-site sub-cases pending engine#112)
-  → casehub-ledger   (FDA Merkle audit, GDPR erasure, EU AI Act Art.12, trust scoring)
-  → casehub-work     (IRB/PI WorkItems with SLA and escalation)
-  → casehub-qhorus   (COMMAND to PI, commitment lifecycle, safety agent channels)
-  → casehub-connectors-core (sponsor notification delivery — clinical#13; DSMB/AE alerts planned — clinical#11)
+  → casehub-engine                  (IRB gate, AE escalation, CasePlanModel, stage gating; multi-site sub-cases pending engine#112)
+  → casehub-engine-work-adapter     (HumanTaskScheduleHandler + WorkItemLifecycleAdapter — Layer 5)
+  → casehub-engine-scheduler-quartz (Quartz worker execution — Layer 5)
+  → casehub-platform                (runtime scope — @DefaultBean mocks for engine CDI wiring)
+  → casehub-platform-expression     (runtime scope — JQEvaluator for engine expression evaluation)
+  → casehub-ledger                  (FDA Merkle audit, GDPR erasure, EU AI Act Art.12, trust scoring)
+  → casehub-work                    (IRB/PI WorkItems with SLA and escalation)
+  → casehub-qhorus                  (COMMAND to PI, commitment lifecycle, safety agent channels)
+  → casehub-connectors-core         (sponsor notification delivery — clinical#13; DSMB/AE alerts planned — clinical#11)
 ```
+
+## Layer 5 Integration Notes (casehub-engine)
+
+These apply to any consumer adding casehub-engine to a CaseHub application. Documented from clinical Layer 5 (clinical#6).
+
+**CDI wiring:** casehub-platform and casehub-platform-expression must be on the runtime classpath when casehub-engine is present. Without `casehub-platform`, the engine's `@DefaultBean` mock beans are absent and CDI resolution fails at augmentation time (symptom: `UnsatisfiedResolutionException` for `PreferenceProvider`). Use `<scope>runtime</scope>` — not `test` — in application modules that run the Quarkus build goal. See `docs/protocols/casehub/casehub-platform-dependency-scope.md`.
+
+**Quartz incompatibility:** `casehub-engine-scheduler-quartz` and the casehub-work scheduler beans conflict if both are on the classpath in the same deployment unit without isolation. Use separate modules or `@IfBuildProperty` gating to avoid double-scheduler registration.
+
+**YAML binding gotchas:**
+- `inputMapping` is the correct field name — not `inputSchema`
+- `on.contextChange.filter` is the correct path — not `when`
+
+These are silent failures: the YAML parses without error but the binding has no effect at runtime.
 
 ## Key Epics
 

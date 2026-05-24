@@ -11,6 +11,17 @@ Domain-agnostic, immutable, cryptographically tamper-evident audit ledger for an
 
 ---
 
+## Modules
+
+| Module | Artifact ID | Purpose |
+|--------|-------------|---------|
+| `api/` | `casehub-ledger-api` | Pure-Java SPIs and model types — no JPA, no Quarkus framework deps |
+| `runtime/` | `casehub-ledger` | Full extension: JPA entities, services, Flyway migrations, CDI |
+| `deployment/` | `casehub-ledger-deployment` | Quarkus build-time augmentation |
+| `persistence-memory/` | `casehub-ledger-memory` | Zero-datasource in-memory `@Alternative @Priority(1)` implementations of all persistence SPIs — for `@QuarkusTest` isolation and ephemeral installs. Add as `compile`-scope dependency in consumer modules to activate. |
+
+---
+
 ## Key Abstractions
 
 ### Core Model
@@ -29,13 +40,16 @@ See `docs/DESIGN.md` for field model and entry type vocabulary.
 
 The ledger provides services for: cryptographic verification and inclusion proofs, Merkle tree operations (RFC 9162 MMR), optional Ed25519 tlog-checkpoint publishing, W3C PROV-DM lineage export, GDPR Art.17 token-severing erasure, nightly trust score recomputation with CDI routing events, trust score read-model export, and trust bootstrapping for new actors.
 
+`LedgerEnricherPipeline` is an `@ApplicationScoped` CDI bean that owns enricher pipeline execution — shared by the JPA `@EntityListeners` path and the in-memory path. It is not an SPI (consumers do not implement it) but is the shared execution point for any consumer that adds enrichers.
+
 See `docs/DESIGN.md` for service class structure.
 
 ### SPIs (Consumer-Implemented or Built-In Alternatives)
 
 | SPI | Default | Built-in Alternative | Purpose |
 |---|---|---|---|
-| `LedgerEntryRepository` / `ReactiveLedgerEntryRepository` | — | JPA default | Persistence for ledger entries |
+| `LedgerEntryRepository` / `ReactiveLedgerEntryRepository` | — | JPA default; `InMemoryLedgerEntryRepository @Alternative @Priority(1)` in `casehub-ledger-memory` (wins over JPA by priority) | Persistence for ledger entries |
+| `LedgerMerkleFrontierRepository` | — | JPA default (`JpaLedgerMerkleFrontierRepository @Alternative`) | Read/replace the per-subject Merkle MMR frontier — extracted from direct `EntityManager` injection in `LedgerVerificationService` |
 | `ActorTrustScoreRepository` | — | JPA default | Persistence for trust scores |
 | `ActorIdentityProvider` | — | JPA default | Tokenise / resolve / erase actor identities (GDPR) |
 | `DecisionContextSanitiser` | no-op | — | Sanitise PII from decision context JSON before storage |
