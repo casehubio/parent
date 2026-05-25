@@ -2,7 +2,7 @@
 
 **GitHub:** [casehubio/clinical](https://github.com/casehubio/clinical)
 **Tier:** Application
-**Status:** Active — Layers 1–5 complete; Layer 6 blocked on engine#112
+**Status:** Active — Layers 1–6 complete; Layer 7 (trust routing) pending
 
 ## What It Is
 
@@ -25,8 +25,9 @@ The tutorial structure emerges from the natural adoption sequence. Each layer ad
 | 3 | casehub-qhorus | No formal obligation when coordinating PI authorisation and safety agents | complete (Epic 5, 2026-05-15) |
 | 4 | casehub-ledger | No FDA tamper-evident audit trail; no GDPR Art.17 consent withdrawal | complete (Epic 4, 2026-05-12) |
 | 5 | casehub-engine | Fixed trial pipeline; no adaptive paths for grade-based escalation or IRB gates | complete (Epic 6, 2026-05-23) |
-| 6 | Trust routing | No trust model; experienced safety agents not prioritised on complex CTCAE Grade 4+ events | blocked on engine#112 |
-| 7 | Comparison vs ClinicalAgent | — | pending |
+| 6 | trial-level blackboard aggregation — cross-site DSMB rollup | No cross-site pattern detection; no DSMB rollup when multiple sites have simultaneous Grade 4+ events | complete (Epic 3, 2026-05-25) |
+| 7 | Trust routing | No trust model; experienced safety agents not prioritised on complex CTCAE Grade 4+ events | pending |
+| 8 | Comparison vs ClinicalAgent | — | pending |
 
 ## What It Owns
 
@@ -38,6 +39,12 @@ The tutorial structure emerges from the natural adoption sequence. Each layer ad
 - PI authorisation — formal COMMAND creates Commitment; deviation requires named PI approval; MAJOR deviations trigger GCP §4.5 sponsor notification via `SponsorNotifier` SPI (casehub-connectors-core)
 - IRB/ethics committee gate — `ClinicalDeviationCaseHub` + `deviation-review.yaml`: CRITICAL protocol deviation + PI approval → 72h WorkItem → four terminal outcomes (APPROVED/REJECTED/DEFERRED/EXPIRED); `IrbDecisionListener` bridges WorkItem lifecycle to `IrbApproval` entity + ledger
 - AE escalation policy SPI — `AdverseEventEscalationPolicy` + `DefaultAdverseEventEscalationPolicy` (CTCAE-based): Grade 3 → senior monitor gate; Grade 4+ → senior monitor + DSMB in parallel; `ClinicalAdverseEventCaseHub` + `ae-escalation.yaml` drives adaptive routing via `contextChange.filter`
+- `ClinicalTrialCaseHub` + `trial-coordination.yaml` — trial-level DSMB rollup binding (cross-site Grade 4+ pattern detection); owns trial-level `CasePlanModel` not just IRB gate and AE escalation
+- `TrialActivationService` — `POST /trials/{id}/activate`; three-phase activation (commit status → startCase().join() → commit caseId); avoids Agroal pool deadlock
+- `TrialCaseLookup` — site → trial → engineCaseId lookup for signal routing
+- `TrialSafetySignalService` — observes `AeEscalationCompletedEvent`; clears `grade4Active.<siteId>` flag
+- `ClinicalTrial.engineCaseId` — UUID field (V110 migration) set on ACTIVE transition
+- `SEVERE_GRADES = Set.of(GRADE_4, GRADE_5)` — shared grade threshold constant in signal services
 - 3-site showcase scenario vs ClinicalAgent
 
 ## The Compliance Gap It Closes
@@ -55,7 +62,7 @@ ClinicalAgent (peer-reviewed baseline) structurally cannot provide:
 
 ```
 casehub-clinical
-  → casehub-engine                  (IRB gate, AE escalation, CasePlanModel, stage gating; multi-site sub-cases pending engine#112)
+  → casehub-engine                  (IRB gate, AE escalation, CasePlanModel, stage gating; trial-level CasePlanModel via trial-coordination.yaml)
   → casehub-engine-work-adapter     (HumanTaskScheduleHandler + WorkItemLifecycleAdapter — Layer 5)
   → casehub-engine-scheduler-quartz (Quartz worker execution — Layer 5)
   → casehub-platform                (runtime scope — @DefaultBean mocks for engine CDI wiring)
@@ -84,7 +91,7 @@ These are silent failures: the YAML parses without error but the binding has no 
 
 1. Project scaffold — complete
 2. Domain model — clinical trial entities and capability tags — complete
-3. Multi-site sub-case structure — pending (blocked on engine#112)
+3. Multi-site sub-case structure — complete (2026-05-25)
 4. Adverse event escalation — 24h and 7d GCP SLAs — complete
 5. PI authorisation — formal commitment for protocol deviations — complete
 6. IRB/ethics committee gate + AE escalation policy SPI (casehub-engine) — complete

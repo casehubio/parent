@@ -2,7 +2,7 @@
 
 **GitHub:** [casehubio/aml](https://github.com/casehubio/aml)
 **Tier:** Application
-**Status:** In progress — Layers 1–4 complete; Layers 5–7 pending
+**Status:** In progress — Layers 1–5 complete; Layers 6–7 pending
 
 ## What It Is
 
@@ -22,7 +22,7 @@ The tutorial structure emerges from the natural adoption sequence — each layer
 | 2 | casehub-work | No formal SLA or human task lifecycle for compliance officer review | ✅ complete |
 | 3 | casehub-qhorus | No formal obligation per specialist agent interaction | ✅ complete (2026-05-17) |
 | 4 | casehub-ledger | No tamper-evident FinCEN audit trail | ✅ complete (2026-05-23) |
-| 5 | casehub-engine | Fixed investigation pipeline; no adaptive paths | pending (engine P0 ✅ complete — unblocked) |
+| 5 | casehub-engine | Fixed investigation pipeline; no adaptive paths | ✅ complete (2026-05-25) |
 | 6 | Trust routing | No trust model; random agent selection | pending (blocked: engine#336, #337) |
 | 7 | Comparison vs IBM AMLSim | — | pending |
 

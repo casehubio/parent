@@ -15,9 +15,9 @@ Structured agent identity for LLM agents on the CaseHub platform. Any Quarkus ap
 
 | Module | artifactId | Type | Purpose |
 |---|---|---|---|
-| `api/` | `casehub-eidos-api` | Pure Java, no CDI | SPIs and domain types — `AgentDescriptor`, `AgentRegistry`, `CapabilityHealth`, `VocabularyRegistry`, `SystemPromptRenderer` |
-| `runtime/` | `casehub-eidos` | Quarkus extension | CDI registry, health implementations, renderer; `@DefaultBean` for all SPIs |
-| `persistence-memory/` | `casehub-eidos-memory` | Optional module | `InMemoryAgentRegistry` — `@Alternative @Priority(1)`; activate by adding as dep |
+| `api/` | `casehub-eidos-api` | Pure Java, no CDI | SPIs and domain types — `AgentDescriptor`, `AgentRegistry`, `CapabilityHealth`, `VocabularyRegistry`, `SystemPromptRenderer`, `AgentStateStore`; top-level types: `AgentPromptContext`, `DegradationReason`, `GoalContext`, `Resource` |
+| `runtime/` | `casehub-eidos` | Quarkus extension | CDI registry, health implementations, renderer; `@DefaultBean` for all SPIs; `runtime/renderer/` — `ClaudeMarkdownRenderer`; `runtime/health/` — `NoOpAgentStateStore` |
+| `persistence-memory/` | `casehub-eidos-memory` | Optional module | `InMemoryAgentRegistry` + `InMemoryAgentStateStore` — `@Alternative @Priority(1)`; activate by adding as dep |
 | `deployment/` | `casehub-eidos-deployment` | Quarkus build step | `EidosProcessor` + `EidosBuildTimeConfig` |
 | `vocab/` | `casehub-eidos-vocab` | Optional module | Well-known vocabularies: SVO, Conscientiousness, CasehubSlot |
 | `examples/agent-scenarios/` | — | Test-only | `@QuarkusTest` integration examples covering team, cross-vocab, epistemic, tenancy, disposition |
@@ -44,9 +44,9 @@ SPIs for register, findById, and find(AgentQuery). `AgentQuery` carries: `slot`,
 
 ### CapabilityHealth / ReactiveCapabilityHealth
 
-SPI: `probe(AgentDescriptor, capabilityTag, ProbeContext)` → `CapabilityStatus`. Four statuses: `Ready`, `Degraded(DegradationReason, detail)`, `Unavailable(reason)`, `EpistemicallyWeak(domain, confidence)`.
+SPI: `probe(AgentDescriptor, capabilityTag, ProbeContext)` → `CapabilityStatus`. Four statuses: `Ready`, `Degraded`, `Unavailable`, `EpistemicallyWeak`. `DegradationReason` is a top-level type in `casehub-eidos-api` — not nested inside `CapabilityHealth`.
 
-`DefaultCapabilityHealth` checks declared capabilities + compares `ProbeContext.taskDomain` against `epistemicDomains`; fires `EpistemicallyWeak` when confidence is below `casehub.eidos.epistemic.weak-threshold` (default 0.3).
+`DefaultCapabilityHealth` checks `AgentStateStore` first (degraded state takes precedence), then declared capabilities + compares `ProbeContext.taskDomain` against `epistemicDomains`; fires `EpistemicallyWeak` when confidence is below `casehub.eidos.epistemic.weak-threshold` (default 0.3).
 
 **ProbeContext:** `taskDomain` is the *subject domain* of the task — e.g. `"rust"` within a `"code-review"` capability. It is semantically distinct from `capabilityTag`. Conflating them prevents `EpistemicallyWeak` from triggering. `taskMetadata` carries additional task context.
 
@@ -56,9 +56,13 @@ SPI: `probe(AgentDescriptor, capabilityTag, ProbeContext)` → `CapabilityStatus
 
 SPI for term registration, resolution, and cross-vocabulary equivalence. `CdiVocabularyRegistry` (`@DefaultBean`) discovers `Instance<Vocabulary>` CDI beans at startup — any bean that implements `Vocabulary` is auto-discovered.
 
-### SystemPromptRenderer (Phase 3)
+### SystemPromptRenderer (Phase 3 — complete)
 
-SPI: `render(AgentDescriptor, RenderContext)` → `RenderedPrompt`. `ClaudeMarkdownRenderer` is the `@DefaultBean`. Format-agnostic from day one — `RenderFormat` selects output format. Generates CLAUDE.md sections (or any LLM system prompt) from descriptor + case goal. Not yet implemented.
+SPI: `render(AgentDescriptor, AgentPromptContext)` → `RenderedPrompt`. `ClaudeMarkdownRenderer @DefaultBean` implements a two-step pipeline: structural YAML serialization → optional LangChain4j `ChatModel` semantic pass → markdown assembly. `AgentPromptContext` carries `Optional<GoalContext>`, `List<Resource>`, `situationalContext`, `RenderFormat` — re-renderable as agent context evolves. Works without LLM (structural-only). Hashes enable cache invalidation.
+
+### AgentStateStore (Phase 3 — complete)
+
+SPI: `record(agentId, DegradationReason, expiresAt)`, `query(agentId)` → `Optional<AgentState>`. `NoOpAgentStateStore @DefaultBean` (no tracking). `InMemoryAgentStateStore @Alternative @Priority(1)` in `casehub-eidos-memory` — TTL-based ConcurrentHashMap, entries expire on `query()`. `DefaultCapabilityHealth` checks store first at probe time — degraded state takes precedence over Ready/EpistemicallyWeak. `DegradationReason` is a top-level type in `casehub-eidos-api`, not nested inside `CapabilityHealth`. JPA persistence deferred (eidos#7).
 
 ---
 
@@ -67,6 +71,7 @@ SPI: `render(AgentDescriptor, RenderContext)` → `RenderedPrompt`. `ClaudeMarkd
 | Repo | How |
 |---|---|
 | `casehub-ledger` | Runtime dep — `casehub-eidos` (runtime) depends on it; `casehub-eidos-api` depends on nothing |
+| `dev.langchain4j:langchain4j-core:1.14.1` | `casehub-eidos` (runtime) — `ChatModel` interface used by `ClaudeMarkdownRenderer` for optional LLM semantic pass |
 
 ## Depended On By
 
@@ -107,7 +112,8 @@ JPA/Flyway — version range V1–V999 in `classpath:db/eidos/migration`. No Fly
 ## Current State
 
 - Phases 1 and 2 complete and merged to main (96 tests across 7 modules, all green).
-- Phase 3 — `SystemPromptRenderer` + `ClaudeMarkdownRenderer` + runtime state probing for `Degraded` status — next up (eidos#5).
+- Phase 3 — `SystemPromptRenderer` + `ClaudeMarkdownRenderer` + `AgentStateStore` + `InMemoryAgentStateStore` — complete (eidos#5). Structural rendering + optional LangChain4j semantic pass.
+- Phase 4 (knowledge graph) — next.
 - Engine integration (`Worker.agentDescriptor`, `NoOpCapabilityHealth`, `WorkOrchestrator` probe dispatch) — engine#341, design agreed.
 
 ---
