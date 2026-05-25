@@ -341,12 +341,14 @@ casehub-parent              (BOM — publish first; all others import it)
 | Concern | Owner | Mechanism |
 |---|---|---|
 | Base ledger tables | `casehub-ledger` | Flyway V1000–V1007 at `classpath:db/ledger/migration` |
-| WorkItem tables | `casehub-work` runtime | Flyway V1–V999 at `classpath:db/migration` |
+| WorkItem tables | `casehub-work` runtime | Flyway V1–V999 at `classpath:db/work/migration` (migration pending — see casehubio/work#229) |
 | Qhorus tables | `casehub-qhorus` | Flyway V1–V10, V2000 (named `qhorus` datasource; `classpath:db/qhorus/migration,classpath:db/ledger/migration`; next domain migration: V11) |
 | Engine tables | `casehub-engine` | Hibernate `drop-and-create` (no migrations yet) |
 | Ledger subclass join tables | Each consumer | Consumer-owned Flyway, V2000+ numbering |
 
 **Flyway numbering rule:** casehub-ledger owns V1000–V1007 at `classpath:db/ledger/migration`. Domain: V1–V999. Ledger subclass joins: V2000+ (provides safe buffer above the ledger base range). Qhorus reference: V1–V10 domain migrations, V2000 subclass join; next domain migration V11. Consumers must add `classpath:db/ledger/migration` to their Flyway locations alongside their own path.
+
+**Flyway path scoping rule:** Every module must ship migrations under a repo-scoped path (`db/<reponame>/migration/`) — never the generic `db/migration/`. See [`PP-20260525-607b33`](../garden/docs/protocols/universal/flyway-repo-scoped-migration-path.md).
 
 **Named datasource rule:** Qhorus always runs on named `qhorus` datasource. Claudony uses separate `claudony` and `qhorus` persistence units.
 
