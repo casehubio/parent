@@ -1,8 +1,13 @@
 # Research Spec: CaseHub × OpenClaw — Life and Enterprise Automation
 
-**Status:** Research / Pre-design — no implementation decisions made
+**Status:** Research complete — repos bootstrapped, content promoted to individual repos
 **Date:** 2026-05-25
 **Origin:** Exploratory conversation — casehubio/parent session 2026-05-25
+**Promoted to:**
+- casehub-openclaw: `docs/specs/openclaw-integration.md`, `docs/specs/openclaw-skill-pack.md`
+- casehub-life: `docs/specs/life-automation.md`, `docs/specs/life-actor-model.md`
+- casehub-platform: `docs/specs/case-memory-store.md`
+- platform deep-dives: `docs/repos/casehub-openclaw.md`, `docs/repos/casehub-life.md`
 
 ---
 
