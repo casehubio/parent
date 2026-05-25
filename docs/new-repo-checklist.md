@@ -47,7 +47,11 @@ All pom.xml files must be populated and valid — IntelliJ must be able to open 
   - `api/` — pure Java, zero framework, zero JPA. No `<build>` plugins needed beyond compiler.
     Add Jandex plugin if CDI beans live here.
   - `app/` or `runtime/` — Quarkus app with `<goal>build</goal>`. Full deps including:
-    - `casehub-platform` at `<scope>runtime</scope>` (NOT test — PP-20260524-a8f597)
+    - `casehub-platform` at `<scope>runtime</scope>` (NOT test — PP-20260524-a8f597).
+      AML follows this; clinical and devtown use compile default and currently work. The
+      `runtime` scope is required when Quarkus augmentation validates CDI without the test
+      classpath — if you see `UnsatisfiedResolutionException` for `PreferenceProvider` during
+      augmentation, this is the fix. Set `<scope>runtime</scope>` proactively.
     - `casehub-platform-expression` if casehub-engine is a dep
     - All test deps (qhorus-testing, engine-testing, platform-testing, assertj, awaitility)
   - Integration tier core/ — Jandex plugin; no Quarkus build goal.
@@ -63,8 +67,20 @@ All pom.xml files must be populated and valid — IntelliJ must be able to open 
 - [ ] Stub `src/main/java/.gitkeep`, `src/main/resources/.gitkeep`, `src/test/java/.gitkeep`
   in every module so IntelliJ sees the source roots and Git tracks the empty dirs.
 
-- [ ] Stub `src/main/resources/application.properties` in the app module — even a comment-only
-  file prevents Quarkus from complaining about missing config on first build.
+- [ ] Stub `src/main/resources/application.properties` in the app module. Minimum content:
+  ```properties
+  quarkus.datasource.db-kind=h2
+  quarkus.datasource.jdbc.url=jdbc:h2:mem:<name>;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
+  quarkus.flyway.migrate-at-start=true
+  quarkus.flyway.locations=classpath:db/migration
+  ```
+  When casehub-qhorus is a dependency, add a named `qhorus` datasource alongside the
+  default (see clinical `runtime/application.properties` for the full pattern including
+  `%dev` profile overrides and per-datasource Flyway locations).
+  When casehub-ledger is a dependency, add `classpath:db/ledger/migration` to Flyway
+  locations (PP-20260524-10efef).
+  For multi-datasource apps, use `quarkus.hibernate-orm.packages` to list all JPA
+  packages that the default datasource should scan (aml pattern).
 
 ---
 
@@ -97,8 +113,12 @@ All pom.xml files must be populated and valid — IntelliJ must be able to open 
 - [ ] `.github/workflows/publish.yml`:
   - Triggers: `repository_dispatch` (types: [upstream-published]), `push` (branches: [main]),
     `pull_request` (branches: [main]), `workflow_dispatch`
-  - `repository_dispatch` trigger is **mandatory** — without it the repo does not rebuild
-    when upstreams publish new snapshots. This is the most commonly forgotten item.
+  - `repository_dispatch` trigger is **required on the publish workflow** — without it the
+    repo does not rebuild when upstreams publish new snapshots. This is the most commonly
+    missed item. Note: some repos have a separate `build.yml` (CI only) and `publish.yml`
+    (publish + dispatch) — the `repository_dispatch` trigger belongs on `publish.yml`, not
+    on a test-only build workflow. aml uses only `build.yml` (no publish.yml) and is
+    missing this trigger as a result (casehubio/aml#34 filed).
   - Build step: `mvn --batch-mode install` on PR; `mvn --batch-mode deploy -DskipTests` on push
   - Trigger downstream CI step (if anything depends on this repo):
     ```yaml
@@ -124,25 +144,28 @@ All pom.xml files must be populated and valid — IntelliJ must be able to open 
 This is the step most likely to be missed. For each repo that the new repo **depends on**,
 check whether that repo's publish workflow already dispatches to the new repo. If not, update it.
 
-**The dependency → dispatch map (as of 2026-05-25):**
+**The actual dispatch map (verified against workflow files, 2026-05-25):**
 
 ```
 parent       → platform, ledger, connectors
-platform     → work, qhorus
+platform     → ledger, connectors
 ledger       → work, qhorus
-connectors   → (nothing currently)
+connectors   → work
 work         → engine
 qhorus       → engine, claudony
-engine       → claudony, openclaw  ← requires casehubio/engine#350
+engine       → flow                ← engine#350 must add openclaw here
 claudony     → (nothing)
 openclaw     → life
 ```
 
+Note: engine triggers `flow` (quarkus-flow), not claudony directly — claudony is triggered by
+qhorus. Verify the actual workflow file before assuming a dependency implies a dispatch.
+
 For a new **foundation** repo: check if the repos it depends on dispatch to it. File issues
 on peer repos if they do not — do not commit to peer repos from this session.
 
-For a new **integration** repo: typically triggered by engine (the last foundation build).
-Verify engine's workflow dispatches to it.
+For a new **integration** repo: check which foundation repo is the last in your dependency
+chain and verify it dispatches to you. For openclaw: engine (engine#350 pending).
 
 For a new **application** repo: typically triggered by the integration repo it uses as
 WorkerProvisioner. Verify openclaw (or claudony) dispatches to it.
@@ -347,7 +370,8 @@ Map the new repo into the existing dispatch chain and verify:
 | Upstream repo not dispatching to new repo | New repo always stale after upstream publishes | File issue on upstream peer repo; add to dispatch list in their publish.yml |
 | wksp symlink missing from project root | `work-start` and other skills can't find the workspace | `ln -s /Users/mdproctor/claude/public/casehub/<name> /Users/mdproctor/claude/casehub/<name>/wksp` |
 | CLAUDE.md missing peer repos hard boundary section | Claude session in new repo may accidentally commit to sibling repos | Add complete `Peer Repos — Hard Boundary` section listing all sibling repos |
-| Engine workflow not updated | openclaw / life never triggered by engine changes | File issue on casehubio/engine (cannot commit from parent session) |
+| Engine workflow not updated | openclaw never triggered by engine changes | File issue on casehubio/engine (cannot commit from parent session) — engine#350 pending |
+| Assuming engine triggers claudony | Claudony trigger broken if engine changes | Engine triggers `flow` not claudony; claudony is triggered by qhorus — verify actual workflow files, don't assume from the dep graph |
 | `docs/index.html` PLATFORM_REPOS not updated | Repo missing from CI dashboard | Add to `PLATFORM_REPOS` or `APP_REPOS` array |
 | casehubio.github.io not updated | New repo absent from public landing page | Add SVG text element + project card in correct tier tab |
 | README.md badges missing | No visible build status for the new repo from the parent | Add badge row under correct section |
