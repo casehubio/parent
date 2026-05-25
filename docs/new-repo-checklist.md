@@ -21,19 +21,33 @@ Work through the list top-to-bottom. Items within a section can often be paralle
 
 ---
 
+## Conventions
+
+These variables are used throughout the checklist. Set them once for your environment before starting.
+
+| Variable | Meaning | Example |
+|----------|---------|---------|
+| `$GITHUB_USER` | Your personal GitHub username | `mdproctor` |
+| `$CASEHUB_LOCAL` | Local root for project repos | `~/claude/casehub` |
+| `$CASEHUB_WORKSPACE` | Local root for workspace repos | `~/claude/public/casehub` |
+
+Workspace repos are named `wsp-casehub-<name>`, private, under `$GITHUB_USER`.
+
+---
+
 ## 1. GitHub Repository
 
 - [ ] `gh repo create casehubio/<name> --public --description "..."`
 - [ ] Set default branch to `main` if not already.
 - [ ] Clone locally: `git clone https://github.com/casehubio/<name>.git ../casehub/<name>`
 - [ ] Set git user config in the new repo to match your identity.
-- [ ] Fork to mdproctor personal account: `gh repo fork casehubio/<name> --clone=false`
-- [ ] Rewire remotes — all repos follow `origin = mdproctor fork, upstream = casehubio org`:
+- [ ] Fork to $GITHUB_USER personal account: `gh repo fork casehubio/<name> --clone=false`
+- [ ] Rewire remotes — all repos follow `origin = $GITHUB_USER fork, upstream = casehubio org`:
   ```bash
   git -C ../casehub/<name> remote rename origin upstream
-  git -C ../casehub/<name> remote add origin https://github.com/mdproctor/<name>.git
+  git -C ../casehub/<name> remote add origin https://github.com/$GITHUB_USER/<name>.git
   ```
-  Verify: `git remote -v` should show both `origin` (mdproctor) and `upstream` (casehubio).
+  Verify: `git remote -v` should show both `origin` ($GITHUB_USER) and `upstream` (casehubio).
 
 ---
 
@@ -276,13 +290,33 @@ WorkerProvisioner. Verify openclaw (or claudony) dispatches to it.
 
 ## 14. Workspace Setup
 
-- [ ] Create workspace directory: `mkdir -p /Users/mdproctor/claude/public/casehub/<name>/{adr,blog,plans,snapshots,specs}`
-- [ ] Create `proj` symlink: `ln -s /Users/mdproctor/claude/casehub/<name> /Users/mdproctor/claude/public/casehub/<name>/proj`
-- [ ] Create `CLAUDE.md` symlink: `ln -s /Users/mdproctor/claude/casehub/<name>/CLAUDE.md /Users/mdproctor/claude/public/casehub/<name>/CLAUDE.md`
-- [ ] Create `wksp` symlink in project root: `ln -s /Users/mdproctor/claude/public/casehub/<name> /Users/mdproctor/claude/casehub/<name>/wksp`
-- [ ] Create initial `HANDOFF.md` in the workspace directory.
-- [ ] Create `IDEAS.md` stub in the workspace directory.
-- [ ] Commit workspace additions to the workspace repo (`git -C /Users/mdproctor/claude/public/casehub add <name>/ && git -C ... commit`).
+Each new repo gets its **own isolated workspace git repo** (`wsp-casehub-<name>`). Never commit new workspace directories into the parent workspace — they must have their own git history.
+
+- [ ] Create workspace dir:
+      `mkdir -p $CASEHUB_WORKSPACE/<name>/{adr,blog,plans,snapshots,specs}`
+- [ ] Create `proj` symlink:
+      `ln -s $CASEHUB_LOCAL/<name> $CASEHUB_WORKSPACE/<name>/proj`
+- [ ] Create `CLAUDE.md` symlink:
+      `ln -s $CASEHUB_LOCAL/<name>/CLAUDE.md $CASEHUB_WORKSPACE/<name>/CLAUDE.md`
+- [ ] Create `wksp` symlink in project root:
+      `ln -s $CASEHUB_WORKSPACE/<name> $CASEHUB_LOCAL/<name>/wksp`
+- [ ] Create `HANDOFF.md` stub in workspace dir.
+- [ ] Create `IDEAS.md` stub in workspace dir.
+- [ ] Create `INDEX.md` stubs in each artifact subdir (`adr/` `blog/` `plans/` `snapshots/` `specs/`) — git cannot track empty dirs.
+- [ ] Create `.gitignore` in workspace dir:
+      ```
+      proj
+      CLAUDE.md
+      .DS_Store
+      ```
+- [ ] `gh repo create $GITHUB_USER/wsp-casehub-<name> --private`
+- [ ] `git init $CASEHUB_WORKSPACE/<name>`
+- [ ] `git -C $CASEHUB_WORKSPACE/<name> remote add origin https://github.com/$GITHUB_USER/wsp-casehub-<name>.git`
+- [ ] `git -C $CASEHUB_WORKSPACE/<name> add .`
+- [ ] `git -C $CASEHUB_WORKSPACE/<name> commit -m "init: workspace scaffold for casehub-<name>"`
+- [ ] `git -C $CASEHUB_WORKSPACE/<name> push -u origin main`
+- [ ] Add `/<name>` to parent workspace `.gitignore` (`$CASEHUB_WORKSPACE/.gitignore`)
+- [ ] Commit and push the parent workspace `.gitignore` update.
 
 ---
 
@@ -327,9 +361,9 @@ WorkerProvisioner. Verify openclaw (or claudony) dispatches to it.
 
 ---
 
-## 19. Workspace Repo Commit
+## 19. Workspace Repo Push
 
-- [ ] Push workspace additions: `git -C /Users/mdproctor/claude/public/casehub push`
+- [ ] `git -C $CASEHUB_WORKSPACE/<name> push`
 
 ---
 
@@ -360,9 +394,7 @@ Map the new repo into the existing dispatch chain and verify:
 
 ## 22. Memory Update
 
-- [ ] Update `MEMORY.md` and `project_workspace.md` in
-  `/Users/mdproctor/.claude/projects/-Users-mdproctor-claude-casehub-parent/memory/`
-  to reflect the two new repos.
+- [ ] Update your Claude memory for the parent project to reflect the new repos (path is developer-specific).
 
 ---
 
@@ -375,7 +407,8 @@ Map the new repo into the existing dispatch chain and verify:
 | Domain Flyway migrations start at V1 | Startup failure: "Found more than one migration with version 1" after casehub-work added | Rename domain migrations to V100+ before wiring casehub-work |
 | Missing `classpath:db/ledger/migration` in Flyway locations | Test failure: "Table LEDGER_ENTRY not found" | Add to `quarkus.flyway.locations` (PP-20260524-10efef) |
 | Upstream repo not dispatching to new repo | New repo always stale after upstream publishes | File issue on upstream peer repo; add to dispatch list in their publish.yml |
-| wksp symlink missing from project root | `work-start` and other skills can't find the workspace | `ln -s /Users/mdproctor/claude/public/casehub/<name> /Users/mdproctor/claude/casehub/<name>/wksp` |
+| wksp symlink missing from project root | `work-start` and other skills can't find the workspace | `ln -s $CASEHUB_WORKSPACE/<name> $CASEHUB_LOCAL/<name>/wksp` |
+| Workspace git not initialized | Sessions bleed into parent workspace; branches and artifacts from multiple projects entangle in parent git history | Run Step 14 git init steps; add `/<name>` to parent workspace `.gitignore` |
 | CLAUDE.md missing peer repos hard boundary section | Claude session in new repo may accidentally commit to sibling repos | Add complete `Peer Repos — Hard Boundary` section listing all sibling repos |
 | Engine workflow not updated | openclaw never triggered by engine changes | File issue on casehubio/engine (cannot commit from parent session) — engine#350 pending |
 | Assuming engine triggers claudony | Claudony trigger broken if engine changes | Engine triggers `flow` not claudony; claudony is triggered by qhorus — verify actual workflow files, don't assume from the dep graph |
