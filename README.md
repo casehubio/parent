@@ -17,6 +17,7 @@ Org-level parent POM and BOM for the [casehubio](https://github.com/casehubio) e
 | [casehub-eidos](https://github.com/casehubio/eidos) | [![casehub-eidos](https://github.com/casehubio/eidos/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/eidos/actions/workflows/publish.yml) |
 | [casehub-engine](https://github.com/casehubio/engine) | [![casehub-engine](https://github.com/casehubio/engine/actions/workflows/maven.yml/badge.svg?branch=main)](https://github.com/casehubio/engine/actions/workflows/maven.yml) |
 | [casehub-claudony](https://github.com/casehubio/claudony) | [![casehub-claudony](https://github.com/casehubio/claudony/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/casehubio/claudony/actions/workflows/ci.yml) |
+| [casehub-openclaw](https://github.com/casehubio/openclaw) | [![casehub-openclaw](https://github.com/casehubio/openclaw/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/openclaw/actions/workflows/publish.yml) |
 | [quarkus-langchain4j](https://github.com/casehubio/quarkus-langchain4j) | [![quarkus-langchain4j](https://github.com/casehubio/quarkus-langchain4j/actions/workflows/casehub-publish.yml/badge.svg?branch=main)](https://github.com/casehubio/quarkus-langchain4j/actions/workflows/casehub-publish.yml) |
 
 **Applications**
@@ -26,6 +27,7 @@ Org-level parent POM and BOM for the [casehubio](https://github.com/casehubio) e
 | [casehub-devtown](https://github.com/casehubio/devtown) | [![casehub-devtown](https://github.com/casehubio/devtown/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/devtown/actions/workflows/publish.yml) |
 | [casehub-aml](https://github.com/casehubio/aml) | [![casehub-aml](https://github.com/casehubio/aml/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/casehubio/aml/actions/workflows/build.yml) |
 | [casehub-clinical](https://github.com/casehubio/clinical) | [![casehub-clinical](https://github.com/casehubio/clinical/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/clinical/actions/workflows/publish.yml) |
+| [casehub-life](https://github.com/casehubio/life) | [![casehub-life](https://github.com/casehubio/life/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/life/actions/workflows/publish.yml) |
 
 > Full detail: [Build Status Dashboard](https://github.com/casehubio/parent/actions/workflows/dashboard.yml) &nbsp;|&nbsp; [PR Dashboard](https://github.com/casehubio/parent/actions/workflows/pr-dashboard.yml) &nbsp;|&nbsp; [▶ Run Full Stack Build](https://github.com/casehubio/parent/actions/workflows/full-stack-build.yml)
 

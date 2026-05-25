@@ -1,0 +1,354 @@
+# Adding a New Repo to the CaseHub Ecosystem — Complete Checklist
+
+Every step verified from practice. Missing any item produces a silent gap — a repo that builds
+locally but isn't triggered by upstreams, doesn't appear in dashboards, or confuses the next
+Claude session that opens it.
+
+Work through the list top-to-bottom. Items within a section can often be parallelised.
+
+---
+
+## 0. Decide Before You Start
+
+- [ ] **Tier** — Foundation / Integration / Application? Determines dependency direction.
+- [ ] **Module structure** — Foundation: SPI module + runtime + deployment + optional adapters.
+  Integration: core / casehub / app (+ python/ if needed). Application: api / app (hexagonal).
+- [ ] **GitHub repo name** — short, lowercase, matches artifact-id root (`casehub-openclaw` →
+  `casehubio/openclaw`).
+- [ ] **Dependency graph** — which existing repos does this one depend on? This drives steps 3–5.
+- [ ] **Downstream dependents** — which existing repos will depend on this one once it ships?
+  This drives the dispatch chain (step 5).
+
+---
+
+## 1. GitHub Repository
+
+- [ ] `gh repo create casehubio/<name> --public --description "..."`
+- [ ] Set default branch to `main` if not already.
+- [ ] Clone locally: `git clone https://github.com/casehubio/<name>.git ../casehub/<name>`
+- [ ] Set git user config in the new repo to match your identity.
+
+---
+
+## 2. Maven Project Skeleton (no code)
+
+All pom.xml files must be populated and valid — IntelliJ must be able to open the project.
+
+- [ ] Root `pom.xml`:
+  - `<parent>` → `casehub-parent` 0.2-SNAPSHOT
+  - `<artifactId>` → `casehub-<name>-parent`
+  - `<modules>` listing all child modules
+  - `<dependencyManagement>` — import `quarkus-bom`; pin all cross-module and foundation deps
+  - `<repositories>` → `https://maven.pkg.github.com/casehubio/*`
+  - `<distributionManagement>` → `https://maven.pkg.github.com/casehubio/<name>`
+  - `<scm>` → GitHub URL
+
+- [ ] Module pom.xml files (one per module):
+  - `api/` — pure Java, zero framework, zero JPA. No `<build>` plugins needed beyond compiler.
+    Add Jandex plugin if CDI beans live here.
+  - `app/` or `runtime/` — Quarkus app with `<goal>build</goal>`. Full deps including:
+    - `casehub-platform` at `<scope>runtime</scope>` (NOT test — PP-20260524-a8f597)
+    - `casehub-platform-expression` if casehub-engine is a dep
+    - All test deps (qhorus-testing, engine-testing, platform-testing, assertj, awaitility)
+  - Integration tier core/ — Jandex plugin; no Quarkus build goal.
+  - Integration tier casehub/ — Jandex plugin.
+  - Integration tier app/ — Quarkus build goal.
+
+- [ ] **Flyway version range** (app modules consuming casehub-work):
+  - Domain migrations must start at V100+ (casehub-work owns V1–V21+)
+  - Add `classpath:db/ledger/migration` to Flyway locations when casehub-ledger is on classpath
+    (PP-20260524-10efef)
+  - Add `classpath:db/qhorus/migration` when casehub-qhorus is on classpath
+
+- [ ] Stub `src/main/java/.gitkeep`, `src/main/resources/.gitkeep`, `src/test/java/.gitkeep`
+  in every module so IntelliJ sees the source roots and Git tracks the empty dirs.
+
+- [ ] Stub `src/main/resources/application.properties` in the app module — even a comment-only
+  file prevents Quarkus from complaining about missing config on first build.
+
+---
+
+## 3. Metadata and Process Files
+
+- [ ] `CLAUDE.md` — two-section file (workspace + project guide). Copy from aml or clinical
+  as template. Include:
+  - Workspace section: session start path, artifact locations table, structure, git discipline,
+    **peer repos hard boundary** (list every other casehubio repo — never commit to these),
+    routing table
+  - Project section: platform context, project type, what it is, tutorial layers (if app tier),
+    reference docs, build commands with `JAVA_HOME=$(/usr/libexec/java_home -v 26) mvn ...`,
+    work tracking (issue tracking enabled + GitHub repo)
+
+- [ ] `LAYER-LOG.md` — application tier: tutorial layer stubs (one per foundation module
+  added, in adoption order). Integration tier: epic log format (one entry per epic).
+  Do NOT leave this file empty — write at minimum the header and first entry stub.
+
+- [ ] `README.md` — purpose, module structure, documentation links, current status (scaffold).
+
+- [ ] `.gitignore` — copy from aml: `wksp`, `.DS_Store`, `target/`, `*.class`, `.idea/`
+
+- [ ] `.githooks/pre-push` — copy the squash candidates check from any existing repo.
+  Run `chmod +x .githooks/pre-push`.
+
+---
+
+## 4. CI Workflow
+
+- [ ] `.github/workflows/publish.yml`:
+  - Triggers: `repository_dispatch` (types: [upstream-published]), `push` (branches: [main]),
+    `pull_request` (branches: [main]), `workflow_dispatch`
+  - `repository_dispatch` trigger is **mandatory** — without it the repo does not rebuild
+    when upstreams publish new snapshots. This is the most commonly forgotten item.
+  - Build step: `mvn --batch-mode install` on PR; `mvn --batch-mode deploy -DskipTests` on push
+  - Trigger downstream CI step (if anything depends on this repo):
+    ```yaml
+    - name: Trigger downstream CI
+      if: github.event_name != 'pull_request' && success()
+      run: |
+        for repo in <downstream-repo-1> <downstream-repo-2>; do
+          gh api repos/casehubio/$repo/dispatches \
+            -f event_type=upstream-published \
+            -f client_payload[source]="${GITHUB_REPOSITORY}" \
+            2>/dev/null && echo "  ✅ $repo triggered" || echo "  ⚠️  $repo trigger failed"
+        done
+      env:
+        GH_TOKEN: ${{ secrets.GH_PAT }}
+    ```
+  - Secrets required: `GITHUB_TOKEN` (auto), `GH_PAT` (cross-repo dispatch — classic PAT,
+    not fine-grained)
+
+---
+
+## 5. CI Dispatch Chain — Upstream Repos
+
+This is the step most likely to be missed. For each repo that the new repo **depends on**,
+check whether that repo's publish workflow already dispatches to the new repo. If not, update it.
+
+**The dependency → dispatch map (as of 2026-05-25):**
+
+```
+parent       → platform, ledger, connectors
+platform     → work, qhorus
+ledger       → work, qhorus
+connectors   → (nothing currently)
+work         → engine
+qhorus       → engine, claudony
+engine       → claudony, openclaw  ← requires casehubio/engine#350
+claudony     → (nothing)
+openclaw     → life
+```
+
+For a new **foundation** repo: check if the repos it depends on dispatch to it. File issues
+on peer repos if they do not — do not commit to peer repos from this session.
+
+For a new **integration** repo: typically triggered by engine (the last foundation build).
+Verify engine's workflow dispatches to it.
+
+For a new **application** repo: typically triggered by the integration repo it uses as
+WorkerProvisioner. Verify openclaw (or claudony) dispatches to it.
+
+**Key constraint:** dispatching requires `GH_PAT` (a classic PAT with `repo` scope and
+`workflow` scope). `GITHUB_TOKEN` is repo-scoped only and returns 403 on cross-repo dispatch.
+
+---
+
+## 6. Parent BOM (`pom.xml`)
+
+- [ ] Add `<dependency>` entries for every artifact the new repo publishes, under
+  `<!-- casehub-<name> -->` comment block in `<dependencyManagement>`.
+- [ ] All new artifacts must pin to `${casehub.version}`.
+- [ ] Run `mvn install` in parent to verify the BOM is syntactically valid.
+
+---
+
+## 7. Parent Platform Docs (`docs/PLATFORM.md`)
+
+- [ ] **Repository Map table** — add row: `| casehub-<name> | [casehubio/<name>](...) | one-liner | Tier |`
+- [ ] **Build / Dependency Order** — add the new repo in the correct topological position.
+- [ ] **Cross-Repo Dependency Map** — add a row for every cross-repo dependency the new repo
+  declares (both directions if relevant). Protocol: cross-repo-optional-dep-table-registration.md
+- [ ] **Capability Ownership table** — add any new capabilities this repo provides.
+
+---
+
+## 8. Parent Applications Doc (`docs/APPLICATIONS.md`)
+
+- [ ] **Repository Map table** — add row (application tier repos only).
+- [ ] **Platform Dependencies** code block — add the new repo and its foundation deps.
+- [ ] **Capability Ownership table** — add domain capability row.
+- [ ] **Per-Repo Deep Dives table** — add raw URL row.
+
+---
+
+## 9. Build Infrastructure in Parent
+
+- [ ] **`full-stack-build.yml`**:
+  - Clone step (under `include_applications` or core, depending on tier)
+  - Build step with `continue-on-error: true`, correct env vars
+  - Outcome variable in the summary env block
+  - Module in the `MODULES` array and `OUTCOMES`/`GH_REPO` maps
+  - Exclusion logic: add repo name to the `elif` that identifies `⏭️ excluded` repos
+
+- [ ] **`incremental-full-stack-build.yml`**:
+  - Clone step (under `include_applications` or core)
+  - SHA collection in `steps.shas.outputs.sha_<name>`
+  - SHA restore in `steps.prev.outputs.sha_<name>` via MODULES array
+  - Decision + build step using `incremental-build-decision.sh` with correct `--dep` flags
+  - Module name in the `MODULES+=(...)` array
+
+- [ ] **`dashboard.yml`** — add `casehubio/<name>` to the `REPOS` printf list.
+
+- [ ] **`pr-dashboard.yml`** — add `casehubio/<name>` to the `REPOS` printf list.
+
+- [ ] **`build-all.sh`**:
+  - `REPO_DIR[<name>]="../<name>"`
+  - `REPO_GH[<name>]="<name>"`
+  - `DEPS[<name>]="<space-separated dep names>"`
+  - `MODULE_PATH[<name>]="../<name>"`
+  - Add to `REPOS+=(<name>)` under `--include-apps` branch (application/integration tier)
+
+---
+
+## 10. Parent README (`README.md`)
+
+- [ ] Add build status badge row under the correct section (Foundation / Integration / Applications).
+  Badge URL pattern: `https://github.com/casehubio/<name>/actions/workflows/publish.yml/badge.svg?branch=main`
+  Note: check the actual workflow filename in the new repo — it may differ from `publish.yml`
+  (engine uses `maven.yml`, claudony uses `ci.yml`).
+
+---
+
+## 11. Parent Dashboard HTML (`docs/index.html`)
+
+- [ ] **Foundation/Integration repos** → add `'<name>'` to the `PLATFORM_REPOS` array.
+- [ ] **Application repos** → add `{ org: 'casehubio', name: '<name>' }` to `APP_REPOS`.
+  For repos not in the casehubio org (e.g. quarkmind): use `org: 'mdproctor'` or appropriate.
+
+---
+
+## 12. Casehubio Website (`casehubio.github.io`)
+
+- [ ] **SVG architecture diagram** — add the repo name as a `<text>` element in the correct tier
+  band (FOUNDATION / RUNTIME / APPLICATIONS). Check x-coordinates don't overlap existing labels.
+- [ ] **Foundation tab** or **Applications tab** — add a `<div class="project-card">` block with
+  `card-repo`, `card-headline`, `card-desc`, and `card-link`.
+
+---
+
+## 13. Per-Repo Deep Dive in Parent (`docs/repos/<name>.md`)
+
+- [ ] Create `docs/repos/casehub-<name>.md` following the pattern of closest existing
+  deep-dive (qhorus.md for integration tier, clinical.md for application tier).
+  Sections: Purpose, Key Abstractions, Depends On, Depended On By, Does NOT Do, Current State,
+  Design Documents.
+
+---
+
+## 14. Workspace Setup
+
+- [ ] Create workspace directory: `mkdir -p /Users/mdproctor/claude/public/casehub/<name>/{adr,blog,plans,snapshots,specs}`
+- [ ] Create `proj` symlink: `ln -s /Users/mdproctor/claude/casehub/<name> /Users/mdproctor/claude/public/casehub/<name>/proj`
+- [ ] Create `CLAUDE.md` symlink: `ln -s /Users/mdproctor/claude/casehub/<name>/CLAUDE.md /Users/mdproctor/claude/public/casehub/<name>/CLAUDE.md`
+- [ ] Create `wksp` symlink in project root: `ln -s /Users/mdproctor/claude/public/casehub/<name> /Users/mdproctor/claude/casehub/<name>/wksp`
+- [ ] Create initial `HANDOFF.md` in the workspace directory.
+- [ ] Create `IDEAS.md` stub in the workspace directory.
+- [ ] Commit workspace additions to the workspace repo (`git -C /Users/mdproctor/claude/public/casehub add <name>/ && git -C ... commit`).
+
+---
+
+## 15. Spec Docs in the New Repo
+
+- [ ] Create `docs/specs/` directory.
+- [ ] Write scoped spec files relevant to the repo:
+  - Integration repos: invocation model, mesh fit, key capabilities
+  - Application repos: use case spec, actor model, domain design
+  - Foundation repos: SPI design, adapter strategy, permission constraints
+- [ ] Do NOT duplicate content from the research spec in parent — reference it.
+
+---
+
+## 16. Epic Issues
+
+- [ ] Create Epic 1 (scaffold) — mark as complete if scaffold is done in this session.
+- [ ] Create epics for each subsequent milestone/layer (one issue per epic).
+- [ ] For application repos: create one epic per tutorial layer (Layer 1 through Layer N).
+- [ ] For integration repos: create one epic per major integration milestone.
+- [ ] For foundation repos: create epics for SPI, default adapter, and each optional adapter.
+- [ ] Link any "blocked by" relationships explicitly in the issue body.
+
+---
+
+## 17. First Commit and Push
+
+- [ ] `git add .` in the new repo — verify status shows only expected files.
+- [ ] Commit with message: `chore(#1): scaffold casehub-<name> — Maven structure, docs, CI`
+- [ ] `git push origin main`
+- [ ] Verify CI workflow appears in GitHub Actions (may take 30s to register).
+
+---
+
+## 18. Parent Commit and Push
+
+- [ ] Stage all parent changes: pom.xml, PLATFORM.md, APPLICATIONS.md, docs/repos/<name>.md,
+  README.md, docs/index.html, full-stack-build.yml, incremental-full-stack-build.yml,
+  dashboard.yml, pr-dashboard.yml, build-all.sh
+- [ ] Commit with message: `chore: register casehub-<name> across parent infrastructure`
+- [ ] Push to upstream: `git push upstream main`
+
+---
+
+## 19. Workspace Repo Commit
+
+- [ ] Push workspace additions: `git -C /Users/mdproctor/claude/public/casehub push`
+
+---
+
+## 20. Post-Bootstrap Verification
+
+- [ ] `mvn validate` in new repo — confirms pom.xml hierarchy is valid.
+- [ ] `gh repo view casehubio/<name>` — confirms GitHub repo exists and is accessible.
+- [ ] `gh workflow list --repo casehubio/<name>` — confirms publish.yml is registered.
+- [ ] Dashboard HTML loads the new repo in the correct section.
+- [ ] README badges render (may take one CI run to show green).
+- [ ] Parent BOM entry: `mvn dependency:resolve -Dartifact=io.casehub:casehub-<name>-app:0.2-SNAPSHOT` — verifies BOM entry is valid after new repo has published once.
+
+---
+
+## 21. Cascade Chain Verification
+
+Map the new repo into the existing dispatch chain and verify:
+
+- [ ] Every upstream that this repo depends on either already dispatches to it or has a filed
+  issue requesting the dispatch to be added (cross-repo constraint — cannot commit from this session).
+- [ ] The new repo's publish.yml dispatches to every repo that depends on it.
+- [ ] The complete chain from parent → ... → new repo → ... → leaf is unbroken.
+
+**Known gaps at time of writing:**
+- casehubio/engine#350 — engine must add `openclaw` to its dispatch list.
+
+---
+
+## 22. Memory Update
+
+- [ ] Update `MEMORY.md` and `project_workspace.md` in
+  `/Users/mdproctor/.claude/projects/-Users-mdproctor-claude-casehub-parent/memory/`
+  to reflect the two new repos.
+
+---
+
+## Common Mistakes (verified from practice)
+
+| Mistake | Symptom | Fix |
+|---|---|---|
+| Missing `repository_dispatch` trigger in publish.yml | New repo never rebuilds on upstream changes — only on direct push | Add `repository_dispatch: types: [upstream-published]` to `on:` block |
+| Wrong scope for casehub-platform in app module | All @QuarkusTest pass; augmentation fails ~20s later with `UnsatisfiedResolutionException` | Use `<scope>runtime</scope>` in app modules, `<scope>test</scope>` in library modules (PP-20260524-a8f597) |
+| Domain Flyway migrations start at V1 | Startup failure: "Found more than one migration with version 1" after casehub-work added | Rename domain migrations to V100+ before wiring casehub-work |
+| Missing `classpath:db/ledger/migration` in Flyway locations | Test failure: "Table LEDGER_ENTRY not found" | Add to `quarkus.flyway.locations` (PP-20260524-10efef) |
+| Upstream repo not dispatching to new repo | New repo always stale after upstream publishes | File issue on upstream peer repo; add to dispatch list in their publish.yml |
+| wksp symlink missing from project root | `work-start` and other skills can't find the workspace | `ln -s /Users/mdproctor/claude/public/casehub/<name> /Users/mdproctor/claude/casehub/<name>/wksp` |
+| CLAUDE.md missing peer repos hard boundary section | Claude session in new repo may accidentally commit to sibling repos | Add complete `Peer Repos — Hard Boundary` section listing all sibling repos |
+| Engine workflow not updated | openclaw / life never triggered by engine changes | File issue on casehubio/engine (cannot commit from parent session) |
+| `docs/index.html` PLATFORM_REPOS not updated | Repo missing from CI dashboard | Add to `PLATFORM_REPOS` or `APP_REPOS` array |
+| casehubio.github.io not updated | New repo absent from public landing page | Add SVG text element + project card in correct tier tab |
+| README.md badges missing | No visible build status for the new repo from the parent | Add badge row under correct section |
+| `build-all.sh` missing entries | Local full-stack builds silently skip the new repo with `--include-apps` | Add REPO_DIR, REPO_GH, DEPS, MODULE_PATH, and REPOS+= entries |
