@@ -76,9 +76,11 @@ jobs:
           git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/engine.git" casehub/engine
           git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/claudony.git" casehub/claudony
           if [ "$INCLUDE_APPLICATIONS" = "true" ]; then
+            git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/openclaw.git" casehub/openclaw
             git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/devtown.git"  casehub/devtown
             git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/aml.git"     casehub/aml
             git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/clinical.git" casehub/clinical
+            git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/life.git"    casehub/life
             git clone --quiet "https://x-access-token:${GH_TOKEN}@github.com/mdproctor/quarkmind.git"   casehub/quarkmind
           fi
 
@@ -106,13 +108,17 @@ jobs:
           echo "sha_claudony=$D"   >> $GITHUB_OUTPUT
 
           if [ "${{ inputs.include_applications }}" = "true" ]; then
+            OC=$(git -C casehub/openclaw   rev-parse HEAD)
             DT=$(git -C casehub/devtown    rev-parse HEAD)
             AM=$(git -C casehub/aml        rev-parse HEAD)
             CL=$(git -C casehub/clinical   rev-parse HEAD)
+            LF=$(git -C casehub/life       rev-parse HEAD)
             QM=$(git -C casehub/quarkmind  rev-parse HEAD)
+            echo "sha_openclaw=$OC"   >> $GITHUB_OUTPUT
             echo "sha_devtown=$DT"    >> $GITHUB_OUTPUT
             echo "sha_aml=$AM"        >> $GITHUB_OUTPUT
             echo "sha_clinical=$CL"   >> $GITHUB_OUTPUT
+            echo "sha_life=$LF"       >> $GITHUB_OUTPUT
             echo "sha_quarkmind=$QM"  >> $GITHUB_OUTPUT
           fi
 
@@ -126,7 +132,7 @@ jobs:
           echo "qhorus:     $Q"
           echo "engine:     $E"
           echo "claudony:   $D"
-          [ "${{ inputs.include_applications }}" = "true" ] && { echo "devtown:    $DT"; echo "aml:        $AM"; echo "clinical:   $CL"; echo "quarkmind:  $QM"; }
+          [ "${{ inputs.include_applications }}" = "true" ] && { echo "openclaw:   $OC"; echo "devtown:    $DT"; echo "aml:        $AM"; echo "clinical:   $CL"; echo "life:       $LF"; echo "quarkmind:  $QM"; }
           echo "::endgroup::"
 
       # Restore state from last run on this branch.
@@ -146,7 +152,7 @@ jobs:
           FORCE_REBUILD: ${{ inputs.force_rebuild }}
         run: |
           MODULES=(parent platform ledger eidos connectors work qhorus engine claudony)
-          [ "${{ inputs.include_applications }}" = "true" ] && MODULES+=(devtown aml clinical quarkmind)
+          [ "${{ inputs.include_applications }}" = "true" ] && MODULES+=(openclaw devtown aml clinical life quarkmind)
           if [ "$FORCE_REBUILD" = "true" ] || [ ! -f .incremental-state/shas.txt ]; then
             for m in "${MODULES[@]}"; do echo "sha_${m}=none" >> $GITHUB_OUTPUT; done
           else
@@ -474,6 +480,52 @@ jobs:
           esac
           echo $((SECONDS - START)) > .build-times/claudony
 
+      - name: "Build: openclaw"
+        id: openclaw
+        if: inputs.include_applications
+        continue-on-error: true
+        env:
+          CUR: ${{ steps.shas.outputs.sha_openclaw }}
+          PRV: ${{ steps.prev.outputs.sha_openclaw }}
+          CUR_P: ${{ steps.shas.outputs.sha_parent }}
+          PRV_P: ${{ steps.prev.outputs.sha_parent }}
+          CUR_PL: ${{ steps.shas.outputs.sha_platform }}
+          PRV_PL: ${{ steps.prev.outputs.sha_platform }}
+          CUR_L: ${{ steps.shas.outputs.sha_ledger }}
+          PRV_L: ${{ steps.prev.outputs.sha_ledger }}
+          CUR_Q: ${{ steps.shas.outputs.sha_qhorus }}
+          PRV_Q: ${{ steps.prev.outputs.sha_qhorus }}
+          CUR_E: ${{ steps.shas.outputs.sha_engine }}
+          PRV_E: ${{ steps.prev.outputs.sha_engine }}
+          SKIP_TESTS: ${{ inputs.skip_tests }}
+          SKIP_ITS: ${{ inputs.skip_integration_tests }}
+          MAVEN_EXTRA: ${{ inputs.maven_args }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          D=$(./scripts/incremental-build-decision.sh \
+            --module openclaw --current-sha "$CUR" --previous-sha "${PRV:-none}" \
+            --dep "parent:${CUR_P}:${PRV_P:-none}" \
+            --dep "platform:${CUR_PL}:${PRV_PL:-none}" \
+            --dep "ledger:${CUR_L}:${PRV_L:-none}" \
+            --dep "qhorus:${CUR_Q}:${PRV_Q:-none}" \
+            --dep "engine:${CUR_E}:${PRV_E:-none}")
+          echo "decision=$D" >> $GITHUB_OUTPUT
+          START=$SECONDS
+          case "$D" in
+            SKIP) echo "⏭️  openclaw: SKIP" ;;
+            TEST)
+              if [ "$SKIP_TESTS" = "true" ]; then echo "⏭️  openclaw: SKIP (TEST — tests disabled)"
+              else
+                ITS=""; [ "$SKIP_ITS" = "true" ] && ITS="-DskipITs"
+                cd casehub/openclaw && mvn test --batch-mode $ITS $MAVEN_EXTRA
+              fi ;;
+            BUILD)
+              F=""; [ "$SKIP_TESTS" = "true" ] && F="-DskipTests"
+              [ "$SKIP_ITS" = "true" ] && F="$F -DskipITs"
+              cd casehub/openclaw && mvn install --batch-mode $F $MAVEN_EXTRA ;;
+          esac
+          echo $((SECONDS - START)) > .build-times/openclaw
+
       - name: "Build: devtown"
         id: devtown
         if: inputs.include_applications
@@ -657,6 +709,55 @@ jobs:
               cd casehub/clinical && mvn install --batch-mode $F $MAVEN_EXTRA ;;
           esac
           echo $((SECONDS - START)) > .build-times/clinical
+
+      - name: "Build: life"
+        id: life
+        if: inputs.include_applications
+        continue-on-error: true
+        env:
+          CUR: ${{ steps.shas.outputs.sha_life }}
+          PRV: ${{ steps.prev.outputs.sha_life }}
+          CUR_P: ${{ steps.shas.outputs.sha_parent }}
+          PRV_P: ${{ steps.prev.outputs.sha_parent }}
+          CUR_L: ${{ steps.shas.outputs.sha_ledger }}
+          PRV_L: ${{ steps.prev.outputs.sha_ledger }}
+          CUR_W: ${{ steps.shas.outputs.sha_work }}
+          PRV_W: ${{ steps.prev.outputs.sha_work }}
+          CUR_Q: ${{ steps.shas.outputs.sha_qhorus }}
+          PRV_Q: ${{ steps.prev.outputs.sha_qhorus }}
+          CUR_E: ${{ steps.shas.outputs.sha_engine }}
+          PRV_E: ${{ steps.prev.outputs.sha_engine }}
+          CUR_OC: ${{ steps.shas.outputs.sha_openclaw }}
+          PRV_OC: ${{ steps.prev.outputs.sha_openclaw }}
+          SKIP_TESTS: ${{ inputs.skip_tests }}
+          SKIP_ITS: ${{ inputs.skip_integration_tests }}
+          MAVEN_EXTRA: ${{ inputs.maven_args }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          D=$(./scripts/incremental-build-decision.sh \
+            --module life --current-sha "$CUR" --previous-sha "${PRV:-none}" \
+            --dep "parent:${CUR_P}:${PRV_P:-none}" \
+            --dep "ledger:${CUR_L}:${PRV_L:-none}" \
+            --dep "work:${CUR_W}:${PRV_W:-none}" \
+            --dep "qhorus:${CUR_Q}:${PRV_Q:-none}" \
+            --dep "engine:${CUR_E}:${PRV_E:-none}" \
+            --dep "openclaw:${CUR_OC}:${PRV_OC:-none}")
+          echo "decision=$D" >> $GITHUB_OUTPUT
+          START=$SECONDS
+          case "$D" in
+            SKIP) echo "⏭️  life: SKIP" ;;
+            TEST)
+              if [ "$SKIP_TESTS" = "true" ]; then echo "⏭️  life: SKIP (TEST — tests disabled)"
+              else
+                ITS=""; [ "$SKIP_ITS" = "true" ] && ITS="-DskipITs"
+                cd casehub/life && mvn test --batch-mode $ITS $MAVEN_EXTRA
+              fi ;;
+            BUILD)
+              F=""; [ "$SKIP_TESTS" = "true" ] && F="-DskipTests"
+              [ "$SKIP_ITS" = "true" ] && F="$F -DskipITs"
+              cd casehub/life && mvn install --batch-mode $F $MAVEN_EXTRA ;;
+          esac
+          echo $((SECONDS - START)) > .build-times/life
 
       # ── State persistence ─────────────────────────────────────────────────
       #

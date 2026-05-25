@@ -27,6 +27,7 @@ The pattern: **bring your domain, use the platform, modify nothing below.**
 | `casehub-devtown` | [casehubio/devtown](https://github.com/casehubio/devtown) | AI-assisted software development — PR review, merge queue, trust-weighted reviewer routing | Active |
 | `casehub-aml` | [casehubio/aml](https://github.com/casehubio/aml) | Anti-money laundering investigation — FinCEN-compliant audit, SAR workflow, adaptive investigation paths | Active |
 | `casehub-clinical` | [casehubio/clinical](https://github.com/casehubio/clinical) | Clinical trial coordination — GCP/FDA compliance, multi-site sub-cases, adverse event escalation | Active |
+| `casehub-life` | [casehubio/life](https://github.com/casehubio/life) | Personal life automation — household coordination, health, finance, elder care, legal compliance; tutorial: OpenClaw as execution layer | Scaffold |
 | `quarkmind` | [mdproctor/quarkmind](https://github.com/mdproctor/quarkmind) | StarCraft II game AI — living lab proving the CaseHub harness pattern at millisecond game-loop granularity outside regulated domains | Active |
 
 ---
@@ -39,6 +40,7 @@ All application repos depend on the same foundation subset:
 casehub-devtown  ┐
 casehub-aml      ├── depends on: engine + ledger + work + qhorus (+ connectors where needed)
 casehub-clinical ┘
+casehub-life     — depends on: full foundation stack + casehub-openclaw (Layer 7+)
 ```
 
 Application repos are **opt-in and off by default** in the platform CI pipeline.
@@ -53,6 +55,7 @@ See [PLATFORM.md — Build Order](PLATFORM.md) for the full dependency graph.
 | Software dev domain logic (PR review, merge queue, capability tags) | `casehub-devtown` |
 | AML domain logic (investigation, SAR workflow, FinCEN compliance) | `casehub-aml` |
 | Clinical trial domain logic (protocol, site management, GCP/FDA) | `casehub-clinical` |
+| Personal life automation (household, health, finance, care, legal) | `casehub-life` |
 | SC2 game AI (strategy, economics, tactics, scouting plugin agents) | `quarkmind` |
 
 All other capabilities live in the foundation. See [PLATFORM.md — Capability Ownership](PLATFORM.md).
@@ -83,4 +86,5 @@ foundation, not as a shared application library.
 | `casehub-devtown` | https://raw.githubusercontent.com/casehubio/parent/main/docs/repos/casehub-devtown.md |
 | `casehub-aml` | https://raw.githubusercontent.com/casehubio/parent/main/docs/repos/casehub-aml.md |
 | `casehub-clinical` | https://raw.githubusercontent.com/casehubio/parent/main/docs/repos/casehub-clinical.md |
+| `casehub-life` | https://raw.githubusercontent.com/casehubio/parent/main/docs/repos/casehub-life.md |
 | `quarkmind` | https://raw.githubusercontent.com/casehubio/parent/main/docs/repos/quarkmind.md |

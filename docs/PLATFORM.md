@@ -143,10 +143,11 @@ Four tiers, always kept separate:
 | `casehub-connectors` | [casehubio/connectors](https://github.com/casehubio/connectors) | Outbound message connectors (Slack, Teams, SMS, email) | Foundation |
 | `casehub-engine` | [casehubio/engine](https://github.com/casehubio/engine) | Hybrid choreography+blackboard orchestration engine | Orchestration |
 | `claudony` | [casehubio/claudony](https://github.com/casehubio/claudony) | Remote Claude CLI sessions + unified ecosystem dashboard | Integration |
+| `casehub-openclaw` | [casehubio/openclaw](https://github.com/casehubio/openclaw) | CaseHub × OpenClaw integration — ChannelContextWindow, WorkerProvisioner, ChannelBackend SPI, Python SDK context hook | Integration |
 | `casehub-eidos` | [casehubio/eidos](https://github.com/casehubio/eidos) | Agent identity — descriptor, discovery registry, vocabulary system, system prompt generation | Foundation |
 | `casehub-poc` | [casehubio/casehub](https://github.com/casehubio/casehub) | **Retiring** — original POC; no new features | — |
 
-Application tier (devtown, aml, clinical): see [APPLICATIONS.md](APPLICATIONS.md).
+Application tier (devtown, aml, clinical, life): see [APPLICATIONS.md](APPLICATIONS.md).
 
 ---
 
@@ -162,8 +163,10 @@ casehub-parent              (BOM — publish first; all others import it)
   casehub-eidos             (depends on casehub-ledger; casehub-eidos-api depends on nothing)
   casehub-engine            (depends on casehub-work-core + optionally casehub-ledger + optionally casehub-eidos-api)
   claudony                  (depends on casehub-qhorus + implements casehub-engine SPIs)
+  casehub-openclaw          (depends on casehub-qhorus + casehub-engine SPIs; opt-in — off by default in CI)
 
   — Application tier (opt-in, off by default in CI): see APPLICATIONS.md —
+  casehub-life              (depends on full foundation stack + casehub-openclaw as WorkerProvisioner)
 ```
 
 ---
@@ -220,7 +223,24 @@ casehub-parent              (BOM — publish first; all others import it)
 | `casehub-engine-work-adapter` | `casehub-clinical` | `runtime` | `HumanTaskScheduleHandler` + `WorkItemLifecycleAdapter` |
 | `casehub-engine-scheduler-quartz` | `casehub-clinical` | `runtime` | Quartz worker execution (Layer 5) |
 
-**Application tier** (aml, clinical) — consume foundation runtime artifacts; see [APPLICATIONS.md](APPLICATIONS.md) for detail.
+| `casehub-qhorus-api` | `casehub-openclaw` | `core` | `ChannelBackend`, `MessageObserver` SPIs |
+| `casehub-qhorus` (runtime) | `casehub-openclaw` | `casehub` | Qhorus runtime for SPI registration |
+| `casehub-engine-api` | `casehub-openclaw` | `core` | `WorkerProvisioner`, `CaseChannelProvider`, `WorkerStatusListener` SPIs |
+| `casehub-engine` (runtime) | `casehub-openclaw` | `casehub` | engine runtime for SPI implementations |
+| `casehub-platform-api` | `casehub-openclaw` | `core` | `CurrentPrincipal`, `GroupMembershipProvider` (permission-aware context) |
+
+| `casehub-ledger` (runtime) | `casehub-life` | `app` | Merkle audit, GDPR erasure, trust scoring |
+| `casehub-work` (runtime) | `casehub-life` | `app` | WorkItems with SLA and escalation |
+| `casehub-qhorus` (runtime) | `casehub-life` | `app` | commitment lifecycle, oversight channel |
+| `casehub-engine` (runtime) | `casehub-life` | `app` | CasePlanModel orchestration |
+| `casehub-engine-work-adapter` | `casehub-life` | `app` | HumanTaskScheduleHandler + WorkItemLifecycleAdapter |
+| `casehub-engine-scheduler-quartz` | `casehub-life` | `app` | Quartz worker execution |
+| `casehub-connectors-core` | `casehub-life` | `app` | household notifications (contractor, carer alerts) |
+| `casehub-platform` | `casehub-life` | `app` | `@DefaultBean` mocks (runtime scope) |
+| `casehub-platform-expression` | `casehub-life` | `app` | `JQEvaluator` for engine |
+| `casehub-openclaw-casehub` | `casehub-life` | `app` | OpenClaw WorkerProvisioner (Layer 7) |
+
+**Application tier** (aml, clinical, life) — consume foundation runtime artifacts; see [APPLICATIONS.md](APPLICATIONS.md) for detail.
 
 ---
 
@@ -263,8 +283,11 @@ casehub-parent              (BOM — publish first; all others import it)
 | Durable PlanItem status (blackboard persistence) | `casehub-engine` | `PlanItemStore` (blocking) + `ReactivePlanItemStore` (Uni<>) SPIs in `casehub-engine-common`; `@DefaultBean` no-ops in `blackboard`; JPA impl (`JpaReactivePlanItemStore`) in `casehub-engine-persistence-hibernate`; blocking JPA impl (`JpaPlanItemStore`) in `casehub-engine-work-adapter` sharing the casehub-work datasource. Atomicity guarantee: `planItemStore.save(RUNNING)` and WorkItem creation are in the same `@Transactional` boundary. See engine#273. |
 | Remote Claude CLI sessions | `claudony` | `TmuxService`, `SessionRegistry`, WebSocket streaming |
 | Browser + agent authentication | `claudony` | WebAuthn passkeys + `X-Api-Key` header |
+| OpenClaw worker provisioner | `casehub-openclaw` | `WorkerProvisioner` SPI implementation — provisions OpenClaw instances via `POST /hooks/agent`; no heartbeat required for in-case steps. Two modes: heartbeat (OpenClaw autonomous monitoring → creates CaseHub case) vs direct call (CaseHub case step → on-demand skill execution). See [`docs/repos/casehub-openclaw.md`](repos/casehub-openclaw.md). |
+| Qhorus ↔ OpenClaw channel bridge | `casehub-openclaw` | `ChannelBackend` SPI — bidirectional: Qhorus dispatches → `ChannelBackend.post()` → `/hooks/agent`; OpenClaw output → `deliver:webhook` → Qhorus endpoint → `MessageService.dispatch()` |
+| ChannelContextWindow (short-term channel context for LLM injection) | `casehub-openclaw` | `MessageObserver` SPI → per-channel ring buffer (configurable size + TTL) → REST `GET /channel-context/{agentId}?since={sequenceNumber}`. Python SDK `before_prompt_build` hook injects result as `appendSystemContext` (compaction-safe). Best-effort — correctness guaranteed by Qhorus; intelligence layer only. |
 | Ecosystem CI dashboards | `casehub-parent` | `dashboard.yml`, `pr-dashboard.yml`, `full-stack-build.yml` |
-| Application domain logic (devtown, aml, clinical) | Application tier | See [APPLICATIONS.md](APPLICATIONS.md) |
+| Application domain logic (devtown, aml, clinical, life) | Application tier | See [APPLICATIONS.md](APPLICATIONS.md) |
 | Agent descriptor (structured 4-layer identity) | `casehub-eidos` | `AgentDescriptor` record — identity, slot, capabilities, disposition; `tenancyId` always required; `AgentQuery` for criteria-based discovery |
 | Agent registry (store + discover by slot/capability) | `casehub-eidos` | `AgentRegistry` (blocking) + `ReactiveAgentRegistry` (reactive, build-gated `casehub.eidos.reactive.enabled`); `InMemoryAgentRegistry` for ephemeral installs via `casehub-eidos-memory` |
 | Vocabulary registry (term resolution + cross-vocab equivalence) | `casehub-eidos` | `VocabularyRegistry` SPI + `CdiVocabularyRegistry` @DefaultBean; discovers `@Produces Vocabulary` CDI beans at startup |

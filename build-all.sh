@@ -41,9 +41,11 @@ REPO_DIR[work]="../work"
 REPO_DIR[qhorus]="../qhorus"
 REPO_DIR[engine]="../engine"
 REPO_DIR[claudony]="../claudony"
+REPO_DIR[openclaw]="../openclaw"
 REPO_DIR[devtown]="../devtown"
 REPO_DIR[aml]="../aml"
 REPO_DIR[clinical]="../clinical"
+REPO_DIR[life]="../life"
 
 # Repo name → GitHub repo name (for cloning)
 declare -A REPO_GH
@@ -56,9 +58,11 @@ REPO_GH[work]="work"
 REPO_GH[qhorus]="qhorus"
 REPO_GH[engine]="engine"
 REPO_GH[claudony]="claudony"
+REPO_GH[openclaw]="openclaw"
 REPO_GH[devtown]="devtown"
 REPO_GH[aml]="aml"
 REPO_GH[clinical]="clinical"
+REPO_GH[life]="life"
 
 # Dependency graph
 declare -A DEPS
@@ -71,9 +75,11 @@ DEPS[work]="ledger connectors"
 DEPS[qhorus]="ledger work"
 DEPS[engine]="quarkus-langchain4j ledger work"
 DEPS[claudony]="ledger work qhorus"
+DEPS[openclaw]="platform ledger qhorus engine"
 DEPS[devtown]="ledger work qhorus engine"
 DEPS[aml]="ledger work qhorus engine"
 DEPS[clinical]="ledger work qhorus engine"
+DEPS[life]="ledger work qhorus engine openclaw"
 
 # Core build order (topological) — apps added below if --include-apps
 REPOS=(quarkus-langchain4j platform ledger eidos connectors work qhorus engine claudony)
@@ -89,9 +95,11 @@ MODULE_PATH[work]="../work"
 MODULE_PATH[qhorus]="../qhorus"
 MODULE_PATH[engine]="../engine"
 MODULE_PATH[claudony]="../claudony"
+MODULE_PATH[openclaw]="../openclaw"
 MODULE_PATH[devtown]="../devtown"
 MODULE_PATH[aml]="../aml"
 MODULE_PATH[clinical]="../clinical"
+MODULE_PATH[life]="../life"
 
 # Parse flags
 NO_CACHE=false
@@ -108,7 +116,7 @@ for arg in "$@"; do
 done
 
 if [ "$INCLUDE_APPS" = true ]; then
-  REPOS+=(devtown aml clinical)
+  REPOS+=(openclaw devtown aml clinical life)
 fi
 
 mkdir -p "$LOG_DIR"

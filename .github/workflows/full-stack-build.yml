@@ -76,9 +76,11 @@ jobs:
           git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/engine.git" casehub/engine
           git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/claudony.git" casehub/claudony
           if [ "$INCLUDE_APPLICATIONS" = "true" ]; then
+            git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/openclaw.git" casehub/openclaw
             git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/devtown.git"  casehub/devtown
             git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/aml.git"     casehub/aml
             git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/clinical.git" casehub/clinical
+            git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/life.git"    casehub/life
           fi
 
       # continue-on-error: true ensures all steps run and we get per-module outcomes
@@ -228,6 +230,23 @@ jobs:
           cd casehub/claudony && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
           echo $((SECONDS - START)) > ../../.build-times/claudony
 
+      - name: "Build: openclaw"
+        id: openclaw
+        if: inputs.include_applications
+        continue-on-error: true
+        env:
+          SKIP_TESTS: ${{ inputs.skip_tests }}
+          SKIP_ITS: ${{ inputs.skip_integration_tests }}
+          MAVEN_EXTRA: ${{ inputs.maven_args }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          FLAGS=""
+          [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
+          [ "$SKIP_ITS" = "true" ] && FLAGS="$FLAGS -DskipITs"
+          START=$SECONDS
+          cd casehub/openclaw && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
+          echo $((SECONDS - START)) > ../../.build-times/openclaw
+
       - name: "Build: devtown"
         id: devtown
         if: inputs.include_applications
@@ -279,6 +298,23 @@ jobs:
           cd casehub/clinical && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
           echo $((SECONDS - START)) > ../../.build-times/clinical
 
+      - name: "Build: life"
+        id: life
+        if: inputs.include_applications
+        continue-on-error: true
+        env:
+          SKIP_TESTS: ${{ inputs.skip_tests }}
+          SKIP_ITS: ${{ inputs.skip_integration_tests }}
+          MAVEN_EXTRA: ${{ inputs.maven_args }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          FLAGS=""
+          [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
+          [ "$SKIP_ITS" = "true" ] && FLAGS="$FLAGS -DskipITs"
+          START=$SECONDS
+          cd casehub/life && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
+          echo $((SECONDS - START)) > ../../.build-times/life
+
       - name: Build summary
         if: always()
         env:
@@ -296,9 +332,11 @@ jobs:
           OUTCOME_QHORUS: ${{ steps.qhorus.outcome }}
           OUTCOME_ENGINE: ${{ steps.engine.outcome }}
           OUTCOME_CLAUDONY: ${{ steps.claudony.outcome }}
+          OUTCOME_OPENCLAW: ${{ steps.openclaw.outcome }}
           OUTCOME_DEVTOWN: ${{ steps.devtown.outcome }}
           OUTCOME_AML: ${{ steps.aml.outcome }}
           OUTCOME_CLINICAL: ${{ steps.clinical.outcome }}
+          OUTCOME_LIFE: ${{ steps.life.outcome }}
         run: |
           if [ "$SKIP_TESTS" = "true" ]; then
             TEST_MODE="compile check only (all tests skipped)"
@@ -309,7 +347,7 @@ jobs:
           fi
 
           MODULES=(quarkus-langchain4j platform ledger eidos connectors work qhorus engine claudony)
-          [ "$INCLUDE_APPLICATIONS" = "true" ] && MODULES+=(devtown aml clinical)
+          [ "$INCLUDE_APPLICATIONS" = "true" ] && MODULES+=(openclaw devtown aml clinical life)
           declare -A OUTCOMES=(
             [quarkus-langchain4j]="$OUTCOME_LANGCHAIN4J"
             [platform]="$OUTCOME_PLATFORM"
@@ -320,9 +358,11 @@ jobs:
             [qhorus]="$OUTCOME_QHORUS"
             [engine]="$OUTCOME_ENGINE"
             [claudony]="$OUTCOME_CLAUDONY"
+            [openclaw]="$OUTCOME_OPENCLAW"
             [devtown]="$OUTCOME_DEVTOWN"
             [aml]="$OUTCOME_AML"
             [clinical]="$OUTCOME_CLINICAL"
+            [life]="$OUTCOME_LIFE"
           )
           declare -A GH_REPO=(
             [quarkus-langchain4j]="quarkus-langchain4j"
@@ -334,9 +374,11 @@ jobs:
             [qhorus]="qhorus"
             [engine]="engine"
             [claudony]="claudony"
+            [openclaw]="openclaw"
             [devtown]="devtown"
             [aml]="aml"
             [clinical]="clinical"
+            [life]="life"
           )
 
           {
@@ -361,7 +403,7 @@ jobs:
               skipped)
                 if [ "$module" = "quarkus-langchain4j" ] && [ "$INCLUDE_LANGCHAIN4J" != "true" ]; then
                   icon="⏭️ excluded"
-                elif { [ "$module" = "devtown" ] || [ "$module" = "aml" ] || [ "$module" = "clinical" ]; } && [ "$INCLUDE_APPLICATIONS" != "true" ]; then
+                elif { [ "$module" = "openclaw" ] || [ "$module" = "devtown" ] || [ "$module" = "aml" ] || [ "$module" = "clinical" ] || [ "$module" = "life" ]; } && [ "$INCLUDE_APPLICATIONS" != "true" ]; then
                   icon="⏭️ excluded"
                 else
                   icon="⏭️ skipped"; FAIL_COUNT=$((FAIL_COUNT + 1))

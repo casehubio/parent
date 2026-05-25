@@ -32,9 +32,11 @@ jobs:
             casehubio/qhorus \
             casehubio/engine \
             casehubio/claudony \
+            casehubio/openclaw \
             casehubio/devtown \
             casehubio/aml \
             casehubio/clinical \
+            casehubio/life \
             mdproctor/quarkmind)
 
           if [ -z "$REPOS" ]; then

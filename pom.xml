@@ -148,6 +148,40 @@
         <version>${casehub.version}</version>
       </dependency>
 
+      <!-- ================================================================ -->
+      <!-- casehub-openclaw — CaseHub × OpenClaw integration               -->
+      <!-- Integration tier: WorkerProvisioner, ChannelBackend, MCW        -->
+      <!-- ================================================================ -->
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-openclaw-core</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-openclaw-casehub</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-openclaw-app</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+
+      <!-- ================================================================ -->
+      <!-- casehub-life — personal life automation (application tier)      -->
+      <!-- ================================================================ -->
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-life-api</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-life-app</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+
     </dependencies>
   </dependencyManagement>
 
