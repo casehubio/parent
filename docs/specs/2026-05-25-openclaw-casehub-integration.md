@@ -274,8 +274,64 @@ not replacing it:
 - Future cases query the store for relevant context before acting
 - Permission-aware recall: uses existing `CurrentPrincipal` + `GroupMembershipProvider`
   from casehub-platform-api to enforce access boundaries
-- Module: `casehub-memory` (SPI in platform-api, JPA default, in-memory alternative
-  following the `casehub-ledger-memory` pattern)
+- Module: `casehub-memory` (SPI in platform-api, with pluggable backend adapters — see
+  §4.3a and §8.1 for backend evaluation and adapter strategy)
+
+#### §4.3a — Open Source Memory Backend Evaluation
+
+Rather than building the memory layer from scratch, a field of open source projects exists
+that could back the `CaseMemoryStore` SPI via REST adapter. Seven projects were evaluated:
+
+| Project | Approach | REST API | Self-hosted | Temporal reasoning | Key limitation |
+|---|---|---|---|---|---|
+| **Mem0** | Vector + BM25 + optional graph | ✅ Full REST | ✅ Docker | ❌ 49% LongMemEval | Graph memory $249/month paywall |
+| **Graphiti** (Zep) | Temporal knowledge graph — bitemporal edges, fact validity windows | ✅ REST + MCP | ✅ (needs Neo4j/FalkorDB/Kuzu) | ✅ 63–91% LongMemEval | Community Edition deprecated; 3+ extra systems |
+| **Memori** | SQL-native, atomic facts in Postgres | ✅ REST + MCP | ✅ Postgres | ✅ 81.95% LoCoMo | Smaller ecosystem; newer |
+| **Hindsight** | 4-way hybrid retrieval (semantic + BM25 + entity graph + temporal) | ✅ REST | ✅ Docker | ✅ State-of-art LongMemEval | Small ecosystem; less battle-tested |
+| **Cognee** | Graph-vector hybrid | ✅ REST | ✅ | Unknown | Python-centric; smaller community |
+| **Letta** | Episodic / context-window management | ✅ REST | ✅ | Unknown | Episodic focus — not a knowledge graph |
+| **LangChain memory** | Framework component (Python) | ❌ | N/A | N/A | Not a service; Python-only; ruled out |
+| **GraphRAG** (Microsoft) | Knowledge graph extraction | Azure only | ❌ Too buggy | Unknown | Research quality; not self-hostable |
+
+**Ruled out immediately:** LangChain memory (framework component, not a service),
+GraphRAG (too buggy for self-hosting, Azure-dependent, research quality).
+
+**The critical integration constraint:** every one of these services scopes memory by
+`userId` and `sessionId`. None of them know about CaseHub's `CurrentPrincipal`, life
+domains (health/finance/household), or `GroupMembershipProvider` boundaries. CaseHub must
+wrap any backend's API with its own permission model — privacy domain partitioning is
+enforced at the `CaseMemoryStore` SPI layer, not assumed from the external service.
+This is a design requirement regardless of which backend is chosen.
+
+**Recommended approach:** `CaseMemoryStore` SPI with pluggable backend adapters, following
+the existing CDI priority ladder pattern (`@DefaultBean` → `@ApplicationScoped` →
+`@Alternative @Priority(1)`). Three adapter tiers:
+
+*Default adapter — Memori:*
+SQL-native, stores facts in Postgres — the same database CaseHub already operates. Zero
+additional infrastructure. Sub-10ms local latency. Human-readable memory (facts are plain
+SQL rows — interpretable and auditable, aligning with CaseHub's transparency values). 81.95%
+accuracy on LoCoMo long-conversation benchmark. The zero-cost entry point for `casehub-memory`.
+
+*Standard adapter — Mem0:*
+48,000+ GitHub stars, production-proven, Apache 2.0, full REST API, 20+ storage backends
+including pgvector on Postgres. Docker self-hosted. Adds vector + BM25 retrieval on top of
+SQL. Trade-off: graph memory requires $249/month cloud tier; vector-only on open-source.
+Temporal reasoning weak (49% LongMemEval). Best for deployments that want a large ecosystem
+and broad storage backend flexibility.
+
+*Temporal adapter — Graphiti (Zep):*
+Temporal knowledge graph with bitemporal edges — facts have explicit start/end validity
+windows, not just embeddings. Best temporal reasoning (63–91% LongMemEval). Hybrid retrieval:
+semantic + BM25 + graph traversal with no LLM inference during retrieval, P95 300ms latency.
+Apache 2.0. Trade-off: requires Graphiti + Neo4j/FalkorDB/Kuzu — three additional systems.
+Community Edition deprecated February 2026. Best for regulated domains where "what did the
+agent know on 15 March?" is a compliance question (clinical, financial, legal).
+
+This adapter strategy means: no lock-in to a fast-moving ecosystem (Mem0 paywall changes,
+Graphiti deprecation wave — this space is actively unstable); permission enforcement at
+CaseHub's layer regardless of backend; start simple (Memori, Postgres only) and graduate
+as needs grow.
 
 *modelHint on worker capability descriptor:*
 
@@ -763,14 +819,25 @@ be added before RBAC is implemented.
 
 **`casehub-memory`** (new repo or new module in casehub-platform):
 - `CaseMemoryStore` SPI: semantic fact index, queryable, permission-aware
-- JPA default implementation
-- In-memory `@Alternative @Priority(1)` implementation (following casehub-ledger-memory
-  pattern) for test isolation
-- Permission-aware recall via `CurrentPrincipal` + `GroupMembershipProvider` from
-  casehub-platform-api
-- Fact emission: completed cases emit structured facts; mechanism TBD (CDI observer pattern)
-- Domain isolation: facts from health cases must not be recallable by agents in finance or
-  household domains within the same deployment
+- Permission-aware recall enforced at the SPI layer via `CurrentPrincipal` +
+  `GroupMembershipProvider` — not delegated to the backend service
+- Domain isolation at the SPI layer: facts from health cases must not be recallable by
+  agents in finance or household domains, regardless of backend
+- Fact emission: completed cases emit structured facts; mechanism TBD (CDI observer pattern
+  consistent with existing ledger capture)
+- In-memory `@Alternative @Priority(1)` implementation for test isolation
+  (following casehub-ledger-memory pattern)
+
+**Pluggable backend adapters** (see §4.3a for full evaluation):
+
+| Adapter | Backend | Infrastructure | Best for |
+|---|---|---|---|
+| Default | **Memori** | Postgres only (existing) | Zero-cost entry; all deployments |
+| Standard | **Mem0** | Docker + pgvector | Larger ecosystem; vector retrieval |
+| Temporal | **Graphiti** | Graphiti + Neo4j/FalkorDB/Kuzu | Regulated domains; temporal queries |
+
+All adapters are REST-based (Quarkus RestClient). Backends are swappable via CDI priority.
+The SPI layer enforces CaseHub's permission model regardless of which adapter is active.
 
 **`ActionRiskClassifier` SPI in `casehub-engine-api`**:
 - `classify(PlannedAction) → RiskDecision`
@@ -848,11 +915,18 @@ a knowledge graph. Every case starts cold — no prior context is automatically 
 **Impact:** agents cannot build on prior interactions; the same research is redone each case;
 context fragmentation is identical to the problem Coworker's OM1 solves.
 
-**Proposed resolution:** `casehub-memory` module — CaseMemoryStore SPI with permission-aware
-recall. See §8.1.
+**Proposed resolution:** `casehub-memory` module — `CaseMemoryStore` SPI with pluggable
+backend adapters (Memori default, Mem0 standard, Graphiti temporal). See §4.3a and §8.1.
 
-**Open questions:** how are facts emitted from cases (CDI observer? explicit API call?); how
-is domain isolation enforced; how does the store relate to authoritative external data (§5.7).
+**Critical design constraint:** all evaluated open source backends scope memory by their
+own `userId`/`sessionId` model. None is aware of CaseHub's `CurrentPrincipal`, life domains,
+or `GroupMembershipProvider`. Permission-aware recall and privacy domain partitioning must
+be enforced at the `CaseMemoryStore` SPI layer — wrapping the backend's API with CaseHub's
+permission model. This is non-negotiable and applies to all three adapter options.
+
+**Open questions:** how are facts emitted from cases (CDI observer consistent with ledger
+pattern? explicit API call from case definition?); how does the store relate to authoritative
+external data (§5.7); module placement (standalone repo vs. casehub-platform module).
 
 ### 9.2 No ActionRiskClassifier SPI
 
@@ -1025,3 +1099,11 @@ Items explicitly excluded during the research conversation — not deferred, not
 - **CaseHub as a general life OS or personal productivity app:** the value is in structured
   accountability for things that matter — health, finance, legal, care. Not grocery lists
   per se, though Level 1 casehub-work is still useful there.
+- **LangChain memory modules:** a Python framework component, not a standalone service.
+  Tightly coupled to the LangChain framework; no language-agnostic REST API; not applicable
+  as a `CaseMemoryStore` backend.
+- **Microsoft GraphRAG:** research quality. Known to be too buggy for self-hosting; Azure
+  deployment only; hours to launch due to Python dependency issues. Not production-ready.
+- **Building CaseMemoryStore from scratch without a backend:** unnecessary given the
+  quality of open source options. The SPI adapter pattern provides the right abstraction
+  without re-implementing retrieval, embedding, or graph traversal.
