@@ -275,6 +275,11 @@ applies equally to enterprise and household contexts:
 | 3 | + casehub-engine | Complex multi-step workflow orchestration; conditional branching; parallel tasks; human governance gates |
 | 4 | + casehub-ledger | Tamper-evident Merkle audit; trust scoring; GDPR Art.17 erasure; cryptographic proof |
 
+CaseMemoryStore (casehub-platform optional modules) is orthogonal to this ladder — it
+can be added at any level, from Level 1 upward. It provides cross-case semantic context
+to all CaseHub consumers regardless of which other modules are active. Adding a Memori
+adapter requires only Postgres, which any CaseHub deployment already runs.
+
 Even at Level 1, casehub-work provides formal task lifecycle and SLA enforcement missing
 from OpenClaw's fire-and-forget model. A grocery order with a Wednesday deadline and
 escalation if not placed is a WorkItem. That is valuable without tamper-evidence.
@@ -405,25 +410,45 @@ own guidance: APIs before computer-use. Vision-based computer-use is a last reso
 
 *CaseMemoryStore — semantic fact index alongside the ledger:*
 
-The most significant gap. CaseHub's ledger records what happened tamper-evidently. It is
-not a queryable semantic knowledge graph. Every case starts cold — no prior context is
-automatically available. Coworker's OM1 solves context fragmentation: "what do I already
-know about this client / this property / this investigation?"
+Coworker's OM1 identified the gap; the capability itself is general to all of CaseHub —
+not an OpenClaw feature. Every CaseHub case currently starts cold. Facts established in
+prior cases — about an entity, an agent's behaviour, a recurring pattern — are invisible
+to the next case unless explicitly passed as parameters. This affects all three existing
+application repos and any future consumer, with or without OpenClaw involved.
 
-Proposed: `CaseMemoryStore` SPI — a semantic fact index that lives alongside the ledger,
-not replacing it:
+**The problem across all CaseHub consumers:**
+- **devtown:** new PR review for contributor X — prior pattern of test coverage gaps, prior
+  DECLINE by security-agent on auth code — invisible unless manually surfaced
+- **clinical:** new adverse event for a patient with prior Grade 3 hepatotoxicity withdrawal
+  from a previous trial — invisible at case open; requires manual record review
+- **AML:** new transaction alert involving an entity that appeared in 3 prior SAR filings
+  and is part of a known network — hours of manual research to establish what CaseMemoryStore
+  would surface in milliseconds
+
+Proposed: `CaseMemoryStore` SPI in `casehub-platform-api` — a semantic fact index that
+lives alongside the ledger, not replacing it:
 
 | Store | Purpose | Properties |
 |---|---|---|
 | Ledger | Tamper-evident "what happened" | Immutable, Merkle-chained, permanent |
-| CaseMemoryStore | Queryable "what do we know" | Atomic facts, entity relationships, semantic recall |
+| CaseMemoryStore | Queryable "what we know" | Atomic facts, entity relationships, semantic recall |
 
-- Each completed case emits structured facts to the store
+- Each completed case emits structured facts to the store (mechanism TBD — CDI observer
+  consistent with existing ledger capture)
 - Future cases query the store for relevant context before acting
-- Permission-aware recall: uses existing `CurrentPrincipal` + `GroupMembershipProvider`
-  from casehub-platform-api to enforce access boundaries
-- Domain isolation enforced at the SPI layer — facts from health cases must not be recallable
-  by agents in the finance or household domain
+- Permission-aware recall: enforces `CurrentPrincipal` + `GroupMembershipProvider`
+  boundaries at the SPI layer — not delegated to the backend service
+- Domain isolation enforced at the SPI layer — facts from one domain must not be recallable
+  by agents operating in a different domain
+- Module placement: `casehub-platform` — SPI in `platform-api`, @DefaultBean no-op in
+  `platform`, adapters as optional modules — consistent with PreferenceProvider and
+  CurrentPrincipal patterns (casehubio/platform#27)
+
+**Distinct from ChannelContextWindow (§8):**
+CaseMemoryStore is long-term indefinite semantic memory consumed by all CaseHub case steps
+and worker types. ChannelContextWindow (§8) is a short-term TTL buffer specific to
+casehub-openclaw for injecting recent Qhorus channel activity into OpenClaw agent turns.
+They are related but serve entirely different consumers and timescales.
 
 #### §4.3a — Open Source Memory Backend Evaluation
 
@@ -1241,22 +1266,36 @@ already seen (consequence: redundant context, not missing context).
 
 ### 9.1 New Foundation Modules
 
-**`casehub-memory`** (new repo or new module in casehub-platform):
-- `CaseMemoryStore` SPI: semantic fact index, queryable, permission-aware
+**`CaseMemoryStore` — optional modules in `casehub-platform` (casehubio/platform#27):**
+
+A general platform capability benefiting all CaseHub consumers — not OpenClaw-specific.
+Module structure mirrors the existing PreferenceProvider and CurrentPrincipal pattern:
+
+| Module | Artifact | Purpose |
+|---|---|---|
+| `platform-api` (existing) | `casehub-platform-api` | `CaseMemoryStore` SPI added here alongside `CurrentPrincipal` and `PreferenceProvider` |
+| `platform` (existing) | `casehub-platform` | `@DefaultBean` no-op — zero overhead when no adapter installed |
+| `memory-memori/` (new) | `casehub-memory-memori` | SQL-native Postgres adapter (default — zero extra infra) |
+| `memory-mem0/` (new) | `casehub-memory-mem0` | Vector + BM25 adapter (Docker + pgvector) |
+| `memory-graphiti/` (new) | `casehub-memory-graphiti` | Temporal knowledge graph adapter (regulated domains) |
+
+SPI design constraints:
 - Permission-aware recall enforced at the SPI layer via `CurrentPrincipal` +
   `GroupMembershipProvider` — not delegated to the backend service
-- Domain isolation at the SPI layer: facts from health cases must not be recallable by
-  agents in finance or household domains, regardless of backend
+- Domain isolation at the SPI layer: facts from one domain must not be recallable by
+  agents in a different domain, regardless of backend
 - Fact emission: completed cases emit structured facts; mechanism TBD (CDI observer
   pattern consistent with existing ledger capture)
-- In-memory `@Alternative @Priority(1)` implementation for test isolation
-  (following casehub-ledger-memory pattern)
+- In-memory `@Alternative @Priority(1)` for test isolation
+
+Consumer issues tracking adoption: casehubio/devtown#43, casehubio/clinical#33,
+casehubio/aml#32.
 
 Pluggable backend adapters (see §4.3a for full evaluation):
 
 | Adapter | Backend | Infrastructure | Best for |
 |---|---|---|---|
-| Default | **Memori** | Postgres only (existing) | Zero-cost entry; all deployments |
+| Default | **Memori** | Postgres only (existing) | Zero-cost entry; all deployments; human-readable SQL |
 | Standard | **Mem0** | Docker + pgvector | Larger ecosystem; vector retrieval |
 | Temporal | **Graphiti** | Graphiti + Neo4j/FalkorDB/Kuzu | Regulated domains; temporal queries |
 
@@ -1377,18 +1416,30 @@ See §4.3a for the full table. Summary of disposition:
 **Gap:** CaseHub has no queryable semantic fact index. The ledger is immutable history, not
 a knowledge graph. Every case starts cold — no prior context is automatically available.
 
-**Impact:** agents cannot build on prior interactions; context fragmentation is identical
-to the problem Coworker's OM1 solves.
+**Impact across all application repos:**
+- devtown: contributor history, module risk signals, and agent capability facts are
+  invisible at case open — manually surfaced or ignored
+- clinical: patient history, site compliance patterns, and drug AE patterns require manual
+  record review — slow and inconsistent
+- AML: entity history, prior SAR filings, and counterparty networks require hours of manual
+  research per investigation
 
-**Proposed resolution:** `casehub-memory` module — `CaseMemoryStore` SPI with pluggable
-backend adapters (Memori default, Mem0 standard, Graphiti temporal). See §4.3a and §9.1.
+**This is a general platform gap, not an OpenClaw-specific concern.** The gap affects all
+three existing application repos and any future consumer, regardless of worker type.
+
+**Proposed resolution:** optional modules in `casehub-platform` — `CaseMemoryStore` SPI
+in `platform-api`, @DefaultBean no-op in `platform`, optional adapter modules for Memori
+(default), Mem0, and Graphiti. See §4.3a and §9.1. Tracking: casehubio/platform#27.
+
+Consumer adoption tracked in: casehubio/devtown#43, casehubio/clinical#33,
+casehubio/aml#32.
 
 **Critical design constraint:** all evaluated backends scope memory by their own
-`userId`/`sessionId` model. Permission-aware recall and privacy domain partitioning must
-be enforced at the SPI layer. Non-negotiable for all three adapter options.
+`userId`/`sessionId` model. Permission-aware recall and domain isolation must be enforced
+at the SPI layer. Non-negotiable for all three adapter options.
 
 **Open questions:** how are facts emitted from cases? (§12.6); how does the store relate
-to authoritative external data? (§12.2); module placement? (§12.7)
+to authoritative external data? (§12.2)
 
 ### 11.2 No ActionRiskClassifier SPI
 
