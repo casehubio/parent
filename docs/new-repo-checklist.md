@@ -27,6 +27,13 @@ Work through the list top-to-bottom. Items within a section can often be paralle
 - [ ] Set default branch to `main` if not already.
 - [ ] Clone locally: `git clone https://github.com/casehubio/<name>.git ../casehub/<name>`
 - [ ] Set git user config in the new repo to match your identity.
+- [ ] Fork to mdproctor personal account: `gh repo fork casehubio/<name> --clone=false`
+- [ ] Rewire remotes — all repos follow `origin = mdproctor fork, upstream = casehubio org`:
+  ```bash
+  git -C ../casehub/<name> remote rename origin upstream
+  git -C ../casehub/<name> remote add origin https://github.com/mdproctor/<name>.git
+  ```
+  Verify: `git remote -v` should show both `origin` (mdproctor) and `upstream` (casehubio).
 
 ---
 
