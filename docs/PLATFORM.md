@@ -146,8 +146,10 @@ Four tiers, always kept separate:
 | `casehub-openclaw` | [casehubio/openclaw](https://github.com/casehubio/openclaw) | CaseHub × OpenClaw integration — ChannelContextWindow, WorkerProvisioner, ChannelBackend SPI, Python SDK context hook | Integration |
 | `casehub-eidos` | [casehubio/eidos](https://github.com/casehubio/eidos) | Agent identity — descriptor, discovery registry, vocabulary system, system prompt generation | Foundation |
 | `casehub-poc` | [casehubio/casehub](https://github.com/casehubio/casehub) | **Retiring** — original POC; no new features | — |
+| `quarkmind` | [mdproctor/quarkmind](https://github.com/mdproctor/quarkmind) | StarCraft II game AI — living lab proving the CaseHub harness pattern at millisecond game-loop granularity outside regulated domains | Application |
+| `flow` | [mdproctor/flow](https://github.com/mdproctor/flow) | Standalone Quarkus engine app with REST endpoints — tier and platform coherence pending analysis (external contributor) | TBD |
 
-Application tier (devtown, aml, clinical, life, drafthouse): see [APPLICATIONS.md](APPLICATIONS.md).
+Application tier (devtown, aml, clinical, life, drafthouse, quarkmind): see [APPLICATIONS.md](APPLICATIONS.md).
 
 ---
 
@@ -167,6 +169,8 @@ casehub-parent              (BOM — publish first; all others import it)
 
   — Application tier (opt-in, off by default in CI): see APPLICATIONS.md —
   casehub-life              (depends on full foundation stack + casehub-openclaw as WorkerProvisioner)
+  casehub-drafthouse        (depends on casehub-qhorus; engine + ledger + work added later)
+  quarkmind                 (depends on casehub-engine; standalone Quarkus harness app — mdproctor/quarkmind)
 ```
 
 ---
@@ -295,7 +299,7 @@ casehub-parent              (BOM — publish first; all others import it)
 | Qhorus ↔ OpenClaw channel bridge | `casehub-openclaw` | `ChannelBackend` SPI — bidirectional: Qhorus dispatches → `ChannelBackend.post()` → `/hooks/agent`; OpenClaw output → `deliver:webhook` → Qhorus endpoint → `MessageService.dispatch()` |
 | ChannelContextWindow (short-term channel context for LLM injection) | `casehub-openclaw` | `MessageObserver` SPI → per-channel ring buffer (configurable size + TTL) → REST `GET /channel-context/{agentId}?since={sequenceNumber}`. Python SDK `before_prompt_build` hook injects result as `appendSystemContext` (compaction-safe). Best-effort — correctness guaranteed by Qhorus; intelligence layer only. |
 | Ecosystem CI dashboards | `casehub-parent` | `dashboard.yml`, `pr-dashboard.yml`, `full-stack-build.yml` |
-| Application domain logic (devtown, aml, clinical, life) | Application tier | See [APPLICATIONS.md](APPLICATIONS.md) |
+| Application domain logic (devtown, aml, clinical, life, drafthouse, quarkmind) | Application tier | See [APPLICATIONS.md](APPLICATIONS.md) |
 | Agent descriptor (structured 4-layer identity) | `casehub-eidos` | `AgentDescriptor` record — identity, slot, capabilities, disposition; `tenancyId` always required; `AgentQuery` for criteria-based discovery |
 | Agent registry (store + discover by slot/capability) | `casehub-eidos` | `AgentRegistry` (blocking) + `ReactiveAgentRegistry` (reactive, build-gated `casehub.eidos.reactive.enabled`); `InMemoryAgentRegistry` + `InMemoryAgentStateStore` for ephemeral installs via `casehub-eidos-memory` |
 | Vocabulary registry (term resolution + cross-vocab equivalence) | `casehub-eidos` | `VocabularyRegistry` SPI + `CdiVocabularyRegistry` @DefaultBean; discovers `@Produces Vocabulary` CDI beans at startup |

@@ -61,6 +61,7 @@ jobs:
       - name: Clone repositories
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
           INCLUDE_LANGCHAIN4J: ${{ inputs.include_langchain4j }}
           INCLUDE_APPLICATIONS: ${{ inputs.include_applications }}
         run: |
@@ -82,6 +83,8 @@ jobs:
             git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/clinical.git" casehub/clinical
             git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/life.git"    casehub/life
             git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/drafthouse.git" casehub/drafthouse
+            git clone --quiet "https://x-access-token:${GH_TOKEN}@github.com/mdproctor/quarkmind.git"   casehub/quarkmind
+            git clone --quiet "https://x-access-token:${GH_TOKEN}@github.com/mdproctor/flow.git"        casehub/flow
           fi
 
       # continue-on-error: true ensures all steps run and we get per-module outcomes
@@ -333,6 +336,40 @@ jobs:
           cd casehub/drafthouse/server && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
           echo $((SECONDS - START)) > ../../../.build-times/drafthouse
 
+      - name: "Build: flow"
+        id: flow
+        if: inputs.include_applications
+        continue-on-error: true
+        env:
+          SKIP_TESTS: ${{ inputs.skip_tests }}
+          SKIP_ITS: ${{ inputs.skip_integration_tests }}
+          MAVEN_EXTRA: ${{ inputs.maven_args }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          FLAGS=""
+          [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
+          [ "$SKIP_ITS" = "true" ] && FLAGS="$FLAGS -DskipITs"
+          START=$SECONDS
+          cd casehub/flow && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
+          echo $((SECONDS - START)) > ../../.build-times/flow
+
+      - name: "Build: quarkmind"
+        id: quarkmind
+        if: inputs.include_applications
+        continue-on-error: true
+        env:
+          SKIP_TESTS: ${{ inputs.skip_tests }}
+          SKIP_ITS: ${{ inputs.skip_integration_tests }}
+          MAVEN_EXTRA: ${{ inputs.maven_args }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          FLAGS=""
+          [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
+          [ "$SKIP_ITS" = "true" ] && FLAGS="$FLAGS -DskipITs"
+          START=$SECONDS
+          cd casehub/quarkmind && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
+          echo $((SECONDS - START)) > ../../.build-times/quarkmind
+
       - name: Build summary
         if: always()
         env:
@@ -356,6 +393,8 @@ jobs:
           OUTCOME_CLINICAL: ${{ steps.clinical.outcome }}
           OUTCOME_LIFE: ${{ steps.life.outcome }}
           OUTCOME_DRAFTHOUSE: ${{ steps.drafthouse.outcome }}
+          OUTCOME_QUARKMIND: ${{ steps.quarkmind.outcome }}
+          OUTCOME_FLOW: ${{ steps.flow.outcome }}
         run: |
           if [ "$SKIP_TESTS" = "true" ]; then
             TEST_MODE="compile check only (all tests skipped)"
@@ -366,7 +405,7 @@ jobs:
           fi
 
           MODULES=(quarkus-langchain4j platform ledger eidos connectors work qhorus engine claudony)
-          [ "$INCLUDE_APPLICATIONS" = "true" ] && MODULES+=(openclaw devtown aml clinical life drafthouse)
+          [ "$INCLUDE_APPLICATIONS" = "true" ] && MODULES+=(openclaw devtown aml clinical life drafthouse quarkmind flow)
           declare -A OUTCOMES=(
             [quarkus-langchain4j]="$OUTCOME_LANGCHAIN4J"
             [platform]="$OUTCOME_PLATFORM"
@@ -383,23 +422,27 @@ jobs:
             [clinical]="$OUTCOME_CLINICAL"
             [life]="$OUTCOME_LIFE"
             [drafthouse]="$OUTCOME_DRAFTHOUSE"
+            [quarkmind]="$OUTCOME_QUARKMIND"
+            [flow]="$OUTCOME_FLOW"
           )
           declare -A GH_REPO=(
-            [quarkus-langchain4j]="quarkus-langchain4j"
-            [platform]="platform"
-            [ledger]="ledger"
-            [eidos]="eidos"
-            [connectors]="connectors"
-            [work]="work"
-            [qhorus]="qhorus"
-            [engine]="engine"
-            [claudony]="claudony"
-            [openclaw]="openclaw"
-            [devtown]="devtown"
-            [aml]="aml"
-            [clinical]="clinical"
-            [life]="life"
-            [drafthouse]="drafthouse"
+            [quarkus-langchain4j]="casehubio/quarkus-langchain4j"
+            [platform]="casehubio/platform"
+            [ledger]="casehubio/ledger"
+            [eidos]="casehubio/eidos"
+            [connectors]="casehubio/connectors"
+            [work]="casehubio/work"
+            [qhorus]="casehubio/qhorus"
+            [engine]="casehubio/engine"
+            [claudony]="casehubio/claudony"
+            [openclaw]="casehubio/openclaw"
+            [devtown]="casehubio/devtown"
+            [aml]="casehubio/aml"
+            [clinical]="casehubio/clinical"
+            [life]="casehubio/life"
+            [drafthouse]="casehubio/drafthouse"
+            [quarkmind]="mdproctor/quarkmind"
+            [flow]="mdproctor/flow"
           )
 
           {
@@ -424,7 +467,7 @@ jobs:
               skipped)
                 if [ "$module" = "quarkus-langchain4j" ] && [ "$INCLUDE_LANGCHAIN4J" != "true" ]; then
                   icon="⏭️ excluded"
-                elif { [ "$module" = "openclaw" ] || [ "$module" = "devtown" ] || [ "$module" = "aml" ] || [ "$module" = "clinical" ] || [ "$module" = "life" ] || [ "$module" = "drafthouse" ]; } && [ "$INCLUDE_APPLICATIONS" != "true" ]; then
+                elif { [ "$module" = "openclaw" ] || [ "$module" = "devtown" ] || [ "$module" = "aml" ] || [ "$module" = "clinical" ] || [ "$module" = "life" ] || [ "$module" = "drafthouse" ] || [ "$module" = "quarkmind" ] || [ "$module" = "flow" ]; } && [ "$INCLUDE_APPLICATIONS" != "true" ]; then
                   icon="⏭️ excluded"
                 else
                   icon="⏭️ skipped"; FAIL_COUNT=$((FAIL_COUNT + 1))
@@ -433,7 +476,7 @@ jobs:
               *)        icon="⚠️"; FAIL_COUNT=$((FAIL_COUNT + 1)) ;;
             esac
 
-            echo "| [$module](https://github.com/casehubio/$repo_name) | $icon $outcome | $duration |" \
+            echo "| [$module](https://github.com/$repo_name) | $icon $outcome | $duration |" \
               >> "$GITHUB_STEP_SUMMARY"
           done
 

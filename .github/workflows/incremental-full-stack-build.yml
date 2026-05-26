@@ -29,7 +29,7 @@ on:
         type: boolean
         default: false
       include_applications:
-        description: "Include application repos (devtown, aml, clinical, quarkmind) — off by default"
+        description: "Include application repos (devtown, aml, clinical, drafthouse, life, quarkmind, flow) — off by default"
         type: boolean
         default: false
       force_rebuild:
@@ -83,6 +83,7 @@ jobs:
             git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/life.git"    casehub/life
             git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/drafthouse.git" casehub/drafthouse
             git clone --quiet "https://x-access-token:${GH_TOKEN}@github.com/mdproctor/quarkmind.git"   casehub/quarkmind
+            git clone --quiet "https://x-access-token:${GH_TOKEN}@github.com/mdproctor/flow.git"        casehub/flow
           fi
 
       - name: Collect SHAs
@@ -116,6 +117,7 @@ jobs:
             LF=$(git -C casehub/life       rev-parse HEAD)
             DH=$(git -C casehub/drafthouse rev-parse HEAD)
             QM=$(git -C casehub/quarkmind  rev-parse HEAD)
+            FL=$(git -C casehub/flow       rev-parse HEAD)
             echo "sha_openclaw=$OC"   >> $GITHUB_OUTPUT
             echo "sha_devtown=$DT"    >> $GITHUB_OUTPUT
             echo "sha_aml=$AM"        >> $GITHUB_OUTPUT
@@ -123,6 +125,7 @@ jobs:
             echo "sha_life=$LF"       >> $GITHUB_OUTPUT
             echo "sha_drafthouse=$DH" >> $GITHUB_OUTPUT
             echo "sha_quarkmind=$QM"  >> $GITHUB_OUTPUT
+            echo "sha_flow=$FL"       >> $GITHUB_OUTPUT
           fi
 
           echo "::group::SHA manifest (pin these to reproduce this build)"
@@ -135,7 +138,7 @@ jobs:
           echo "qhorus:     $Q"
           echo "engine:     $E"
           echo "claudony:   $D"
-          [ "${{ inputs.include_applications }}" = "true" ] && { echo "openclaw:   $OC"; echo "devtown:    $DT"; echo "aml:        $AM"; echo "clinical:   $CL"; echo "life:       $LF"; echo "drafthouse: $DH"; echo "quarkmind:  $QM"; }
+          [ "${{ inputs.include_applications }}" = "true" ] && { echo "openclaw:   $OC"; echo "devtown:    $DT"; echo "aml:        $AM"; echo "clinical:   $CL"; echo "life:       $LF"; echo "drafthouse: $DH"; echo "quarkmind:  $QM"; echo "flow:       $FL"; }
           echo "::endgroup::"
 
       # Restore state from last run on this branch.
@@ -155,7 +158,7 @@ jobs:
           FORCE_REBUILD: ${{ inputs.force_rebuild }}
         run: |
           MODULES=(parent platform ledger eidos connectors work qhorus engine claudony)
-          [ "${{ inputs.include_applications }}" = "true" ] && MODULES+=(openclaw devtown aml clinical life drafthouse quarkmind)
+          [ "${{ inputs.include_applications }}" = "true" ] && MODULES+=(openclaw devtown aml clinical life drafthouse quarkmind flow)
           if [ "$FORCE_REBUILD" = "true" ] || [ ! -f .incremental-state/shas.txt ]; then
             for m in "${MODULES[@]}"; do echo "sha_${m}=none" >> $GITHUB_OUTPUT; done
           else
@@ -667,6 +670,43 @@ jobs:
           esac
           echo $((SECONDS - START)) > .build-times/quarkmind
 
+      - name: "Build: flow"
+        id: flow
+        if: inputs.include_applications
+        continue-on-error: true
+        env:
+          CUR: ${{ steps.shas.outputs.sha_flow }}
+          PRV: ${{ steps.prev.outputs.sha_flow }}
+          CUR_P: ${{ steps.shas.outputs.sha_parent }}
+          PRV_P: ${{ steps.prev.outputs.sha_parent }}
+          CUR_E: ${{ steps.shas.outputs.sha_engine }}
+          PRV_E: ${{ steps.prev.outputs.sha_engine }}
+          SKIP_TESTS: ${{ inputs.skip_tests }}
+          SKIP_ITS: ${{ inputs.skip_integration_tests }}
+          MAVEN_EXTRA: ${{ inputs.maven_args }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          D=$(./scripts/incremental-build-decision.sh \
+            --module flow --current-sha "$CUR" --previous-sha "${PRV:-none}" \
+            --dep "parent:${CUR_P}:${PRV_P:-none}" \
+            --dep "engine:${CUR_E}:${PRV_E:-none}")
+          echo "decision=$D" >> $GITHUB_OUTPUT
+          START=$SECONDS
+          case "$D" in
+            SKIP) echo "⏭️  flow: SKIP" ;;
+            TEST)
+              if [ "$SKIP_TESTS" = "true" ]; then echo "⏭️  flow: SKIP (TEST — tests disabled)"
+              else
+                ITS=""; [ "$SKIP_ITS" = "true" ] && ITS="-DskipITs"
+                cd casehub/flow && mvn test --batch-mode $ITS $MAVEN_EXTRA
+              fi ;;
+            BUILD)
+              F=""; [ "$SKIP_TESTS" = "true" ] && F="-DskipTests"
+              [ "$SKIP_ITS" = "true" ] && F="$F -DskipITs"
+              cd casehub/flow && mvn install --batch-mode $F $MAVEN_EXTRA ;;
+          esac
+          echo $((SECONDS - START)) > .build-times/flow
+
       - name: "Build: clinical"
         id: clinical
         if: inputs.include_applications
@@ -821,6 +861,7 @@ jobs:
           SHA_CLINICAL: ${{ steps.shas.outputs.sha_clinical }}
           SHA_DRAFTHOUSE: ${{ steps.shas.outputs.sha_drafthouse }}
           SHA_QUARKMIND: ${{ steps.shas.outputs.sha_quarkmind }}
+          SHA_FLOW: ${{ steps.shas.outputs.sha_flow }}
           PREV_PARENT: ${{ steps.prev.outputs.sha_parent }}
           PREV_PLATFORM: ${{ steps.prev.outputs.sha_platform }}
           PREV_LEDGER: ${{ steps.prev.outputs.sha_ledger }}
@@ -835,6 +876,7 @@ jobs:
           PREV_CLINICAL: ${{ steps.prev.outputs.sha_clinical }}
           PREV_DRAFTHOUSE: ${{ steps.prev.outputs.sha_drafthouse }}
           PREV_QUARKMIND: ${{ steps.prev.outputs.sha_quarkmind }}
+          PREV_FLOW: ${{ steps.prev.outputs.sha_flow }}
           INCLUDE_APPLICATIONS: ${{ inputs.include_applications }}
           OUTCOME_PLATFORM: ${{ steps.platform.outcome }}
           OUTCOME_LEDGER: ${{ steps.ledger.outcome }}
@@ -848,6 +890,7 @@ jobs:
           OUTCOME_AML: ${{ steps.aml.outcome }}
           OUTCOME_CLINICAL: ${{ steps.clinical.outcome }}
           OUTCOME_QUARKMIND: ${{ steps.quarkmind.outcome }}
+          OUTCOME_FLOW: ${{ steps.flow.outcome }}
         run: |
           mkdir -p .incremental-state
 
@@ -876,6 +919,7 @@ jobs:
               record clinical   "$SHA_CLINICAL"   "${PREV_CLINICAL:-none}"   "$OUTCOME_CLINICAL"
               record drafthouse "$SHA_DRAFTHOUSE" "${PREV_DRAFTHOUSE:-none}" "$OUTCOME_DRAFTHOUSE"
               record quarkmind  "$SHA_QUARKMIND"  "${PREV_QUARKMIND:-none}"  "$OUTCOME_QUARKMIND"
+              record flow       "$SHA_FLOW"       "${PREV_FLOW:-none}"       "$OUTCOME_FLOW"
             fi
           } > .incremental-state/shas.txt
 
@@ -911,6 +955,7 @@ jobs:
           DECISION_CLINICAL: ${{ steps.clinical.outputs.decision }}
           DECISION_DRAFTHOUSE: ${{ steps.drafthouse.outputs.decision }}
           DECISION_QUARKMIND: ${{ steps.quarkmind.outputs.decision }}
+          DECISION_FLOW: ${{ steps.flow.outputs.decision }}
           INCLUDE_APPLICATIONS: ${{ inputs.include_applications }}
           OUTCOME_PLATFORM: ${{ steps.platform.outcome }}
           OUTCOME_LEDGER: ${{ steps.ledger.outcome }}
@@ -925,6 +970,7 @@ jobs:
           OUTCOME_CLINICAL: ${{ steps.clinical.outcome }}
           OUTCOME_DRAFTHOUSE: ${{ steps.drafthouse.outcome }}
           OUTCOME_QUARKMIND: ${{ steps.quarkmind.outcome }}
+          OUTCOME_FLOW: ${{ steps.flow.outcome }}
         run: |
           if [ "$SKIP_TESTS" = "true" ]; then
             TEST_MODE="compile check only"
@@ -936,7 +982,7 @@ jobs:
           [ "$FORCE_REBUILD" = "true" ] && TEST_MODE="$TEST_MODE — forced rebuild"
 
           MODULES=(platform ledger eidos connectors work qhorus engine claudony)
-          [ "$INCLUDE_APPLICATIONS" = "true" ] && MODULES+=(devtown aml clinical drafthouse quarkmind)
+          [ "$INCLUDE_APPLICATIONS" = "true" ] && MODULES+=(devtown aml clinical drafthouse quarkmind flow)
           declare -A DECISIONS=(
             [platform]="$DECISION_PLATFORM"
             [ledger]="$DECISION_LEDGER"
@@ -951,6 +997,7 @@ jobs:
             [clinical]="$DECISION_CLINICAL"
             [drafthouse]="$DECISION_DRAFTHOUSE"
             [quarkmind]="$DECISION_QUARKMIND"
+            [flow]="$DECISION_FLOW"
           )
           declare -A OUTCOMES=(
             [platform]="$OUTCOME_PLATFORM"
@@ -966,6 +1013,7 @@ jobs:
             [clinical]="$OUTCOME_CLINICAL"
             [drafthouse]="$OUTCOME_DRAFTHOUSE"
             [quarkmind]="$OUTCOME_QUARKMIND"
+            [flow]="$OUTCOME_FLOW"
           )
 
           {
@@ -992,7 +1040,7 @@ jobs:
             esac
 
             repo_org="casehubio"
-            [ "$module" = "quarkmind" ] && repo_org="mdproctor"
+            { [ "$module" = "quarkmind" ] || [ "$module" = "flow" ]; } && repo_org="mdproctor"
             echo "| [$module](https://github.com/$repo_org/$module) | $decision | $icon | $duration |" \
               >> "$GITHUB_STEP_SUMMARY"
           done

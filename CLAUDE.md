@@ -80,7 +80,7 @@ type: java
 Root parent POM for the CaseHub ecosystem. Owns shared build configuration, CI/CD workflows, cross-module conventions, and the full-stack build orchestration.
 
 **Peer repos (each has its own Claude session — do not commit to these):**
-ledger, connectors, work, qhorus, engine, claudony, quarkus-langchain4j, devtown, aml, clinical
+platform, eidos, ledger, connectors, work, qhorus, engine, claudony, quarkus-langchain4j, openclaw, devtown, aml, clinical, drafthouse, life, quarkmind, flow
 
 ## Build Commands
 
