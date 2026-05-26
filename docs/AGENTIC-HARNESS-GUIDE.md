@@ -1,7 +1,7 @@
 # Agentic Harness Guide
 
 This document applies to every CaseHub application repo:
-**casehub-aml, casehub-clinical, casehub-devtown, QuarkMind**
+**casehub-aml, casehub-clinical, casehub-devtown, casehub-life, QuarkMind**
 
 Read this at session start alongside your CLAUDE.md.
 
@@ -65,7 +65,7 @@ chronology; LAYER-LOG.md captures the teaching structure.
 
 Each entry captures:
 - What was built and what gap it closes
-- The gap comments from the naive layer that this layer addresses
+- The accountability gaps documented in LAYER-LOG.md that this layer closes
 - Key wiring (the non-obvious configuration — not in the code, not in the docs)
 - Gotchas (what went wrong, what would go wrong without prior knowledge)
 - Pattern to replicate — domain-agnostic numbered steps an LLM can follow in a
@@ -76,6 +76,41 @@ Each entry captures:
 See `docs/protocols/universal/layer-log.md` in casehub-parent for the full format
 including placeholder guidance.
 See `LAYER-LOG.md` in casehub-aml for a reference implementation (Layers 1 and 2).
+
+**Augmented format — each completed layer entry must include:**
+
+```markdown
+### Summary
+What foundation module was integrated and what it enables (1 paragraph).
+
+### Accountability gaps closed
+| Gap | What breaks without it | Closed by |
+|-----|----------------------|-----------|
+| No formal deadline | Compliance reviews sit indefinitely | casehub-work WorkItem SLA |
+
+### Key wiring
+Non-obvious configuration — not visible in code, not in official docs.
+
+### Architectural decisions
+Why this approach, tradeoffs considered, alternatives rejected.
+
+### Pattern introduced
+The key pattern this layer establishes (named, referenceable).
+
+### Pattern anchor
+1–2 key reference points: class name + method. Not a code listing — a pointer.
+
+### Gotchas
+What went wrong, what would go wrong without prior knowledge.
+
+### Pattern to replicate
+Domain-agnostic numbered steps an LLM can follow in a different domain.
+
+### Navigation
+`git log --grep="#N" --oneline`
+```
+
+The existing sections (key files, pattern to replicate) are kept — this is additive.
 
 ### Existing habits to maintain
 
