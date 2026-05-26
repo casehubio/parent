@@ -1,7 +1,7 @@
 # Agentic Harness Guide
 
 This document applies to every CaseHub application repo:
-**casehub-aml, casehub-clinical, casehub-devtown, casehub-life, QuarkMind**
+**casehub-aml, casehub-clinical, casehub-devtown, casehub-life, casehub-drafthouse, QuarkMind**
 
 Read this at session start alongside your CLAUDE.md.
 
