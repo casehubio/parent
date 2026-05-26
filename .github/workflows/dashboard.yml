@@ -39,6 +39,7 @@ jobs:
             casehubio/aml \
             casehubio/clinical \
             casehubio/life \
+            casehubio/drafthouse \
             mdproctor/quarkmind)
 
           if [ -z "$REPOS" ]; then

@@ -147,7 +147,7 @@ Four tiers, always kept separate:
 | `casehub-eidos` | [casehubio/eidos](https://github.com/casehubio/eidos) | Agent identity — descriptor, discovery registry, vocabulary system, system prompt generation | Foundation |
 | `casehub-poc` | [casehubio/casehub](https://github.com/casehubio/casehub) | **Retiring** — original POC; no new features | — |
 
-Application tier (devtown, aml, clinical, life): see [APPLICATIONS.md](APPLICATIONS.md).
+Application tier (devtown, aml, clinical, life, drafthouse): see [APPLICATIONS.md](APPLICATIONS.md).
 
 ---
 
@@ -231,6 +231,8 @@ casehub-parent              (BOM — publish first; all others import it)
 
 | `casehub-qhorus-api` | `casehub-openclaw` | `core` | `ChannelBackend`, `MessageObserver` SPIs |
 | `casehub-qhorus` (runtime) | `casehub-openclaw` | `casehub` | Qhorus runtime for SPI registration |
+| `casehub-qhorus-api` | `drafthouse` | `app` | channel routing |
+| `casehub-qhorus` (runtime) | `drafthouse` | `app` | runtime dep |
 | `casehub-engine-api` | `casehub-openclaw` | `core` | `WorkerProvisioner`, `CaseChannelProvider`, `WorkerStatusListener` SPIs |
 | `casehub-engine` (runtime) | `casehub-openclaw` | `casehub` | engine runtime for SPI implementations |
 | `casehub-platform-api` | `casehub-openclaw` | `core` | `CurrentPrincipal`, `GroupMembershipProvider` (permission-aware context) |

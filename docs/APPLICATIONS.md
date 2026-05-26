@@ -28,6 +28,7 @@ The pattern: **bring your domain, use the platform, modify nothing below.**
 | `casehub-aml` | [casehubio/aml](https://github.com/casehubio/aml) | Anti-money laundering investigation — FinCEN-compliant audit, SAR workflow, adaptive investigation paths | Active |
 | `casehub-clinical` | [casehubio/clinical](https://github.com/casehubio/clinical) | Clinical trial coordination — GCP/FDA compliance, multi-site sub-cases, adverse event escalation | Active |
 | `casehub-life` | [casehubio/life](https://github.com/casehubio/life) | Personal life automation — household coordination, health, finance, elder care, legal compliance; tutorial: OpenClaw as execution layer | Scaffold |
+| `casehub-drafthouse` | [casehubio/drafthouse](https://github.com/casehubio/drafthouse) | MCP-driven document review — multi-LLM critique, selection-scoped conversations, version-tracked revisions | Scaffold |
 | `quarkmind` | [mdproctor/quarkmind](https://github.com/mdproctor/quarkmind) | StarCraft II game AI — living lab proving the CaseHub harness pattern at millisecond game-loop granularity outside regulated domains | Active |
 
 ---
@@ -41,6 +42,7 @@ casehub-devtown  ┐
 casehub-aml      ├── depends on: engine + ledger + work + qhorus (+ connectors where needed)
 casehub-clinical ┘
 casehub-life     — depends on: full foundation stack + casehub-openclaw (Layer 7+)
+casehub-drafthouse — depends on: qhorus (initially; engine + ledger + work added later)
 ```
 
 Application repos are **opt-in and off by default** in the platform CI pipeline.
@@ -87,4 +89,5 @@ foundation, not as a shared application library.
 | `casehub-aml` | https://raw.githubusercontent.com/casehubio/parent/main/docs/repos/casehub-aml.md |
 | `casehub-clinical` | https://raw.githubusercontent.com/casehubio/parent/main/docs/repos/casehub-clinical.md |
 | `casehub-life` | https://raw.githubusercontent.com/casehubio/parent/main/docs/repos/casehub-life.md |
+| `casehub-drafthouse` | https://raw.githubusercontent.com/casehubio/parent/main/docs/repos/casehub-drafthouse.md |
 | `quarkmind` | https://raw.githubusercontent.com/casehubio/parent/main/docs/repos/quarkmind.md |
