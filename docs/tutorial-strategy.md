@@ -62,7 +62,7 @@ Each demonstrates that the same harness holds across domains — from regulated 
 Every CaseHub domain application serves two purposes simultaneously — for the same audience:
 
 - **Field showcase:** demonstrates CaseHub's compliance and accountability capabilities to practitioners evaluating the platform for their domain
-- **Field tutorial:** teaches CaseHub adoption to developers who build systems in that domain
+- **Field tutorial:** teaches CaseHub integration to developers who build systems in that domain
 
 These are not competing goals. A Java developer at a financial institution who watches the AML investigation showcase is the same developer who follows the tutorial to build their own investigation system. A Java developer at a pharmaceutical company who sees the clinical trial demonstration is the same developer who implements their own trial coordination application. A Java developer evaluating devtown for their team's code review workflow is the same developer who will build that workflow.
 
@@ -70,19 +70,19 @@ The "field" qualifier matters. Each domain application targets practitioners who
 
 There is no hierarchy between field tutorials. AML, clinical, and devtown each serve their own field. AML is not "the" tutorial — it is the tutorial for Java developers in financial services, and currently the furthest along.
 
-### 2.1b Production-first — the tutorial structure emerges from adoption sequence
+### 2.1b Production-first — the tutorial structure emerges from the integration sequence
 
-Every domain application is designed and built for production deployment. The tutorial structure is not a separate design concern — it emerges from documenting the natural sequence in which you would adopt CaseHub foundation modules when building a real application.
+Every domain application is designed and built for production deployment. The tutorial structure is not a separate design concern — it emerges from documenting the natural sequence in which you would integrate CaseHub foundation modules when building a real application.
 
 **Do not make architectural decisions to serve the tutorial.** Every line of code must justify its existence in a deployed production system. The tutorial documents what you built; it does not drive what you build.
 
-The only tutorial-specific element is Layer 1: the naive Java baseline showing the domain without CaseHub. This is a deliberate anti-pattern — code a team would actually write without the platform, so the reader can see exactly what gap each subsequent layer closes. From Layer 2 onward, every implementation decision is a production decision. The gap comments (`// LAYER N GAP: ...`) are the only tutorial artifact.
+The only tutorial-specific element is Layer 1: the domain baseline showing the domain without CaseHub. This is a deliberate comparison baseline — code a team would actually write without the platform, so the reader can see exactly what gap each subsequent layer closes. From Layer 2 onward, every implementation decision is a production decision. **The code must be production quality throughout — no gap markers or tutorial annotations in source files.** Accountability gaps are documented in LAYER-LOG.md in a structured table per layer entry, mapping each gap to the foundation module that closes it.
 
-The natural adoption sequence that all domain apps follow:
+The natural integration sequence that all domain apps follow:
 
 | Layer | What it adds | What gap it closes |
 |-------|-------------|-------------------|
-| 1 | Naive Java — domain logic alone | Baseline: this is what you'd write without CaseHub |
+| 1 | Domain baseline — domain logic alone | Baseline: this is what you'd write without CaseHub |
 | 2 | casehub-work | No formal deadline or human task lifecycle |
 | 3 | casehub-qhorus | No formal obligation per agent interaction |
 | 4 | casehub-ledger | No tamper-evident audit trail |
@@ -129,7 +129,7 @@ Not all developers start the same way. Three valid entry points exist simultaneo
 
 | Entry type | Who uses it | Starting point |
 |---|---|---|
-| **Bottom-up (module by module)** | Developer adopting one module at a time | Start with the standalone module example |
+| **Bottom-up (module by module)** | Developer integrating one module at a time | Start with the standalone module example |
 | **Top-down (from a real use case)** | Developer with a specific business problem | Start with the scenario, work backwards to modules |
 | **Concept-first (execution control, trust, compliance)** | Developer evaluating a specific capability | Start with the capability showcase, see which modules enable it |
 
@@ -356,7 +356,7 @@ Some developers want to understand a specific capability without going through a
 Show the problem: a transaction is flagged. Multiple specialists need to investigate. A human must file a SAR. Without coordination infrastructure:
 
 ```java
-// The naive approach: direct service calls
+// Domain baseline (no CaseHub): direct service calls
 EntityResolutionResult entity = entityService.resolve(transaction);
 PatternResult pattern = patternService.analyzeStructuring(transaction);
 OsintResult osint = osintService.checkSanctions(transaction);
@@ -486,10 +486,10 @@ That is three sentences covering three layers. A Java developer who has used Spr
 
 ### 7.2 Tutorial layers
 
-**Layer 1 — Naive Java (no CaseHub)**
+**Layer 1 — Domain baseline (no CaseHub foundation)**
 
 ```java
-// The naive approach: direct service calls
+// Domain baseline (no CaseHub): direct service calls
 PatientEligibility eligibility = eligibilityService.screen(patient, protocol);
 AdverseEventAssessment ae = safetyService.assess(adverseEvent);
 // Who signed off on this eligibility decision?
@@ -576,10 +576,10 @@ ClinicalAgent runs as a linear pipeline for one site. It has no concept of SLA, 
 
 ### 7.5.1 Tutorial layers
 
-**Layer 1 — Naive Java (no CaseHub)**
+**Layer 1 — Domain baseline (no CaseHub foundation)**
 
 ```java
-// The naive approach: direct service calls
+// Domain baseline (no CaseHub): direct service calls
 SecurityAnalysis security = securityAnalyzer.analyze(pr);
 ArchitectureReview arch = architectureReviewer.review(pr);
 String comment = commentService.post(pr, security, arch);
@@ -627,7 +627,7 @@ Security flag in code analysis triggers security reviewer binding. Large archite
 
 Security reviewers with improving `false-positive-rate` scores get routed more sensitive PRs. Post-merge production incidents trigger a FLAGGED attestation, updating trust scores automatically. Routing shifts over time without manual configuration.
 
-**Layer 7 — Comparison vs naive AI code review**
+**Layer 7 — Comparison vs direct AI code review**
 
 | Requirement | GitHub Copilot / CodeRabbit | CaseHub devtown |
 |---|---|---|
@@ -769,7 +769,7 @@ Example: link to examples/<name>
 
 ### Phase 2 — AML (field tutorial: Java developers in financial services)
 
-- [x] Layer 1: naive Java approach (comparison baseline, no CaseHub)
+- [x] Layer 1: domain baseline (no CaseHub)
 - [x] Layer 2: + casehub-work (compliance officer WorkItem with 30-day FinCEN SLA)
 - [ ] Layer 3: + casehub-qhorus (typed agent communication)
 - [ ] Layer 4: + casehub-ledger (FinCEN audit trail)
@@ -786,7 +786,7 @@ Example: link to examples/<name>
 
 ### Phase 3b — Devtown (field tutorial: Java developers in software engineering)
 
-- [ ] Layer 1: naive Java approach (comparison baseline, no CaseHub)
+- [ ] Layer 1: domain baseline (no CaseHub)
 - [ ] Layer 2: + casehub-work (PR review WorkItem with SLA)
 - [ ] Layer 3: + casehub-qhorus (typed COMMAND to specialist reviewers)
 - [ ] Layer 4: + casehub-ledger (tamper-evident review record)
@@ -796,7 +796,7 @@ Example: link to examples/<name>
 
 ### Phase 4 — Clinical (field tutorial: Java developers in regulated healthcare)
 
-- [ ] Layer 1: naive Java approach (comparison baseline, no CaseHub)
+- [ ] Layer 1: domain baseline (no CaseHub)
 - [ ] Layer 2: + casehub-work (adverse event WorkItem with 24h GCP SLA)
 - [ ] Layer 3: + casehub-qhorus (typed COMMAND to PI, DECLINE on scope boundary)
 - [ ] Layer 4: + casehub-ledger (FDA Merkle audit, GDPR Art.17 consent withdrawal)
@@ -813,10 +813,10 @@ Example: link to examples/<name>
 |---|---|
 | AML as field tutorial for Java developers in financial services, not security incident response | Java developers in banking know AML from their careers — no domain onboarding needed. Security incident response (MyAntFarm comparison) is strong on community fit but weak on market entry gap (SOAR is a crowded incumbent market). |
 | Clinical and devtown are also field tutorials, not just showcases | GCP domain knowledge is a prerequisite — but for Java developers in pharma/biotech, it is standard knowledge. Code review orchestration is standard knowledge for any Java developer. Each domain app serves the developers who already work in that field. |
-| Production-first: tutorial structure emerges from adoption sequence | Designing for the tutorial produces tutorial code. Designing for production and documenting the progressive adoption sequence produces production code that teaches. The only tutorial-specific element is the Layer 1 naive baseline. |
+| Production-first: tutorial structure emerges from the integration sequence | Designing for the tutorial produces tutorial code. Designing for production and documenting the progressive integration sequence produces production code that teaches. The only tutorial-specific element is the Layer 1 domain baseline. |
 | Execution control showcase separate from domain tutorials | A developer evaluating CaseHub's binding model should not need to understand AML. Separate entry points for separate purposes. |
 | Examples in each project repo, not a separate tutorials repo | Examples run in CI. They are tested code. Separating them from the project creates drift. |
-| Layer-by-layer structure over "start with the full stack" | The standalone value of each module is the argument for adoption. A developer who adds ledger to an existing work deployment should see ledger demonstrated standalone first. |
+| Layer-by-layer structure over "start with the full stack" | The standalone value of each module is the argument for integration. A developer who adds ledger to an existing work deployment should see ledger demonstrated standalone first. |
 | LangChain4j patterns as the bridge for developers coming from langchain4j | The AML tutorial exercises all 5 LangChain4j agentic patterns. A developer who knows langchain4j lands in familiar territory and sees what CaseHub adds on top. |
 
 ---
