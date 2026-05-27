@@ -24,13 +24,22 @@ See `AGENTIC-HARNESS-GUIDE.md §Three-Document Design System` for the full flow.
 
 ## The Principle
 
-A **vertical slice** is the thinnest working path through all relevant layers of an
-application that produces a testable, demonstrable capability. Build slices end-to-end
-before completing any single layer to full production depth.
+A **vertical slice** is a user-visible capability that cuts through whichever
+horizontal layers it needs. **Slices are the planning and delivery unit. Layers are
+the implementation unit.**
+
+To deliver a slice: identify which layers it requires, implement each of those layers
+in turn — doing only what that slice needs from each layer — until the slice works
+end-to-end. Do not complete any layer to full production depth before the slice is
+working; deepen layers in later slices that require more from them.
+
+The layer ordering in LAYER-LOG.md is for *reading* — the sequence a developer
+follows to understand the system. It is not the build sequence. Build sequence is
+determined by the slice plan (see Planning below).
 
 This applies to development planning, not just tutorial structure. The slice index is
 the primary planning and documentation artifact for a layered application — it answers
-what the system can DO at each milestone, not merely which modules were integrated.
+what the system can DO at each milestone and how to build toward each capability.
 
 ---
 
