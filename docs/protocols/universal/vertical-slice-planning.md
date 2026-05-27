@@ -114,7 +114,9 @@ Place this at the top of LAYER-LOG.md, before any layer entries.
 
 The **Arch patterns** column uses names from `docs/ARCHITECTURE.md`: `Hexagonal`,
 `Clean`, `DDD`, `Event-Driven`, `CQRS-lite`, `Strategy`, `Registry`, `Observer`,
-`Factory`, `Interceptor`.
+`Factory`, `Interceptor`, `Vertical Slices`. `Vertical Slices` applies at the
+application tier — use it when a slice demonstrates capability-driven delivery
+cutting through horizontal foundation layers.
 
 ### Section 2 — Layer entries
 
