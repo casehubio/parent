@@ -163,16 +163,43 @@ Domain-agnostic numbered steps an LLM can follow in a different domain.
 
 The existing sections (key files, pattern to replicate) are kept — this is additive.
 
-### Existing habits to maintain
+---
 
-Nothing new beyond LAYER-LOG.md. Continue:
+## The Three-Document Design System
+
+Every harness application maintains three design documents that form an explicit chain.
+Understanding the chain prevents duplication and drift:
+
+| Document | What it captures | Granularity | Lives in |
+|---|---|---|---|
+| `LAYER-LOG.md` | **SIAL** — what the system CAN DO, organized by vertical slice + layer; navigational hub | Application lifetime | project repo |
+| `DESIGN.md` | **Decision record** — cross-cutting architectural decisions distilled from epics; the *why* behind specific technical choices | Per decision | workspace |
+| `design/JOURNAL.md` | **Working doc** — in-session design reasoning for the current epic; ephemeral | Per epic | workspace |
+
+**The flow at epic close:**
+1. `design/JOURNAL.md` → distil what-was-built into the LAYER-LOG layer entry
+2. `design/JOURNAL.md` → distil cross-cutting architectural decisions into `DESIGN.md`
+3. Each LAYER-LOG layer entry cross-references the relevant `DESIGN.md` section for the *why*
+4. Each `DESIGN.md` entry references the LAYER-LOG layer that generated it
+
+**What goes where:**
+- "We built `QhorusAmlInvestigator` to dispatch typed COMMANDs" → LAYER-LOG layer entry
+- "Why we put `SlaBreachPolicy` in `work-api` instead of `platform-api`" → DESIGN.md
+- "Session reasoning on whether to use `@DefaultBean` or `@Alternative`" → JOURNAL.md (not preserved)
+
+**What DESIGN.md is not:** it is not a design spec (that lives in `docs/specs/`), not an ADR (that lives in `docs/adr/`), and not a session narrative (that is `blog/`). It is the accumulated record of cross-cutting decisions that would otherwise be lost between epics.
+
+### Existing habits to maintain
 
 | Artifact | Purpose | Where |
 |----------|---------|-------|
+| `LAYER-LOG.md` | SIAL — slice index + layer entries (primary architecture record) | project repo |
+| `DESIGN.md` | Cross-cutting decision record — feeds LAYER-LOG; distilled from JOURNAL | workspace |
+| `design/JOURNAL.md` | Per-epic working doc — feeds DESIGN.md + LAYER-LOG at close | workspace |
 | Blog/diary entries | Narrative context per session | workspace `blog/` |
-| CLAUDE.md | Session conventions, always current | project root |
-| GitHub issues/epics | Layer-by-layer structure tracked | GitHub |
-| ADRs | Significant architectural decisions | `docs/adr/` |
+| `CLAUDE.md` | Session conventions, always current | project root |
+| GitHub issues/epics | Work tracking | GitHub |
+| ADRs | Significant architectural decisions requiring formal record | `docs/adr/` |
 
 Blog entries correlate with LAYER-LOG.md but serve a different purpose — narrative for
 humans; the log is structured for LLMs. Both are needed.

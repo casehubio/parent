@@ -1,7 +1,24 @@
-# Protocol: Vertical Slice Planning and Documentation
+# Protocol: Slice-Indexed Architecture Log (SIAL)
 
 **Applies to:** Any CaseHub application. Also general best practice for any
 layered Quarkus application.
+
+## What this is
+
+A **Slice-Indexed Architecture Log (SIAL)** is the primary planning and documentation
+artifact for a layered application. It is organized around vertical slices — what the
+system can DO — rather than around horizontal layers — which modules were integrated.
+
+LAYER-LOG.md is the SIAL artifact for CaseHub harness applications. It forms part of
+a three-document design system:
+
+| Document | Role |
+|---|---|
+| `LAYER-LOG.md` (SIAL) | What the system can DO; slice index + layer entries; navigational hub |
+| `DESIGN.md` | Cross-cutting architectural decisions; the *why*; distilled from JOURNAL at epic close |
+| `design/JOURNAL.md` | Per-epic working doc; feeds LAYER-LOG and DESIGN.md at epic close |
+
+See `AGENTIC-HARNESS-GUIDE.md §Three-Document Design System` for the full flow.
 
 ---
 
