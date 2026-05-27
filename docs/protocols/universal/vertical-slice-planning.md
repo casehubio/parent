@@ -1,20 +1,21 @@
 # Protocol: Slice-Indexed Architecture Log (SIAL)
 
-**Applies to:** Any CaseHub application. Also general best practice for any
-layered Quarkus application.
+**Applies to:** Any CaseHub application. Also general best practice for any layered
+Quarkus application.
+
+---
 
 ## What this is
 
 A **Slice-Indexed Architecture Log (SIAL)** is the primary planning and documentation
-artifact for a layered application. It is organized around vertical slices — what the
-system can DO — rather than around horizontal layers — which modules were integrated.
+artifact for a layered application.
 
-LAYER-LOG.md is the SIAL artifact for CaseHub harness applications. It forms part of
-a three-document design system:
+`LAYER-LOG.md` is the SIAL artifact for CaseHub harness applications. It is part of a
+three-document design system:
 
 | Document | Role |
 |---|---|
-| `LAYER-LOG.md` (SIAL) | What the system can DO; slice index + layer entries; navigational hub |
+| `LAYER-LOG.md` (SIAL) | Slice index + layer entries — planning, delivery, and replication record |
 | `DESIGN.md` | Cross-cutting architectural decisions; the *why*; distilled from JOURNAL at epic close |
 | `design/JOURNAL.md` | Per-epic working doc; feeds LAYER-LOG and DESIGN.md at epic close |
 
@@ -22,88 +23,73 @@ See `AGENTIC-HARNESS-GUIDE.md §Three-Document Design System` for the full flow.
 
 ---
 
-## The Principle
+## Slices and layers
 
-A **vertical slice** is a user-visible capability that cuts through whichever
-horizontal layers it needs. **Slices are the planning and delivery unit. Layers are
-the implementation unit.**
+**Slices are the planning and delivery unit. Layers are the implementation unit.**
 
-To deliver a slice: identify which layers it requires, implement each of those layers
-in turn — doing only what that slice needs from each layer — until the slice works
-end-to-end. Do not complete any layer to full production depth before the slice is
-working; deepen layers in later slices that require more from them.
+A **vertical slice** is a user-visible capability — what a caller can do after it is
+delivered. Each slice requires some set of horizontal layers (foundation modules, domain
+components, infrastructure concerns) to implement it.
 
-The layer ordering in LAYER-LOG.md is for *reading* — the sequence a developer
-follows to understand the system. It is not the build sequence. Build sequence is
-determined by the slice plan (see Planning below).
+To deliver a slice: identify which layers it requires, then implement each of those
+layers in turn — doing only what the slice needs from each layer — until the slice works
+end-to-end. Move to the next slice. Deepen a layer further only when a later slice
+requires more from it.
 
-This applies to development planning, not just tutorial structure. The slice index is
-the primary planning and documentation artifact for a layered application — it answers
-what the system can DO at each milestone and how to build toward each capability.
+The layer ordering in LAYER-LOG.md is for *reading* — the sequence in which a
+developer encounters the layers to understand the system. It is not the build sequence.
+Build sequence is governed by the slice plan.
 
 ---
 
 ## Planning
 
-**Before starting implementation, identify vertical slices for the application.**
+Before starting implementation, identify the vertical slices for the application and
+sequence them.
 
-A slice is defined by its user-visible capability — what a caller can do after the
-slice is delivered. Each slice touches one or more horizontal layers (foundation modules,
-domain components, infrastructure concerns).
+**Define each slice** by its user-visible capability — one sentence stating what a
+caller can do after the slice ships.
 
-**Ordering slices:**
+**Sequence slices** using two criteria in order:
 
-Apply two criteria in order:
+1. **Sequential dependencies first.** Some slices can only follow another because the
+   earlier slice provides something the later one needs at runtime (a datasource, a CDI
+   bean, a persisted record). Identify these hard constraints before sequencing.
 
-1. **Sequential dependencies first.** Some slices can only be built after another is
-   complete — the earlier slice provides something the later one requires at runtime
-   (a datasource, a CDI bean, a persisted record). These dependencies establish hard
-   ordering constraints. Identify them before sequencing.
+2. **Minimal layer delta next.** Among unblocked slices, prefer the one that implements
+   the fewest new layers. Smaller deltas mean smaller, more reviewable delivery steps.
 
-2. **Minimal layer delta next.** Among slices with no hard dependency ordering, prefer
-   the slice that reuses the most of what is already built. A slice that adds one new
-   foundation module is preferable to one that adds three, even if both are technically
-   unblocked. This keeps each slice small, reviewable, and well-bounded.
-
-**Caveats:**
-
-- Some layers that appear orthogonal have soft ordering: qhorus messaging before
-  ledger is not a hard dependency, but qhorus generates the entries that make the
-  ledger audit trail meaningful. Document soft orderings as rationale in the slice
-  index, not as blocking constraints.
-- A layer may participate in multiple slices. Deliver the minimum version needed for
-  the first slice that uses it; deepen in later slices that require more from it.
-- Not every slice needs to touch every layer. A slice that adds engine routing without
-  yet touching the ledger is valid if ledger coverage comes in the next slice.
+**Soft ordering** — document but do not block on it. Some layers appear orthogonal but
+produce artefacts the next layer consumes (e.g. qhorus messaging produces
+`MessageLedgerEntry` records that make ledger audit meaningful). Call this out in
+ordering rationale, not as a hard constraint.
 
 ---
 
-## LAYER-LOG.md — Two Purposes, One Document
+## LAYER-LOG.md structure
 
-Every CaseHub application maintains a `LAYER-LOG.md` at the project root.
+Every CaseHub application maintains a `LAYER-LOG.md` at the project root with two
+sections.
 
-**Purpose 1 — LLM replication and teaching (original, unchanged)**
+### Purpose of each section
 
-An LLM reading LAYER-LOG.md should be able to reproduce every layer in a different
-domain harness without asking questions. This is the primary purpose of the layer
-entries. Each entry captures: what was built, what gap it closes, the non-obvious
-wiring, what went wrong, and domain-agnostic numbered steps to replicate the pattern.
-This purpose is served by Section 2 — the layer entries.
+**Section 1 — Vertical Slice Index** answers: what can this system DO, and what does it
+take to deliver each capability? This serves planning, architectural navigation, and
+readers who want to understand the capability arc before going deep.
 
-**Purpose 2 — Planning and architectural navigation (added)**
+**Section 2 — Layer entries** answers: how was each layer implemented, what are the
+non-obvious decisions, what went wrong, and how do I replicate this in another domain?
+An LLM reading a layer entry should be able to reproduce that layer in a different
+domain harness without asking questions. This is the primary replication and teaching
+record.
 
-A developer or architect reading LAYER-LOG.md should immediately understand what the
-system can DO at each milestone, which architectural patterns are in play, and how
-to navigate to the rationale behind each capability. This purpose is served by
-Section 1 — the Vertical Slice Index.
+Neither section subordinates the other. A reader enters from the capability (slice
+index) to find implementation depth, or enters from a layer entry to find architectural
+context and slice membership.
 
-Neither purpose subordinates the other. The slice index is the entry point; the layer
-entries are the depth. A reader enters from the capability (slice) to find the
-implementation detail, or enters from the layer to find the architectural context.
+### Section 1 — Vertical Slice Index
 
-The file has two sections:
-
-### Section 1 — Vertical Slice Index (at the top)
+Place this at the top of LAYER-LOG.md, before any layer entries.
 
 ```markdown
 ## Vertical Slices
@@ -113,89 +99,84 @@ The file has two sections:
 | S1 | [user-visible capability, one sentence] | L1, L5 | Hexagonal, Clean | ✅ complete |
 | S2 | [next capability] | + L2 | + Event-Driven | ✅ complete |
 | S3 | [next capability] | + L3 | + Observer | 🔲 pending |
-```
 
-The **Arch patterns** column references the patterns from `docs/ARCHITECTURE.md` that
-this slice demonstrates. Use the pattern names as defined there: `Hexagonal`,
-`Clean` (dependency rule), `DDD`, `Event-Driven`, `CQRS-lite`, `Strategy`, `Registry`,
-`Observer`, `Factory`, `Interceptor`. This makes the slice index a navigational hub:
-a reader can enter from the capability and find both the delivery record and the
-architectural rationale.
-
-For each slice in progress or complete, add a brief rationale row explaining why it
-was sequenced here (sequential dependency or minimal delta), and a reference to the
-design docs that informed the approach:
-
-```markdown
 **Ordering rationale:**
-- S1 before S2: S1 establishes the engine runtime; S2's WorkItem adapter depends on it
-- S2 before S3: S2 wires casehub-work; S3 reads WorkItem state from qhorus commitment
-- S3 and S4 independent: either could come first; S3 chosen for minimal delta (adds qhorus,
-  which is already a runtime dep; S4 would add ledger subclass + Flyway migration)
+- S1 before S2: [hard dependency or minimal-delta reason]
+- S2 before S3: [reason]
 
-**Architectural references for this application:**
-- `docs/ARCHITECTURE.md` — pattern definitions and invariants (Hexagonal, Clean, DDD, etc.)
-- `docs/PLATFORM.md` — capability ownership table; boundary rules
-- `docs/protocols/universal/` — universal Quarkus conventions
-- `docs/protocols/casehub/` — CaseHub-specific conventions
-- `docs/repos/{this-app}.md` in casehub-parent — deep-dive: what this app owns
-- `[app-specific analysis doc]` — e.g. gastown-casehub-analysis-v2.md for devtown
+**Architectural references:**
+- `docs/ARCHITECTURE.md` — pattern definitions (Hexagonal, Clean, DDD, Event-Driven, CQRS-lite, ...)
+- `docs/PLATFORM.md` — capability ownership; boundary rules
+- `docs/protocols/universal/` and `docs/protocols/casehub/` — conventions
+- `docs/repos/{this-app}.md` in casehub-parent — what this app owns
+- [app-specific analysis doc, e.g. gastown-casehub-analysis-v2.md]
 ```
 
-### Section 2 — Layer Entries
+The **Arch patterns** column uses names from `docs/ARCHITECTURE.md`: `Hexagonal`,
+`Clean`, `DDD`, `Event-Driven`, `CQRS-lite`, `Strategy`, `Registry`, `Observer`,
+`Factory`, `Interceptor`.
 
-One entry per foundation layer integrated. Each entry opens with a cross-reference to
-the slices it participates in and the architectural pattern it implements:
+### Section 2 — Layer entries
+
+One entry per layer implemented. Each entry opens with navigation headers:
 
 ```markdown
-## Layer N — [Foundation module]
+## Layer N — [Foundation module name]
 
-**Participates in:** S2, S3, S4, S5
-**Architectural pattern:** Hexagonal (ports and adapters) — `docs/ARCHITECTURE.md §Foundation`
-**Key protocols:** `flyway-migration-rules.md`, `module-tier-structure.md`
-**Design refs:** `docs/specs/YYYY-MM-DD-[topic]-design.md`
-**Completed:** YYYY-MM-DD
-...
-[existing LAYER-LOG.md entry format: what was built, accountability gaps closed,
-key wiring, gotchas, pattern to replicate]
+**Participates in:** S2, S3, S4
+**Architectural pattern:** [Pattern name] — `docs/ARCHITECTURE.md §[Section]`
+**Key protocols:** [protocol filenames]
+**Design refs:** [paths to specs, DESIGN.md sections, analysis docs]
+**Completed:** YYYY-MM-DD (or 🔲 pending)
+**Issues:** [issue refs]
+**Navigation:** `git log --grep="#N" --oneline`
+
+### What it shows
+[Teaching narrative — what this layer adds, what gap it closes, contrast with previous]
+
+### Accountability gaps closed
+| Gap | What breaks without it | Closed by |
+|-----|----------------------|-----------|
+
+### Key wiring
+[Non-obvious configuration — not visible in code, not in official docs]
+
+### Gotchas
+[What went wrong; what would go wrong without prior knowledge]
+
+### Pattern to replicate
+[Domain-agnostic numbered steps an LLM follows to build this layer in a new domain]
 ```
 
-The entry format is unchanged — it captures what was built, accountability gaps closed,
-key wiring, gotchas, and pattern to replicate. The slice cross-reference, architectural
-pattern, and design refs are additive headers that make the entry navigable from the
-slice index and from the architectural docs.
+When a layer entry is started but not yet complete, mark pending sections with 🔲 and
+include a pointer to what will fill them (e.g. "🔲 at layer close — blocked on
+engine#326").
 
 ---
 
-## Retrospective Application
+## Retrospective application
 
-When a LAYER-LOG.md exists for an application that was built without slice planning:
+When restructuring an existing LAYER-LOG.md that was written without slice planning:
 
-1. Identify the vertical slices by reading the existing layer entries, git history, and
-   issue list. Map each slice to what the application could DO at that point.
-2. Write the Vertical Slice Index as if it had been planned from the start — present
-   the intended approach, not the accidental sequence. Git history captures chronology;
-   the slice index captures the planning structure.
-3. Add the "Participates in" cross-reference to each existing layer entry.
-4. The existing entry content does not need to be rewritten.
+1. Read the existing layer entries, git history, and issue list. Identify the vertical
+   slices — what the application could DO at each meaningful milestone.
+2. Write the Vertical Slice Index as if it had been planned from the start. Git history
+   captures what actually happened; the slice index captures the correct planning
+   structure.
+3. Add `**Participates in:**` and the other navigation headers to each existing layer
+   entry. The entry content does not need to be rewritten.
 
 ---
 
-## Relationship to Tutorial Structure
+## Relationship to tutorial structure
 
-LAYER-LOG.md is a development and replication artifact first. For harness applications
+LAYER-LOG.md is a development and replication record first. For harness applications
 (devtown, AML, clinical) it also serves as tutorial source material — but the tutorial
-is a by-product, not the driver.
+emerges from building correctly, not the other way around.
 
-The slice index doubles as the tutorial progression map for readers who want to
-understand the capability arc. The layer entries are the primary tutorial material —
-each "Pattern to replicate" section is what an LLM or developer follows to build an
-equivalent layer in a new domain.
+The slice index doubles as the tutorial progression map. The layer entries are the
+primary tutorial material — each "Pattern to replicate" section is what an LLM or
+developer follows to reproduce that layer in a new domain.
 
-Spot and technique tutorials (see `tutorial-strategy.md §5`) are extracted from layer
-entries. They are separate artifacts — a pattern discovered implementing a slice becomes
-a reusable spot tutorial referenced from the layer entry, not embedded in it.
-
----
-
-**Refs:** casehubio/parent#N (tutorial-strategy.md restructure 2026-05-27)
+Spot and technique tutorials (`tutorial-strategy.md §5`) are extracted from layer
+entries. They are separate artifacts — not embedded in the layer entry itself.
