@@ -23,6 +23,65 @@ Each project already has good examples, but they are siloed. The pattern is cons
 
 ---
 
+## 1.5 Tutorial Taxonomy
+
+CaseHub tutorials are not a single artifact type. There are three distinct forms, each
+serving a different audience need. They are independent — not a hierarchy.
+
+### Architectural style guides
+
+**What:** How large-scale applications compose. Decisions, tradeoffs, platform coherence,
+boundary rules, module relationships. Written for architects and senior developers
+evaluating the platform or planning an integration.
+
+**Form:** Reference documents — PLATFORM.md, AGENTIC-HARNESS-GUIDE.md,
+gastown-casehub-analysis-v2.md, LAYER-LOG.md. Not runnable code. Dense with rationale.
+
+**Examples today:** PLATFORM.md capability ownership table, casehub-devtown
+`docs/gastown-casehub-analysis-v2.md`, AML vs ClinicalAgent comparison table.
+
+### Field tutorials
+
+**What:** Progressive integration of CaseHub foundation modules into a real domain
+application. Production code. Written for developers building systems in a specific
+industry — AML compliance, clinical trials, software engineering.
+
+**Form:** A production application repo (devtown, AML, clinical) with LAYER-LOG.md
+capturing the integration progression, blog entries capturing the decisions, and git
+history capturing the chronology. Runnable end-to-end with a single HTTP call at every
+layer. Domain knowledge is a prerequisite — these tutorials assume it.
+
+**Build pattern:** Vertical slice first, then deepen (see §2.2). Layers in LAYER-LOG.md
+are ordered for reading, not for building.
+
+**Examples today:** casehub-aml (Layers 1–3 complete), casehub-devtown (Layers 1, 2, 5).
+
+### Spot and technique tutorials
+
+**What:** Isolated demonstration of one specific concept, API, or architectural pattern.
+Self-contained — no domain setup, no prior layers required. Not end-to-end.
+
+**Form:** A module example, a standalone `@QuarkusTest` scenario, or a focused doc with
+runnable code. Should run in under 30 seconds and produce self-narrating output.
+
+**Types:**
+- **Technique:** how to use a specific API correctly — e.g., `MessageDispatch.builder()`
+  protocol, CommitmentStore lifecycle queries, Flyway named-datasource scoping
+- **Approach:** how to apply an architectural pattern — e.g., `@DefaultBean` displacement,
+  normative 3-channel layout, `@Alternative @Priority` for SPI overrides
+- **Showcase:** isolated demonstration of a platform capability — e.g., Merkle inclusion
+  proof, trust score cold-start, GDPR Art.17 erasure flow
+
+**Examples today:** qhorus `SecureCodeReviewScenario`, qhorus normative-layout tests,
+casehub-ledger 9-scenario examples, the execution control showcase (§8 below).
+
+**Relationship to field tutorials:** field tutorials generate spot tutorial material as
+a by-product. A pattern discovered while building AML Layer 3 becomes a technique entry
+in the spot tutorial catalogue. A gotcha becomes a garden entry. The field tutorial is
+the source; the spot tutorial is the extracted, reusable form.
+
+---
+
 ## 2. Design Principles for All Tutorials
 
 These apply to every example, tutorial, and walkthrough written for CaseHub.
@@ -78,7 +137,10 @@ Every domain application is designed and built for production deployment. The tu
 
 The only tutorial-specific element is Layer 1: the domain baseline showing the domain without CaseHub. This is a deliberate comparison baseline — code a team would actually write without the platform, so the reader can see exactly what gap each subsequent layer closes. From Layer 2 onward, every implementation decision is a production decision. **The code must be production quality throughout — no gap markers or tutorial annotations in source files.** Accountability gaps are documented in LAYER-LOG.md in a structured table per layer entry, mapping each gap to the foundation module that closes it.
 
-The natural integration sequence that all domain apps follow:
+The foundation modules map to teaching layers in LAYER-LOG.md. This table is a
+**reading guide** — the order in which a developer should encounter the layers to
+understand the progression. It is not a build sequence. Build order is driven by
+vertical slices (see §2.2).
 
 | Layer | What it adds | What gap it closes |
 |-------|-------------|-------------------|
@@ -90,23 +152,56 @@ The natural integration sequence that all domain apps follow:
 | 6 | Trust routing | No trust model; random or round-robin agent selection |
 | 7 | Comparison | Explicit contrast with existing tools in the field |
 
-The sequence is a guideline, not a constraint. The domain may justify a different ordering if one compliance requirement is more pressing than another. The principle is: each layer adds one foundation concern and makes its value tangible relative to the previous layer, and each layer is independently runnable with a single HTTP call.
+Each layer adds one foundation concern and makes its value tangible relative to the
+previous layer. Some layers may be built out of this reading order when a vertical slice
+demands it — document what was built and why in LAYER-LOG.md regardless of sequence.
 
 ### 2.1 Standalone module value first
 
 Every module must make sense on its own before it is wired to another. A developer who only uses `casehub-work` without `casehub-ledger` or `casehub-engine` should find complete, working examples for their use case. The value of adding the next module is demonstrated by showing what it *adds*, not by requiring it.
 
-### 2.2 Progressive layering — each addition is a deliberate step
+### 2.2 Vertical slice planning — build end-to-end first, then deepen
 
-Layers are introduced one at a time. Each step answers: "Why would I add this? What problem does it solve that I currently have?" The developer should feel the need before they see the solution.
+**A vertical slice is the thinnest working path through all relevant layers that
+produces a testable result.** One case opens, one agent receives a COMMAND, one
+human review WorkItem is created, one ledger entry is written, one commitment is
+tracked. The full stack is exercised — even if each layer handles only one scenario.
 
-```
-Layer 0: Business domain alone (no CaseHub)
-Layer 1: Single CaseHub module (standalone value)
-Layer 2: Two modules composed (first integration)
-Layer 3: Three-module ecosystem (realistic production shape)
-Layer 4: Full compliance stack (regulated deployment)
-```
+Build vertical slices before completing any single layer to full production depth.
+Integration failures and architectural mismatches surface on the first slice, before
+significant layer logic has been built out.
+
+**Planning vertical slices:**
+
+Before starting implementation, pre-identify as many vertical slices as the domain
+warrants. Then sequence them using two criteria:
+
+1. **Sequential dependencies first.** Some layers can only be built after another is
+   in place — the earlier layer enables the later one. Ledger must precede trust
+   routing. Engine must precede content-driven routing. These dependencies determine
+   the hard ordering.
+
+2. **Minimal layer delta next.** Among slices that have no hard dependency ordering,
+   prefer the slice that reuses the most of what is already built. A slice that adds
+   one new foundation module is preferable to one that adds three, even if both are
+   technically independent. This keeps each slice small, reviewable, and well-bounded.
+
+**Caveats:**
+
+- Some layers that appear orthogonal have soft ordering: qhorus before ledger is not
+  a hard dependency, but qhorus messaging generates the entries that make ledger
+  meaningful. Document these soft orderings in LAYER-LOG.md.
+- A layer may intentionally be split across slices — deliver the minimal version
+  needed for the current slice, deepen it in a later slice that needs the extra depth.
+- Not every vertical slice needs to cover all layers. A slice that adds engine
+  routing without touching ledger is valid if ledger coverage comes in the next slice.
+
+**Example slice sequence for devtown:**
+1. PR submitted → case opened → outcome returned *(Layer 1 + Layer 5 foundation)* ✅
+2. Case opened → human review WorkItem with SLA *(adds Layer 2)* ✅
+3. Case opened → specialist COMMAND dispatched → commitment fulfilled *(adds Layer 3)*
+4. Case opened → tamper-evident ledger entry written *(adds Layer 4)*
+5. Case opened → trust-weighted agent selected from attestation history *(adds Layer 6)*
 
 ### 2.3 Real business domains, not artificial scaffolding
 
@@ -123,15 +218,23 @@ Examples use recognisable business scenarios that Java enterprise developers hav
 
 Every example runs with a single command or HTTP call. The developer should see output before they read code. The output should be self-narrating (structured logs, readable JSON, narrative stdout).
 
-### 2.5 Entry points that serve different goals
+### 2.5 Match the tutorial type to the audience need
 
-Not all developers start the same way. Three valid entry points exist simultaneously:
+The three tutorial types (§1.5) serve different developer needs. Matching the type to
+the need is as important as the content.
 
-| Entry type | Who uses it | Starting point |
+| Developer need | Tutorial type | Starting point |
 |---|---|---|
-| **Bottom-up (module by module)** | Developer integrating one module at a time | Start with the standalone module example |
-| **Top-down (from a real use case)** | Developer with a specific business problem | Start with the scenario, work backwards to modules |
-| **Concept-first (execution control, trust, compliance)** | Developer evaluating a specific capability | Start with the capability showcase, see which modules enable it |
+| Evaluating CaseHub architecture for an enterprise decision | Architectural style guide | PLATFORM.md, gastown analysis, LAYER-LOG overview |
+| Building a real system in their domain | Field tutorial | Domain app (devtown/AML/clinical) — start with Layer 1 |
+| Integrating one module into an existing system | Field tutorial (bottom-up) | Standalone module examples (casehub-work, qhorus) |
+| Understanding one concept deeply before committing | Spot tutorial | Technique/approach/showcase for that specific capability |
+| Evaluating a specific CaseHub capability | Spot tutorial (showcase) | Isolated example: Merkle proof, trust routing, 3-channel layout |
+
+**Spot and technique tutorials are not entries into a field tutorial.** A developer who
+reads `SecureCodeReviewScenario` to understand commitment lifecycle has everything they
+need — they do not need to complete a field tutorial first. Design spot tutorials to be
+fully self-contained.
 
 ---
 
@@ -324,15 +427,55 @@ The AML tutorial is not "here are the 5 LangChain4j patterns expressed in CaseHu
 
 ---
 
-## 5. Concept-First Entry Points
+## 5. Spot and Technique Tutorials
 
-Some developers want to understand a specific capability without going through all the modules. These standalone showcases focus on one concept.
+Spot and technique tutorials are first-class artifacts — not entry points into a field
+tutorial. A developer who reads one has everything they need for that concept. They do
+not need to work through a field tutorial first or after.
+
+**Design rules for spot tutorials:**
+- Self-contained: one module, one concept, one runnable scenario
+- Produces output in under 30 seconds
+- No domain setup required — uses a synthetic or abstract scenario if needed
+- Documents exactly what it teaches and what it does not cover
+
+### Technique tutorials — how to use a specific API correctly
+
+These answer: "what is the right way to call this?" Typically a short test or example
+class demonstrating the API contract, common mistakes, and the correct form.
+
+| Technique | What it teaches | Location |
+|---|---|---|
+| `MessageDispatch.builder()` protocol | Required fields per message type; builder validates at build() | qhorus normative-layout examples |
+| `CommitmentStore` lifecycle queries | requester vs. obligor semantics; terminal state handling | qhorus testing module |
+| `@DefaultBean` displacement | How CDI priority resolution works across module boundaries | AGENTIC-HARNESS-GUIDE.md §Anti-patterns |
+| Flyway named-datasource scoping | Path scoping rule; qhorus vs. domain migration separation | parent protocols |
+| `WorkItemRequest` with SLA | claimDeadline, candidateGroups, escalation chain | casehub-work examples |
+
+### Approach tutorials — how to apply an architectural pattern
+
+These answer: "when and why would I do it this way?" Typically a short walkthrough of
+an architectural decision with the code that implements it.
+
+| Approach | What it teaches | Location |
+|---|---|---|
+| Normative 3-channel layout | work/observe/oversight semantics; allowedTypes enforcement | qhorus normative-layout examples |
+| Vertical slice planning | Identify slices, order by minimal delta, respect sequential deps | This doc §2.2 |
+| Inner-SPI displacement pattern | How AML QhorusAmlInvestigator displaces DefaultAmlInvestigationService | AML LAYER-LOG Layer 3 |
+| `@Alternative @Priority` for SPI overrides | Pattern B from alternative-extension-patterns.md | parent protocols |
+| Content-driven binding conditions | JQ predicates on CaseContext; security flag triggers reviewer | devtown LAYER-LOG Layer 5 |
+
+### Showcase tutorials — isolated demonstration of a platform capability
+
+These answer: "what does this capability actually do?" Typically a runnable scenario
+with self-narrating output that can be completed in one HTTP call or test run.
 
 | Concept | What it shows | Modules needed | Analogy for Java devs |
 |---|---|---|---|
-| **Execution control types** | Sequential, parallel, conditional, loop, parallel mapper | casehub-engine (alone) | Different thread/executor patterns, but declarative |
-| **Human-in-the-loop** | WorkItem with SLA, escalation, delegation | casehub-work | A typed task with deadlines and handoff |
+| **Execution control types** | Sequential, parallel, conditional, loop, parallel mapper | casehub-engine | Different thread/executor patterns, but declarative |
+| **Human-in-the-loop** | WorkItem with SLA, escalation, delegation | casehub-work | Typed task queue with lifecycle states and handoff |
 | **Speech acts** | 9 message types and when to use each | casehub-qhorus (type-system examples) | Strongly typed method signatures between services |
+| **Commitment lifecycle** | COMMAND creates obligation; DONE/DECLINE discharge it | casehub-qhorus (`SecureCodeReviewScenario`) | Futures with typed resolution and obligation tracking |
 | **Trust scoring** | Bayesian Beta from outcomes; routing shifts over time | casehub-ledger (eigentrust-mesh, trust-routing) | Adaptive load balancer weighted by outcome history |
 | **Tamper-evident audit** | Merkle chain, inclusion proofs, independent verification | casehub-ledger (merkle-verification) | Append-only event store with cryptographic proof |
 | **GDPR compliance** | Art.17 erasure, Art.22 decision records | casehub-ledger (art22, privacy-pseudonymisation) | Structured logging that satisfies the regulation by construction |
@@ -343,11 +486,22 @@ Some developers want to understand a specific capability without going through a
 
 ## 6. AML Investigation — Field Tutorial for Java Developers in Financial Services
 
-**Role:** Field showcase and tutorial for Java developers in financial services — banking, AML compliance, transaction monitoring, SAR filing. Currently the reference implementation for the layer-by-layer tutorial approach (Layers 1–2 complete, Layers 3–7 in progress).
+**Role:** Field showcase and tutorial for Java developers in financial services — banking, AML compliance, transaction monitoring, SAR filing. Reference implementation for the harness tutorial pattern (Layers 1–3 complete, Layers 4–7 in progress).
 
 **Why this audience relates:** Java dominates banking infrastructure. AML compliance systems — transaction monitoring, case management, SAR filing — are systems Java developers in this field have built and integrated. They recognise the failure modes first-hand: audit trails that can't reconstruct the decision chain, human escalation that fires too late, SAR filings where nobody can say which agent made the call.
 
 **Comparison baseline:** IBM AMLSim (open source, GitHub), industry whitepapers (AnChain, Sardine) — showing what current LLM-based AML coordination looks like without formal accountability.
+
+### 6.0 Vertical slices
+
+| Slice | Layers touched | Deliverable |
+|---|---|---|
+| 1 | 1 + 2 + 3 | Transaction flagged → specialist agents dispatched → compliance WorkItem created with 30-day SLA ✅ |
+| 2 | + 4 | Slice 1 + tamper-evident ledger entry per investigation → FinCEN-verifiable audit trail |
+| 3 | + 5 | Slice 2 + PEP detection triggers senior analyst binding (engine adaptive routing) |
+| 4 | + 6 | Slice 3 + trust-weighted agent selection from SAR outcome attestations |
+
+Slices 2–4 are ordered by sequential dependency: ledger before trust (trust reads attestation data written by ledger). Engine adaptive routing (Slice 3) is orthogonal to trust routing (Slice 4) but delivers more foundation value sooner.
 
 ### 6.1 Tutorial layers
 
@@ -573,6 +727,25 @@ ClinicalAgent runs as a linear pipeline for one site. It has no concept of SLA, 
 **Role:** Field showcase and tutorial for Java developers in software engineering and DevOps — a domain every Java developer knows from their own daily practice. Demonstrates CaseHub's value in a context developers experience directly: the gap between a naive AI code review and one where every specialist reviewer is formally accountable, every missed finding is traceable, and routing improves from outcome history.
 
 **Comparison baseline:** GitHub Copilot code review, CodeRabbit — showing what LLM-based review looks like without formal accountability or adaptive routing.
+
+### 7.5.0 Vertical slices
+
+| Slice | Layers touched | Deliverable |
+|---|---|---|
+| 1 | 1 + 5 | PR submitted → CasePlanModel opens → content-driven routing fires → outcome returned ✅ |
+| 2 | + 2 | Slice 1 + human review WorkItem with SLA; breach escalation ✅ |
+| 3 | + 3 | Slice 2 + typed COMMAND per specialist agent; DECLINE is formal scope boundary |
+| 4 | + 4 | Slice 3 + tamper-evident ledger entry per case; causedByEntryId links findings to actions |
+| 5 | + 6 | Slice 4 + trust-weighted specialist selection from post-merge outcome attestations |
+
+Slices 1 and 2 are complete. Slices were built out of reading-order (Layer 5 before
+Layers 2–4) because engine adaptive routing was the architectural priority — this is
+correct vertical slice practice and is captured in LAYER-LOG.md.
+
+Slices 3–5 are ordered by sequential dependency: ledger (Slice 4) before trust (Slice 5),
+since trust scoring reads attestation data written by ledger. Slice 3 (qhorus) has no
+hard dependency but delivers the obligation lifecycle teaching that makes Slice 4's
+audit trail meaningful.
 
 ### 7.5.1 Tutorial layers
 
