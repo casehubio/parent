@@ -43,6 +43,38 @@ Human tutorials can be generated from that same material later.
 **The constraint:** Do not design or architect for the tutorial. The tutorial documents
 what you built. Code that exists only for the tutorial is wrong code.
 
+**The production-first test — apply before writing any class:**
+> "Would this class exist in a production system that does not include any other
+> tutorial layers?"
+
+If the answer is no, do not build it. Document the architecture in LAYER-LOG.md instead.
+
+**Anti-patterns that have appeared and are wrong:**
+
+- **CDI priority gymnastics to let tutorial layers coexist.** Adding `@Alternative @Priority(N)`
+  to a Layer 5 class so that a Layer 3 class (which never runs when Layer 5 is present) can
+  also implement the same interface without causing `AmbiguousResolutionException`. If two
+  implementations of the same port interface cannot coexist in a production deployment, only
+  one of them is production code. The other is tutorial scaffolding.
+
+- **`@Unremovable` on beans that Quarkus would legitimately optimize away.** If Quarkus bean
+  removal wants to eliminate a bean because nothing injects it in production, that is a correct
+  signal. Adding `@Unremovable` to override this signal is tutorial scaffolding disguised as
+  configuration.
+
+- **A separate service implementation per tutorial layer where the earlier layer is
+  permanently dormant.** The `@DefaultBean` displacement pattern is production-valid — it
+  provides a legitimate fallback when no other candidate is present. Displacement chains that
+  require priority resolution (`@Alternative @Priority(N)` stacks) to let multiple
+  non-`@DefaultBean` implementations coexist are not production patterns.
+
+**What is acceptable:** The `@DefaultBean` on a baseline/fallback service, and a single
+non-`@DefaultBean @ApplicationScoped` implementation that displaces it, is idiomatic Quarkus
+CDI and production-valid. AML's Layer 1 → Layer 3 → Layer 5 chain works because at any given
+maturity level there is exactly one non-`@DefaultBean` implementation in production. Two
+non-`@DefaultBean` implementations of the same type in the same deployment is always a design
+problem, not a CDI configuration problem.
+
 ---
 
 ## What to Produce and Maintain

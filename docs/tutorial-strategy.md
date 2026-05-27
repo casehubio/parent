@@ -615,6 +615,16 @@ WorkItemRequest reviewRequest = WorkItemRequest.builder()
 
 The DECLINE is not an error — it is a formal record that the agent correctly identified a scope boundary. The review continues; a senior architect is routed the binding concern.
 
+**Implementation note for Claude:** Follow the AML reference implementation (`casehub-aml` Layer 3,
+`QhorusAmlInvestigator`). The pattern is: a non-`@DefaultBean @ApplicationScoped` inner-SPI
+implementation that dispatches typed COMMAND messages and handles DONE/DECLINE/FAILURE replies
+— injected by an outer coordinator that is already wired in from Layer 2. Do NOT build a
+separate `PrReviewApplicationService` implementation at Layer 3. The port interface
+displacement for this layer happens at the inner specialist-dispatch level (follow AML),
+not at the outer use-case port. Adding `@Alternative @Priority(N)` to any existing class, or
+`@Unremovable` to a new class, is a signal that you are building tutorial scaffolding
+rather than production code — stop and redesign.
+
 **Layer 4 — casehub-ledger: tamper-evident review record**
 
 Every review decision is in the ledger with `causedByEntryId` linking findings to actions. When a production security incident is traced to a merged PR, the ledger answers: who reviewed it, what did they find, what did they miss, and what was their trust score at the time.
