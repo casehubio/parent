@@ -79,34 +79,20 @@ problem, not a CDI configuration problem.
 
 ## Build Order — Vertical Slice First
 
-**The layer ordering in LAYER-LOG.md is for reading, not building.** Do not treat it as
-a sprint plan. Building Layer 2 completely before touching Layer 3 is not required, is
-rarely optimal, and often produces the wrong thing — you only discover whether an
-architectural decision holds by running the full stack end-to-end.
+**The layer ordering in LAYER-LOG.md is for reading, not building.** Identify vertical
+slices before implementing any single layer to full depth. Build the thinnest working
+path through all relevant layers first; deepen each layer in subsequent slices.
 
-**The recommended build pattern is vertical slice first, then deepen.**
+Full guidance, planning criteria, and LAYER-LOG.md structure:
+`docs/protocols/universal/vertical-slice-planning.md`
 
-A vertical slice is the thinnest path through all relevant layers that produces a working,
-testable result: one case opens, one agent receives a COMMAND, one human review WorkItem
-is created with an SLA, one ledger entry is written, one commitment is tracked. The stack
-works end-to-end, even if each layer handles only one scenario. Once the slice works,
-deepen each layer to production completeness in any order that is architecturally motivated.
+**LAYER-LOG.md structure** (applies to all harness apps):
+1. Vertical Slice Index at the top — what the system can DO at each milestone
+2. Layer entries below — how each capability was built, with slice cross-references
 
-Why this matters:
-- Integration failures surface early, before layer logic is fully built out
-- Architectural decisions made in isolation (layer by layer) often need rework when the
-  layers are finally wired together
-- Each layer's production code is validated against real adjacent layers, not stubs
-- Demos and tests are always executable — no "the whole stack will work when layer N is done"
-
-**What the layer table in LAYER-LOG.md tracks.** Status (`pending` / `in progress` /
-`complete`) reflects whether the layer is fully documented and implemented to production
-depth, not whether the vertical slice has touched it. A layer can be "in progress" because
-the vertical slice runs through it but the layer isn't yet at full production depth.
-
-**Retrospective note for existing repos.** Devtown, AML, and clinical were built with a
-layer-first approach before this guidance existed. The existing layer log entries are
-accurate historical records. Future layer work in all repos follows vertical slice first.
+**Retrospective note.** Devtown, AML, and clinical were built without slice planning.
+Each repo has an open issue to add the Vertical Slice Index retrospectively (the layer
+entries do not need rewriting). Future work in all repos follows vertical slice first.
 
 ---
 
