@@ -69,9 +69,29 @@ Apply two criteria in order:
 
 ---
 
-## LAYER-LOG.md Structure
+## LAYER-LOG.md — Two Purposes, One Document
 
 Every CaseHub application maintains a `LAYER-LOG.md` at the project root.
+
+**Purpose 1 — LLM replication and teaching (original, unchanged)**
+
+An LLM reading LAYER-LOG.md should be able to reproduce every layer in a different
+domain harness without asking questions. This is the primary purpose of the layer
+entries. Each entry captures: what was built, what gap it closes, the non-obvious
+wiring, what went wrong, and domain-agnostic numbered steps to replicate the pattern.
+This purpose is served by Section 2 — the layer entries.
+
+**Purpose 2 — Planning and architectural navigation (added)**
+
+A developer or architect reading LAYER-LOG.md should immediately understand what the
+system can DO at each milestone, which architectural patterns are in play, and how
+to navigate to the rationale behind each capability. This purpose is served by
+Section 1 — the Vertical Slice Index.
+
+Neither purpose subordinates the other. The slice index is the entry point; the layer
+entries are the depth. A reader enters from the capability (slice) to find the
+implementation detail, or enters from the layer to find the architectural context.
+
 The file has two sections:
 
 ### Section 1 — Vertical Slice Index (at the top)
@@ -154,15 +174,18 @@ When a LAYER-LOG.md exists for an application that was built without slice plann
 
 ## Relationship to Tutorial Structure
 
-For harness applications (devtown, AML, clinical), the vertical slice index doubles as
-the tutorial progression map — each slice is a demonstrable milestone a tutorial reader
-can run. The slice index at the top of LAYER-LOG.md is what a developer reads to
-understand the application's capability progression; the layer entries below are what
-they read to understand how each capability was built.
+LAYER-LOG.md is a development and replication artifact first. For harness applications
+(devtown, AML, clinical) it also serves as tutorial source material — but the tutorial
+is a by-product, not the driver.
+
+The slice index doubles as the tutorial progression map for readers who want to
+understand the capability arc. The layer entries are the primary tutorial material —
+each "Pattern to replicate" section is what an LLM or developer follows to build an
+equivalent layer in a new domain.
 
 Spot and technique tutorials (see `tutorial-strategy.md §5`) are extracted from layer
-entries — a pattern discovered while implementing a slice becomes a reusable spot
-tutorial. They are not the same artifact.
+entries. They are separate artifacts — a pattern discovered implementing a slice becomes
+a reusable spot tutorial referenced from the layer entry, not embedded in it.
 
 ---
 
