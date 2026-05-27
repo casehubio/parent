@@ -152,8 +152,6 @@ CaseHub uses event sourcing selectively, not as the primary state model.
 
 **Full event sourcing:** State reconstruction from events on every read is expensive at scale and adds complexity to queries. The ledger gives audit; entities give query. Both together cover the requirement.
 
-**Vertical slices (now):** The domain model is still maturing — worker provisioning, orchestration, and the work/engine integration are all evolving. Vertical slices require stable feature boundaries. Drawing slice boundaries before the domain settles means drawing the wrong ones. The plan: finish the poc-to-engine migration, let the worker/orchestration model settle, then refactor to slices along the seams the code reveals. See the note on evolution below.
-
 **Separate read stores (full CQRS):** A separate read store (Elasticsearch, read-replica, materialised views) would add operational complexity that isn't justified by current query patterns. CQRS-lite at the service boundary gives the separation of concerns without the infrastructure cost.
 
 ---
@@ -178,9 +176,9 @@ Pure pattern adherence is rare in production systems. CaseHub uses a deliberate 
 | Orchestration (engine) | **Hexagonal + DDD + Event-Driven** | Rich domain with separate read/write paths; events as the only cross-aggregate channel |
 | Integration | **Hexagonal + CQRS-lite** | Commands through engine (write port); queries bypass engine (read port) |
 | Cross-cutting | **Strategy + Registry + Observer** | Pluggable algorithms, runtime discovery, decoupled notification |
-| Future | **+ Vertical Slices** | Once the domain matures; see Evolution Path below |
+| Application tier | **Hexagonal + Vertical Slices** | Domain capability organized by what the system can DO, layered on the horizontal foundation |
 
-The recommended blend for a new AI platform starting today: **Hexagonal + Clean + Vertical Slices** — clean domain core, ports for all external concerns, and slices organised by business capability. CaseHub arrived at the first two organically; the slices come when the domain stabilises.
+The recommended blend for a new AI platform starting today: **Hexagonal + Clean + Vertical Slices** — clean domain core, ports for all external concerns, and slices organised by business capability. CaseHub's foundation arrived at the first two organically; the application tier now uses vertical slices as the primary planning and delivery unit (see `docs/protocols/universal/vertical-slice-planning.md`).
 
 ---
 
@@ -200,14 +198,16 @@ CaseHub is infrastructure for multi-agent AI systems. The architectural choices 
 
 ---
 
-## Evolution Path — Toward Vertical Slices
+## Vertical Slices in the Application Tier
 
-The current layered structure (horizontal modules per concern) was the right starting point: it gave discipline before the domain was fully understood.
+The foundation tier (qhorus, ledger, work, engine) is organized horizontally by concern — each module owns one infrastructure capability. This was correct: the foundation needed to be fully understood before higher-level slice boundaries could be drawn.
 
-The evolution path when the domain matures:
-1. **Finish the migration** — archive casehub-poc, stabilise the worker/orchestration model
-2. **Identify seams** — where do most changes happen? Which features are genuinely independent? Where does coupling cause friction?
-3. **Promote implicit boundaries to explicit slices** — the SPI boundaries, event model, and ledger separation are already proto-slice boundaries. The refactor names what is already there
-4. **New modules enter as slices** — once the pattern is established, new capability areas start as slices rather than new horizontal layers
+The application tier (devtown, AML, clinical) is organized by vertical slice — each slice is a user-visible capability that cuts through whichever horizontal layers it needs. A slice is planned, built, and documented as a unit before the next slice begins.
 
-The risk to avoid: slicing before the domain is understood. Wrong slice boundaries are harder to fix than horizontal layers, because they scatter a single concept across multiple codebases.
+**The planning protocol:** `docs/protocols/universal/vertical-slice-planning.md` — how to identify slices, order them, and structure LAYER-LOG.md around them.
+
+**What LAYER-LOG.md documents:** each application maintains a LAYER-LOG.md with a Vertical Slice Index at the top (what the system can DO at each milestone, with architectural pattern cross-references) and detailed layer entries below (how each integration was built, with references to the relevant sections of this document, the applicable protocols, and the garden).
+
+**Architectural pattern cross-referencing:** each vertical slice should identify which patterns from this document it demonstrates — Hexagonal (ports and adapters), Clean (dependency rule), DDD (domain events), Event-Driven (CDI async observers), CQRS-lite (command/query separation), or cross-cutting (Strategy, Registry, Observer). This makes LAYER-LOG.md a navigational hub: a reader can enter from the capability (slice) and find both the implementation record and the architectural rationale in one place.
+
+**The risk to avoid:** wrong slice boundaries scatter a single concept across multiple codebases and are harder to fix than horizontal layers. Identify slices by user-visible capability, not by implementation convenience. The seams the architecture already exposes — SPI ports, event model, ledger subjects — are natural slice boundaries.
