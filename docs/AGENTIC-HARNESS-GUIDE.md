@@ -79,9 +79,11 @@ problem, not a CDI configuration problem.
 
 ## Build Order — Vertical Slice First
 
-**The layer ordering in LAYER-LOG.md is for reading, not building.** Identify vertical
-slices before implementing any single layer to full depth. Build the thinnest working
-path through all relevant layers first; deepen each layer in subsequent slices.
+**The layer ordering in LAYER-LOG.md is for reading** — the sequence a developer
+follows to understand the system. **Building follows vertical slices:** identify a
+slice (a user-visible capability), implement each layer it requires in turn, deliver
+the slice end-to-end, then move to the next slice. Layers are the implementation unit;
+slices are the planning and delivery unit.
 
 Full guidance, planning criteria, and LAYER-LOG.md structure:
 `docs/protocols/universal/vertical-slice-planning.md`
