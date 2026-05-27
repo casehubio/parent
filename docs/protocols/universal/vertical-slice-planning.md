@@ -62,15 +62,23 @@ The file has two sections:
 ```markdown
 ## Vertical Slices
 
-| Slice | Capability delivered | Layers | Status |
-|---|---|---|---|
-| S1 | [user-visible capability, one sentence] | L1, L5 | ✅ complete |
-| S2 | [next capability] | + L2 | ✅ complete |
-| S3 | [next capability] | + L3 | 🔲 pending |
+| Slice | Capability delivered | Layers | Arch patterns | Status |
+|---|---|---|---|---|
+| S1 | [user-visible capability, one sentence] | L1, L5 | Hexagonal, Clean | ✅ complete |
+| S2 | [next capability] | + L2 | + Event-Driven | ✅ complete |
+| S3 | [next capability] | + L3 | + Observer | 🔲 pending |
 ```
 
+The **Arch patterns** column references the patterns from `docs/ARCHITECTURE.md` that
+this slice demonstrates. Use the pattern names as defined there: `Hexagonal`,
+`Clean` (dependency rule), `DDD`, `Event-Driven`, `CQRS-lite`, `Strategy`, `Registry`,
+`Observer`, `Factory`, `Interceptor`. This makes the slice index a navigational hub:
+a reader can enter from the capability and find both the delivery record and the
+architectural rationale.
+
 For each slice in progress or complete, add a brief rationale row explaining why it
-was sequenced here (sequential dependency or minimal delta):
+was sequenced here (sequential dependency or minimal delta), and a reference to the
+design docs that informed the approach:
 
 ```markdown
 **Ordering rationale:**
@@ -78,24 +86,38 @@ was sequenced here (sequential dependency or minimal delta):
 - S2 before S3: S2 wires casehub-work; S3 reads WorkItem state from qhorus commitment
 - S3 and S4 independent: either could come first; S3 chosen for minimal delta (adds qhorus,
   which is already a runtime dep; S4 would add ledger subclass + Flyway migration)
+
+**Architectural references for this application:**
+- `docs/ARCHITECTURE.md` — pattern definitions and invariants (Hexagonal, Clean, DDD, etc.)
+- `docs/PLATFORM.md` — capability ownership table; boundary rules
+- `docs/protocols/universal/` — universal Quarkus conventions
+- `docs/protocols/casehub/` — CaseHub-specific conventions
+- `docs/repos/{this-app}.md` in casehub-parent — deep-dive: what this app owns
+- `[app-specific analysis doc]` — e.g. gastown-casehub-analysis-v2.md for devtown
 ```
 
 ### Section 2 — Layer Entries
 
 One entry per foundation layer integrated. Each entry opens with a cross-reference to
-the slices it participates in:
+the slices it participates in and the architectural pattern it implements:
 
 ```markdown
 ## Layer N — [Foundation module]
 
 **Participates in:** S2, S3, S4, S5
+**Architectural pattern:** Hexagonal (ports and adapters) — `docs/ARCHITECTURE.md §Foundation`
+**Key protocols:** `flyway-migration-rules.md`, `module-tier-structure.md`
+**Design refs:** `docs/specs/YYYY-MM-DD-[topic]-design.md`
 **Completed:** YYYY-MM-DD
 ...
-[existing LAYER-LOG.md entry format]
+[existing LAYER-LOG.md entry format: what was built, accountability gaps closed,
+key wiring, gotchas, pattern to replicate]
 ```
 
 The entry format is unchanged — it captures what was built, accountability gaps closed,
-key wiring, gotchas, and pattern to replicate. The slice cross-reference is additive.
+key wiring, gotchas, and pattern to replicate. The slice cross-reference, architectural
+pattern, and design refs are additive headers that make the entry navigable from the
+slice index and from the architectural docs.
 
 ---
 
