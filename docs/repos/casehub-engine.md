@@ -15,7 +15,7 @@ Hybrid choreography+orchestration coordination engine for multi-agent work. Impl
 
 | Module | Folder | Type | Purpose |
 |---|---|---|---|
-| `casehub-engine-api` | `api` | Pure Java + langchain4j | SPI interfaces, domain model (`Worker`, `Binding`, `Capability`, `HumanTaskTarget`), `Agent` wrapper |
+| `casehub-engine-api` | `api` | Pure Java + langchain4j | SPI interfaces, domain model (`Worker`, `Binding`, `Capability`, `HumanTaskTarget`), `Agent` wrapper, `AgentRoutingStrategy` SPI |
 | `casehub-engine-common` | `common` | Pure Java (no CDI) | Domain objects (`CaseMetaModel`, `CaseInstance`), persistence SPIs, `JQEvaluator`, `EventLog` |
 | `casehub-engine` | `runtime` | Quarkus module | Choreography handlers, orchestration, worker scheduling, expression engine |
 | `casehub-engine-blackboard` | `blackboard` | Optional module | CMMN/Blackboard orchestration — `BlackboardRegistry`, `PlanItem`, `SubCase` lifecycle |
@@ -50,7 +50,11 @@ Two execution paths: choreography (evaluates bindings on context change) and orc
 
 - `CaseContextChangedEventHandler` — evaluates `contextChange.filter` AND `binding.when()` to find eligible bindings for RUNNING and WAITING cases, selects via `LoopControl` (which owns state eligibility), dispatches by target type. `PlanningStrategyLoopControl` handles WAITING by filtering already-dispatched (RUNNING/DELEGATED) bindings; `ChoreographyLoopControl` restricts to RUNNING only.
 - `WorkerScheduleEventHandler` — opens channel, builds `CommandContent`, dispatches via `postToChannel` with `correlationId` and `deadline` as first-class SPI params
-- `WorkOrchestrator` — synchronous dispatch path using `WorkBroker` for candidate selection; integrates `CapabilityHealth` probe to filter/sort agent-backed candidates before selection
+- `WorkOrchestrator` — synchronous dispatch path; integrates `CapabilityHealth` probe to filter/sort agent-backed candidates before selection; routing delegated to `AgentRoutingStrategy` SPI
+
+### AgentRoutingStrategy SPI (`api/spi/`)
+
+Engine's own routing abstraction — replaces the borrowed `WorkerSelectionStrategy` from `casehub-work`. Types: `AgentRoutingStrategy`, `AgentRoutingContext`, `AgentCandidate` (with `AgentHealth` enum), `AgentAssignment`. `TrustWeightedAgentStrategy` in `casehub-engine-ledger` implements trust maturity phases 0–3 via `TrustScoreCache`.
 
 ### Worker Provisioner SPIs (`api/spi/`)
 
@@ -97,13 +101,12 @@ Optional integration with `casehub-eidos-api`. `WorkOrchestrator` probes agent-b
 
 | Repo | How |
 |---|---|
-| `casehub-work-core` | `WorkBroker` and selection strategies — NOT the casehub-work runtime |
-| `casehub-work-api` | `WorkloadProvider`, `WorkerCandidate`, `WorkerSelectionStrategy` |
 | `casehub-ledger` | Optional, via `casehub-engine-ledger` module |
 | `casehub-qhorus-api` | `MessageType` enum for channel messaging |
 | `casehub-platform-api` | `ActorType`, `PreferenceProvider`, `Path` (transitive via ledger) |
 | `casehub-platform-expression` | `JQEvaluator` for expression evaluation |
 | `casehub-eidos-api` | Optional — `AgentDescriptor`, `CapabilityHealth` for agent health probing |
+| `casehub-work-api` | Compile scope — `CaseSignalSink` injection via work-adapter only; NOT a runtime routing dep |
 
 ## Depended On By
 
@@ -150,6 +153,7 @@ casehub-engine is Layer 4 (Enforcement) in the Qhorus normative accountability f
 - Human worker integration (`humanTask` YAML binding): done — inline + template modes, `scope` for SLA preference routing
 - `casehub-work-adapter`: done — two-way bridge with atomicity guarantees
 - `CapabilityHealth` integration: in progress (engine#341)
+- `AgentRoutingStrategy` SPI: done — `casehub-work-core` removed from engine runtime routing; `TrustWeightedAgentStrategy` in ledger module (engine#337, engine#336)
 - Resilience module (DLQ, PoisonPill, timeout): done
 - Worker↔Session↔Channel triple correlation: not yet stored
 - Escalation rules, lineage-driven planning: ahead
