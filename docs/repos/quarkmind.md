@@ -80,7 +80,7 @@ quarkmind
 - Click-to-inspect unit/building panel; HP/shield bars; replay scrub control
 - `ReplayVisualizerIT` pixel tests; Playwright end-to-end suite (218+ tests)
 
-**Harness layer (Layer 2 active):** `AgentOrchestrator` dispatches plugins via `casehub-engine` CaseFile per tick. Layer-by-layer tutorial documentation pending (LAYER-LOG.md entry for Layer 1 + 2 not yet written).
+**Harness layer (Layer 2 active):** `AgentOrchestrator` dispatches plugins via `casehub-engine` CaseFile per tick. Layer-by-layer tutorial documentation in progress — Layer 1 (conceptual baseline) and Layer 2 (casehub-engine blackboard) are documented in `LAYER-LOG.md`. Layers 3–7 tracked in quarkmind#155–#159.
 
 ## What It Does NOT Own
 
