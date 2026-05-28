@@ -22,7 +22,11 @@ Its primary value in the application family is as a **proof of generality**: the
 - SC2 engine seam: `IntentQueue`, `GameStarted`/`GameStopped` events, sealed `Intent` interface (switch exhaustiveness at compile time)
 - Mock, emulated, replay, and real SC2 profiles
 - `EmulatedGame` — full physics simulation: probe-driven mining (per-base, saturation model), parallel training queues, sub-tick train timing (`TimedIntent`, `completesAt`), building cost deduction, vespene harvesting, combat (damage, armour, Hardened Shield), blink mechanics, auto-engage, enemy AI (`EnemyBehavior`, `TechTree`, `ReactiveStrategy`)
-- `ReplayValidationHarness` — replay ground truth vs `EmulatedGame` per-tick economic divergence; `SC2TrainTimeCalibrationTest` — range-bounded modal calibration from replay datasets
+- `ReplayValidationHarness` — replay ground truth vs `EmulatedGame` per-tick economic divergence; `run(SimulatedGame groundTruth, List<TimedIntent> intents, int tickLimit)` overload accepts any `SimulatedGame` subclass as ground truth (binary `.SC2Replay` overload delegates to it); `assertInitialStateMatch` allows ±1 unit tolerance (SC2EGSet loop-0 quirk)
+- `IEM10CommandExtractor` — extracts `List<TimedIntent>` from SC2EGSet JSON `gameEvents` using 2016 IEM10-era abilLink constants; building-tag format matches `IEM10JsonSimulatedGame` j-index-recycle convention
+- `IEM10MultiGameValidationTest` — runs all 30 IEM10 games through `ReplayValidationHarness` via `IEM10CommandExtractor`; reports aggregate per-tick divergence stats across PvT, PvZ, PvP matchups
+- `IEM10AbilityDiscoveryTest` — verifies 2016 IEM10-era abilLink constants by asserting expected command mappings against known `gameEvents` samples; serves as living documentation of constant derivation
+- `SC2TrainTimeCalibrationTest` — range-bounded modal calibration from replay datasets; cross-validated against IEM10 JSON parser via `IEM10MultiGameValidationTest` (#150)
 - `TerrainGrid` (HIGH/LOW/RAMP/WALL height model), `AStarPathfinder`, `MovementStrategy`
 - Three.js 3D visualiser: 65+ unit/building sprites across all 3 races, fog of war, terrain shading, click-to-inspect panel, replay scrub control, Electron wrapper
 - Electron visualiser for replay and emulated mode
@@ -66,7 +70,7 @@ quarkmind
 690 tests passing. The SC2 emulation layer is substantially complete for the Protoss vs Protoss / Terran matchup:
 
 **Emulation accuracy (post-Phase 6 calibration):**
-- Sub-tick train timing: `TimedIntent` with `completesAt` derived from `SC2Data.trainTimeInLoops` (integer-loop rounding calibrated from replays — #149); `firstUnitDivergenceTick ≥ 80`, `maxUnitDelta ≤ 2`
+- Sub-tick train timing: `TimedIntent` with `completesAt` derived from `SC2Data.trainTimeInLoops` (integer-loop rounding calibrated from replays — #149); `firstUnitDivergenceTick ≥ 80`, `maxUnitDelta ≤ 2`; cross-validated across all 30 IEM10 games (#150)
 - Per-base probe mining: saturation model (#141) + per-base `miningProbesPerBase` auto-computed in `tick()` with one-shot harness override (#152, #143); sqrt→squared distance fix (#153)
 - Vespene income: synced from ground truth for gas-unit training in `ReplayValidationHarness` (#148)
 - Building cost + mineral timing: `injectReplayBuildingWithCost` for replay harness accuracy (#146)
@@ -81,6 +85,8 @@ quarkmind
 - `ReplayVisualizerIT` pixel tests; Playwright end-to-end suite (218+ tests)
 
 **Harness layer (Layer 2 active):** `AgentOrchestrator` dispatches plugins via `casehub-engine` CaseFile per tick. Layer-by-layer tutorial documentation in progress — Layer 1 (conceptual baseline) and Layer 2 (casehub-engine blackboard) are documented in `LAYER-LOG.md`. Layers 3–7 tracked in quarkmind#155–#159.
+
+**IEM10 JSON validation (#150):** `IEM10CommandExtractor` enables `ReplayValidationHarness` runs across all 30 IEM10 games, providing statistical coverage of training patterns (queued, non-queued, cross-type) across PvT, PvZ, PvP matchups. Cross-validates calibration results from the scelight binary parser against the SC2EGSet JSON parser.
 
 ## What It Does NOT Own
 
