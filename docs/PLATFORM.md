@@ -137,6 +137,7 @@ Four tiers, always kept separate:
 |------|--------|-----------|------|
 | `casehub-parent` | [casehubio/parent](https://github.com/casehubio/parent) | BOM, CI dashboards, full-stack build tooling | — |
 | `casehub-platform` | [casehubio/platform](https://github.com/casehubio/platform) | Zero-dep foundational SPIs — Path, Preferences, Identity. Modules: `platform-api` (SPIs), `platform` (@DefaultBean mocks), `testing` (@Alternative identity fixtures), `config/` (YAML preference provider), `oidc/` (OIDC CurrentPrincipal), `expression/` (JQEvaluator), `persistence-jpa/` (JPA PreferenceProvider — Flyway, @ApplicationScoped), `persistence-mongodb/` (MongoDB PreferenceProvider — @Alternative @Priority(1), no Flyway) | Foundation |
+| `casehub-memory` | [casehubio/memory](https://github.com/casehubio/memory) | CaseMemoryStore adapter implementations — Memori (Tier 1, SQL-native), Mem0 (Tier 2, vector+BM25), Graphiti (Tier 3, temporal knowledge graph). SPI + no-op live in casehub-platform-api / casehub-platform. | Foundation |
 | `casehub-ledger` | [casehubio/ledger](https://github.com/casehubio/ledger) | Immutable tamper-evident audit ledger + trust scoring. Modules: `api`, `runtime`, `deployment`, `persistence-memory` (`casehub-ledger-memory` — zero-datasource in-memory SPIs) | Foundation |
 | `casehub-work` | [casehubio/work](https://github.com/casehubio/work) | Human task lifecycle (WorkItem inbox, SLA, delegation, routing) | Foundation |
 | `casehub-qhorus` | [casehubio/qhorus](https://github.com/casehubio/qhorus) | Peer-to-peer agent communication mesh | Foundation |
@@ -158,6 +159,7 @@ Application tier (devtown, aml, clinical, life, drafthouse, quarkmind): see [APP
 ```
 casehub-parent              (BOM — publish first; all others import it)
   casehub-platform          (no casehubio deps — foundational SPIs, publishes before ledger)
+  casehub-memory            (depends on casehub-platform-api; REST adapters for CaseMemoryStore — opt-in)
   casehub-ledger            (no casehubio deps)
   casehub-connectors        (no casehubio deps)
   casehub-work              (api: depends on casehub-platform-api; core: zero other casehubio deps; ledger module: depends on casehub-ledger)
@@ -241,6 +243,7 @@ casehub-parent              (BOM — publish first; all others import it)
 | `casehub-engine-api` | `casehub-openclaw` | `core` | `WorkerProvisioner`, `CaseChannelProvider`, `WorkerStatusListener` SPIs |
 | `casehub-engine` (runtime) | `casehub-openclaw` | `casehub` | engine runtime for SPI implementations |
 | `casehub-platform-api` | `casehub-openclaw` | `core` | `CurrentPrincipal`, `GroupMembershipProvider` (permission-aware context) |
+| `casehub-platform-api` | `casehub-memory` | all modules | `CaseMemoryStore` SPI + value types |
 
 | `casehub-ledger` (runtime) | `casehub-life` | `app` | Merkle audit, GDPR erasure, trust scoring |
 | `casehub-work` (runtime) | `casehub-life` | `app` | WorkItems with SLA and escalation |
@@ -265,6 +268,7 @@ casehub-parent              (BOM — publish first; all others import it)
 | Typed preference resolution | `casehub-platform-api` | `PreferenceProvider` SPI + `Preferences` interface; `PreferenceKey<T extends Preference>` typed key with `qualifiedName()`; `SettingsScope(Path, Instant)`; `MapPreferences` utility impl. `MockPreferenceProvider` `@DefaultBean`. See [`typed-preference-keys.md`](protocols/casehub/typed-preference-keys.md). **Backends (add as compile dep to activate):** `casehub-platform-config` — YAML file-based, `@ApplicationScoped`, no DB; `casehub-platform-persistence-jpa` — JPA/SQL, `@ApplicationScoped`, requires Flyway at `classpath:db/platform/migration`; `casehub-platform-persistence-mongodb` — MongoDB, `@Alternative @Priority(1)`, beats JPA when co-deployed, startup bean creates scope index. CDI priority ladder: see [`persistence-backend-cdi-priority.md`](protocols/universal/persistence-backend-cdi-priority.md). |
 | Current principal identity | `casehub-platform-api` | `CurrentPrincipal` SPI — `actorId()`, `groups()`, `roles()` (= groups by convention, wires to `@RolesAllowed`), `hasGroup()`, `isSystem()`, `isAuthenticated()`, `tenancyId()`, `isCrossTenantAdmin()`. Real impls must be `@RequestScoped`. `MockCurrentPrincipal` `@DefaultBean`. `TenancyConstants` holds `DEFAULT_TENANT_ID` and `PLATFORM_TENANT_ID` sentinels. **OIDC impl:** `casehub-platform-oidc` ships `OidcCurrentPrincipal @RequestScoped` — reads actorId/groups from `SecurityIdentity`, `tenancyId` and `crossTenantAdmin` from fixed JWT claims. Add as compile dep to activate; displaces mock automatically. |
 | Group membership lookup | `casehub-platform-api` | `GroupMembershipProvider` SPI — `membersOf(groupName)` returns empty set for unknown groups. `MockGroupMembershipProvider` `@DefaultBean` always returns empty. |
+| Agent memory (queryable, permission-aware, persistent) | `casehub-platform-api` (SPI + types) / `casehub-memory` (adapters) | `CaseMemoryStore` SPI + value types (`MemoryInput`, `Memory`, `MemoryQuery`, `EraseRequest`, `MemoryDomain`) + `MemoryPermissions` static utility. `NoOpCaseMemoryStore @DefaultBean` in `casehub-platform`; adapters in `casehub-memory` repo. `BlockingToReactiveBridge @DefaultBean` wraps blocking adapters as `ReactiveCaseMemoryStore`; native async adapters override as `@Alternative @Priority(N)`. |
 | Immutable entry chain (Merkle Mountain Range) | `casehub-ledger` | Domain-agnostic; consumers extend `LedgerEntry` via JPA JOINED |
 | In-memory persistence (zero datasource / ephemeral install) | `casehub-ledger` | `casehub-ledger-memory` — `@Alternative @Priority(1)` impls of all persistence SPIs; add as compile dep for `@QuarkusTest` isolation |
 | Cryptographic tamper evidence | `casehub-ledger` | `LedgerVerificationService` (Merkle: treeRoot/inclusionProof/verify), `AgentSignatureVerificationService` (blocking Ed25519), `ReactiveAgentSignatureVerificationService` (reactive Ed25519), `AgentCryptographicVerifier` (shared static utility) |
