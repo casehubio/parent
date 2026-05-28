@@ -43,6 +43,12 @@ Human tutorials can be generated from that same material later.
 **The constraint:** Do not design or architect for the tutorial. The tutorial documents
 what you built. Code that exists only for the tutorial is wrong code.
 
+**Domain entity discipline:** A domain entity is justified when it carries information or typed relationships the foundation primitives cannot represent — `ExternalActor` with trust dimensions, `ClinicalTrial` with protocol and IRB reference. These are permanent production types.
+
+A domain entity is not justified when it duplicates a foundation primitive (`WorkItem`, `Commitment`, `CasePlanModel`) with only a few extra fields. At higher layers, the foundation primitive becomes the coordination record; a wrapper then sits alongside it as a redundant artifact. Carry domain-specific context in the primitive's `category`, `payload`, or scope, or wait until the domain design justifies a proper entity with genuine domain behaviour.
+
+**The test:** if this entity could be removed at Layer 5 without losing domain-specific information that cannot be recovered from the foundation record, it is temporary scaffolding — do not create it. AML and devtown have no domain JPA entities; their domain concepts ARE cases and WorkItems.
+
 **The production-first test — apply before writing any class:**
 > "Would this class exist in a production system that does not include any other
 > tutorial layers?"
