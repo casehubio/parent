@@ -2,7 +2,7 @@
 
 **GitHub:** [casehubio/life](https://github.com/casehubio/life)
 **Tier:** Application
-**Status:** Layer 1 pending — scaffold complete
+**Status:** Layer 1 complete — domain baseline implemented
 
 ## What It Is
 
@@ -14,7 +14,7 @@ The tutorial structure emerges from the natural adoption sequence. Each layer ad
 
 | Layer | Adds | Gap it closes | Status |
 |-------|------|---------------|--------|
-| 1 | Naive Java — household domain model baseline | Baseline: direct service calls, no SLA, no audit | pending |
+| 1 | Domain baseline — household domain model | Baseline: direct service calls, no SLA, no audit | **complete** (casehubio/life#2) |
 | 2 | casehub-work | No formal SLA on household tasks | pending |
 | 3 | casehub-qhorus | No commitment tracking; no oversight gates | pending |
 | 4 | casehub-ledger | No tamper-evident audit for health/financial decisions | pending |
