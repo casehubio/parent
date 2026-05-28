@@ -17,8 +17,8 @@ Integration tier module (like Claudony). Bridges CaseHub ↔ OpenClaw. Provision
 
 | Module | Contents |
 |--------|----------|
-| `core` | `ChannelContextWindow`, ring buffer persistence, REST context endpoint |
-| `casehub` | `ChannelBackend` SPI implementation, `WorkerProvisioner` SPI implementation |
+| `core` | `ContextMessage`, `WindowContent`, `ChannelRingBuffer`, `ChannelContextWindowService`, `OpenClawHookClient`, REST context endpoint |
+| `casehub` | `ChannelContextWindowObserver` (`MessageObserver` SPI) — Epic 3. `ChannelBackend`, `WorkerProvisioner`, `CaseChannelProvider`, `WorkerStatusListener` SPIs planned for Epic 4. |
 | `app` | Runnable Quarkus application — wires core + casehub modules |
 | `python/` | Python SDK — `before_prompt_build` hook, `appendSystemContext` |
 
@@ -32,7 +32,15 @@ Integration tier module (like Claudony). Bridges CaseHub ↔ OpenClaw. Provision
 
 ### ChannelContextWindow
 
-`MessageObserver` implementation that maintains a ring buffer of recent cross-channel messages. Persisted for durability. Exposed as `GET /channel-context/{agentId}?since={seq}` — the Python SDK calls this before prompt construction to inject relevant channel history into the system context.
+`MessageObserver` implementation (`ChannelContextWindowObserver`) that maintains an in-memory ring buffer of recent cross-channel messages. In-memory only, best-effort — no JPA, no Flyway, no named datasource. Correctness layer is Qhorus (ledger); `ChannelContextWindow` is the intelligence layer only. Exposed as `GET /channel-context/{agentId}?since={seq}` — the Python SDK calls this before prompt construction to inject relevant channel history into the system context.
+
+### OpenClawHookClient (Epic 2)
+
+`@ApplicationScoped` CDI bean. `ConcurrentHashMap<String, OpenClawSession>` keyed by `agentId`. `registerSession(agentId, sessionKey, webhookUrl)` called by `WorkerProvisioner` at provision time. `invoke()` catches `WebApplicationException` (Quarkus REST Client behaviour on 5xx — does not return a `Response`). `Response.close()` called in `finally` block (`jakarta.ws.rs.core.Response` does not implement `AutoCloseable`). `forWebhook()` factory on `AgentInvocationRequest` enforces `deliver=webhook`.
+
+**Known limitation:** Session registry is last-write-wins per `agentId` — concurrent same-`agentId` workers not supported until `workerId` is available in `WorkResult` (upstream engine enhancement).
+
+**Deferred (verify against live API):** `sessionName` JSON field name; `wakeMode` values for direct-call pattern; `/hooks/wake` body schema.
 
 ### ChannelBackend SPI
 
@@ -78,15 +86,13 @@ These two modes are mutually exclusive per invocation. A given agent interaction
 
 ---
 
-## Named Datasource
-
-`openclaw` — used by `ChannelContextWindow` for ring buffer persistence. Never share with domain tables.
-
----
-
 ## Current State
 
-Scaffold only — Epic 1 complete (Maven structure, CLAUDE.md, CI). No implementation yet.
+- Epic 1 (scaffold): complete — Maven structure, CLAUDE.md, CI
+- Epic 2 (OpenClaw hook API client): complete — `OpenClawHookClient`, session registry, `deliver:webhook` normaliser (branch `issue-002-openclaw-hook-client`)
+- Epic 3 (ChannelContextWindow service): complete — in-memory ring buffer, `ChannelContextWindowObserver`, REST endpoint (branch `issue-003-channel-context-window`)
+- Epic 4 (CaseHub SPIs: `WorkerProvisioner`, `ChannelBackend`, `CaseChannelProvider`, `WorkerStatusListener`): pending
+- Epic 5+: pending
 
 ---
 
