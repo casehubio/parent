@@ -21,7 +21,8 @@ Hybrid choreography+orchestration coordination engine for multi-agent work. Impl
 | `casehub-engine-blackboard` | `blackboard` | Optional module | CMMN/Blackboard orchestration — `BlackboardRegistry`, `PlanItem`, `SubCase` lifecycle |
 | `casehub-engine-work-adapter` | `work-adapter` | Module | Bridges casehub-work WorkItem lifecycle to blackboard PlanItem transitions |
 | `casehub-engine-resilience` | `resilience` | Optional module | Dead Letter Queue, PoisonPill detection, backoff strategies, case timeout |
-| `casehub-engine-ledger` | `ledger` | Optional module | Tamper-evident case lifecycle ledger; extends `casehub-ledger` entry model |
+| `casehub-engine-ledger` | `ledger` | Optional module | Tamper-evident case lifecycle ledger; extends `casehub-ledger` entry model; `TrustWeightedAgentStrategy` (`@Alternative @Priority(1)`) |
+| `casehub-engine-ai` | `ai` | Optional module | `AgentEmbeddingProvider` SPI + `SemanticAgentRoutingStrategy` (`@Alternative @Priority(2)`) — activates semantic agent routing by classpath presence. `AgentEmbeddingProvider` SPI lives here (not in `casehub-engine-api`) deliberately: the whole semantic routing feature — SPI + implementation — is opt-in together; placing the SPI in `casehub-engine-api` would force all deployments to declare an embedding provider even when no semantic routing is needed. |
 | `casehub-engine-scheduler-quartz` | `scheduler-quartz` | Module | Quartz-based worker execution (RAM store) |
 | `casehub-engine-schema` | `schema` | Build-time | `CaseDefinition.yaml` JSON Schema → generated Java model via jsonschema2pojo |
 | `casehub-engine-persistence-hibernate` | `persistence-hibernate` | Module | JPA/Panache persistence (PostgreSQL) |
@@ -54,7 +55,13 @@ Two execution paths: choreography (evaluates bindings on context change) and orc
 
 ### AgentRoutingStrategy SPI (`api/spi/`)
 
-Engine's own routing abstraction — replaces the borrowed `WorkerSelectionStrategy` from `casehub-work`. Types: `AgentRoutingStrategy`, `AgentRoutingContext`, `AgentCandidate` (with `AgentHealth` enum), `AgentAssignment`. `TrustWeightedAgentStrategy` in `casehub-engine-ledger` implements trust maturity phases 0–3 via `TrustScoreCache`.
+Engine's own routing abstraction — replaces the borrowed `WorkerSelectionStrategy` from `casehub-work`. Types: `AgentRoutingStrategy`, `AgentRoutingContext`, `AgentCandidate` (with `AgentHealth` enum), `AgentAssignment`. `WorkOrchestrator` resolves the active strategy via `@Any Instance<AgentRoutingStrategy>` CDI priority resolution (engine#337).
+
+| Implementation | Module | Priority | When active |
+|---|---|---|---|
+| `LeastLoadedAgentStrategy` | engine runtime | 0 (default) | Always — base fallback |
+| `TrustWeightedAgentStrategy` | casehub-engine-ledger | `@Priority(1)` | When casehub-engine-ledger on classpath; implements trust maturity phases 0–3 via `TrustScoreCache` |
+| `SemanticAgentRoutingStrategy` | casehub-engine-ai | `@Priority(2)` | When casehub-engine-ai on classpath; uses `AgentEmbeddingProvider` for embedding-based candidate matching |
 
 ### Worker Provisioner SPIs (`api/spi/`)
 

@@ -166,6 +166,7 @@ casehub-parent              (BOM — publish first; all others import it)
   casehub-qhorus            (depends on casehub-ledger)
   casehub-eidos             (depends on casehub-ledger; casehub-eidos-api depends on nothing)
   casehub-engine            (depends on casehub-work-core + optionally casehub-ledger + optionally casehub-eidos-api)
+  casehub-engine-ai         (optional — depends on casehub-engine-api; adds AgentEmbeddingProvider SPI + SemanticAgentRoutingStrategy)
   claudony                  (depends on casehub-qhorus + implements casehub-engine SPIs)
   casehub-openclaw          (depends on casehub-qhorus + casehub-engine SPIs; opt-in — off by default in CI)
 
@@ -223,6 +224,7 @@ casehub-parent              (BOM — publish first; all others import it)
 | `casehub-engine-blackboard` | `devtown` | `app` | BlackboardRegistry — transitive via work-adapter; required for plan item tracking |
 | `casehub-engine-ledger` | `claudony` | `casehub` | lineage queries |
 | `casehub-eidos-api` | `casehub-engine` | `engine-api` | optional capability probe — `AgentDescriptor` on `Worker`; `CapabilityHealth.probe()` in `WorkOrchestrator` |
+| `casehub-engine-api` | `casehub-engine-ai` | `ai` | `AgentRoutingStrategy` SPI consumer; `AgentEmbeddingProvider` SPI definition |
 
 | `casehub-platform` | `casehub-aml` | `app` | `@DefaultBean` mocks for casehub-engine CDI wiring (runtime scope — required when engine is present) |
 | `casehub-engine` (runtime) | `casehub-aml` | `app` | YamlCaseHub, CaseHubRuntime, engine worker execution |
@@ -284,9 +286,10 @@ casehub-parent              (BOM — publish first; all others import it)
 | Named outcome classifications for WorkItems | `casehub-work` | `Outcome` record in `casehub-work-api`; `WorkItemTemplate.outcomes` declares valid names; `WorkItem.outcome` stores resolved name at completion; `WorkItemLifecycleEvent.outcome` carries it for engine routing without parsing `resolution` JSON |
 | Conflict-of-interest user exclusion | `casehub-work` | `ExclusionPolicy` SPI in `casehub-work-api` (`check() : PolicyDecision`); `CommaSeparatedExclusionPolicy` `@DefaultBean`; `excludedUsers` TEXT field on `WorkItemTemplate` + `WorkItem`; enforced at claim, create (assigneeId), delegate, auto-assignment, and `SelectionContext`; `BlockedAttemptAuditService` writes `CLAIM_DENIED`/`DELEGATE_DENIED` audit entries via `REQUIRES_NEW` |
 | M-of-N parallel WorkItem completion (group policy primitive) | `casehub-work` | `MultiInstanceCoordinator`; `WorkItemGroupLifecycleEvent`; see LAYERING.md |
-| Worker routing / selection strategies | `casehub-work-core` | `WorkBroker`, `WorkerSelectionStrategy` SPI — also used by casehub-engine |
+| Human task routing / selection | `casehub-work-core` | `WorkBroker`, `WorkerSelectionStrategy` SPI; `SemanticWorkerSelectionStrategy` in `casehub-work-ai` (`@Alternative @Priority(1)`) |
 | Label-based queue views | `casehub-work-queues` | Optional module on casehub-work |
-| Semantic (embedding) worker matching | `casehub-work-ai` | Optional module; `SemanticWorkerSelectionStrategy` |
+| Agent routing / selection | `casehub-engine-api` | `AgentRoutingStrategy` SPI; CDI priority resolution in `WorkOrchestrator` (`@Any Instance<AgentRoutingStrategy>`). Implementations: `LeastLoadedAgentStrategy` (engine runtime, `@Priority(0)` default), `TrustWeightedAgentStrategy` (casehub-engine-ledger, `@Priority(1)`), `SemanticAgentRoutingStrategy` (casehub-engine-ai, `@Priority(2)`, optional) |
+| Agent embedding vector provider | `casehub-engine-ai` | `AgentEmbeddingProvider` SPI — required by `SemanticAgentRoutingStrategy`; activates semantic agent routing when on classpath (see [`optional-module-pattern.md`](protocols/optional-module-pattern.md)). SPI lives in `casehub-engine-ai` (not `casehub-engine-api`) so the entire feature is opt-in — no embedding provider contract imposed on deployments that don't use semantic routing. |
 | Outbound notifications (Slack, Teams, SMS, email) | `casehub-connectors` | `Connector` SPI; `casehub-work-notifications` must delegate here |
 | Agent-to-agent messaging (typed channels + messages) | `casehub-qhorus` | 9 speech-act types, 5 channel semantics, MCP tools. All writes flow through `MessageService.dispatch(MessageDispatch)` — single gate for ACL, rate limit, LAST_WRITE, ledger, and fan-out. `MessageDispatch` builder carries sender, type, content, correlationId, inReplyTo, artefactRefs, target, actorType, deadline; builder validates protocol invariants at `build()` (DONE/DECLINE/FAILURE/HANDOFF/RESPONSE require inReplyTo + correlationId; HANDOFF requires target). `DispatchResult` carries ledgerEntryId, subjectId, causedByEntryId, parentReplyCount. |
 | Dashboard read/write API (composed views: channel with message count, instance with capability tags, timeline mapping, human message send) | `casehub-qhorus` | `QhorusDashboardService` in `io.casehub.qhorus.runtime.dashboard` — inject this for dashboard/UI consumers needing composed views. Do NOT inject raw entity services for this use case. |

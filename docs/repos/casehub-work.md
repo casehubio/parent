@@ -18,7 +18,7 @@ A `WorkItem` is deliberately NOT called `Task` — CNCF Serverless Workflow and 
 | Module | Type | Purpose |
 |---|---|---|
 | `casehub-work-api` | Pure-Java SPI (no Quarkus) | All SPIs: worker selection, registry, workload provision, SLA breach policy, spawn, skill profiling, notification channel. Depends on `casehub-platform-api` for `Path` and `Preferences` used in `SlaBreachContext`. Also owns `ActorType` / `ActorTypeResolver` via `casehub-platform-api` (moved there in ledger#88). |
-| `casehub-work-core` | Jandex library (no JPA) | `WorkBroker` and built-in selection strategies — used directly by casehub-engine |
+| `casehub-work-core` | Jandex library (no JPA) | `WorkBroker` and built-in `WorkerSelectionStrategy` implementations — used for human task routing only; casehub-engine uses its own `AgentRoutingStrategy` SPI (engine#337) |
 | `runtime` | Full Quarkus extension | WorkItem entity, services, REST API, filter engine |
 | `deployment` | Quarkus extension deployment | Build-time processor (`@BuildStep`); pairs with `runtime` |
 | `casehub-work-testing` | Test utilities | In-memory stores (WorkItem, audit, notes, issue links); zero-datasource alternative to JPA stores |
@@ -93,7 +93,7 @@ See `docs/DESIGN.md` for event payload shape.
 
 | Repo | How |
 |---|---|
-| `casehub-engine` | `casehub-work-core` only — `WorkBroker` for worker selection. NOT the full runtime. Also receives `WorkItemLifecycleEvent` via CDI adapter to drive plan-item transitions. |
+| `casehub-engine` | `casehub-work-api` only (compile, via work-adapter — `CaseSignalSink` injection). Routing no longer uses `casehub-work-core`/`WorkBroker` — engine uses its own `AgentRoutingStrategy` SPI (engine#337). Receives `WorkItemLifecycleEvent` and `WorkItemGroupLifecycleEvent` via CDI adapter to drive plan-item transitions. |
 | `claudony` | Future, via `casehub-work-casehub` adapter (currently blocked on CaseHub stability) |
 | `casehub-clinical` | Layer 2 — adverse event WorkItems with GCP SLA (24h Grade≥3, 1h Grade 5); first consumer of `SlaBreachPolicy` with DSMB escalation |
 
