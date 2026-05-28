@@ -48,7 +48,7 @@ Cases are defined declaratively: namespace, name, version, capabilities, workers
 
 Two execution paths: choreography (evaluates bindings on context change) and orchestration (suspends case, awaits worker completion, resumes).
 
-- `CaseContextChangedEventHandler` — evaluates `contextChange.filter` AND `binding.when()` to find eligible bindings, selects via `PlanningStrategyLoopControl`, dispatches by target type
+- `CaseContextChangedEventHandler` — evaluates `contextChange.filter` AND `binding.when()` to find eligible bindings for RUNNING and WAITING cases, selects via `LoopControl` (which owns state eligibility), dispatches by target type. `PlanningStrategyLoopControl` handles WAITING by filtering already-dispatched (RUNNING/DELEGATED) bindings; `ChoreographyLoopControl` restricts to RUNNING only.
 - `WorkerScheduleEventHandler` — opens channel, builds `CommandContent`, dispatches via `postToChannel` with `correlationId` and `deadline` as first-class SPI params
 - `WorkOrchestrator` — synchronous dispatch path using `WorkBroker` for candidate selection; integrates `CapabilityHealth` probe to filter/sort agent-backed candidates before selection
 
@@ -75,7 +75,11 @@ All eight ship with `@DefaultBean @ApplicationScoped` no-op defaults that yield 
 
 Two-way bridge:
 - **Outbound** (`HumanTaskScheduleHandler`) — creates WorkItems from `HumanTaskTarget` bindings (inline or template mode), sets `callerRef`, `scope`, `payload`. Atomicity: WorkItem creation + `planItemStore.save(DELEGATED)` + `markDelegated()` in single `@Transactional`.
-- **Inbound** (`WorkItemLifecycleAdapter`) — translates terminal `WorkItemLifecycleEvent` to PlanItem transitions, evaluates `outputMapping`, fires `CONTEXT_CHANGED`.
+- **Inbound** (`WorkItemLifecycleAdapter`) — translates `WorkItemLifecycleEvent` (COMPLETED, REJECTED, CANCELLED, EXPIRED — ESCALATED excluded as non-terminal) to PlanItem transitions, evaluates `outputMapping`, fires `CONTEXT_CHANGED`. Also observes `WorkItemGroupLifecycleEvent` for M-of-N SpawnGroup outcomes.
+
+### Qhorus Message Signal Bridge
+
+`QhorusMessageSignalBridge` — CDI `@ObservesAsync` observer for `MessageReceivedEvent`; bridges commitment-resolving Qhorus messages (RESPONSE, DONE, DECLINE, FAILURE) on `case-{caseId}/{purpose}` channels to `CaseHubRuntime.signal()`. Enables human channel messages to unblock WAITING cases. Protocol: `PP-20260526-case-channel-message-signal`.
 
 ### CapabilityHealth Integration
 
