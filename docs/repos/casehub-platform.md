@@ -20,6 +20,8 @@ oidc/           ← optional: @RequestScoped CurrentPrincipal backed by Security
 
 `platform-api/` must never import Quarkus, CDI, JPA, or any casehubio artifact. This constraint is what makes the SPIs useful to every module in the stack — including modules that have no Quarkus dependency of their own.
 
+**Package structure in `platform-api/`:** `identity` (`CurrentPrincipal`, `GroupMembershipProvider`, `ActorType`, `ActorTypeResolver`), `preferences` (`PreferenceProvider`, `PreferenceKey`, `Preferences`, `SettingsScope`), `path` (`Path`), `memory` (`CaseMemoryStore`, `MemoryInput`, `Memory`, `MemoryQuery`, `EraseRequest`, `MemoryDomain`, `MemoryPermissions`). `ReactiveCaseMemoryStore` lives in `platform/`, not `platform-api/` — Mutiny is a Quarkus dep and would violate the zero-dep constraint.
+
 `config/` and `oidc/` are optional — consumers add them as compile-scope dependencies to activate the capability. Each displaces its corresponding `@DefaultBean` mock automatically via CDI without exclusion config.
 
 ---
@@ -148,9 +150,51 @@ See `platform-spi-contract.md` for the full pattern.
 
 ---
 
+## CaseMemoryStore
+
+**Problem:** every CaseHub case starts cold. Facts established in one case — about an entity, an agent's behaviour, a recurring pattern — are invisible to the next case unless explicitly passed as parameters. This produces repeated research, missed context, and weaker routing decisions across all consumer repos.
+
+**Why a platform SPI, not a per-repo solution:** devtown, clinical, aml, and life all need semantic recall across cases. A per-repo memory implementation would duplicate the permission model, domain isolation logic, and backend adapter overhead in every consumer. `CaseMemoryStore` follows the same SPI placement logic as `PreferenceProvider` and `CurrentPrincipal` — shared concept, zero external dependency, displaces via CDI.
+
+**SPI contract (`casehub-platform-api`):**
+- `CaseMemoryStore` (blocking) — `store`, `storeAll` (bulk convenience default), `query`, `erase`, `eraseById`
+- `MemoryInput`, `Memory`, `MemoryQuery`, `EraseRequest`, `MemoryDomain` — value types (zero deps)
+- `MemoryPermissions` — static utility enforcing `CurrentPrincipal` + `GroupMembershipProvider` boundary; **enforced at the SPI layer**, never delegated to backends
+- Domain isolation: `MemoryDomain` scopes facts — health, finance, household facts do not cross domain boundaries regardless of backend
+
+**`platform/` contains:** `NoOpCaseMemoryStore @DefaultBean`, `ReactiveCaseMemoryStore` interface (Mutiny dep — cannot live in zero-dep `platform-api/`), `BlockingToReactiveBridge @DefaultBean`.
+
+**`@DefaultBean` pattern — silent no-op (contrast with configurable mock):**
+
+This is an explicit design choice, not a missing feature. The two patterns serve different purposes:
+
+| Pattern | Used by | Behaviour | Rationale |
+|---------|---------|-----------|-----------|
+| **Configurable mock** | `PreferenceProvider`, `CurrentPrincipal` | Returns SmallRye Config values or fixed test values | System makes routing/auth decisions based on these values — wrong values produce wrong behaviour, so the mock must be explicit |
+| **Silent no-op** | `CaseMemoryStore` | Returns empty results, accepts writes silently | System functions correctly without memory — just without recall; zero overhead is the valid production default when no adapter is installed |
+
+`NoOpCaseMemoryStore @DefaultBean` in `platform/` is correct for the vast majority of deployments at startup. Adapters activate by classpath presence — no configuration needed.
+
+**`eraseById` carve-out:** The SPI default for `eraseById` throws `UnsupportedOperationException` — a GDPR guard forcing adapters to implement erasure explicitly. `NoOpCaseMemoryStore` overrides this to a true no-op (nothing was stored, so erasure is vacuously complete). Adapter implementors must not rely on the SPI default for `eraseById` — override it unconditionally.
+
+**Reactive bridge:**
+`BlockingToReactiveBridge @DefaultBean` in `platform/` wraps any blocking `CaseMemoryStore` implementation as a `ReactiveCaseMemoryStore`. Native async adapters override with `@Alternative @Priority(N)` — the same CDI priority ladder used throughout the platform. See [`docs/protocols/universal/persistence-backend-cdi-priority.md`](protocols/universal/persistence-backend-cdi-priority.md).
+
+**Adapter implementations (`casehub-memory` repo — `casehubio/memory`):**
+
+| Adapter | Backend | Infrastructure | Best for |
+|---------|---------|----------------|----------|
+| Memori | SQL-native Postgres | Zero extra infra | Default — all deployments |
+| Mem0 | Vector + BM25 | Docker + pgvector | Semantic retrieval |
+| Graphiti | Temporal knowledge graph | Neo4j / FalkorDB | Regulated domains, temporal queries |
+
+Add as compile dependency to activate. Displaces the no-op `@DefaultBean` automatically.
+
+---
+
 ## Mock Implementation Pattern
 
-All three SPIs get `@DefaultBean @ApplicationScoped` mocks in `platform/`. The pattern:
+The original three SPIs (`PreferenceProvider`, `CurrentPrincipal`, `GroupMembershipProvider`) get `@DefaultBean @ApplicationScoped` configurable mocks in `platform/`. `CaseMemoryStore` follows the same structural pattern but uses a silent no-op rather than a configurable mock — see the CaseMemoryStore section above for the rationale. The shared pattern for all four:
 
 - `@DefaultBean` — yields to any `@ApplicationScoped` implementation; no exclusion config needed in consumers
 - `@ApplicationScoped` (not `@RequestScoped`) — no request context in dev/test mode
@@ -200,14 +244,16 @@ Add as a test-scoped dependency:
 
 | Module | Status | Purpose |
 |--------|--------|---------|
-| `platform-api/` | ✅ shipped | Zero-dep SPIs |
-| `platform/` | ✅ shipped | @DefaultBean mocks |
-| `testing/` | ✅ shipped | @Alternative identity fixtures |
+| `platform-api/` | ✅ shipped | Zero-dep SPIs: `Path`, `PreferenceProvider`, `CurrentPrincipal`, `GroupMembershipProvider`, `CaseMemoryStore` + value types |
+| `platform/` | ✅ shipped | `@DefaultBean` mocks (configurable) and no-ops (silent); `BlockingToReactiveBridge @DefaultBean` for `ReactiveCaseMemoryStore` |
+| `testing/` | ✅ shipped | `@Alternative @Priority(1)` identity fixtures |
 | `config/` | ✅ shipped | Scope-aware YAML + SmallRye Config overrides — displaces mock when on classpath |
-| `oidc/` | ✅ shipped | @RequestScoped CurrentPrincipal backed by SecurityIdentity + JWT — displaces mock when on classpath |
+| `oidc/` | ✅ shipped | `@RequestScoped CurrentPrincipal` backed by `SecurityIdentity` + JWT — displaces mock when on classpath |
 | `persistence-jpa/` | 🔜 #6 | JPA-backed scoped preference overrides |
-| `persistence-mongodb/` | 🔜 #7 | MongoDB alternative |
-| `preferences-editor/` | 🔜 #8 | Admin write path — REST API, separate from providers |
+| `persistence-mongodb/` | 🔜 #7 | MongoDB alternative for preferences |
+| `preferences-editor/` | 🔜 #8 | Admin write path for preferences — REST API, separate from providers |
+
+**Note:** `CaseMemoryStore` adapter implementations (Memori, Mem0, Graphiti) live in the separate `casehub-memory` repo (`casehubio/memory`), not in this repo. Add them as compile dependencies to activate.
 
 `PreferenceProvider` is permanently read-only. The editor module writes directly to the backend; providers never own the write path.
 
