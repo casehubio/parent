@@ -27,3 +27,4 @@ See [universal/INDEX.md](universal/INDEX.md) for the full table.
 | Protocol | One-liner |
 |----------|-----------|
 | [universal/no-jpa-entities-across-requires-new.md](universal/no-jpa-entities-across-requires-new.md) | Extract primitives before REQUIRES_NEW boundary |
+| [universal/flyway-extension-migration-registration.md](universal/flyway-extension-migration-registration.md) | Repo-scoped migration paths + NativeImageResourcePatternsBuildItem; consumers configure quarkus.flyway.locations explicitly |
