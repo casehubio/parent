@@ -18,7 +18,7 @@ Integration tier module (like Claudony). Bridges CaseHub ↔ OpenClaw. Provision
 | Module | Contents |
 |--------|----------|
 | `core` | `ContextMessage`, `WindowContent`, `ChannelRingBuffer`, `ChannelContextWindowService`, `OpenClawHookClient`, REST context endpoint |
-| `casehub` | `ChannelContextWindowObserver` (`MessageObserver` SPI) — Epic 3. `ChannelBackend`, `WorkerProvisioner`, `CaseChannelProvider`, `WorkerStatusListener` SPIs planned for Epic 4. |
+| `casehub` | `ChannelContextWindowObserver` (`MessageObserver` SPI), `OpenClawChannelBackend` (`ChannelBackend` SPI), `OpenClawWorkerProvisioner`, `OpenClawCaseChannelProvider`, `OpenClawWorkerStatusListener`, `OpenClawAgentRegistry` (tracks agentId → session registration; populated by `WorkerProvisioner`, read by `ChannelBackend`) |
 | `app` | Runnable Quarkus application — wires core + casehub modules |
 | `python/` | Python SDK — `before_prompt_build` hook, `appendSystemContext` |
 
@@ -33,6 +33,8 @@ Integration tier module (like Claudony). Bridges CaseHub ↔ OpenClaw. Provision
 ### ChannelContextWindow
 
 `MessageObserver` implementation (`ChannelContextWindowObserver`) that maintains an in-memory ring buffer of recent cross-channel messages. In-memory only, best-effort — no JPA, no Flyway, no named datasource. Correctness layer is Qhorus (ledger); `ChannelContextWindow` is the intelligence layer only. Exposed as `GET /channel-context/{agentId}?since={seq}` — the Python SDK calls this before prompt construction to inject relevant channel history into the system context.
+
+**Association design:** two-phase binding managed across the `casehub` module SPIs: `bindAgent(agentId, caseId)` is called by `OpenClawWorkerProvisioner` at provision time; `bindChannel(caseId, channelId)` is called by `OpenClawCaseChannelProvider` when the channel is assigned. `ChannelContextWindowService` joins at query time — no cross-SPI coordination at write time. `unbindAgent()` is called by `OpenClawWorkerStatusListener.onWorkerCompleted()` for cleanup.
 
 ### OpenClawHookClient (Epic 2)
 
@@ -65,7 +67,7 @@ These two modes are mutually exclusive per invocation. A given agent interaction
 ## Depends On
 
 - `casehub-qhorus` — mandatory (`ChannelBackend` SPI, `MessageObserver` SPI)
-- `casehub-engine` — `WorkerProvisioner` SPI, `CaseChannelProvider` SPI, `WorkerStatusListener` SPI
+- `casehub-engine-api` — SPI interfaces only (`WorkerProvisioner`, `CaseChannelProvider`, `WorkerStatusListener`). Uses `casehub-engine-api` rather than `casehub-engine` to avoid pulling engine CDI beans with unsatisfied persistence SPIs into the `casehub/` module.
 - `casehub-platform-api` — `CurrentPrincipal`, `GroupMembershipProvider` for permission-aware context injection
 
 ## Depended On By
@@ -91,7 +93,7 @@ These two modes are mutually exclusive per invocation. A given agent interaction
 - Epic 1 (scaffold): complete — Maven structure, CLAUDE.md, CI
 - Epic 2 (OpenClaw hook API client): complete — `OpenClawHookClient`, session registry, `deliver:webhook` normaliser (branch `issue-002-openclaw-hook-client`)
 - Epic 3 (ChannelContextWindow service): complete — in-memory ring buffer, `ChannelContextWindowObserver`, REST endpoint (branch `issue-003-channel-context-window`)
-- Epic 4 (CaseHub SPIs: `WorkerProvisioner`, `ChannelBackend`, `CaseChannelProvider`, `WorkerStatusListener`): pending
+- Epic 4 (CaseHub SPIs: `WorkerProvisioner`, `ChannelBackend`, `CaseChannelProvider`, `WorkerStatusListener`): complete — branch `issue-4-casehub-spi-implementations`
 - Epic 5+: pending
 
 ---
