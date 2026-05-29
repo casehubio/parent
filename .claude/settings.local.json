@@ -63,7 +63,11 @@
       "Bash(wait)",
       "Bash(git -C ~/claude/casehub/engine branch --show-current)",
       "Bash(git -C ~/claude/casehub/engine push)",
-      "Bash(git *)"
+      "Bash(git *)",
+      "Skill(git-squash)",
+      "Skill(project-init)",
+      "Skill(work-end)",
+      "Skill(write-content)"
     ]
   }
 }
