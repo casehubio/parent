@@ -12,10 +12,12 @@ This document answers the question developers will always ask: *"Why does casehu
 
 ```
 platform-api/   ← Tier 1: zero dependencies — pure Java interfaces and records
-platform/       ← Tier 3: Quarkus @DefaultBean mocks, @ConfigProperty
+platform/       ← Tier 3: Quarkus @DefaultBean mocks, @ConfigProperty; ReactiveCaseMemoryStore SPI; BlockingToReactiveBridge
 testing/        ← companion: @Alternative @Priority(1) test fixtures (CDI API only)
 config/         ← optional: scope-aware YAML + SmallRye Config preference provider
 oidc/           ← optional: @RequestScoped CurrentPrincipal backed by SecurityIdentity + JWT
+memory-inmem/   ← optional: volatile ConcurrentHashMap adapter (@Alternative @Priority(1)) — test-scope for isolation; compile for ephemeral
+memory-jpa/     ← optional: JPA/PostgreSQL adapter (@ApplicationScoped) — FTS via websearch_to_tsquery; Flyway V1000 at classpath:db/memory/migration
 ```
 
 `platform-api/` must never import Quarkus, CDI, JPA, or any casehubio artifact. This constraint is what makes the SPIs useful to every module in the stack — including modules that have no Quarkus dependency of their own.
@@ -180,15 +182,16 @@ This is an explicit design choice, not a missing feature. The two patterns serve
 **Reactive bridge:**
 `BlockingToReactiveBridge @DefaultBean` in `platform/` wraps any blocking `CaseMemoryStore` implementation as a `ReactiveCaseMemoryStore`. Native async adapters override with `@Alternative @Priority(N)` — the same CDI priority ladder used throughout the platform. See [`docs/protocols/universal/persistence-backend-cdi-priority.md`](protocols/universal/persistence-backend-cdi-priority.md).
 
-**Adapter implementations (`casehub-memory` repo — `casehubio/memory`):**
+**Adapter implementations (submodules in this repo — add as dependency to activate):**
 
-| Adapter | Backend | Infrastructure | Best for |
-|---------|---------|----------------|----------|
-| Memori | SQL-native Postgres | Zero extra infra | Default — all deployments |
-| Mem0 | Vector + BM25 | Docker + pgvector | Semantic retrieval |
-| Graphiti | Temporal knowledge graph | Neo4j / FalkorDB | Regulated domains, temporal queries |
+| Module | Artifact | CDI priority | Backend | Scope | Best for |
+|--------|----------|-------------|---------|-------|----------|
+| `memory-inmem/` | `casehub-platform-memory-inmem` | @Alternative @Priority(1) | ConcurrentHashMap — volatile | test or compile | Test isolation per @QuarkusTest; ephemeral installs without a database |
+| `memory-jpa/` | `casehub-platform-memory-jpa` | @ApplicationScoped | PostgreSQL + Flyway V1000 | compile | Default persistence; FTS via `websearch_to_tsquery` when `MemoryQuery.question` is set |
 
-Add as compile dependency to activate. Displaces the no-op `@DefaultBean` automatically.
+Both adapters displace `NoOpCaseMemoryStore @DefaultBean` automatically by classpath presence. Do not combine `memory-inmem/` and `memory-jpa/` in production scope — `@Priority(1)` wins and jpa store is bypassed.
+
+Consumers must add `classpath:db/memory/migration` to `quarkus.flyway.locations` when using `memory-jpa/`.
 
 ---
 
@@ -245,15 +248,15 @@ Add as a test-scoped dependency:
 | Module | Status | Purpose |
 |--------|--------|---------|
 | `platform-api/` | ✅ shipped | Zero-dep SPIs: `Path`, `PreferenceProvider`, `CurrentPrincipal`, `GroupMembershipProvider`, `CaseMemoryStore` + value types |
-| `platform/` | ✅ shipped | `@DefaultBean` mocks (configurable) and no-ops (silent); `BlockingToReactiveBridge @DefaultBean` for `ReactiveCaseMemoryStore` |
+| `platform/` | ✅ shipped | `@DefaultBean` mocks (configurable) and no-ops (silent); `ReactiveCaseMemoryStore` SPI; `BlockingToReactiveBridge @DefaultBean` |
 | `testing/` | ✅ shipped | `@Alternative @Priority(1)` identity fixtures |
 | `config/` | ✅ shipped | Scope-aware YAML + SmallRye Config overrides — displaces mock when on classpath |
 | `oidc/` | ✅ shipped | `@RequestScoped CurrentPrincipal` backed by `SecurityIdentity` + JWT — displaces mock when on classpath |
-| `persistence-jpa/` | 🔜 #6 | JPA-backed scoped preference overrides |
-| `persistence-mongodb/` | 🔜 #7 | MongoDB alternative for preferences |
+| `persistence-jpa/` | ✅ shipped (#6) | JPA-backed scoped preference overrides — Flyway, @ApplicationScoped, scope-aware hierarchy |
+| `persistence-mongodb/` | ✅ shipped (#7) | MongoDB alternative for preferences — @Alternative @Priority(1), beats JPA when co-deployed, no Flyway |
+| `memory-inmem/` | ✅ shipped (#32) | Volatile CaseMemoryStore — ConcurrentHashMap, @Alternative @Priority(1). Test-scope for isolation; compile for ephemeral installs |
+| `memory-jpa/` | ✅ shipped (#32) | JPA CaseMemoryStore — PostgreSQL, Flyway V1000 at `classpath:db/memory/migration`, FTS via websearch_to_tsquery |
 | `preferences-editor/` | 🔜 #8 | Admin write path for preferences — REST API, separate from providers |
-
-**Note:** `CaseMemoryStore` adapter implementations (Memori, Mem0, Graphiti) live in the separate `casehub-memory` repo (`casehubio/memory`), not in this repo. Add them as compile dependencies to activate.
 
 `PreferenceProvider` is permanently read-only. The editor module writes directly to the backend; providers never own the write path.
 
