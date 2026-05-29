@@ -16,7 +16,7 @@ accountability per interaction, adapts execution paths based on accumulated cont
 produces an independently verifiable audit trail. The domain varies; the harness
 underneath is the same across all four apps.
 
-See `docs/repos/{your-app}.md` in casehub-parent for your domain structure and tutorial
+See `docs/repos/{your-app}.md` in casehub-parent for your domain structure and architecture
 layers. See `docs/tutorial-strategy.md §2.0` for the full agentic harness concept.
 
 ---
@@ -33,15 +33,24 @@ Audiences: practitioners in your field evaluating CaseHub, potential adopters, i
 partners. They need to see that CaseHub solves real compliance and coordination problems
 they recognise from their own work.
 
-**Secondary — LLM and human tutorials**
+**Secondary — Architectural documentation for understanding, evolution, and cross-domain reuse**
 
-The tutorial structure and how-to content emerge from building the application correctly.
-An LLM reading your code, LAYER-LOG.md, blog entries, and git history should have
-everything it needs to build a fifth harness in any domain without asking questions.
-Human tutorials can be generated from that same material later.
+ARC42STORIES.MD, LAYER-LOG.md, blog entries, and git history together form the
+architectural record. Its primary documentation purpose is **understanding** — how the
+system is structured and how its parts come together. This understanding is necessary
+for humans and LLMs to refactor, improve, extend, and fix the system with confidence.
 
-**The constraint:** Do not design or architect for the tutorial. The tutorial documents
-what you built. Code that exists only for the tutorial is wrong code.
+A further benefit: the patterns and architecture serve as a template for building CaseHub
+harness applications in other domains. Not cloning this domain — an AML investigation
+system or a clinical trial coordinator uses these architectural patterns (layer integration
+sequence, CDI displacement, content-driven binding conditions) as a starting point for
+their own implementation. The domain is different; the structural approach is reusable.
+
+Spot tutorials and architectural highlights that explain specific techniques are extracted
+from this record as separate artifacts — they are not the record itself.
+
+**The constraint:** Do not design or architect for documentation. The record documents
+what you built. Code that exists only to fill a documentation slot is wrong code.
 
 **Domain entity discipline:** A domain entity is justified when it carries information or typed relationships the foundation primitives cannot represent — `ExternalActor` with trust dimensions, `ClinicalTrial` with protocol and IRB reference. These are permanent production types.
 
@@ -50,8 +59,7 @@ A domain entity is not justified when it duplicates a foundation primitive (`Wor
 **The test:** if this entity could be removed at Layer 5 without losing domain-specific information that cannot be recovered from the foundation record, it is temporary scaffolding — do not create it. AML and devtown have no domain JPA entities; their domain concepts ARE cases and WorkItems.
 
 **The production-first test — apply before writing any class:**
-> "Would this class exist in a production system that does not include any other
-> tutorial layers?"
+> "Would this class exist in a production system built to this layer and no further?"
 
 If the answer is no, do not build it. Document the architecture in LAYER-LOG.md instead.
 
@@ -106,21 +114,23 @@ entries do not need rewriting). Future work in all repos follows vertical slice 
 
 ## What to Produce and Maintain
 
-### LAYER-LOG.md — the primary new artifact
+### LAYER-LOG.md — the primary architectural record
 
 One file at the project root. A structured record that grows across sessions as each
-layer is built. This is the raw material for LLM and human tutorials. **A layer is not
+layer is built. This is the primary architectural record — the navigational hub for
+understanding what the system can do and how each integration was built. **A layer is not
 complete until its LAYER-LOG.md entry is fully written — but entries are written
 incrementally, not all at once.**
 
 **Epics and layers are not the same thing.** Epics organize work by build convenience.
-Layers organize knowledge by teaching progression. One tutorial layer may span several
+Layers organize knowledge by reading progression — the sequence in which a developer
+encounters the architecture to understand it. One layer may span several
 epics. Do not wait for a layer to be fully built before starting its log entry — write
 what is known, mark pending sections with `🔲`, and let future sessions fill them in.
 
 The layers in the log are ordered for learning, not for chronology. When generating
 tutorials or how-tos, the order can be adjusted for the audience. Git history captures
-chronology; LAYER-LOG.md captures the teaching structure.
+chronology; LAYER-LOG.md captures the architectural layer progression.
 
 Each entry captures:
 - What was built and what gap it closes
@@ -244,7 +254,7 @@ information; gaps in the log are better than wrong entries.
 ### Step 3 — Map commits and entries to layers
 
 Remember: epics and layers are different. One layer may span multiple epics. Organize
-by layer (teaching unit), not by epic (build unit).
+by layer (reading unit — architectural concern), not by epic (build unit).
 
 For each layer that has any work done (see your repo deep-dive for the layer table):
 - Which commits correspond to this layer?
@@ -267,7 +277,7 @@ guidance: `docs/protocols/universal/layer-log.md`.
 ### Step 5 — Identify the current layer
 
 From the layer table in your repo deep-dive: what is the next layer to complete?
-Create a GitHub issue for it if none exists (check Epics for tutorial layers first).
+Create a GitHub issue for it if none exists (check Epics for this layer first).
 
 ---
 
@@ -293,8 +303,8 @@ When a layer's code ships:
 ## Layer Structure Reference
 
 Your layer structure is defined in two places:
-- `docs/repos/{your-app}.md` in casehub-parent — Tutorial Layers table with status
-- `docs/tutorial-strategy.md §{N}` in casehub-parent — teaching objectives and code
+- `docs/repos/{your-app}.md` in casehub-parent — Architecture layers table with status
+- `docs/tutorial-strategy.md §{N}` in casehub-parent — layer objectives and code
   sketches per layer
 
 **Reference implementation:** casehub-aml — Layers 1 and 2 complete. Read

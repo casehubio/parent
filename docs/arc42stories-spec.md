@@ -280,13 +280,32 @@ This section replaces arc42's §9 (Architecture Decisions), which moves to §10.
 
 #### §9.2 Chapter Index
 
-Navigable summary of all Chapters in delivery sequence. Link each Chapter name to its full entry in §9.3.
+Navigable summary of all Chapters in delivery sequence. Link each Chapter name to its full entry in §9.3. Followed by the Layer × Chapter matrix and sequencing rationale.
 
 ```markdown
 | # | Chapter | Journey | Layers touched | Delta summary | Status |
 |---|---|---|---|---|---|
-| 1 | [Name] | [Journey] | L1, L3 | Low, High | ✅ |
-| 2 | [Name] | [Journey] | + L2 | Medium | 🔲 |
+| 1 | [Name] | [Journey] | L1, L5 | High, High | ✅ |
+| 2 | [Name] | [Journey] | + L2 | Medium | ✅ |
+| 3 | [Name] | [Journey] | + L3 | Low | 🔲 |
+```
+
+**Layer × Chapter matrix**
+
+Rows are Layers (reading order); columns are Chapters (delivery order). Cells show delta or `—`. Read across a row to see which deliveries touched a layer; read down a column to see which layers a chapter required.
+
+```markdown
+| Layer | C1 | C2 | C3 | C4 | C5 |
+|---|---|---|---|---|---|
+| L1 Domain Baseline | High | Low | — | — | — |
+| L2 [name] | — | Medium | Low | Low | Low |
+| L3 [name] | — | — | Low | — | — |
+| L4 [name] | — | — | — | Medium | Low |
+| L5 [name] | High | Low | Low | Low | Low |
+| L6 [name] | — | — | — | — | Medium |
+```
+
+Layers that appear in every column are foundational — they bear cross-cutting responsibility. Layers with a single column entry are additive. Layers with many Low deltas after their introduction are stable; repeated Medium/High entries signal a boundary problem worth investigating.
 
 **Sequencing rationale:**
 - C1 before C2: [hard dependency — C1 provides X that C2 requires at runtime]
@@ -294,52 +313,37 @@ Navigable summary of all Chapters in delivery sequence. Link each Chapter name t
 - C3 and C4 independent: [minimal delta — C3 adds one layer vs C4's three]
 ```
 
-The sequencing rationale lives here — adjacent to the Chapter Index — not only in §4. A reader scanning the index sees *why* things are ordered this way without jumping to another section. §4 Solution Strategy summarises the overall delivery approach; §9.2 holds the per-Chapter rationale.
+The sequencing rationale and matrix live here — adjacent to the Chapter Index — so a reader sees delivery order, layer coverage, and dependency reasoning in one place. §4 Solution Strategy summarises the overall approach; §9.2 holds the per-Chapter detail.
 
 #### §9.3 Chapter Entries
 
-One entry per Chapter, in delivery sequence.
+One entry per Chapter, in delivery sequence. Chapter entries are **lightweight** — 10–20 lines. Detail (key files, wiring, gotchas, patterns, C4 component diagrams) belongs in §9.4 Layer entries, not here.
 
 ```markdown
 ### Chapter N — [Name]
 
-**Journey:** [Parent Journey]
-**Sequence:** N of M
-**Status:** ✅ complete / 🔲 pending / 🚧 in progress
-**Delivered:** [date or sprint]
-**Issues:** [issue tracker refs — e.g. org/repo#N]
-**Navigation:** `git log --grep="#N" --oneline`
-**Blog:** [session blog entry capturing the narrative — e.g. blog/YYYY-MM-DD-title.md]
+**Journey:** [Journey] | **Sequence:** N of M | **Status:** ✅ / 🚧 / 🔲
+**Delivered:** [date] | **Issues:** [refs] | **Blog:** [link]
 
-**Purpose and business value**
-[1–2 paragraphs: what this Chapter delivers and why it matters]
-
-**End-to-end readiness**
-- Fully end-to-end: Yes / No
-- What works after this Chapter ships: [description]
-- Next required Chapters: [list]
+**What this delivers**
+[2–3 sentences: what the system can do end-to-end after this Chapter ships, that it
+could not do before. Focus on the user-visible or compliance-visible outcome.]
 
 **Accountability gaps closed**
-
-| Gap | What breaks without it | Layer |
-|---|---|---|
-| [Requirement not met before this Chapter] | [Consequence] | [Layer that closes it] |
+- [Gap name] → [Layer that closes it]
 
 **Layer Impact**
-
-| Layer | Changes in this Chapter | Delta | Notes |
-|---|---|---|---|
-| [Layer name] | [What changed] | None / Low / Medium / High | New / Extended / Unchanged |
-
-**C4 views for this Chapter**
-- Component diagram: filtered view, new elements green, modified yellow
-- Dynamic diagram: key flows for this Chapter
-
-**Dependencies and risks**
-- Dependencies on other Chapters or external systems
-- Technical risks and mitigation
-- Architectural debt introduced (if any)
+| Layer | Delta |
+|---|---|
+| [Layer name] | Low / Medium / High |
 ```
+
+**Rules:**
+- Navigation (`git log --grep`) lives in the Layer entry, not here — avoid duplication.
+- C4 Component diagrams belong in the Layer entry for the layer introduced or most changed. Only include a Chapter-level diagram when a Chapter spans multiple layers and the cross-layer interaction is the point — not by default.
+- Risks and technical debt go in §12, not per Chapter entry.
+- If a Chapter maps 1:1 to a single Layer, the Chapter entry is a delivery summary only. The full architectural record is in the Layer entry.
+- If a Chapter spans multiple Layers, the Layer Impact table is the cross-layer view that neither Layer entry alone can provide — keep it clear.
 
 #### §9.4 Layer Entries
 

@@ -40,19 +40,15 @@ gastown-casehub-analysis-v2.md, LAYER-LOG.md. Not runnable code. Dense with rati
 **Examples today:** PLATFORM.md capability ownership table, casehub-devtown
 `docs/gastown-casehub-analysis-v2.md`, AML vs ClinicalAgent comparison table.
 
-### Field tutorials
+### Reference architecture applications
 
-**What:** Progressive integration of CaseHub foundation modules into a real domain
-application. Production code. Written for developers building systems in a specific
-industry — AML compliance, clinical trials, software engineering.
+**What:** Production-grade domain applications built on the CaseHub foundation — demonstrating the full harness integration in a real-world domain. Each is a reference architecture: correct, deployable, and potentially production-ready if the community evolves it in that direction.
 
-**Form:** A production application repo (devtown, AML, clinical) with LAYER-LOG.md
-capturing the integration progression, blog entries capturing the decisions, and git
-history capturing the chronology. Runnable end-to-end with a single HTTP call at every
-layer. Domain knowledge is a prerequisite — these tutorials assume it.
+**Form:** A production application repo (devtown, AML, clinical) with ARC42STORIES.MD as the architectural record, LAYER-LOG.md capturing the integration progression, blog entries capturing decisions, and git history capturing chronology. Runnable end-to-end with a single HTTP call at every layer. Domain knowledge is a prerequisite — practitioners in each field will have it.
 
-**Build pattern:** Vertical slice first, then deepen (see §2.2). Layers in LAYER-LOG.md
-are ordered for reading, not for building.
+**Build pattern:** Vertical slice first, then deepen (see §2.2). Layers are ordered for reading — the sequence in which a developer understands the architecture — not for building.
+
+**Tutorial role:** Tutorial content is a byproduct of this record, not its purpose. Spot tutorials and architectural highlights are extracted from the reference architecture; they do not drive it.
 
 **Examples today:** casehub-aml (Layers 1–3 complete), casehub-devtown (Layers 1, 2, 5).
 
@@ -75,9 +71,9 @@ runnable code. Should run in under 30 seconds and produce self-narrating output.
 **Examples today:** qhorus `SecureCodeReviewScenario`, qhorus normative-layout tests,
 casehub-ledger 9-scenario examples, the execution control showcase (§8 below).
 
-**Relationship to field tutorials:** field tutorials generate spot tutorial material as
+**Relationship to reference architectures:** reference architectures generate spot tutorial material as
 a by-product. A pattern discovered while building AML Layer 3 becomes a technique entry
-in the spot tutorial catalogue. A gotcha becomes a garden entry. The field tutorial is
+in the spot tutorial catalogue. A gotcha becomes a garden entry. The reference architecture is
 the source; the spot tutorial is the extracted, reusable form.
 
 ---
@@ -116,30 +112,32 @@ Four domain applications currently demonstrate the harness across domains:
 
 Each demonstrates that the same harness holds across domains — from regulated enterprise compliance to game AI. An LLM with all four as reference material can build a fifth domain application in any domain without asking questions.
 
-### 2.0b Every domain application is both a field showcase and a field tutorial
+### 2.0b Domain applications are reference architectures
 
-Every CaseHub domain application serves two purposes simultaneously — for the same audience:
+Every CaseHub domain application is a **reference architecture** — a production-grade system demonstrating the full CaseHub harness in a real domain, with potential for production adoption if the community evolves it in that direction. They are not tutorial applications; they are real applications whose documentation is thorough enough to teach.
 
-- **Field showcase:** demonstrates CaseHub's compliance and accountability capabilities to practitioners evaluating the platform for their domain
-- **Field tutorial:** teaches CaseHub integration to developers who build systems in that domain
+The architectural record serves two purposes beyond the running system. First, **understanding** — how the layers integrate and how the parts come together, which is necessary for humans and LLMs to refactor, extend, improve, and fix the system confidently. Second, **cross-domain reuse** — not cloning this domain, but using the architectural patterns as a structural template for new domain implementations. An AML system uses the layer integration sequence, CDI displacement pattern, and content-driven binding conditions from devtown as a starting point; it does not copy the PR review domain logic.
 
-These are not competing goals. A Java developer at a financial institution who watches the AML investigation showcase is the same developer who follows the tutorial to build their own investigation system. A Java developer at a pharmaceutical company who sees the clinical trial demonstration is the same developer who implements their own trial coordination application. A Java developer evaluating devtown for their team's code review workflow is the same developer who will build that workflow.
+Where teaching is needed, it happens through two mechanisms extracted from the reference architecture, not embedded in it:
 
-The "field" qualifier matters. Each domain application targets practitioners who already have domain knowledge — because domain knowledge is the audience's prerequisite, not a barrier. GCP compliance is standard knowledge for a Java developer working in pharma. AML workflow is standard knowledge for a Java developer at a bank. Code review orchestration is standard knowledge for any Java developer. CaseHub domain applications assume that knowledge and show what the platform adds on top.
+- **Spot tutorials** — isolated, self-contained demonstrations of one concept or pattern (see §1.5). Extracted from the reference architecture as needed.
+- **Architectural highlights** — focused explanations of how specific techniques come together: why `@DefaultBean` displacement keeps each layer a coherent deployable state, how content-driven binding conditions replace author-declared routing, how parallel WAITING enables max-not-sum cycle time. These emerge from the reference architecture record; they do not drive it.
 
-There is no hierarchy between field tutorials. AML, clinical, and devtown each serve their own field. AML is not "the" tutorial — it is the tutorial for Java developers in financial services, and currently the furthest along.
+The "field" qualifier on each domain matters: each reference architecture targets practitioners who already have domain knowledge — because that knowledge is a prerequisite, not a barrier. GCP compliance is standard for a Java developer in pharma. AML workflow is standard for a Java developer at a bank. Code review orchestration is standard for any Java developer. CaseHub domain applications assume that knowledge and show what the platform adds.
 
-### 2.1b Production-first — the tutorial structure emerges from the integration sequence
+There is no hierarchy between reference architectures. AML, clinical, and devtown each serve their own domain. AML is not "the" primary reference — it is the reference architecture for financial services, and currently the furthest along.
 
-Every domain application is designed and built for production deployment. The tutorial structure is not a separate design concern — it emerges from documenting the natural sequence in which you would integrate CaseHub foundation modules when building a real application.
+### 2.1b Production-first — the layer documentation emerges from the integration sequence
 
-**Do not make architectural decisions to serve the tutorial.** Every line of code must justify its existence in a deployed production system. The tutorial documents what you built; it does not drive what you build.
+Every domain application is designed and built for production deployment. The layer documentation structure is not a separate design concern — it emerges from documenting the natural sequence in which you would integrate CaseHub foundation modules when building a real application.
 
-The only tutorial-specific element is Layer 1: the domain baseline showing the domain without CaseHub. This is a deliberate comparison baseline — code a team would actually write without the platform, so the reader can see exactly what gap each subsequent layer closes. From Layer 2 onward, every implementation decision is a production decision. **The code must be production quality throughout — no gap markers or tutorial annotations in source files.** Accountability gaps are documented in LAYER-LOG.md in a structured table per layer entry, mapping each gap to the foundation module that closes it.
+**Do not make architectural decisions to serve the documentation.** Every line of code must justify its existence in a deployed production system. The architectural record documents what you built; it does not drive what you build.
 
-The foundation modules map to teaching layers in LAYER-LOG.md. This table is a
+The only layer with a deliberate comparison baseline is Layer 1: the domain without CaseHub. This shows what a team would actually write without the platform, making the accountability gap visible before the foundation modules close it. From Layer 2 onward, every implementation decision is a production decision. **The code must be production quality throughout — no gap markers or annotations in source files.** Accountability gaps are documented in LAYER-LOG.md (or ARC42STORIES.MD §9.4) in a structured table per layer entry, mapping each gap to the foundation module that closes it.
+
+The foundation modules map to architectural layers in LAYER-LOG.md. This table is a
 **reading guide** — the order in which a developer should encounter the layers to
-understand the progression. It is not a build sequence. Build order is driven by
+understand the architecture. It is not a build sequence. Build order is driven by
 vertical slices (see §2.2).
 
 | Layer | What it adds | What gap it closes |
@@ -223,12 +221,12 @@ Every example runs with a single command or HTTP call. The developer should see 
 The three tutorial types (§1.5) serve different developer needs. Matching the type to
 the need is as important as the content.
 
-| Developer need | Tutorial type | Starting point |
+| Developer need | Artifact | Starting point |
 |---|---|---|
-| Evaluating CaseHub architecture for an enterprise decision | Architectural style guide | PLATFORM.md, gastown analysis, LAYER-LOG overview |
-| Building a real system in their domain | Field tutorial | Domain app (devtown/AML/clinical) — start with Layer 1 |
-| Integrating one module into an existing system | Field tutorial (bottom-up) | Standalone module examples (casehub-work, qhorus) |
-| Understanding one concept deeply before committing | Spot tutorial | Technique/approach/showcase for that specific capability |
+| Evaluating CaseHub architecture for an enterprise decision | Architectural style guide | PLATFORM.md, gastown analysis, ARC42STORIES.MD |
+| Understanding how a full domain integration is structured | Reference architecture | Domain app (devtown/AML/clinical) — ARC42STORIES.MD Chapter Index |
+| Integrating one module into an existing system | Spot tutorial (technique) | Standalone module examples (casehub-work, qhorus) |
+| Understanding one concept deeply before committing | Spot tutorial or architectural highlight | Technique/approach/showcase for that specific capability |
 | Evaluating a specific CaseHub capability | Spot tutorial (showcase) | Isolated example: Merkle proof, trust routing, 3-channel layout |
 
 **Spot and technique tutorials are not entries into a field tutorial.** A developer who
@@ -484,9 +482,9 @@ with self-narrating output that can be completed in one HTTP call or test run.
 
 ---
 
-## 6. AML Investigation — Field Tutorial for Java Developers in Financial Services
+## 6. AML Investigation — Reference Architecture for Financial Services
 
-**Role:** Field showcase and tutorial for Java developers in financial services — banking, AML compliance, transaction monitoring, SAR filing. Reference implementation for the harness tutorial pattern (Layers 1–3 complete, Layers 4–7 in progress).
+**Role:** Reference architecture demonstrating CaseHub for Java developers in financial services — banking, AML compliance, transaction monitoring, SAR filing. Production-grade, with potential for community adoption. Currently the furthest-along reference implementation (Layers 1–3 complete, Layers 4–7 in progress).
 
 **Why this audience relates:** Java dominates banking infrastructure. AML compliance systems — transaction monitoring, case management, SAR filing — are systems Java developers in this field have built and integrated. They recognise the failure modes first-hand: audit trails that can't reconstruct the decision chain, human escalation that fires too late, SAR filings where nobody can say which agent made the call.
 
@@ -503,7 +501,7 @@ with self-narrating output that can be completed in one HTTP call or test run.
 
 Slices 2–4 are ordered by sequential dependency: ledger before trust (trust reads attestation data written by ledger). Engine adaptive routing (Slice 3) is orthogonal to trust routing (Slice 4) but delivers more foundation value sooner.
 
-### 6.1 Tutorial layers
+### 6.1 Layer integration sequence
 
 **Layer 1 — The business scenario alone (no CaseHub)**
 
@@ -621,9 +619,9 @@ That is three sentences covering three layers. A Java developer who has used Spr
 
 ---
 
-## 7. Clinical Trial Coordination — Field Tutorial for Java Developers in Regulated Healthcare
+## 7. Clinical Trial Coordination — Reference Architecture for Regulated Healthcare
 
-**Role:** Field showcase and tutorial for Java developers in pharma, biotech, and clinical research organisations. GCP domain knowledge is a prerequisite for this audience — and it is standard knowledge for Java developers in that field. The same developer who evaluates CaseHub for their trial system is the developer who follows the tutorial to build it.
+**Role:** Reference architecture demonstrating CaseHub for Java developers in pharma, biotech, and clinical research organisations. GCP domain knowledge is a prerequisite for this audience — and it is standard knowledge for Java developers in that field. Production-grade; potential for adoption by organisations building compliant trial coordination systems.
 
 **Comparison baseline:** ClinicalAgent ([arXiv 2404.14777](https://arxiv.org/abs/2404.14777), GitHub open source) — peer-reviewed (ACM BCB '24), showing exactly what naive LLM trial coordination looks like.
 
@@ -638,7 +636,7 @@ That is three sentences covering three layers. A Java developer who has used Spr
 | Tamper-evident audit (FDA) | No audit trail | Merkle MMR + Ed25519-signed checkpoints |
 | Trust-weighted safety agent routing | No trust model | Bayesian Beta from outcome attestations |
 
-### 7.2 Tutorial layers
+### 7.2 Layer integration sequence
 
 **Layer 1 — Domain baseline (no CaseHub foundation)**
 
@@ -722,9 +720,9 @@ ClinicalAgent runs as a linear pipeline for one site. It has no concept of SLA, 
 
 ---
 
-## 7.5 PR Review Orchestration — Field Tutorial for Java Developers in Software Engineering
+## 7.5 PR Review Orchestration — Reference Architecture for Software Engineering Coordination
 
-**Role:** Field showcase and tutorial for Java developers in software engineering and DevOps — a domain every Java developer knows from their own daily practice. Demonstrates CaseHub's value in a context developers experience directly: the gap between a naive AI code review and one where every specialist reviewer is formally accountable, every missed finding is traceable, and routing improves from outcome history.
+**Role:** Reference architecture demonstrating CaseHub for Java developers in software engineering and DevOps — a domain every Java developer knows from their own daily practice. Shows the gap between naive AI code review and a system where every specialist reviewer is formally accountable, every missed finding is traceable, and routing improves from outcome history. Production-grade; potential for adoption by engineering teams.
 
 **Comparison baseline:** GitHub Copilot code review, CodeRabbit — showing what LLM-based review looks like without formal accountability or adaptive routing.
 
@@ -747,7 +745,7 @@ since trust scoring reads attestation data written by ledger. Slice 3 (qhorus) h
 hard dependency but delivers the obligation lifecycle teaching that makes Slice 4's
 audit trail meaningful.
 
-### 7.5.1 Tutorial layers
+### 7.5.1 Layer integration sequence
 
 **Layer 1 — Domain baseline (no CaseHub foundation)**
 
@@ -950,7 +948,7 @@ Example: link to examples/<name>
 - [ ] Split work-examples into core and full variants (issue #152)
 - [ ] Cross-project integration example: work + ledger (expense approval with audit trail)
 
-### Phase 2 — AML (field tutorial: Java developers in financial services)
+### Phase 2 — AML Reference Architecture (financial services)
 
 - [x] Layer 1: domain baseline (no CaseHub)
 - [x] Layer 2: + casehub-work (compliance officer WorkItem with 30-day FinCEN SLA)
@@ -967,7 +965,7 @@ Example: link to examples/<name>
 - [ ] Mapping table: LangChain4j pattern → CaseHub expression → AML scenario
 - [ ] Covers engine issue #102 children: #101, #107, #112, #113, #114, #115, #116
 
-### Phase 3b — Devtown (field tutorial: Java developers in software engineering)
+### Phase 3b — Devtown Reference Architecture (software engineering coordination)
 
 - [ ] Layer 1: domain baseline (no CaseHub)
 - [ ] Layer 2: + casehub-work (PR review WorkItem with SLA)
@@ -977,7 +975,7 @@ Example: link to examples/<name>
 - [ ] Layer 6: trust routing from post-merge outcome attestations
 - [ ] Layer 7: comparison table vs GitHub Copilot code review, CodeRabbit
 
-### Phase 4 — Clinical (field tutorial: Java developers in regulated healthcare)
+### Phase 4 — Clinical Reference Architecture (regulated healthcare)
 
 - [ ] Layer 1: domain baseline (no CaseHub)
 - [ ] Layer 2: + casehub-work (adverse event WorkItem with 24h GCP SLA)
@@ -995,7 +993,7 @@ Example: link to examples/<name>
 | Decision | Rationale |
 |---|---|
 | AML as field tutorial for Java developers in financial services, not security incident response | Java developers in banking know AML from their careers — no domain onboarding needed. Security incident response (MyAntFarm comparison) is strong on community fit but weak on market entry gap (SOAR is a crowded incumbent market). |
-| Clinical and devtown are also field tutorials, not just showcases | GCP domain knowledge is a prerequisite — but for Java developers in pharma/biotech, it is standard knowledge. Code review orchestration is standard knowledge for any Java developer. Each domain app serves the developers who already work in that field. |
+| AML, clinical, and devtown are reference architectures | GCP domain knowledge is a prerequisite for clinical — but standard for Java developers in pharma/biotech. Code review orchestration is standard for any Java developer. Each reference architecture targets practitioners who already have domain knowledge. Tutorial value is a byproduct of the architectural record, not a design goal. |
 | Production-first: tutorial structure emerges from the integration sequence | Designing for the tutorial produces tutorial code. Designing for production and documenting the progressive integration sequence produces production code that teaches. The only tutorial-specific element is the Layer 1 domain baseline. |
 | Execution control showcase separate from domain tutorials | A developer evaluating CaseHub's binding model should not need to understand AML. Separate entry points for separate purposes. |
 | Examples in each project repo, not a separate tutorials repo | Examples run in CI. They are tested code. Separating them from the project creates drift. |
