@@ -7,19 +7,39 @@
 
 ## Purpose
 
-Lightweight outbound message connectors for the casehubio platform. Provides a unified `Connector` CDI SPI with built-in implementations for Slack, Teams, Twilio SMS, WhatsApp, and email. No Camel, no vendor SDKs — pure `java.net.http.HttpClient`.
+Outbound and inbound message connector library for the casehubio platform. Provides a `Connector` CDI SPI (outbound) and `InboundConnector`/`WebhookInboundConnector` SPIs (inbound) with built-in implementations for Slack, Teams, Twilio SMS, WhatsApp, email (outbound), and email inbound (IMAP polling). No Camel, no vendor SDKs — pure `java.net.http.HttpClient`.
 
-This is the **canonical outbound notification infrastructure** for the platform. Any repo that needs to send outbound messages (escalations, alerts, notifications) must use this SPI rather than implementing its own connector.
+This is the **canonical notification infrastructure** for the platform. Any repo that needs to send outbound messages (escalations, alerts, notifications) or receive inbound messages must use these SPIs rather than implementing its own connectors.
 
 ---
 
 ## Key Abstractions
 
-### SPI
+### Outbound SPI — `Connector`
 
 The `Connector` CDI SPI has two methods: an id accessor and a send method that takes a message with destination, title, and body. Custom connectors implement it as CDI beans — auto-discovered. See docs/DESIGN.md for method signatures and the ConnectorMessage type.
 
+### Inbound SPI — `InboundConnector` / `WebhookInboundConnector`
+
+Two inbound SPIs:
+
+- **`InboundConnector`** — pull-based polling (e.g. IMAP). `InboundConnectorService` polls all registered `InboundConnector` implementations on a configurable schedule and fires a CDI `Event<InboundMessage>` for each received message. At-least-once delivery.
+- **`WebhookInboundConnector`** — push-based webhook reception. Abstract base class; implementations register an HTTP endpoint that receives webhook payloads and normalises them to `InboundMessage`. Fires CDI `Event<InboundMessage>` on receipt.
+
+Consumers observe `Event<InboundMessage>` and react accordingly — they never call inbound SPIs directly.
+
+### Module Structure
+
+| Module | Contents |
+|--------|----------|
+| `casehub-connectors` | `Connector` SPI + Slack, Teams, Twilio SMS, WhatsApp outbound impls; `InboundConnector` SPI + `InboundConnectorService` polling engine; `WebhookInboundConnector` abstract base |
+| `casehub-connectors-email` | SMTP outbound via `quarkus-mailer` |
+| `casehub-connectors-email-inbound` | `EmailInboundConnector` — IMAP polling, `EmailInboundAccountProvider` SPI |
+| `casehub-connectors-qhorus` | Optional — `WatchdogAlertEvent → ConnectorService.send()` bridge; activates by classpath presence |
+
 ### Built-in Implementations
+
+**Outbound:**
 
 | ID | Module | Auth |
 |---|---|---|
@@ -29,15 +49,21 @@ The `Connector` CDI SPI has two methods: an id accessor and a send method that t
 | `whatsapp` | `casehub-connectors` | API Token + Phone Number ID in config |
 | `email` | `casehub-connectors-email` | SMTP via `quarkus-mailer` |
 
+**Inbound:**
+
+| ID | Module | Auth |
+|---|---|---|
+| `email-inbound` | `casehub-connectors-email-inbound` | IMAP username/password in MP Config |
+
 ### Configuration
 
-Twilio and WhatsApp require account credentials in config. Slack and Teams: no config — webhook URL is passed as the destination at call time. See docs/DESIGN.md for configuration property names.
+Twilio and WhatsApp require account credentials in config. Slack and Teams: no config — webhook URL is passed as the destination at call time. Email inbound: IMAP host, port, username, and password via MP Config. See docs/DESIGN.md for property names.
 
 ---
 
 ## Depends On
 
-Nothing in the casehubio ecosystem. Pure Java (`java.net.http.HttpClient`) + optional `quarkus-mailer` for email.
+Nothing in the casehubio ecosystem. Pure Java (`java.net.http.HttpClient`) + optional `quarkus-mailer` for email outbound + standard IMAP (`jakarta.mail`) for email inbound.
 
 ## Depended On By
 
@@ -45,6 +71,8 @@ Nothing in the casehubio ecosystem. Pure Java (`java.net.http.HttpClient`) + opt
 |---|---|
 | `casehub-engine` | Escalation and notification paths (not yet wired) |
 | `casehub-work-notifications` | Should delegate to `casehub-connectors` rather than maintain its own Slack/Teams implementations |
+| `casehub-qhorus` | Optional — `WatchdogAlertEvent → ConnectorService.send()` bridge activates by classpath presence |
+| `casehub-life` | Household and care notifications (contractor alerts, carer escalations) |
 
 ---
 
@@ -52,14 +80,13 @@ Nothing in the casehubio ecosystem. Pure Java (`java.net.http.HttpClient`) + opt
 
 - Provide domain logic — purely delivery infrastructure
 - Route or schedule notifications — callers decide when and what to send
-- Implement inbound message handling
 - Depend on casehub-work, casehub-ledger, or casehub-engine
 
 ---
 
 ## Notification Consolidation Rule
 
-**Do not implement a new Slack, Teams, SMS, or email connector in any other repo.** All outbound messaging routes through this SPI. If a new channel type is needed, add it here.
+**Do not implement a new Slack, Teams, SMS, email, or inbound connector in any other repo.** All outbound and inbound messaging routes through these SPIs. If a new channel type is needed, add it here.
 
 `casehub-work-notifications` currently has parallel Slack/Teams implementations — this is a known overlap risk and should be resolved by delegating to `casehub-connectors`.
 
@@ -67,14 +94,7 @@ Nothing in the casehubio ecosystem. Pure Java (`java.net.http.HttpClient`) + opt
 
 ## Current State
 
-- Lightweight and early-stage — no `CLAUDE.md` yet; `docs/DESIGN.md` stub exists
-- Recently added to the ecosystem CI dashboards
+- Multiple shipped epics — connectors#4 (webhook inbound SPI), connectors#7 (email inbound)
 - Published to GitHub Packages at `0.2-SNAPSHOT`
 - GroupId: `io.casehub`
 - Not yet wired into casehub-engine or casehub-work escalation paths
-
----
-
-## Usage
-
-Callers inject all `Connector` beans, filter by id, and call send with a destination, title, and body. See docs/DESIGN.md for a usage example.
