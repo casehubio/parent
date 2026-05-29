@@ -262,6 +262,8 @@ Infrastructure, hosting, and deployment topology.
 
 System-wide patterns — security, observability, error handling, coding conventions. Reference external protocol documents rather than duplicating them here.
 
+**Anti-patterns belong here.** Include a concise anti-patterns subsection covering the failure modes most likely when extending this system. Use Symptom → Cause → Fix format (consistent with Gotchas in §9.4). Do not merely reference an external document — if the anti-pattern matters, the content belongs here. A reader with only ARC42STORIES.MD in context will not follow external references.
+
 ---
 
 ### §9 Journeys and Chapters *(Core Extension)*
