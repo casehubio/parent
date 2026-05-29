@@ -140,7 +140,7 @@ Four tiers, always kept separate:
 | `casehub-ledger` | [casehubio/ledger](https://github.com/casehubio/ledger) | Immutable tamper-evident audit ledger + trust scoring. Modules: `api`, `runtime`, `deployment`, `persistence-memory` (`casehub-ledger-memory` — zero-datasource in-memory SPIs) | Foundation |
 | `casehub-work` | [casehubio/work](https://github.com/casehubio/work) | Human task lifecycle (WorkItem inbox, SLA, delegation, routing) | Foundation |
 | `casehub-qhorus` | [casehubio/qhorus](https://github.com/casehubio/qhorus) | Peer-to-peer agent communication mesh | Foundation |
-| `casehub-connectors` | [casehubio/connectors](https://github.com/casehubio/connectors) | Outbound message connectors (Slack, Teams, SMS, email) | Foundation |
+| `casehub-connectors` | [casehubio/connectors](https://github.com/casehubio/connectors) | Outbound and inbound message connectors (Slack, Teams, SMS, email outbound; webhook + IMAP email inbound) | Foundation |
 | `casehub-engine` | [casehubio/engine](https://github.com/casehubio/engine) | Hybrid choreography+blackboard orchestration engine | Orchestration |
 | `claudony` | [casehubio/claudony](https://github.com/casehubio/claudony) | Remote Claude CLI sessions + unified ecosystem dashboard | Integration |
 | `casehub-openclaw` | [casehubio/openclaw](https://github.com/casehubio/openclaw) | CaseHub × OpenClaw integration — ChannelContextWindow, WorkerProvisioner, ChannelBackend SPI, Python SDK context hook | Integration |
@@ -240,8 +240,7 @@ casehub-parent              (BOM — publish first; all others import it)
 | `casehub-qhorus` (runtime) | `casehub-openclaw` | `casehub` | Qhorus runtime for SPI registration |
 | `casehub-qhorus-api` | `drafthouse` | `app` | channel routing |
 | `casehub-qhorus` (runtime) | `drafthouse` | `app` | runtime dep |
-| `casehub-engine-api` | `casehub-openclaw` | `core` | `WorkerProvisioner`, `CaseChannelProvider`, `WorkerStatusListener` SPIs |
-| `casehub-engine` (runtime) | `casehub-openclaw` | `casehub` | engine runtime for SPI implementations |
+| `casehub-engine-api` | `casehub-openclaw` | `casehub` | `WorkerProvisioner`, `CaseChannelProvider`, `WorkerStatusListener` SPI implementations; uses api (not runtime) to avoid engine CDI beans with unsatisfied persistence SPIs |
 | `casehub-platform-api` | `casehub-openclaw` | `core` | `CurrentPrincipal`, `GroupMembershipProvider` (permission-aware context) |
 | `casehub-ledger` (runtime) | `casehub-life` | `app` | Merkle audit, GDPR erasure, trust scoring |
 | `casehub-work` (runtime) | `casehub-life` | `app` | WorkItems with SLA and escalation |
@@ -287,6 +286,7 @@ casehub-parent              (BOM — publish first; all others import it)
 | Agent routing / selection | `casehub-engine-api` | `AgentRoutingStrategy` SPI; CDI priority resolution in `WorkOrchestrator` (`@Any Instance<AgentRoutingStrategy>`). Implementations: `LeastLoadedAgentStrategy` (engine runtime, `@Priority(0)` default), `TrustWeightedAgentStrategy` (casehub-engine-ledger, `@Priority(1)`), `SemanticAgentRoutingStrategy` (casehub-engine-ai, `@Priority(2)`, optional) |
 | Agent embedding vector provider | `casehub-engine-ai` | `AgentEmbeddingProvider` SPI — required by `SemanticAgentRoutingStrategy`; activates semantic agent routing when on classpath (see [`optional-module-pattern.md`](protocols/optional-module-pattern.md)). SPI lives in `casehub-engine-ai` (not `casehub-engine-api`) so the entire feature is opt-in — no embedding provider contract imposed on deployments that don't use semantic routing. |
 | Outbound notifications (Slack, Teams, SMS, email) | `casehub-connectors` | `Connector` SPI; `casehub-work-notifications` must delegate here |
+| Inbound message reception (webhook push + IMAP pull) | `casehub-connectors` | `WebhookInboundConnector` SPI (push); `InboundConnector` SPI + `InboundConnectorService` polling (pull); fires `Event<InboundMessage>` CDI event; `casehub-connectors-email-inbound` for IMAP via `EmailInboundAccountProvider` SPI |
 | Agent-to-agent messaging (typed channels + messages) | `casehub-qhorus` | 9 speech-act types, 5 channel semantics, MCP tools. All writes flow through `MessageService.dispatch(MessageDispatch)` — single gate for ACL, rate limit, LAST_WRITE, ledger, and fan-out. `MessageDispatch` builder carries sender, type, content, correlationId, inReplyTo, artefactRefs, target, actorType, deadline; builder validates protocol invariants at `build()` (DONE/DECLINE/FAILURE/HANDOFF/RESPONSE require inReplyTo + correlationId; HANDOFF requires target). `DispatchResult` carries ledgerEntryId, subjectId, causedByEntryId, parentReplyCount. |
 | Dashboard read/write API (composed views: channel with message count, instance with capability tags, timeline mapping, human message send) | `casehub-qhorus` | `QhorusDashboardService` in `io.casehub.qhorus.runtime.dashboard` — inject this for dashboard/UI consumers needing composed views. Do NOT inject raw entity services for this use case. |
 | Channel message fan-out to external backends | `casehub-qhorus` | `ChannelBackend` SPI in `casehub-qhorus-api`; implementations in consuming repos (Claudony panel, connectors) |
