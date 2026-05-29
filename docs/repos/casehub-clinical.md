@@ -44,6 +44,11 @@ The tutorial structure emerges from the natural adoption sequence. Each layer ad
 - `TrialCaseLookup` — site → trial → engineCaseId lookup for signal routing
 - `TrialSafetySignalService` — observes `AeEscalationCompletedEvent`; clears `grade4Active.<siteId>` flag
 - `ClinicalTrial.engineCaseId` — UUID field (V110 migration) set on ACTIVE transition
+- `AdverseEvent.escalationStatus` — `AeEscalationStatus` (V111, NOT NULL DEFAULT 'NONE'); tracks AE escalation case lifecycle (NONE / REQUESTED / COMPLETED / FAILED)
+- `AdverseEvent.engineCaseId` — UUID nullable (V112); set when AE escalation case starts
+- `ProtocolDeviation.engineCaseId` — UUID nullable (V113); set when IRB deviation case starts
+- `AeStatusUpdater` — CDI bean that extracts the COMPLETED write-back from `AeEscalationListener`; isolated in `@Transactional(REQUIRES_NEW)` for Panache mockability in tests
+- `IrbCommitteeAssignmentPolicy` SPI — maps `IrbCommitteeContext(deviationId, siteId, trialId, severity)` to `IrbCommitteeAssignment(committeeId, candidateGroups)`; interface in `api/spi/`, `@DefaultBean` in `runtime/service/`; mirrors `DeviationResponsePolicy` pattern. Full SPI control of WorkItem routing for `candidateGroups` blocked by engine#387 (dynamic `candidateGroups` from case context in YAML `humanTask` binding)
 - `SEVERE_GRADES = Set.of(GRADE_4, GRADE_5)` — shared grade threshold constant in signal services
 - 3-site showcase scenario vs ClinicalAgent
 
@@ -86,6 +91,8 @@ These apply to any consumer adding casehub-engine to a CaseHub application. Docu
 - `on.contextChange.filter` is the correct path — not `when`
 
 These are silent failures: the YAML parses without error but the binding has no effect at runtime.
+
+**`WorkloadProvider` stub:** `StubWorkloadProvider` is a `@DefaultBean @ApplicationScoped` zero-returning stub required because engine#378 deleted `CasehubWorkloadProvider`. Add it to any `@QuarkusTest` context that activates casehub-engine but does not provide a real workload provider. Root cause tracked in casehubio/engine#393.
 
 ## Key Epics
 
