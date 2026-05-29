@@ -64,6 +64,8 @@ Reference these protocols rather than duplicating their content:
 | Architectural patterns | `docs/ARCHITECTURE.md` |
 | Capability ownership | `docs/PLATFORM.md` Capability Ownership table |
 
+**Anti-patterns must be present inline in §8** — do not merely reference AGENTIC-HARNESS-GUIDE.md. A reader with only ARC42STORIES.MD in context will not follow the reference. Include the 2–3 most dangerous failure modes for this specific application in Symptom → Cause → Fix format. The full platform-wide list remains in `docs/AGENTIC-HARNESS-GUIDE.md §Anti-patterns`.
+
 ---
 
 ## Platform References (§3 Context and Scope)
@@ -97,9 +99,9 @@ Arc42Stories for CaseHub produces one permanent document per application:
 
 Before writing any class, apply the production-first test:
 
-> "Would this class exist in a production system that does not include any other Chapters?"
+> "Would this class exist in a production system built to this layer and no further?"
 
-If no — do not build it. Document the architecture in the Arc42Stories document instead. See `docs/AGENTIC-HARNESS-GUIDE.md §Anti-patterns` for concrete examples of what this rules out.
+If no — do not build it. Document the architecture in the Arc42Stories document instead. The most common violations and their fixes are in ARC42STORIES.MD §8 Anti-patterns (must be present in every CaseHub ARC42STORIES.MD) and in `docs/AGENTIC-HARNESS-GUIDE.md §Anti-patterns` for the full platform-wide list.
 
 ---
 
@@ -113,18 +115,29 @@ If no — do not build it. Document the architecture in the Arc42Stories documen
 
 | # | Chapter | Layers | Delta | Status |
 |---|---|---|---|---|
-| 1 | Case opens and routes | Domain baseline, casehub-engine | Low, High | ✅ |
-| 2 | Human review with SLA | + casehub-work | Medium | ✅ |
-| 3 | Formal agent obligation | + casehub-qhorus | Low | 🔲 |
-| 4 | Tamper-evident audit | + casehub-ledger | Medium | 🔲 |
-| 5 | Trust-weighted selection | + Trust routing | Medium | 🔲 |
+| 1 | Case opens and routes | L1, L5 | High, High | ✅ |
+| 2 | Human review with SLA | + L2 | Medium | ✅ |
+| 3 | Formal agent obligation | + L3 | Low | 🔲 |
+| 4 | Tamper-evident audit | + L4 | Medium | 🔲 |
+| 5 | Trust-weighted selection | + L6 | Medium | 🔲 |
+
+**Layer × Chapter matrix**
+
+| Layer | C1 ✅ | C2 ✅ | C3 🔲 | C4 🔲 | C5 🔲 |
+|---|---|---|---|---|---|
+| L1 Domain Baseline | High | Low | — | — | — |
+| L2 casehub-work | — | Medium | Low | Low | Low |
+| L3 casehub-qhorus | — | — | Low | — | — |
+| L4 casehub-ledger | — | — | — | Medium | Low |
+| L5 casehub-engine | High | Low | Low | Low | Low |
+| L6 Trust Routing | — | — | — | — | Medium |
 
 **Sequencing rationale:**
-- C1 before C2: engine runtime established in C1; casehub-work-adapter depends on engine events
+- C1 before C2: engine runtime (L5) established in C1; casehub-work-adapter depends on engine events at runtime
 - C2 before C3: SLA gate in place before formal agent obligation tracking
 - C3 before C4: qhorus messaging generates MessageLedgerEntry chain that makes audit meaningful
 - C4 before C5: trust scoring reads attestation data written by ledger — hard dependency
-- C1 built before C2 historically (engine was the architectural priority): correct Chapter practice, not a violation
+- L5 built before L2–L4 in actual delivery sequence (engine was architectural priority): Chapter ordering is reading order, not build order
 
 ---
 
