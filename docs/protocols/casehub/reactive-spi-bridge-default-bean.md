@@ -8,7 +8,7 @@ severity: important
 refs:
   - ../casehub-eidos.md
   - alternative-extension-patterns.md
-violation_hint: "@DefaultBean reactive bridge is gated with @IfBuildProperty even though it has no Hibernate Reactive dependency — it is vetoed under the default profile and callers get UnsatisfiedResolutionException."
+violation_hint: "(1) @DefaultBean reactive bridge is gated with @IfBuildProperty even though it has no Hibernate Reactive dependency — it is vetoed under the default profile and callers get UnsatisfiedResolutionException. (2) Bridge impl is missing .runSubscriptionOn(Infrastructure.getDefaultWorkerPool()) — blocking delegate runs on the calling thread (potentially the event loop) instead of the worker pool."
 created: 2026-05-29
 ---
 
