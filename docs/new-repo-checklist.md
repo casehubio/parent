@@ -115,6 +115,18 @@ All pom.xml files must be populated and valid — IntelliJ must be able to open 
   - Project section: platform context, project type, what it is, tutorial layers (if app tier),
     reference docs, build commands with `JAVA_HOME=$(/usr/libexec/java_home -v 26) mvn ...`,
     work tracking (issue tracking enabled + GitHub repo)
+  - **Application-tier repos:** the project section must include a session-start directive to
+    read `AGENTIC-HARNESS-GUIDE.md`:
+    ```
+    ## Session Start
+    Read AGENTIC-HARNESS-GUIDE.md at session start alongside this CLAUDE.md.
+    Path: `docs/AGENTIC-HARNESS-GUIDE.md` in `casehub-parent`
+    (or via the symlinked workspace: `wksp/../../parent/docs/AGENTIC-HARNESS-GUIDE.md`)
+    ```
+    This guide covers build order, LAYER-LOG.md structure, the three-document design system,
+    anti-patterns, retroactive work procedures, and ongoing maintenance protocols that apply
+    to every harness application. Without it, Claude sessions drift into tutorial-first design
+    and incorrect CDI displacement patterns within a few turns.
 
 - [ ] `LAYER-LOG.md` — application tier: tutorial layer stubs (one per foundation module
   added, in adoption order). Integration tier: epic log format (one entry per epic).
