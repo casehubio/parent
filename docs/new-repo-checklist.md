@@ -39,6 +39,10 @@ Workspace repos are named `wsp-casehub-<name>`, private, under `$GITHUB_USER`.
 
 - [ ] `gh repo create casehubio/<name> --public --description "..."`
 - [ ] Set default branch to `main` if not already.
+- [ ] Configure merge strategy — rebase merge only, squash disabled:
+  ```bash
+  gh repo edit casehubio/<name> --enable-rebase-merge --no-squash-merge
+  ```
 - [ ] Clone locally: `git clone https://github.com/casehubio/<name>.git ../casehub/<name>`
 - [ ] Set git user config in the new repo to match your identity.
 - [ ] Fork to $GITHUB_USER personal account: `gh repo fork casehubio/<name> --clone=false`
