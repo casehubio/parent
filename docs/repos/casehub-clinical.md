@@ -42,6 +42,7 @@ The tutorial structure emerges from the natural adoption sequence. Each layer ad
 - `ClinicalTrialCaseHub` + `trial-coordination.yaml` — trial-level DSMB rollup binding (cross-site Grade 4+ pattern detection); owns trial-level `CasePlanModel` not just IRB gate and AE escalation
 - `TrialActivationService` — `POST /trials/{id}/activate`; three-phase activation (commit status → startCase().join() → commit caseId); avoids Agroal pool deadlock
 - `TrialCaseLookup` — site → trial → engineCaseId lookup for signal routing
+- `SafetyOfficerNotifier` SPI — observes `AdverseEventReportedEvent` (Grade 3+ only); dispatches via casehub-connectors-core; writes `SafetyOfficerNotificationLedgerEntry` for GCP/FDA audit — clinical#11 ✅
 - `TrialSafetySignalService` — owns all grade4 blackboard flag operations: `signalGrade4Active(siteId)` sets `grade4Active.<siteId>` when a Grade 4+ AE escalation case starts (called by `AeEscalationCaseService` after Phase 3); `onAeEscalationCompleted` observes `AeEscalationCompletedEvent` and clears the flag on completion. `AeEscalationCaseService` no longer injects `CaseHubRuntime` or `TrialCaseLookup` directly — all trial blackboard signaling routes through this service.
 - `ClinicalTrial.engineCaseId` — UUID field (V110 migration) set on ACTIVE transition
 - `AdverseEvent.escalationStatus` — `AeEscalationStatus` (V111, NOT NULL DEFAULT 'NONE'); tracks AE escalation case lifecycle (NONE / REQUESTED / COMPLETED / FAILED)
@@ -75,7 +76,7 @@ casehub-clinical
   → casehub-ledger                  (FDA Merkle audit, GDPR erasure, EU AI Act Art.12, trust scoring)
   → casehub-work                    (IRB/PI WorkItems with SLA and escalation)
   → casehub-qhorus                  (COMMAND to PI, commitment lifecycle, safety agent channels)
-  → casehub-connectors-core         (sponsor notification delivery — clinical#13; DSMB/AE alerts planned — clinical#11)
+  → casehub-connectors-core         (sponsor notification delivery — clinical#13; safety officer AE notification — clinical#11 ✅)
 ```
 
 ## Layer 5 Integration Notes (casehub-engine)

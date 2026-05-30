@@ -201,7 +201,7 @@ casehub-parent              (BOM — publish first; all others import it)
 | `casehub-platform-expression` | `casehub-work` | `queues` | JQ expression evaluation (JQEvaluator) |
 | `casehub-connectors-core` | `casehub-work` | `notifications` | delivery SPI impl |
 | `casehub-connectors-core` | `devtown` | `app` | notification delivery |
-| `casehub-connectors-core` | `casehub-clinical` | `runtime` | sponsor notification delivery |
+| `casehub-connectors-core` | `casehub-clinical` | `runtime` | sponsor + safety officer notification delivery |
 | `casehub-connectors-core` | `casehub-qhorus` | `connectors` | optional — `WatchdogAlertEvent → ConnectorService.send()` bridge; activates by classpath presence |
 | `casehub-connectors-core` | `casehub-qhorus` | `connector-backend` | optional — `InboundMessage → ConnectorChannelBackend` bridge; activates by classpath presence |
 | `casehub-work-api` | `casehub-engine` | `work-adapter` | WorkItem adapter |
