@@ -10,6 +10,7 @@ Quick reference:
 
 | Protocol | One-liner |
 |----------|-----------|
+| [casehub/consumer-spi-placement.md](casehub/consumer-spi-placement.md) | Consumer-facing SPIs in api/<domain>/, not runtime/ |
 | [casehub/message-dispatch-builder-validation.md](casehub/message-dispatch-builder-validation.md) | Validate at build(), not downstream |
 | [casehub/message-service-dispatch-enforcement-gate.md](casehub/message-service-dispatch-enforcement-gate.md) | dispatch() is the only write path |
 | [casehub/ledger-algorithm-transparent-signing.md](casehub/ledger-algorithm-transparent-signing.md) | Derive algorithm from key, never hardcode |
