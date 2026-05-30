@@ -2,7 +2,7 @@
 
 **GitHub:** [casehubio/aml](https://github.com/casehubio/aml)
 **Tier:** Application
-**Status:** In progress — Layers 1–5 complete; Layers 6–7 pending
+**Status:** In progress — Layers 1–6 complete; Layer 7 pending
 
 ## What It Is
 
@@ -23,7 +23,7 @@ The tutorial structure emerges from the natural adoption sequence — each layer
 | 3 | casehub-qhorus | No formal obligation per specialist agent interaction | ✅ complete (2026-05-17) |
 | 4 | casehub-ledger | No tamper-evident FinCEN audit trail | ✅ complete (2026-05-23) |
 | 5 | casehub-engine | Fixed investigation pipeline; no adaptive paths | ✅ complete (2026-05-25) |
-| 6 | Trust routing | No trust model; random agent selection | pending (blocked: engine#336, #337) |
+| 6 | Trust routing | No trust model; random agent selection | ✅ complete (2026-05-29) |
 | 7 | Comparison vs IBM AMLSim | — | pending |
 
 ## Module Structure
@@ -41,6 +41,10 @@ Follows hexagonal architecture ([PP-20260512-9b8847](../protocols/casehub/hexago
 - Compliance officer WorkItem with 30-day FinCEN SLA and head-of-compliance escalation
 - 7-layer tutorial from naive Java through full adaptive case management
 - Comparison baseline vs IBM AMLSim and industry whitepapers
+- `AmlTrustRoutingPolicyProvider` — per-capability trust routing policies (Preferences API with AML defaults)
+- `AmlTrustScoreSeeder` — seeds initial Beta(α,β) trust scores at startup
+- `SarOutcomeFeedbackService` — writes `LedgerAttestation` on SAR outcome, closing the trust feedback loop
+- `AmlLayer6Resource` — `/api/layer6/investigations` REST endpoints (async POST, polling GET, outcome POST)
 
 ## The Compliance Gap It Closes
 
