@@ -51,7 +51,7 @@ Known consolidation candidates:
 
 Check how the same concern is handled in the two or three most similar places in the platform. Then implement it the same way. Specifically:
 
-- SPIs: see [`docs/protocols/casehub/consumer-spi-placement.md`](protocols/casehub/consumer-spi-placement.md) for the full rule. Short form: any interface a consumer (Claudony, an application repo) will implement MUST live in `api/<domain>/` — not `runtime/`. Placing it in `runtime/` forces consumers to take on the full extension dependency just to provide an implementation. Persistence SPIs with JPA deps belong in model modules. `@DefaultBean` default implementations may stay in `runtime/` if they have runtime deps (JPA, config injection). The SPI interface always moves; the default impl placement depends on its deps.
+- SPIs: consumer-facing SPI interfaces go in `api/spi/` — see [`docs/protocols/casehub/consumer-spi-placement.md`](protocols/casehub/consumer-spi-placement.md). `@DefaultBean` implementations go in `runtime/` when they have JPA or config deps; in `api/spi/` itself when they are trivially pure-Java. Persistence SPIs with JPA deps belong in model modules. The test: could a consumer implement this interface without depending on `runtime/`? If yes, the interface belongs in `api/spi/`.
 - Ledger subclasses: JOINED inheritance, consumer-owned V2000+ migration (V1000–V1007 reserved for ledger base; V2000+ provides safe buffer), domain-agnostic leaf hash. See [`docs/protocols/casehub/ledger-subclass-extension.md`](protocols/casehub/ledger-subclass-extension.md).
 - CDI events: async (`@ObservesAsync`) for ledger capture; sync for routing decisions
 - Named datasources: Qhorus always on `qhorus`, domain tables never mixed in
