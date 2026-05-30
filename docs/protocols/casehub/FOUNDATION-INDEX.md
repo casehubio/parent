@@ -3,6 +3,7 @@
 | File | Rule Summary | Applies To |
 |------|-------------|------------|
 | [consumer-spi-placement.md](consumer-spi-placement.md) | Consumer-facing SPI interfaces MUST live in api/<domain>/ — not runtime/ | Any casehubio extension or library module defining an SPI interface |
+| [jta-tsr-status-active-gate.md](jta-tsr-status-active-gate.md) | Check STATUS_ACTIVE before registerInterposedSynchronization — Narayana rejects on ROLLBACK_ONLY with opaque "state 1" | casehub-qhorus — @Transactional services deferring post-commit side effects via TSR |
 | [message-dispatch-builder-validation.md](message-dispatch-builder-validation.md) | Speech-act builder validation is the contract — enforce at build(), not downstream | casehub-qhorus — MessageService.dispatch() callers |
 | [message-service-dispatch-enforcement-gate.md](message-service-dispatch-enforcement-gate.md) | MessageService.dispatch() is the single enforcement gate — no caller may duplicate or bypass it | casehub-qhorus — any code sending a message to a Qhorus channel |
 | [ledger-algorithm-transparent-signing.md](ledger-algorithm-transparent-signing.md) | Signing and verification code must derive the algorithm from the key — never hardcode a string | casehub-ledger — io.casehub.ledger.runtime.service signing/verification/key-loading |
