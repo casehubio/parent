@@ -42,7 +42,7 @@ The tutorial structure emerges from the natural adoption sequence. Each layer ad
 - `ClinicalTrialCaseHub` + `trial-coordination.yaml` — trial-level DSMB rollup binding (cross-site Grade 4+ pattern detection); owns trial-level `CasePlanModel` not just IRB gate and AE escalation
 - `TrialActivationService` — `POST /trials/{id}/activate`; three-phase activation (commit status → startCase().join() → commit caseId); avoids Agroal pool deadlock
 - `TrialCaseLookup` — site → trial → engineCaseId lookup for signal routing
-- `TrialSafetySignalService` — observes `AeEscalationCompletedEvent`; clears `grade4Active.<siteId>` flag
+- `TrialSafetySignalService` — owns all grade4 blackboard flag operations: `signalGrade4Active(siteId)` sets `grade4Active.<siteId>` when a Grade 4+ AE escalation case starts (called by `AeEscalationCaseService` after Phase 3); `onAeEscalationCompleted` observes `AeEscalationCompletedEvent` and clears the flag on completion. `AeEscalationCaseService` no longer injects `CaseHubRuntime` or `TrialCaseLookup` directly — all trial blackboard signaling routes through this service.
 - `ClinicalTrial.engineCaseId` — UUID field (V110 migration) set on ACTIVE transition
 - `AdverseEvent.escalationStatus` — `AeEscalationStatus` (V111, NOT NULL DEFAULT 'NONE'); tracks AE escalation case lifecycle (NONE / REQUESTED / COMPLETED / FAILED)
 - `AdverseEvent.engineCaseId` — UUID nullable (V112); set when AE escalation case starts
