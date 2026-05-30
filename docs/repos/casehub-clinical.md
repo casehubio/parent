@@ -37,13 +37,13 @@ The tutorial structure emerges from the natural adoption sequence. Each layer ad
 - Multi-site trial `CasePlanModel` — site-level sub-cases with trial-level aggregation
 - Adverse event escalation — 24h/7d GCP SLA WorkItems with CTCAE grading
 - PI authorisation — formal COMMAND creates Commitment; deviation requires named PI approval; MAJOR deviations trigger GCP §4.5 sponsor notification via `SponsorNotifier` SPI (casehub-connectors-core)
+- `SafetyOfficerNotifier` SPI — observes `AdverseEventReportedEvent` (Grade 3+ only); dispatches via casehub-connectors-core; writes `SafetyOfficerNotificationLedgerEntry` for GCP/FDA audit — clinical#11 ✅
 - IRB/ethics committee gate — `ClinicalDeviationCaseHub` + `deviation-review.yaml`: CRITICAL protocol deviation + PI approval → 72h WorkItem → four terminal outcomes (APPROVED/REJECTED/DEFERRED/EXPIRED); `IrbDecisionListener` bridges WorkItem lifecycle to `IrbApproval` entity + ledger
 - AE escalation policy SPI — `AdverseEventEscalationPolicy` + `DefaultAdverseEventEscalationPolicy` (CTCAE-based): Grade 3 → senior monitor gate; Grade 4+ → senior monitor + DSMB in parallel; `ClinicalAdverseEventCaseHub` + `ae-escalation.yaml` drives adaptive routing via `contextChange.filter`
 - `ClinicalTrialCaseHub` + `trial-coordination.yaml` — trial-level DSMB rollup binding (cross-site Grade 4+ pattern detection); owns trial-level `CasePlanModel` not just IRB gate and AE escalation
 - `TrialActivationService` — `POST /trials/{id}/activate`; three-phase activation (commit status → startCase().join() → commit caseId); avoids Agroal pool deadlock
 - `TrialCaseLookup` — site → trial → engineCaseId lookup for signal routing
-- `SafetyOfficerNotifier` SPI — observes `AdverseEventReportedEvent` (Grade 3+ only); dispatches via casehub-connectors-core; writes `SafetyOfficerNotificationLedgerEntry` for GCP/FDA audit — clinical#11 ✅
-- `TrialSafetySignalService` — owns all grade4 blackboard flag operations: `signalGrade4Active(siteId)` sets `grade4Active.<siteId>` when a Grade 4+ AE escalation case starts (called by `AeEscalationCaseService` after Phase 3); `onAeEscalationCompleted` observes `AeEscalationCompletedEvent` and clears the flag on completion. `AeEscalationCaseService` no longer injects `CaseHubRuntime` or `TrialCaseLookup` directly — all trial blackboard signaling routes through this service.
+- `TrialSafetySignalService` — owns all grade4 blackboard flag operations: `signalGrade4Active(siteId)` sets `grade4Active.<siteId>` on case start (called by `AeEscalationCaseService` after Phase 3); `onAeEscalationCompleted` observes `AeEscalationCompletedEvent` and clears the flag. All trial blackboard signaling routes through this service — `AeEscalationCaseService` no longer injects `CaseHubRuntime` or `TrialCaseLookup` directly.
 - `ClinicalTrial.engineCaseId` — UUID field (V110 migration) set on ACTIVE transition
 - `AdverseEvent.escalationStatus` — `AeEscalationStatus` (V111, NOT NULL DEFAULT 'NONE'); tracks AE escalation case lifecycle (NONE / REQUESTED / COMPLETED / FAILED)
 - `AdverseEvent.engineCaseId` — UUID nullable (V112); set when AE escalation case starts
