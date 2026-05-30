@@ -230,6 +230,7 @@ casehub-parent              (BOM — publish first; all others import it)
 | `casehub-engine-scheduler-quartz` | `casehub-aml` | `app` | Quartz worker execution for in-process worker functions |
 | `casehub-platform-expression` | `casehub-aml` | `app` | JQEvaluator required by engine CDI beans (GE-20260523-86ed13) |
 | `casehub-engine-persistence-memory` | `casehub-aml` | `app` | In-memory persistence SPIs for test and tutorial deployment |
+| `casehub-engine-ledger` | `casehub-aml` | `app` | Layer 6: trust-weighted routing — activates `TrustWeightedAgentStrategy @ApplicationScoped` and `WorkerDecisionEventCapture`; local V2002/V2003 migrations for `case_ledger_entry` and `worker_decision_entry` join tables (pending engine#395 scoping fix) |
 
 | `casehub-platform` | `casehub-clinical` | `runtime` | `@DefaultBean` mocks for casehub-engine CDI wiring |
 | `casehub-platform-expression` | `casehub-clinical` | `runtime` | `JQEvaluator` for engine expression evaluation |
