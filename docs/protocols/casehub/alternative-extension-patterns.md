@@ -56,12 +56,38 @@ is an opt-in replacement added by including a module or test dependency.
 
 ---
 
+### Pattern C — casehub-ledger identity SPIs: `@DefaultBean` no-op + optional `@Alternative` implementations
+
+`NoOpDIDResolver` is `@DefaultBean`. Optional implementations (`KeyDIDResolver`, `WebDIDResolver`)
+are `@ApplicationScoped @Alternative`.
+
+```
+no-op class:     @DefaultBean (active when no other candidate)
+optional impls:  @Alternative (dormant unless activated via quarkus.arc.selected-alternatives)
+```
+
+**Why this pattern:** `@DefaultBean` is replaced by any `@ApplicationScoped` bean that
+satisfies the same type — including `@Alternative` beans activated at runtime. If optional
+implementations are `@ApplicationScoped` but not `@Alternative`, CDI sees multiple candidates
+and throws `AmbiguousResolutionException` at startup, even though they were intended to be
+opt-in. Marking them `@Alternative` keeps them dormant unless explicitly selected.
+
+**When to use:** when the default is a no-op (`@DefaultBean`) and optional full implementations
+should only activate when explicitly selected — not simply by being on the classpath.
+
+**Common mistake:** adding a second `@ApplicationScoped` impl alongside a `@DefaultBean`
+without `@Alternative` causes `AmbiguousResolutionException` at boot. The `@DefaultBean` is
+only a fallback when NO other candidate exists — it does not suppress ambiguity.
+
+---
+
 ## Decision Rule
 
 | Question | Answer | Pattern |
 |---|---|---|
 | Are the base and extension both candidates for the same injection point in the same deployment? | Yes | A — make base `@Alternative`, extension is default |
 | Is the base the only default, and the extension is opt-in by classpath presence? | Yes | B — base is default, extension is `@Alternative @Priority(1)` |
+| Is the default a no-op `@DefaultBean` and optional impls should be explicit-activation-only? | Yes | C — no-op is `@DefaultBean`, optional impls are `@Alternative` |
 
 ---
 
