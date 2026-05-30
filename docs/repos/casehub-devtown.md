@@ -2,7 +2,7 @@
 
 **GitHub:** [casehubio/devtown](https://github.com/casehubio/devtown)
 **Tier:** Application
-**Status:** Layer 1 complete; Layer 5 shipped (Epic 3) — PR review CasePlanModel with content-driven routing
+**Status:** Layers 1, 3, 5 complete; Layer 2 code complete (LAYER-LOG entry pending engine#326)
 
 ## What It Is
 
@@ -20,7 +20,7 @@ LAYER-LOG.md in the project root is the authoritative layer-by-layer record with
 |-------|------|---------------|--------|
 | 1 | Naive Java — no CaseHub | Baseline: direct service calls to analysis agents, no accountability | ✅ complete — scaffold (#8), vocabulary (#9), naive service (#27) |
 | 2 | casehub-work | No formal SLA for reviewer response; reviewer assignments not tracked | **in progress** — devtown#41 ✅ devtown#42 ✅; LAYER-LOG entry pending engine#326 |
-| 3 | casehub-qhorus | No formal obligation per specialist reviewer; DECLINE when outside expertise | pending |
+| 3 | casehub-qhorus | No formal obligation per specialist reviewer; DECLINE when outside expertise | ✅ complete — devtown#52; LAYER-LOG entry complete |
 | 4 | casehub-ledger | No tamper-evident review record; cannot trace production incident to missed finding | pending |
 | 5 | casehub-engine | Fixed review pipeline; no adaptive routing on security flags or architecture changes | ✅ complete — PR review CasePlanModel (#10); 38 tests |
 | 6 | Trust routing | No trust model; experienced security reviewers not prioritised on sensitive PRs | pending |
