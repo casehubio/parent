@@ -203,6 +203,7 @@ casehub-parent              (BOM — publish first; all others import it)
 | `casehub-connectors-core` | `devtown` | `app` | notification delivery |
 | `casehub-connectors-core` | `casehub-clinical` | `runtime` | sponsor notification delivery |
 | `casehub-connectors-core` | `casehub-qhorus` | `connectors` | optional — `WatchdogAlertEvent → ConnectorService.send()` bridge; activates by classpath presence |
+| `casehub-connectors-core` | `casehub-qhorus` | `connector-backend` | optional — `InboundMessage → ConnectorChannelBackend` bridge; activates by classpath presence |
 | `casehub-work-api` | `casehub-engine` | `work-adapter` | WorkItem adapter |
 | `casehub-work-api` | `devtown` | `review` | WorkItem types |
 | `casehub-work-core` | `casehub-engine` | `work-adapter` | WorkBroker |
@@ -352,7 +353,7 @@ casehub-parent              (BOM — publish first; all others import it)
 |---|---|---|
 | Base ledger tables | `casehub-ledger` | Flyway V1000–V1007 at `classpath:db/ledger/migration` |
 | WorkItem tables | `casehub-work` runtime | Flyway V1–V999 at `classpath:db/work/migration`; consumers must declare `quarkus.flyway.locations=classpath:db/work/migration` |
-| Qhorus tables | `casehub-qhorus` | Flyway V1–V10, V2000 (named `qhorus` datasource; `classpath:db/qhorus/migration,classpath:db/ledger/migration`; next domain migration: V11) |
+| Qhorus tables | `casehub-qhorus` | Flyway V1–V14, V2000 (named `qhorus` datasource; `classpath:db/qhorus/migration,classpath:db/ledger/migration`; next domain migration: V15) |
 | Engine tables | `casehub-engine` | Hibernate `drop-and-create` (no migrations yet) |
 | Ledger subclass join tables | Each consumer | Consumer-owned Flyway, V2000+ numbering |
 
