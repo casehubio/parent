@@ -23,7 +23,7 @@ The tutorial structure emerges from the natural adoption sequence — each layer
 | 3 | casehub-qhorus | No formal obligation per specialist agent interaction | ✅ complete (2026-05-17) |
 | 4 | casehub-ledger | No tamper-evident FinCEN audit trail | ✅ complete (2026-05-23) |
 | 5 | casehub-engine | Fixed investigation pipeline; no adaptive paths | ✅ complete (2026-05-25) |
-| 6 | Trust routing | No trust model; random agent selection | ✅ complete (2026-05-29) |
+| 6 | Trust routing | No trust model; random agent selection | ✅ complete (2026-05-29) — known: engine#395 scoping fix pending |
 | 7 | Comparison vs IBM AMLSim | — | pending |
 
 ## Module Structure
@@ -59,11 +59,12 @@ Current agentic AML systems cannot provide:
 
 ```
 casehub-aml
-  → casehub-engine   (investigation CasePlanModel, adaptive paths)
-  → casehub-ledger   (Merkle audit, FinCEN evidence chain, GDPR erasure, trust scoring)
-  → casehub-work     (compliance officer WorkItem, 30-day SLA, escalation)
-  → casehub-qhorus   (COMMAND/RESPONSE per specialist agent, commitment lifecycle)
-  → casehub-connectors (Slack/Teams for SAR assignment notifications)
+  → casehub-engine          (investigation CasePlanModel, adaptive paths)
+  → casehub-engine-ledger   (Layer 6: TrustWeightedAgentStrategy, WorkerDecisionEventCapture; engine#395 scoping fix pending)
+  → casehub-ledger          (Merkle audit, FinCEN evidence chain, GDPR erasure, trust scoring)
+  → casehub-work            (compliance officer WorkItem, 30-day SLA, escalation)
+  → casehub-qhorus          (COMMAND/RESPONSE per specialist agent, commitment lifecycle)
+  → casehub-connectors      (Slack/Teams for SAR assignment notifications)
 ```
 
 ## Key Epics
