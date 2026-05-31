@@ -424,6 +424,7 @@ Rules that apply across all casehubio modules:
 
 | Protocol | Rule |
 |---|---|
+| [SCIM2 agent identity lookup](integration/scim2-agent-identity.md) | Agent identity attributes (DID, public key, capabilities) resolved via SCIM2 `Agent` endpoint using `actorId` as `externalId`. Schema: `urn:ietf:params:scim:schemas:extension:casehub:2.0:Agent`. `actorId` colon must appear in filter values only — never URL path segments. |
 | SQL type portability (GE-20260512-2c2eff) | `DOUBLE PRECISION` not `DOUBLE`; `SMALLINT` not `TINYINT` — garden `jvm/` domain |
 | [Flyway migration rules](protocols/flyway-migration-rules.md) | Version namespace ranges; `MODE=PostgreSQL` in all H2 test URLs |
 | [Flyway extension migration registration](protocols/universal/flyway-extension-migration-registration.md) | Extensions use repo-scoped `db/<repo>/migration/` paths + `NativeImageResourcePatternsBuildItem`; Quarkus consumers must configure `quarkus.flyway.locations` explicitly — no runtime auto-registration exists |
