@@ -2,7 +2,7 @@
 
 **GitHub:** [casehubio/life](https://github.com/casehubio/life)
 **Tier:** Application
-**Status:** Layers 2, 3 complete — casehub-work + casehub-qhorus integration
+**Status:** Layers 2, 3, 4 complete — casehub-work + casehub-qhorus + casehub-ledger integration
 
 ## What It Is
 
@@ -17,7 +17,7 @@ The tutorial structure emerges from the natural adoption sequence. Each layer ad
 | 1 | Domain baseline — household domain model | Baseline: direct service calls, no SLA, no audit | **complete** (casehubio/life#2) |
 | 2 | casehub-work | No formal SLA on household tasks | **complete** (casehubio/life#3, 2026-05-27) |
 | 3 | casehub-qhorus | No commitment tracking; no oversight gates | **complete** (casehubio/life#4) |
-| 4 | casehub-ledger | No tamper-evident audit for health/financial decisions | pending |
+| 4 | casehub-ledger | No tamper-evident audit for health/financial decisions | **complete** (casehubio/life#5) |
 | 5 | casehub-engine | No multi-step workflow orchestration | pending |
 | 6 | Trust routing | No trust model for agent routing | pending |
 | 7 | casehub-openclaw | OpenClaw as WorkerProvisioner; pre-built skill ecosystem | pending |
@@ -51,7 +51,18 @@ The tutorial structure emerges from the natural adoption sequence. Each layer ad
 
 Household tasks are now formal `WorkItem`s: SLA-enforced, delegable, auditable. `LifeTaskContext` supplements each task with life-specific fields. `LifeSlaBreachPolicy` escalates to `household-admin` on first breach, fails on second. Domain model correction in Layer 2: `HouseholdTask`, `LifeGoal`, `LifeEvent` removed — they duplicated `WorkItem`, case definitions, and ledger entries respectively.
 
-**Engine deps temporarily removed** from `pom.xml` — SNAPSHOT build broken (engine#379, engine#380). Will be restored in Layer 5 branch. Layers 4–7 remain pending.
+**Engine deps temporarily removed** from `pom.xml` — SNAPSHOT build broken (engine#379, engine#380). Will be restored in Layer 5 branch. Layers 5–7 remain pending.
+
+### Layer 4 — casehub-ledger integration
+
+- 4 `LedgerEntry` subclasses: `HealthLedgerEntry`, `FinancialLedgerEntry`, `LegalLedgerEntry`, `ExternalActorErasureLedgerEntry`
+- `LifeLedgerWriter` — unified writer service; single injection point for all ledger writes
+- `LifeDecisionLedgerObserver` — CDI observer; bridges domain events to ledger entries
+- GDPR Art.17 erasure endpoint: `DELETE /external-actors/{id}/personal-data`
+- actorId convention: `"life-system"` (platform actions) / `"household-admin"` (admin actions)
+- Flyway: `db/life/ledger/migration/` (V2100+) on qhorus datasource
+- Entity package: `io.casehub.life.app.ledger` (not `entity/ledger` — multi-PU prefix matching constraint forces app-level package)
+- 90 tests pass (life#5). Design spec: `docs/specs/2026-05-30-layer4-casehub-ledger-design.md`
 
 ## What It Does NOT Own
 
