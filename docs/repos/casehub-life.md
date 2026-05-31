@@ -2,7 +2,7 @@
 
 **GitHub:** [casehubio/life](https://github.com/casehubio/life)
 **Tier:** Application
-**Status:** Layer 2 complete (2026-05-27) — casehub-work integration
+**Status:** Layers 2, 3 complete — casehub-work + casehub-qhorus integration
 
 ## What It Is
 
@@ -16,7 +16,7 @@ The tutorial structure emerges from the natural adoption sequence. Each layer ad
 |-------|------|---------------|--------|
 | 1 | Domain baseline — household domain model | Baseline: direct service calls, no SLA, no audit | **complete** (casehubio/life#2) |
 | 2 | casehub-work | No formal SLA on household tasks | **complete** (casehubio/life#3, 2026-05-27) |
-| 3 | casehub-qhorus | No commitment tracking; no oversight gates | pending |
+| 3 | casehub-qhorus | No commitment tracking; no oversight gates | **complete** (casehubio/life#4) |
 | 4 | casehub-ledger | No tamper-evident audit for health/financial decisions | pending |
 | 5 | casehub-engine | No multi-step workflow orchestration | pending |
 | 6 | Trust routing | No trust model for agent routing | pending |
@@ -38,11 +38,20 @@ The tutorial structure emerges from the natural adoption sequence. Each layer ad
 - `POST /life-tasks` — creates `WorkItem` + `LifeTaskContext` atomically via `WorkItemTemplate` lookup
 - `LifeSlaBreachPolicy` — implements `casehub-work` `SlaBreachPolicy` SPI; stateless two-tier escalation: first breach escalates to `household-admin`, second breach fails
 
+### Layer 3 — casehub-qhorus integration
+
+- `LifeCommitmentRecord` entity — persists commitment context (task id, actor, channel, message correlation)
+- `LifeCommitmentStrategy` SPI — maps household task type to channel and speech-act selection
+- Channel topology: `life/delegation` (task assignment), `life/oversight` (human gates), `life/actor/{id}` (per-actor channel)
+- `LifeOversightResponseObserver` — `MessageObserver` SPI implementation; bridges oversight RESPONSE/DECLINE to task lifecycle
+- Flyway V103 (`life_commitment_record`) at `db/life/migration/`
+- REST: `POST /life-tasks/{id}/commit`, `POST /life-oversight-gates`
+
 ## Current State
 
 Household tasks are now formal `WorkItem`s: SLA-enforced, delegable, auditable. `LifeTaskContext` supplements each task with life-specific fields. `LifeSlaBreachPolicy` escalates to `household-admin` on first breach, fails on second. Domain model correction in Layer 2: `HouseholdTask`, `LifeGoal`, `LifeEvent` removed — they duplicated `WorkItem`, case definitions, and ledger entries respectively.
 
-**Engine deps temporarily removed** from `pom.xml` — SNAPSHOT build broken (engine#379, engine#380). Will be restored in Layer 5 branch. Layers 3–7 remain pending.
+**Engine deps temporarily removed** from `pom.xml` — SNAPSHOT build broken (engine#379, engine#380). Will be restored in Layer 5 branch. Layers 4–7 remain pending.
 
 ## What It Does NOT Own
 
