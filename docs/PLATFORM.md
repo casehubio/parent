@@ -137,7 +137,7 @@ Four tiers, always kept separate:
 |------|--------|-----------|------|
 | `casehub-parent` | [casehubio/parent](https://github.com/casehubio/parent) | BOM, CI dashboards, full-stack build tooling | — |
 | `casehub-platform` | [casehubio/platform](https://github.com/casehubio/platform) | Zero-dep foundational SPIs — Path, Preferences, Identity, Memory. Modules: `platform-api` (SPIs), `platform` (@DefaultBean mocks + ReactiveCaseMemoryStore SPI + BlockingToReactiveBridge), `testing` (@Alternative identity fixtures), `config/` (YAML preference provider), `oidc/` (OIDC CurrentPrincipal), `expression/` (JQEvaluator), `persistence-jpa/` (JPA PreferenceProvider — Flyway, @ApplicationScoped), `persistence-mongodb/` (MongoDB PreferenceProvider — @Alternative @Priority(1), no Flyway), `memory-inmem/` (@Alternative @Priority(1) volatile CaseMemoryStore — ConcurrentHashMap, no quarkus:build goal. Add test-scope for @QuarkusTest isolation; compile for ephemeral installs. Do NOT combine with memory-jpa in production scope), `memory-jpa/` (@ApplicationScoped JPA CaseMemoryStore — PostgreSQL, Flyway V1000 at `classpath:db/memory/migration`, FTS via websearch_to_tsquery when question provided. No quarkus:build goal), `scim/` (SCIM 2.0 GroupMembershipProvider — @ApplicationScoped, displaces mock by classpath presence, platform#45). Adapters are submodules — extracted to a standalone repo only when a confirmed non-CaseHub consumer warrants it (see `PP-20260529-spi-adapter-placement`). | Foundation |
-| `casehub-ledger` | [casehubio/ledger](https://github.com/casehubio/ledger) | Immutable tamper-evident audit ledger + trust scoring. Modules: `api`, `runtime`, `deployment`, `persistence-memory` (`casehub-ledger-memory` — zero-datasource in-memory SPIs) | Foundation |
+| `casehub-ledger` | [casehubio/ledger](https://github.com/casehubio/ledger) | Immutable tamper-evident audit ledger + trust scoring. Modules: `api`, `runtime`, `deployment`, `persistence-memory` (`casehub-ledger-memory` — zero-datasource in-memory SPIs). SCIM2 agent DID resolution via `ScimActorDIDProvider @Alternative`. | Foundation |
 | `casehub-work` | [casehubio/work](https://github.com/casehubio/work) | Human task lifecycle (WorkItem inbox, SLA, delegation, routing) | Foundation |
 | `casehub-qhorus` | [casehubio/qhorus](https://github.com/casehubio/qhorus) | Peer-to-peer agent communication mesh | Foundation |
 | `casehub-connectors` | [casehubio/connectors](https://github.com/casehubio/connectors) | Outbound and inbound message connectors (Slack, Teams, SMS, email outbound; webhook + IMAP email inbound) | Foundation |
@@ -398,7 +398,7 @@ All GDPR concerns centralised in `casehub-ledger`:
 
 ### Agent Identity
 
-Format: `{model-family}:{persona}@{major}` — e.g. `"claude:analyst@v1"`. Defined in casehub-ledger ADR 0004. Major version bump resets trust baseline.
+Format: `{model-family}:{persona}@{major}` — e.g. `"claude:analyst@v1"`. Defined in casehub-ledger ADR 0004. Major version bump resets trust baseline. SCIM2 resolution via `ScimActorDIDProvider @Alternative` — activate with `quarkus.arc.selected-alternatives`.
 
 ### Agent Communication Mesh
 
@@ -424,7 +424,7 @@ Rules that apply across all casehubio modules:
 
 | Protocol | Rule |
 |---|---|
-| [SCIM2 agent identity lookup](integration/scim2-agent-identity.md) | Agent identity attributes (DID, public key, capabilities) resolved via SCIM2 `Agent` endpoint using `actorId` as `externalId`. Schema: `urn:ietf:params:scim:schemas:extension:casehub:2.0:Agent`. `actorId` colon must appear in filter values only — never URL path segments. |
+| [SCIM2 agent identity lookup](integration/scim2-agent-identity.md) | Agent identity attributes (DID, public key, capabilities) resolved via SCIM2 `Agent` endpoint using `actorId` as `externalId`. Schema extension: `urn:ietf:params:scim:schemas:extension:casehub:2.0:Agent`. `ScimActorDIDProvider @Alternative` is the ledger-side implementation. |
 | SQL type portability (GE-20260512-2c2eff) | `DOUBLE PRECISION` not `DOUBLE`; `SMALLINT` not `TINYINT` — garden `jvm/` domain |
 | [Flyway migration rules](protocols/flyway-migration-rules.md) | Version namespace ranges; `MODE=PostgreSQL` in all H2 test URLs |
 | [Flyway extension migration registration](protocols/universal/flyway-extension-migration-registration.md) | Extensions use repo-scoped `db/<repo>/migration/` paths + `NativeImageResourcePatternsBuildItem`; Quarkus consumers must configure `quarkus.flyway.locations` explicitly — no runtime auto-registration exists |
