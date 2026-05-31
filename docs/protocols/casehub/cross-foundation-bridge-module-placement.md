@@ -6,7 +6,7 @@ scope: platform
 applies_to: "casehub foundation repos when two peer modules need opt-in integration wiring"
 severity: guidance
 refs:
-  - ../PLATFORM.md
+  - ../../PLATFORM.md
 violation_hint: "A standalone repo created solely to bridge two foundation modules, or a bridge module placed in the event-consumer's repo rather than the event-source's repo"
 created: 2026-05-28
 ---

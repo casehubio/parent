@@ -8,7 +8,7 @@ severity: important
 refs:
   - llm-pass-structural-fallback.md
   - renderer-cache-key-includes-format.md
-  - ../casehub-eidos.md
+  - ../../repos/casehub-eidos.md
 violation_hint: "A format-specific output field (e.g. per-capability prose only needed for A2A cards) is added to the shared enrichment schema, causing the LLM to generate and discard that content on every render of unrelated formats."
 created: 2026-05-29
 ---

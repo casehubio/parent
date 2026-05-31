@@ -6,7 +6,7 @@ scope: platform
 applies_to: "Any casehub component that caches format-specific rendered output (system prompts, A2A cards, OpenAI system messages)"
 severity: important
 refs:
-  - ../casehub-eidos.md
+  - ../../repos/casehub-eidos.md
 violation_hint: "Cache key is derived from descriptor + context alone. Two render calls with the same descriptor and context but different RenderFormat values return the same cache entry, serving the wrong format to one caller."
 created: 2026-05-28
 ---

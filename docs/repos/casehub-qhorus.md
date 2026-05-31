@@ -45,6 +45,28 @@ All channel writes flow through a single enforcement gate: `MessageService.dispa
 
 See docs/DESIGN.md for dispatch builder and enforcement gate detail.
 
+### Message Types (speech-act taxonomy — ADR-0005)
+
+| Type | Intent | Creates obligation | Terminal? |
+|------|--------|--------------------|-----------|
+| QUERY | Information request | Yes → RESPONSE or DECLINE required | No |
+| COMMAND | Action request | Yes → DONE, FAILURE, or DECLINE required | No |
+| RESPONSE | Answers a QUERY | No (discharges QUERY obligation) | Yes (for that QUERY) |
+| STATUS | Progress update on open COMMAND | No | No |
+| DECLINE | Refuse a QUERY or COMMAND | No (discharges obligation) | Yes |
+| HANDOFF | Delegate COMMAND to another agent | Transfers obligation | No |
+| DONE | Successful COMMAND completion | No | Yes |
+| FAILURE | Failed COMMAND | No | Yes |
+| EVENT | Telemetry / observer signal | No | N/A — excluded from agent context |
+
+Builder invariants (enforced at `build()`):
+- RESPONSE, DONE, FAILURE, DECLINE, HANDOFF require `inReplyTo` + `correlationId`
+- HANDOFF requires `target` (named recipient or capability tag)
+
+See docs/DESIGN.md for internal channel semantics, commitment state machine, and MCP tool inventory.
+
+---
+
 ### Channel Gateway
 
 Outbound messages are routed through a channel backend SPI that supports multiple backend types: agent-to-agent (default), human-participating, and human-observer. An inbound normaliser SPI translates external human messages into the canonical message format before they enter the system. Fan-out to non-default backends is asynchronous and non-fatal. The default backend is always registered and handles all standard agent messaging. `MessageObserver` implementations may use any normal CDI scope.

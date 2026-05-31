@@ -7,7 +7,7 @@ applies_to: "casehub-connectors — all InboundConnector and WebhookInboundConne
 severity: important
 refs:
   - inbound-connector-type-separation.md
-  - ../repos/casehub-connectors.md
+  - ../../repos/casehub-connectors.md
 violation_hint: "An InboundConnector implementation that sets connectorId to an account id, mailbox name, or any value that varies across instances of the same connector type (e.g. 'email-inbound-support' instead of 'email-inbound')"
 created: 2026-05-29
 ---
