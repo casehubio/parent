@@ -88,6 +88,15 @@ Two-way bridge:
 - **Outbound** (`HumanTaskScheduleHandler`) — creates WorkItems from `HumanTaskTarget` bindings (inline or template mode), sets `callerRef`, `scope`, `payload`. Atomicity: WorkItem creation + `planItemStore.save(DELEGATED)` + `markDelegated()` in single `@Transactional`.
 - **Inbound** (`WorkItemLifecycleAdapter`) — translates `WorkItemLifecycleEvent` (COMPLETED, REJECTED, CANCELLED, EXPIRED — ESCALATED excluded as non-terminal) to PlanItem transitions, evaluates `outputMapping`, fires `CONTEXT_CHANGED`. Also observes `WorkItemGroupLifecycleEvent` for M-of-N SpawnGroup outcomes.
 
+### CaseSignalSink SPI (`casehub-work-api`)
+
+`CaseSignalSink` — SPI interface defined in `casehub-work-api`; implemented by `casehub-engine-work-adapter`. Called by `casehub-work` when SLA escalation fires — translates the escalation into a `CaseHubRuntime.signal()` call that unblocks a WAITING case. The `work-adapter` module depends on `casehub-work-api` for this interface only (compile scope, not a runtime routing dep).
+
+Three external signal entry points that reach a running case:
+1. **SLA escalation** — `casehub-work` calls `CaseSignalSink.signal()` → engine `work-adapter` → `CaseHubRuntime.signal()`
+2. **Qhorus messages** — `QhorusMessageSignalBridge` (see below)
+3. **Direct REST** — `CaseHubRuntime.signal()` from any engine consumer with direct engine access
+
 ### Qhorus Message Signal Bridge
 
 `QhorusMessageSignalBridge` — CDI `@ObservesAsync` observer for `MessageReceivedEvent`; bridges commitment-resolving Qhorus messages (RESPONSE, DONE, DECLINE, FAILURE) on `case-{caseId}/{purpose}` channels to `CaseHubRuntime.signal()`. Enables human channel messages to unblock WAITING cases. Protocol: `PP-20260526-case-channel-message-signal`.
