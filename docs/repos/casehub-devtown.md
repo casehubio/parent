@@ -2,7 +2,7 @@
 
 **GitHub:** [casehubio/devtown](https://github.com/casehubio/devtown)
 **Tier:** Application
-**Status:** Layers 1, 3, 5 complete; Layer 2 code complete (LAYER-LOG entry pending engine#326)
+**Status:** Layers 1, 3, 5, 6 complete; Layer 2 code complete (LAYER-LOG entry pending engine#326)
 
 ## What It Is
 
@@ -23,7 +23,7 @@ LAYER-LOG.md in the project root is the authoritative layer-by-layer record with
 | 3 | casehub-qhorus | No formal obligation per specialist reviewer; DECLINE when outside expertise | ✅ complete — devtown#52; LAYER-LOG entry complete |
 | 4 | casehub-ledger | No tamper-evident review record; cannot trace production incident to missed finding | pending |
 | 5 | casehub-engine | Fixed review pipeline; no adaptive routing on security flags or architecture changes | ✅ complete — PR review CasePlanModel (#10); 38 tests |
-| 6 | Trust routing | No trust model; experienced security reviewers not prioritised on sensitive PRs | pending |
+| 6 | Trust routing | No trust model; experienced security reviewers not prioritised on sensitive PRs | ✅ complete — devtown#57; LAYER-LOG entry complete |
 | 7 | Comparison vs naive AI code review | — | pending |
 
 ## What It Owns
