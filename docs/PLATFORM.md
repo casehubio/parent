@@ -401,7 +401,7 @@ All GDPR concerns centralised in `casehub-ledger`:
 
 ### Agent Identity
 
-Format: `{model-family}:{persona}@{major}` — e.g. `"claude:analyst@v1"`. Defined in casehub-ledger ADR 0004. Major version bump resets trust baseline.
+Format: `{model-family}:{persona}@{major}` — e.g. `"claude:analyst@v1"`. Defined in casehub-ledger ADR 0004. Major version bump resets trust baseline. SCIM2 resolution via `ScimActorDIDProvider @Alternative` — activate with `quarkus.arc.selected-alternatives`.
 
 DID/VC binding infrastructure (resolution SPIs, resolvers, SCIM2 lookup) lives in  — platform-wide, not ledger-specific. Ledger is the primary consumer:  +  run at write time;  gates persist in ENFORCE mode. Binding outcomes are persisted as  records (V1008). See [casehub-identity.md](repos/casehub-identity.md).
 
@@ -429,7 +429,7 @@ Rules that apply across all casehubio modules:
 
 | Protocol | Rule |
 |---|---|
-| [SCIM2 agent identity lookup](integration/scim2-agent-identity.md) | Agent identity attributes (DID, public key, capabilities) resolved via SCIM2 `Agent` endpoint using `actorId` as `externalId`. Schema: `urn:ietf:params:scim:schemas:extension:casehub:2.0:Agent`. `actorId` colon must appear in filter values only — never URL path segments. |
+| [SCIM2 agent identity lookup](integration/scim2-agent-identity.md) | Agent identity attributes (DID, public key, capabilities) resolved via SCIM2 `Agent` endpoint using `actorId` as `externalId`. Schema extension: `urn:ietf:params:scim:schemas:extension:casehub:2.0:Agent`. `ScimActorDIDProvider @Alternative` is the ledger-side implementation. |
 | SQL type portability (GE-20260512-2c2eff) | `DOUBLE PRECISION` not `DOUBLE`; `SMALLINT` not `TINYINT` — garden `jvm/` domain |
 | [Flyway migration rules](protocols/flyway-migration-rules.md) | Version namespace ranges; `MODE=PostgreSQL` in all H2 test URLs |
 | [Flyway extension migration registration](protocols/universal/flyway-extension-migration-registration.md) | Extensions use repo-scoped `db/<repo>/migration/` paths + `NativeImageResourcePatternsBuildItem`; Quarkus consumers must configure `quarkus.flyway.locations` explicitly — no runtime auto-registration exists |
