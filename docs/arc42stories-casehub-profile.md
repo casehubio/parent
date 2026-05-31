@@ -182,4 +182,4 @@ If no — do not build it. Document the architecture in the Arc42Stories documen
 - `docs/AGENTIC-HARNESS-GUIDE.md` — production-first rules, anti-patterns, session conventions
 - `docs/ARCHITECTURE.md` — CaseHub architectural patterns
 - `docs/PLATFORM.md` — capability ownership and boundary rules
-- `docs/protocols/universal/` — universal Quarkus conventions
+- `docs/protocols/universal/` — cross-cutting conventions applicable across all casehub modules (module structure, Maven naming, persistence patterns)
