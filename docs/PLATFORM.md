@@ -66,7 +66,7 @@ Check how the same concern is handled in the two or three most similar places in
 - **Agent mesh alignment:** when implementing a new MCP tool or channel interaction, verify it aligns with the normative 3-channel layout (work/observe/oversight) and 4-layer accountability framework. See [`docs/repos/claudony.md`](repos/claudony.md) §Agent Mesh Framework and the [Claudony mesh spec](https://github.com/casehubio/claudony/blob/main/docs/superpowers/specs/2026-04-27-claudony-agent-mesh-framework.md).
 - **Trust routing cold-start:** any application using trust-based routing must implement the four-phase maturity model — Phase 0 is availability routing (Gastown parity), phases advance automatically as `minimumObservations` thresholds are crossed, every capability must declare a `fallbackType`. Never block on missing trust data. See [`docs/protocols/casehub/trust-maturity-model.md`](protocols/casehub/trust-maturity-model.md).
 - **Auth retrofit readiness:** RBAC is not yet implemented but must not be foreclosed. No auth or principal logic in domain or service layers. REST resources must stay thin enough for `@RolesAllowed`. Queries need a structurally injectable filter. SPI signatures must stay free of auth types. See [`docs/protocols/casehub/auth-retrofit-readiness.md`](protocols/casehub/auth-retrofit-readiness.md).
-- **Case definition three-layer architecture:** YAML (classpath resource) → generated schema model (`io.casehub.model.*`) → canonical API model (`CaseDefinition`). Fluent DSL builders target the same canonical model and additionally support `LambdaExpressionEvaluator` (not expressible in YAML). All YAML definitions ⊂ fluent DSL; reverse is not true. Runtime: extend `YamlCaseHub`. Tests: build `CaseDefinition` directly via builders. Never bypass `CaseDefinitionYamlMapper`. Inherited from CNCF Serverless Workflow 1.0 / quarkus-flow. See [`docs/protocols/casehub/case-definition-layers.md`](protocols/casehub/case-definition-layers.md).
+- **Case definition three-layer architecture:** YAML (classpath resource) → generated schema model (`io.casehub.model.*`) → canonical API model (`CaseDefinition`). Fluent DSL builders target the same canonical model and additionally support `LambdaExpressionEvaluator` (not expressible in YAML). All YAML definitions ⊂ fluent DSL; reverse is not true. Runtime: extend `YamlCaseHub`. Tests: build `CaseDefinition` directly via builders. Never bypass `CaseDefinitionYamlMapper`. Inherited from CNCF Serverless Workflow 1.0 / quarkus-flow. See [`casehub/garden: docs/protocols/casehub/case-definition-layers.md`](../garden/docs/protocols/casehub/case-definition-layers.md).
 
 ### Step 5 — Does this need a platform-level doc update?
 
@@ -107,7 +107,7 @@ This applies to: execution models, case/workflow definition structure, trigger t
 **The check:** if a concept exists in Serverless Workflow 1.0 or quarkus-flow — use the same name, the same shape, and the same semantics. If CaseHub must diverge (e.g. to add compliance or trust concerns), document the divergence explicitly.
 
 **Known inheritors of this principle:**
-- Case definition three-layer architecture (YAML → schema model → canonical API model + fluent DSL) — see [`docs/protocols/casehub/case-definition-layers.md`](protocols/casehub/case-definition-layers.md)
+- Case definition three-layer architecture (YAML → schema model → canonical API model + fluent DSL) — see [`casehub/garden: docs/protocols/casehub/case-definition-layers.md`](../garden/docs/protocols/casehub/case-definition-layers.md)
 
 ---
 
