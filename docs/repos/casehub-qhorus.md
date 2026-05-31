@@ -80,6 +80,17 @@ See docs/DESIGN.md for SPI interfaces.
 - `GET /.well-known/agent-card.json` — A2A ecosystem discovery
 - `POST /a2a/message:send` — A2A-compatible message receive endpoint
 
+### Module Structure
+
+| Module | Contents |
+|--------|----------|
+| `api` | SPIs: `ChannelBackend`, `MessageObserver`, `HumanParticipatingChannelBackend`; domain event types |
+| `connectors` | Optional — `WatchdogAlertEvent → ConnectorService.send()` bridge; activates by classpath presence |
+| `runtime` | `MessageService`, `ChannelGateway`, `QhorusDashboardService`, ledger integration, MCP tools, A2A endpoint |
+| `connector-backend` | Optional — `ConnectorChannelBackend` implements `HumanParticipatingChannelBackend`; bridges `InboundMessage` CDI events (`@ObservesAsync`) from casehub-connectors into Qhorus channel dispatch; self-registers for channels with a `ChannelBackend` type of `CONNECTOR`. Activates by classpath presence. |
+| `deployment` | Quarkus extension deployment descriptors |
+| `testing` | In-memory store implementations for `@QuarkusTest` |
+
 ---
 
 ## Depends On
