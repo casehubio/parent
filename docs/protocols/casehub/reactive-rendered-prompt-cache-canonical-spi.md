@@ -6,7 +6,7 @@ scope: repo
 applies_to: "EidosSystemPromptRenderer, DefaultReactiveSystemPromptRenderer, any future SystemPromptRenderer implementation in casehub-eidos"
 severity: important
 refs:
-  - ../casehub-eidos.md
+  - ../../repos/casehub-eidos.md
 violation_hint: "A renderer injects RenderedPromptCache directly. When the user provides an @Alternative @Priority(1) ReactiveRenderedPromptCache (e.g. Redis), the renderer that still uses RenderedPromptCache sees a different backing store — cache entries written by one path are invisible to the other."
 created: 2026-05-30
 ---

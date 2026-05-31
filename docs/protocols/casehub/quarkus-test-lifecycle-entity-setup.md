@@ -6,7 +6,7 @@ scope: application
 applies_to: "@QuarkusTest integration tests where the service under test calls Panache.findById() in an @ObservesAsync handler"
 severity: important
 refs:
-  - ../repos/casehub-clinical.md
+  - ../../repos/casehub-clinical.md
 violation_hint: "Service observer logs 'entity not found — skipping' in tests, or returns null from Phase 1 without any assertion failure, because @BeforeEach created UUIDs but never persisted the entities"
 created: 2026-05-29
 ---

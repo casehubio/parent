@@ -6,7 +6,7 @@ scope: application
 applies_to: "Any harness application including casehub-engine in @QuarkusTest scope"
 severity: critical
 refs:
-  - ../repos/casehub-clinical.md
+  - ../../repos/casehub-clinical.md
 violation_hint: "UnsatisfiedResolutionException for io.casehub.work.api.WorkloadProvider at @QuarkusTest CDI startup — JpaWorkloadProvider is excluded but no DefaultBean substitute exists"
 created: 2026-05-29
 ---

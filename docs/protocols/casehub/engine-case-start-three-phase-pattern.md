@@ -6,8 +6,8 @@ scope: application
 applies_to: "Any harness service that calls CaseHubRuntime.startCase() or YamlCaseHub.startCase()"
 severity: critical
 refs:
-  - ../repos/casehub-clinical.md
-  - ../repos/casehub-engine.md
+  - ../../repos/casehub-clinical.md
+  - ../../repos/casehub-engine.md
 violation_hint: "Service method annotated @Transactional calls startCase().join() — Agroal pool deadlock under load; or service writes entity status before and after join() in a single transaction — pool exhaustion silently prevents status from being persisted"
 created: 2026-05-29
 ---

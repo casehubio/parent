@@ -6,7 +6,7 @@ scope: repo
 applies_to: "AgentDescriptor record in casehub-eidos-api; any future descriptor-style record in casehub-eidos-api"
 severity: important
 refs:
-  - ../casehub-eidos.md
+  - ../../repos/casehub-eidos.md
 violation_hint: "Validation moved to AgentRegistry.register() or other service boundaries — allows invalid AgentDescriptors (null agentId, blank slot, etc.) to be constructed in tests or intermediate contexts, removing the guarantee that every descriptor in the system is valid."
 created: 2026-05-30
 ---

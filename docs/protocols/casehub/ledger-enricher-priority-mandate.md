@@ -6,8 +6,8 @@ scope: repo
 applies_to: "casehub-ledger — any class implementing LedgerEntryEnricher"
 severity: important
 refs:
-  - runtime/src/main/java/io/casehub/ledger/runtime/service/LedgerEntryEnricher.java
-  - runtime/src/main/java/io/casehub/ledger/runtime/service/LedgerEnricherPipeline.java
+  - https://github.com/casehubio/ledger/blob/main/runtime/src/main/java/io/casehub/ledger/runtime/service/LedgerEntryEnricher.java
+  - https://github.com/casehubio/ledger/blob/main/runtime/src/main/java/io/casehub/ledger/runtime/service/LedgerEnricherPipeline.java
 violation_hint: "An enricher without @Priority sorts at Integer.MAX_VALUE — after all numbered enrichers. If ActorIdentityValidationEnricher runs before AgentSignatureEnricher, it reads a null agentPublicKey and records KEY_MISMATCH instead of VALID."
 created: 2026-05-30
 ---

@@ -6,7 +6,7 @@ scope: repo
 applies_to: "Any reactive SystemPromptRenderer or ReactiveSystemPromptRenderer implementation in casehub-eidos"
 severity: important
 refs:
-  - ../casehub-eidos.md
+  - ../../repos/casehub-eidos.md
   - reactive-spi-bridge-default-bean.md
 violation_hint: "Stage 1 (payload build / cache check) runs on the event loop thread instead of the worker pool; or Stage 3 (format assembly) runs on the streaming callback thread without emitOn."
 created: 2026-05-29

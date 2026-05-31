@@ -6,7 +6,7 @@ scope: repo
 applies_to: "Any new enrichment step added to casehub-eidos (blocking or reactive)"
 severity: important
 refs:
-  - ../casehub-eidos.md
+  - ../../repos/casehub-eidos.md
 violation_hint: "A new enrichment step declares its own PROMPT_TEMPLATE, RESPONSE_FORMAT, or STREAMING_TIMEOUT_SECONDS constant instead of referencing EidosRenderPipeline.*."
 created: 2026-05-29
 ---

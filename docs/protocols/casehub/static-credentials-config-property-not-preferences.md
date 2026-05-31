@@ -6,8 +6,8 @@ scope: platform
 applies_to: "Any casehub module that requires external service credentials (IMAP, SMTP, API tokens, webhook secrets)"
 severity: important
 refs:
-  - ../repos/casehub-connectors.md
-  - ../../PLATFORM.md
+  - ../../repos/casehub-connectors.md
+  - ../../../PLATFORM.md
 violation_hint: "A connector that injects Preferences/PreferenceKey to resolve IMAP host, SMTP password, or webhook secret — these are deploy-time constants, not runtime-mutable per-tenant values"
 created: 2026-05-29
 ---

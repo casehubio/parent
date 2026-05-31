@@ -6,7 +6,7 @@ scope: repo
 applies_to: "casehub-connectors — any module implementing inbound message transport"
 severity: important
 refs:
-  - ../repos/casehub-connectors.md
+  - ../../repos/casehub-connectors.md
   - ../../docs/specs/2026-05-29-inbound-connector-spi-design.md
 violation_hint: "A webhook connector that implements InboundConnector and overrides start()/stop() as no-ops, or a pull connector that extends WebhookInboundConnector"
 created: 2026-05-29

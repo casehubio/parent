@@ -6,7 +6,7 @@ scope: platform
 applies_to: "Any casehub Foundation extension that adds an optional LLM enrichment step to a rendering or generation SPI"
 severity: important
 refs:
-  - ../casehub-eidos.md
+  - ../../repos/casehub-eidos.md
 violation_hint: "Structural path always produces CLAUDE_MD-structured output regardless of the requested RenderFormat, or structural path is removed entirely, making the extension non-functional without a configured LLM."
 created: 2026-05-28
 ---

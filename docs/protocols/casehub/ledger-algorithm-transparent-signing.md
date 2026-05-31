@@ -6,7 +6,7 @@ scope: repo
 applies_to: "io.casehub.ledger.runtime.service — any class that signs, verifies, or loads cryptographic keys"
 severity: important
 refs:
-  - adr/0013-post-quantum-signing-migration.md
+  - https://github.com/casehubio/ledger/blob/main/adr/0013-post-quantum-signing-migration.md
 violation_hint: "Hardcoded string 'Ed25519' (or any algorithm name) in Signature.getInstance(), KeyFactory.getInstance(), or similar JCA calls"
 created: 2026-05-23
 ---
