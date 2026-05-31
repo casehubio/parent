@@ -1,14 +1,51 @@
 # Arc42Stories — CaseHub Profile
 
-**Applies to:** casehub-aml, casehub-clinical, casehub-devtown, casehub-life, casehub-drafthouse, QuarkMind
+**Spec:** [Arc42Stories v0.1](arc42stories-spec.md)  
+**Applies to:** All components in the CaseHub ecosystem — application-tier harness apps and foundation-tier modules.
 
-This Profile instantiates [Arc42Stories](arc42stories-spec.md) for CaseHub agentic harness applications. It defines the CaseHub Foundation Layer taxonomy, CaseHub-specific conventions, and the relationship to existing CaseHub documentation artifacts.
+This profile instantiates [Arc42Stories](arc42stories-spec.md) for the CaseHub ecosystem. It defines default values for artifact schema, crosscutting conventions, and platform references that all CaseHub components inherit. Component-type-specific guidance is marked per section.
 
 ---
 
-## CaseHub Artifact Schema
+## Preamble Templates
 
-Each CaseHub harness app uses this schema. Copy it into §1 of `ARC42STORIES.MD` and set the app-specific PREFIX.
+Copy the appropriate preamble for your component type. Add only what is project-specific.
+
+### Application tier (harness apps — devtown, aml, clinical, life, drafthouse)
+
+```markdown
+# [App name] — ARC42STORIES.MD
+
+**Spec:** Arc42Stories v0.1
+**Profile:** CaseHub — Application tier
+**Profile ref:** `../parent/docs/arc42stories-casehub-profile.md` · fallback: `https://raw.githubusercontent.com/casehubio/parent/main/docs/arc42stories-casehub-profile.md`
+**Prefix:** [DT / AML / CLI / LIF / DH / QM]
+```
+
+### Foundation tier (platform modules — connectors, qhorus, ledger, work, engine, platform, eidos)
+
+```markdown
+# [Module name] — ARC42STORIES.MD
+
+**Spec:** Arc42Stories v0.1
+**Profile:** CaseHub — Foundation tier
+**Profile ref:** `../parent/docs/arc42stories-casehub-profile.md` · fallback: `https://raw.githubusercontent.com/casehubio/parent/main/docs/arc42stories-casehub-profile.md`
+**Build position:** [e.g. "Foundation — no casehubio dependencies" or "After casehub-ledger; before casehub-engine"]
+**Consumed by:** [repos that depend on this module]
+**Depends on:** [casehubio deps, or "none"]
+```
+
+### Extension tier
+
+Deferred — no extension-tier components exist yet. A preamble template will be defined when the first extension component is built.
+
+---
+
+## Default Artifact Schema
+
+*Applies to: both tiers.*
+
+All CaseHub components inherit this schema. Declare only the **Prefix** in the preamble — the rest is inherited.
 
 | Artifact type | Format | Example | Where it lives |
 |---|---|---|---|
@@ -20,7 +57,7 @@ Each CaseHub harness app uses this schema. Copy it into §1 of `ARC42STORIES.MD`
 | Blog entry | `YYYY-MM-DD-[initials]NN-title` | `2026-05-19-mdp01-layer-5-lands` | workspace `blog/` |
 | Design spec | `YYYY-MM-DD-topic-design` | `2026-05-15-epic3-design` | `docs/specs/` |
 
-**PREFIX by app:**
+**Prefix by app (Application tier):**
 
 | App | PREFIX |
 |---|---|
@@ -31,11 +68,15 @@ Each CaseHub harness app uses this schema. Copy it into §1 of `ARC42STORIES.MD`
 | casehub-drafthouse | `DH` |
 | QuarkMind | `QM` |
 
+Foundation-tier modules do not use an improvement log prefix — use issue refs directly.
+
 ---
 
-## CaseHub Foundation Layer Taxonomy
+## Default Layer Taxonomy
 
-Replace the generic Arc42Stories layer model with the CaseHub harness stack:
+### Application tier only
+
+Replace the generic Arc42Stories layer model with the CaseHub harness integration sequence:
 
 | Layer | Foundation module | What it adds |
 |---|---|---|
@@ -48,11 +89,17 @@ Replace the generic Arc42Stories layer model with the CaseHub harness stack:
 
 This is the natural integration sequence. Justification for a different order belongs in §4 Solution Strategy.
 
+### Foundation tier
+
+Foundation modules define their own layer taxonomy in §4/§5. Layers represent internal architectural concerns — SPI tiers, transport implementations, optional bridge modules, etc. There is no prescribed taxonomy. A module with a single coherent architecture may have one layer.
+
 ---
 
-## CaseHub Conventions (§8 Crosscutting Concepts)
+## Default Conventions (§8 Crosscutting Concepts)
 
-Reference these protocols rather than duplicating their content:
+*Applies to: both tiers.*
+
+Reference these protocols in §8 rather than duplicating their content:
 
 | Concern | Protocol |
 |---|---|
@@ -64,24 +111,49 @@ Reference these protocols rather than duplicating their content:
 | Architectural patterns | `docs/ARCHITECTURE.md` |
 | Capability ownership | `docs/PLATFORM.md` Capability Ownership table |
 
-**Anti-patterns must be present inline in §8** — do not merely reference AGENTIC-HARNESS-GUIDE.md. A reader with only ARC42STORIES.MD in context will not follow the reference. Include the 2–3 most dangerous failure modes for this specific application in Symptom → Cause → Fix format. The full platform-wide list remains in `docs/AGENTIC-HARNESS-GUIDE.md §Anti-patterns`.
+**Anti-patterns must be present inline in §8** — do not merely reference AGENTIC-HARNESS-GUIDE.md. A reader with only ARC42STORIES.MD in context will not follow the reference. Include the 2–3 most dangerous failure modes for this specific component in Symptom → Cause → Fix format.
 
 ---
 
-## Platform References (§3 Context and Scope)
+## Default Platform References (§3 Context and Scope)
 
-Every CaseHub harness app's §3 should reference:
+*Applies to: both tiers — with different content.*
+
+### Application tier
+
+Every harness app's §3 should reference:
 
 - `docs/PLATFORM.md` — capability ownership table and boundary rules
 - `docs/repos/{this-app}.md` — what this application owns
-- `docs/gastown-casehub-analysis-v2.md` (devtown) or equivalent comparison baseline
-- `docs/orchestration-advantages.md` (devtown) or equivalent
+- Comparison baseline if one exists (e.g. `docs/gastown-casehub-analysis-v2.md` for devtown)
+
+### Foundation tier
+
+A foundation module's §3 Context and Scope should:
+
+- Include a C4 System Context diagram showing consumers and dependencies
+- Reference `docs/PLATFORM.md` Cross-Repo Dependency Map for the authoritative consumer list
+- Reference `docs/repos/{this-module}.md` for the platform deep-dive
+
+The preamble's **Build position**, **Consumed by**, and **Depends on** fields give a compact machine-readable summary; §3 provides the full context with diagrams.
+
+---
+
+## Production-First Constraint
+
+*Applies to: both tiers.*
+
+Before writing any class, apply the production-first test:
+
+> "Would this class exist in a production system built to this layer and no further?"
+
+If no — do not build it. Document the architecture in the Arc42Stories document instead. The most common violations and their fixes are in ARC42STORIES.MD §8 Anti-patterns (must be present in every CaseHub ARC42STORIES.MD) and in `docs/AGENTIC-HARNESS-GUIDE.md §Anti-patterns` for the full platform-wide list.
 
 ---
 
 ## Document Artifact Mapping
 
-Arc42Stories for CaseHub produces one permanent document per application:
+*Applies to: Application tier primarily. Foundation modules adapt as appropriate.*
 
 | Artifact | Role | Location |
 |---|---|---|
@@ -95,49 +167,12 @@ Arc42Stories for CaseHub produces one permanent document per application:
 
 ---
 
-## Production-First Constraint
+## Reference Implementations
 
-Before writing any class, apply the production-first test:
+**Application tier:** casehub-devtown `ARC42STORIES.MD`  
+`../devtown/ARC42STORIES.MD` · `https://github.com/casehubio/devtown/blob/main/ARC42STORIES.MD`
 
-> "Would this class exist in a production system built to this layer and no further?"
-
-If no — do not build it. Document the architecture in the Arc42Stories document instead. The most common violations and their fixes are in ARC42STORIES.MD §8 Anti-patterns (must be present in every CaseHub ARC42STORIES.MD) and in `docs/AGENTIC-HARNESS-GUIDE.md §Anti-patterns` for the full platform-wide list.
-
----
-
-## Example: devtown Journey and Chapters
-
-### Journey: PR Review Coordination
-
-*A submitted pull request is reviewed by specialist agents with formal accountability, human oversight with SLA, and a tamper-evident audit trail that traces any production incident back to the review decision that allowed it.*
-
-### Chapter Index
-
-| # | Chapter | Layers | Delta | Status |
-|---|---|---|---|---|
-| 1 | Case opens and routes | L1, L5 | High, High | ✅ |
-| 2 | Human review with SLA | + L2 | Medium | ✅ |
-| 3 | Formal agent obligation | + L3 | Low | 🔲 |
-| 4 | Tamper-evident audit | + L4 | Medium | 🔲 |
-| 5 | Trust-weighted selection | + L6 | Medium | 🔲 |
-
-**Layer × Chapter matrix**
-
-| Layer | C1 ✅ | C2 ✅ | C3 🔲 | C4 🔲 | C5 🔲 |
-|---|---|---|---|---|---|
-| L1 Domain Baseline | High | Low | — | — | — |
-| L2 casehub-work | — | Medium | Low | Low | Low |
-| L3 casehub-qhorus | — | — | Low | — | — |
-| L4 casehub-ledger | — | — | — | Medium | Low |
-| L5 casehub-engine | High | Low | Low | Low | Low |
-| L6 Trust Routing | — | — | — | — | Medium |
-
-**Sequencing rationale:**
-- C1 before C2: engine runtime (L5) established in C1; casehub-work-adapter depends on engine events at runtime
-- C2 before C3: SLA gate in place before formal agent obligation tracking
-- C3 before C4: qhorus messaging generates MessageLedgerEntry chain that makes audit meaningful
-- C4 before C5: trust scoring reads attestation data written by ledger — hard dependency
-- L5 built before L2–L4 in actual delivery sequence (engine was architectural priority): Chapter ordering is reading order, not build order
+**Foundation tier:** *(deferred — will be listed here when the first foundation-tier ARC42STORIES.MD is complete)*
 
 ---
 
