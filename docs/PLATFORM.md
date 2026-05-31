@@ -205,6 +205,7 @@ casehub-parent              (BOM — publish first; all others import it)
 | `casehub-connectors-core` | `casehub-qhorus` | `connectors` | optional — `WatchdogAlertEvent → ConnectorService.send()` bridge; activates by classpath presence |
 | `casehub-connectors-core` | `casehub-qhorus` | `connector-backend` | optional — `InboundMessage → ConnectorChannelBackend` bridge; activates by classpath presence |
 | `casehub-work-api` | `casehub-engine` | `work-adapter` | WorkItem adapter |
+| `casehub-work-api` | `casehub-engine` | `work-adapter` | `CaseSignalSink` implementation — signals running cases on SLA escalation (compile scope, not a runtime routing dep) |
 | `casehub-work-api` | `devtown` | `review` | WorkItem types |
 | `casehub-work-core` | `casehub-engine` | `work-adapter` | WorkBroker |
 | `casehub-work` (runtime) | `devtown` | `app` | runtime dep |
@@ -299,6 +300,7 @@ casehub-parent              (BOM — publish first; all others import it)
 | Case/process orchestration (choreography + WAITING) | `casehub-engine` | `CaseInstance`, `EventLog`, `WorkOrchestrator` |
 | Worker provisioner SPIs (provision, lifecycle, channels, context) | `casehub-engine` (defines) / `claudony` (implements) | `WorkerProvisioner`, `CaseChannelProvider`, `WorkerContextProvider`, `WorkerStatusListener`. **`postToChannel` is 6-param** (engine#343): `(channel, from, content, MessageType, correlationId, deadline)` — `correlationId` and `deadline` are first-class SPI params, not parsed from content JSON. 3-param convenience default delegates with three nulls. |
 | Durable PlanItem status (blackboard persistence) | `casehub-engine` | `PlanItemStore` (blocking) + `ReactivePlanItemStore` (Uni<>) SPIs in `casehub-engine-common`; `@DefaultBean` no-ops in `blackboard`; JPA impl (`JpaReactivePlanItemStore`) in `casehub-engine-persistence-hibernate`; blocking JPA impl (`JpaPlanItemStore`) in `casehub-engine-work-adapter` sharing the casehub-work datasource. Atomicity guarantee: `planItemStore.save(RUNNING)` and WorkItem creation are in the same `@Transactional` boundary. See engine#273. |
+| External signal delivery to running cases | `casehub-work-api` (SPI) / `casehub-engine` (impl) | `CaseSignalSink` SPI in `casehub-work-api` — called by casehub-work when SLA escalation fires; implemented in `casehub-engine-work-adapter` calling `CaseHubRuntime.signal()`; Qhorus-driven signals via `QhorusMessageSignalBridge` in engine runtime (`@ObservesAsync MessageReceivedEvent`). Three entry points: SLA escalation → CaseSignalSink, Qhorus message → QhorusMessageSignalBridge, direct REST → CaseHubRuntime. |
 | Remote Claude CLI sessions | `claudony` | `TmuxService`, `SessionRegistry`, WebSocket streaming |
 | Browser + agent authentication | `claudony` | WebAuthn passkeys + `X-Api-Key` header |
 | OpenClaw worker provisioner | `casehub-openclaw` | `WorkerProvisioner` SPI implementation — provisions OpenClaw instances via `POST /hooks/agent`; no heartbeat required for in-case steps. Two modes: heartbeat (OpenClaw autonomous monitoring → creates CaseHub case) vs direct call (CaseHub case step → on-demand skill execution). See [`docs/repos/casehub-openclaw.md`](repos/casehub-openclaw.md). |
@@ -339,6 +341,8 @@ casehub-parent              (BOM — publish first; all others import it)
 **Do not put CaseHub SPI implementations in `casehub-engine`.** casehub-engine defines them; deployment-specific implementations belong in the deploying application.
 
 **Do not use `casehub-work` runtime in `casehub-engine`.** The engine depends on `casehub-work-core` only.
+
+**Use `CaseSignalSink` (in `casehub-work-api`) as the only path for external events that must unblock a waiting case.** casehub-work injects and calls `CaseSignalSink` at SLA escalation time; the implementation in `casehub-engine-work-adapter` translates to `CaseHubRuntime.signal()`. Qhorus message signals route via `QhorusMessageSignalBridge` in engine runtime. Do not add case-signaling logic to any other module.
 
 **Do not add domain logic to foundation repos.** If the capability requires knowledge of software development, clinical trials, or financial crime, it belongs in an application repo.
 
