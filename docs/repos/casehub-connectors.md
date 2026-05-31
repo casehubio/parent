@@ -23,8 +23,8 @@ The `Connector` CDI SPI has two methods: an id accessor and a send method that t
 
 Two inbound SPIs:
 
-- **`InboundConnector`** — pull-based polling (e.g. IMAP). `InboundConnectorService` polls all registered `InboundConnector` implementations on a configurable schedule and fires a CDI `Event<InboundMessage>` for each received message. At-least-once delivery.
-- **`WebhookInboundConnector`** — push-based webhook reception. Abstract base class; implementations register an HTTP endpoint that receives webhook payloads and normalises them to `InboundMessage`. Fires CDI `Event<InboundMessage>` on receipt.
+- **`InboundConnector`** — pull-based polling (e.g. IMAP). `InboundConnectorService` polls all registered `InboundConnector` implementations on a configurable schedule and fires `Event<InboundMessage>` via **`fireAsync()`** — NOT `fire()`. At-least-once delivery. **Breaking contract:** observers MUST use `@ObservesAsync InboundMessage` — a synchronous `@Observes` observer will not receive events.
+- **`WebhookInboundConnector`** — push-based webhook reception. Abstract base class; implementations register an HTTP endpoint that receives webhook payloads and normalises them to `InboundMessage`. Also fires via `Event.fireAsync()` — `@ObservesAsync` required.
 
 Consumers observe `Event<InboundMessage>` and react accordingly — they never call inbound SPIs directly.
 
@@ -35,7 +35,8 @@ Consumers observe `Event<InboundMessage>` and react accordingly — they never c
 | `casehub-connectors` | `Connector` SPI + Slack, Teams, Twilio SMS, WhatsApp outbound impls; `InboundConnector` SPI + `InboundConnectorService` polling engine; `WebhookInboundConnector` abstract base |
 | `casehub-connectors-email` | SMTP outbound via `quarkus-mailer` |
 | `casehub-connectors-email-inbound` | `EmailInboundConnector` — IMAP polling, `EmailInboundAccountProvider` SPI |
-| `casehub-connectors-qhorus` | Optional — `WatchdogAlertEvent → ConnectorService.send()` bridge; activates by classpath presence |
+| `casehub-connectors-qhorus` | Optional — `WatchdogAlertEvent → ConnectorService.send()` bridge (Qhorus → connectors); activates by classpath presence |
+| *(qhorus-side)* `casehub-qhorus-connector-backend` | Optional — `InboundMessage → ConnectorChannelBackend` bridge (connectors → Qhorus); lives in casehub-qhorus repo; activates by classpath presence |
 
 ### Built-in Implementations
 
