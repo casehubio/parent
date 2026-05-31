@@ -45,6 +45,9 @@ See `docs/DESIGN.md` for the implementation details and the ledger lineage query
 
 REST and WebSocket endpoints for session management and terminal streaming. WebAuthn passkey authentication for browser access; API key authentication for agent access. An MCP server exposes session management tools to a controller Claude instance. Fleet management handles multi-node peer discovery and health monitoring. A browser dashboard surfaces session cards, PR/CI status, and service health.
 
+- `FleetMessageRelayObserver` — CLUSTER-scoped `MessageObserver` SPI implementation; on every Qhorus message dispatch, relays a channel-name tick to all healthy fleet peers via `POST /api/internal/channels/notify`. Enables real-time SSE delivery of `ChannelEventBus` ticks across fleet nodes when Qhorus shares a PostgreSQL instance (claudony#118).
+- `ChannelSyncResource` has two endpoints: `POST /sync` (channel init, registers `ClaudonyChannelBackend`) and `POST /notify` (cross-node tick relay from `FleetMessageRelayObserver`).
+
 `MeshResource` exposes the Qhorus mesh data to the dashboard via `QhorusDashboardService` — the correct consumer integration tier for dashboard/UI code (not `ReactiveQhorusMcpTools`, which is the MCP protocol dispatch layer for Claude Code). See `docs/protocols/casehub/qhorus-consumer-integration-pattern.md`.
 
 See `docs/DESIGN.md` for the endpoint inventory and authentication mechanism detail.
@@ -143,7 +146,7 @@ Related epics: [claudony#86](https://github.com/casehubio/claudony/issues/86) (f
 
 ## Current State
 
-- 475+ tests passing (4 in `claudony-core` + 130 in `claudony-casehub` + 341 in `claudony-app`)
+- 525+ tests passing (4 in `claudony-core` + 137 in `claudony-casehub` + 384 in `claudony-app`, as of 2026-05-30 after claudony#118)
 - Core complete: session management, WebSocket streaming, WebAuthn, fleet, CaseHub SPI wiring
 - ADR-0005: CaseHub integration is optional — Claudony works as a standalone session manager without CaseHub
 
