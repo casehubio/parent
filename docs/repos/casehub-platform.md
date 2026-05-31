@@ -22,7 +22,7 @@ memory-jpa/     ← optional: JPA/PostgreSQL adapter (@ApplicationScoped) — FT
 
 `platform-api/` must never import Quarkus, CDI, JPA, or any casehubio artifact. This constraint is what makes the SPIs useful to every module in the stack — including modules that have no Quarkus dependency of their own.
 
-**Package structure in `platform-api/`:** `identity` (`CurrentPrincipal`, `GroupMembershipProvider`, `ActorType`, `ActorTypeResolver`), `preferences` (`PreferenceProvider`, `PreferenceKey`, `Preferences`, `SettingsScope`), `path` (`Path`), `memory` (`CaseMemoryStore`, `MemoryInput`, `Memory`, `MemoryQuery`, `EraseRequest`, `MemoryDomain`, `MemoryPermissions`). `ReactiveCaseMemoryStore` lives in `platform/`, not `platform-api/` — Mutiny is a Quarkus dep and would violate the zero-dep constraint.
+**Package structure in `platform-api/`:** `identity` (`CurrentPrincipal`, `GroupMembershipProvider`, `GroupMember`, `ActorType`, `ActorTypeResolver`), `preferences` (`PreferenceProvider`, `PreferenceKey`, `Preferences`, `SettingsScope`), `path` (`Path`), `memory` (`CaseMemoryStore`, `MemoryInput`, `Memory`, `MemoryQuery`, `EraseRequest`, `MemoryDomain`, `MemoryPermissions`). `ReactiveCaseMemoryStore` lives in `platform/`, not `platform-api/` — Mutiny is a Quarkus dep and would violate the zero-dep constraint.
 
 `config/` and `oidc/` are optional — consumers add them as compile-scope dependencies to activate the capability. Each displaces its corresponding `@DefaultBean` mock automatically via CDI without exclusion config.
 
@@ -107,7 +107,7 @@ public class SecurityCurrentPrincipal implements CurrentPrincipal {
 **Auth retrofit path:** `casehub-platform-oidc` ships the OIDC-backed `CurrentPrincipal`:
 
 1. `OidcCurrentPrincipal` → `@RequestScoped`, reads `actorId`/`groups` from `SecurityIdentity`, reads `tenancyId` (required) and `crossTenantAdmin` (optional, defaults `false`) from fixed JWT claims. Anonymous identity returns sentinels without touching the JWT. Add `casehub-platform-oidc` as a compile dependency to activate — displaces the mock automatically.
-2. `GroupMembershipProvider` real implementation (not yet shipped) → registers as `SecurityIdentityAugmentor` to populate `SecurityIdentity.getRoles()` from the casehub group store — this makes `@RolesAllowed` work with casehub group memberships, not just what came from the OIDC token.
+2. `GroupMembershipProvider` real implementation shipped as `casehub-platform-scim` — SCIM 2.0 client, `@ApplicationScoped`, displaces mock by classpath presence, `@CacheResult` on group fetches. Returns `Set<GroupMember>` (actorId = OIDC sub = SCIM value UUID, displayName = human label). The `SecurityIdentityAugmentor` integration (populating `@RolesAllowed` from SCIM groups) remains deferred; see Out of Scope in platform#45.
 3. Multi-tenant scope derivation via quarkiverse `TenantContext` is deferred (closed casehubio/platform#14 as won't-do-until-needed).
 
 **`tenancyId()` and `isCrossTenantAdmin()` are abstract.** Every implementor must provide them — compile error if missing. Single-tenant deployments return `TenancyConstants.DEFAULT_TENANT_ID` (configurable via `casehub.tenancy.default-id`); real OIDC-backed implementations read from the JWT `tenancyId` claim. `TenancyConstants` is a utility class in `platform-api` exposing `DEFAULT_TENANT_ID` and `PLATFORM_TENANT_ID` as importable constants. See protocols `PP-20260520-439daf` (no conditional tenancy filtering) and `PP-20260520-e6a5f0` (bind tenancy in data access layer only).
@@ -133,8 +133,8 @@ public class LdapGroupMembershipProvider
         implements GroupMembershipProvider, SecurityIdentityAugmentor {
 
     @Override
-    public Set<String> membersOf(String groupName) {
-        return ldapClient.membersOf(groupName);
+    public Set<GroupMember> membersOf(String groupName) {
+        return ldapClient.membersOf(groupName);  // returns GroupMember(actorId, displayName)
     }
 
     @Override
@@ -252,10 +252,12 @@ Add as a test-scoped dependency:
 | `testing/` | ✅ shipped | `@Alternative @Priority(1)` identity fixtures |
 | `config/` | ✅ shipped | Scope-aware YAML + SmallRye Config overrides — displaces mock when on classpath |
 | `oidc/` | ✅ shipped | `@RequestScoped CurrentPrincipal` backed by `SecurityIdentity` + JWT — displaces mock when on classpath |
+| `expression/` | ✅ shipped | JQ expression evaluation (`JQEvaluator`) — used by casehub-engine and casehub-work-queues |
 | `persistence-jpa/` | ✅ shipped (#6) | JPA-backed scoped preference overrides — Flyway, @ApplicationScoped, scope-aware hierarchy |
 | `persistence-mongodb/` | ✅ shipped (#7) | MongoDB alternative for preferences — @Alternative @Priority(1), beats JPA when co-deployed, no Flyway |
 | `memory-inmem/` | ✅ shipped (#32) | Volatile CaseMemoryStore — ConcurrentHashMap, @Alternative @Priority(1). Test-scope for isolation; compile for ephemeral installs |
 | `memory-jpa/` | ✅ shipped (#32) | JPA CaseMemoryStore — PostgreSQL, Flyway V1000 at `classpath:db/memory/migration`, FTS via websearch_to_tsquery |
+| `scim/` | ✅ shipped (#45) | SCIM 2.0 GroupMembershipProvider — @ApplicationScoped, displaces mock by classpath presence |
 | `preferences-editor/` | 🔜 #8 | Admin write path for preferences — REST API, separate from providers |
 
 `PreferenceProvider` is permanently read-only. The editor module writes directly to the backend; providers never own the write path.
