@@ -154,7 +154,7 @@ Mermaid's C4 auto-layout can be hard to control on large diagrams. Keep each dia
 | **Delta** | The amount of change a Chapter introduces to a layer: `None` / `Low` / `Medium` / `High` |
 | **Accountability gap** | A formal requirement — compliance, audit, or user-visible — not met before this Chapter ships |
 | **Pattern to replicate** | Domain-agnostic numbered steps an LLM follows to implement the same layer in a different project |
-| **Profile** | A domain- or stack-specific instantiation of Arc42Stories (e.g. CaseHub Profile, Spring Boot Profile) |
+| **Profile** | A domain- or stack-specific instantiation of Arc42Stories that defines default layer taxonomy, artifact schema, and conventions. Declared in the document preamble. Not required for standalone applications. |
 | **Project artifact schema** | A project-defined table mapping artifact types to their naming format — so cross-references throughout the document are unambiguous |
 
 **Naming note:** "Chapter" is used deliberately rather than "slice" to avoid confusion with [Vertical Slice Architecture](https://jimmybogard.com/vertical-slice-architecture/) — a code organisation pattern where source code is co-located by feature. Chapters are a documentation and delivery planning concept, not a code organisation pattern. The metaphor is the same — a vertical cut through horizontal layers — but the domain is different.
@@ -183,7 +183,7 @@ Define the schema in §1 Introduction and Goals, immediately after the project d
 **Rules:**
 - The `PREFIX` in improvement log entries is project-specific. Choose a short, memorable abbreviation (e.g. `DT` for devtown, `AML` for AML, `CLI` for clinical). Use it consistently throughout the document.
 - All other format columns are suggestions — projects may use whatever format their tooling produces. The schema table is the declaration; the document follows it.
-- A Profile may define default schema conventions for its stack (e.g. the CaseHub Profile defines `GE-YYYYMMDD-XXXXXX` for garden entries).
+- A Profile may define default schema conventions for its stack. Documents following the profile inherit these defaults and need only declare project-specific values (e.g. an improvement log prefix) in the preamble.
 - Any reference in the document that matches a defined format is a navigable cross-reference. LLMs reading the document use the schema to resolve references without asking.
 
 ---
@@ -446,6 +446,38 @@ This naming makes the standard explicit: any reader seeing `ARC42STORIES.MD` imm
 
 ---
 
+### Document Preamble
+
+Every `ARC42STORIES.MD` opens with a preamble before §1. The preamble declares which spec version and profile the document follows, plus any project-specific values that override or extend the profile's defaults.
+
+**Minimal preamble (no profile — standalone application):**
+
+```markdown
+# [System Name] — ARC42STORIES.MD
+
+**Spec:** Arc42Stories v0.1
+**Layer taxonomy:** [brief description — e.g. "Domain / Application / Infrastructure"]
+```
+
+**With a profile:**
+
+```markdown
+# [System Name] — ARC42STORIES.MD
+
+**Spec:** Arc42Stories v0.1
+**Profile:** [Profile name and tier]
+**Profile ref:** `[local relative path]` · fallback: `[raw HTTPS URL]`
+[Profile-defined fields — e.g. Prefix, Platform position]
+```
+
+**Profile reference path convention:** the local path is relative to the repository root (e.g. `../parent/docs/my-profile.md` for a peer repo). If the path does not resolve locally, fall back to the raw HTTPS URL. This allows both local development and remote LLM sessions to resolve the profile without repo cloning.
+
+**Defaults and overrides:** a profile defines default values for artifact schema, layer taxonomy, and crosscutting conventions. The preamble need only declare the profile and specify what is project-specific (e.g. a prefix or platform position). Repeat profile content in the document only when overriding it.
+
+---
+
+---
+
 ## Session Lifecycle
 
 `ARC42STORIES.MD` is a living document. It grows with the system across development sessions.
@@ -463,30 +495,45 @@ This naming makes the standard explicit: any reader seeing `ARC42STORIES.MD` imm
 ## Profiles
 
 A **Profile** is a domain- or stack-specific instantiation of Arc42Stories. A Profile defines:
-- The layer taxonomy for the target stack (replaces generic UI/Application/Domain/Persistence)
-- Stack-specific protocols and conventions referenced from §8
-- Example Journeys and Chapters for the domain
+- **Default layer taxonomy** — replaces the generic UI/Application/Domain/Persistence model with stack-specific layers. A standalone application defines its own layer taxonomy directly in §4/§5 without a profile.
+- **Default artifact schema** — naming formats for issues, ADRs, blog entries, and other artifacts. Documents inherit these defaults and declare only what's project-specific (e.g. an improvement log prefix).
+- **Default §8 conventions** — crosscutting protocols and standards for the stack.
+- **Preamble field definitions** — which fields appear in the document preamble for each component type the profile covers.
+- **Reference implementations** — pointers to real `ARC42STORIES.MD` documents in the stack that demonstrate the profile in use.
+
+**No profile required.** A standalone application — one with no platform ecosystem and no shared stack conventions — uses the base spec directly. Define your own layer taxonomy in §4/§5 and omit the Profile field from the preamble.
+
+**Profiles are not prescriptive about component type.** A profile may cover multiple component types (e.g. platform components, foundation modules, standalone applications) and define different preamble fields and conventions for each. The document's preamble declares which type it is.
+
+**Layer taxonomy is always project/profile-defined.** The base spec does not prescribe what layers are. They could be architectural tiers (UI/Domain/Infrastructure), capability domains, integration phases, or anything that reflects the system's horizontal structure. A system with a single coherent layer has one layer. The Layer × Chapter matrix and Chapter sequencing work regardless of how many layers exist or what they represent.
 
 **Defining a Profile:**
 ```markdown
 ## Arc42Stories Profile: [Name]
 
-### Layer Taxonomy
-| Layer | What it represents | Typical Delta range |
-|---|---|---|
-| [Layer 1] | [Description] | Low–High |
-| [Layer 2] | [Description] | Low–Medium |
-...
+### Component types covered
+[What kinds of components this profile applies to, and how they differ]
 
-### Conventions
-[Stack-specific conventions for §8 Crosscutting Concepts]
+### Preamble fields
+[Fields that appear in the document preamble, per component type]
 
-### Example Journey and Chapters
-[A worked example showing the profile in use]
+### Default layer taxonomy
+[Per component type — or omit if layers are always self-defined]
+
+### Default artifact schema
+[Naming formats inherited by all documents following this profile]
+
+### Default §8 conventions
+[Stack-specific crosscutting protocols and standards]
+
+### Reference implementations
+[Pointers to real ARC42STORIES.MD documents in the stack]
 ```
 
+**Modularity:** `ARC42STORIES.MD` is designed as a single file to guarantee complete context for LLM sessions. For large mature systems where §9.4 Layer Entries grow unwieldy, a modular extension (separate layer files declared in the preamble) is anticipated but not yet specified. Implement as a single file until size becomes a genuine constraint.
+
 **Available Profiles:**
-- [Arc42Stories CaseHub Profile](arc42stories-casehub-profile.md) — CaseHub agentic harness applications
+- [Arc42Stories CaseHub Profile](arc42stories-casehub-profile.md) — CaseHub ecosystem components (application and foundation tiers)
 - *(More profiles welcome — contribute via Hortora)*
 
 ---
