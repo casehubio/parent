@@ -17,10 +17,11 @@ Integration tier module (like Claudony). Bridges CaseHub ↔ OpenClaw. Provision
 
 | Module | Contents |
 |--------|----------|
-| `core` | `ContextMessage`, `WindowContent`, `ChannelRingBuffer`, `ChannelContextWindowService`, `OpenClawHookClient`, REST context endpoint |
-| `casehub` | `ChannelContextWindowObserver` (`MessageObserver` SPI), `OpenClawChannelBackend` (`ChannelBackend` SPI), `OpenClawWorkerProvisioner`, `OpenClawCaseChannelProvider`, `OpenClawWorkerStatusListener`, `OpenClawAgentRegistry` (tracks agentId → session registration; populated by `WorkerProvisioner`, read by `ChannelBackend`) |
-| `app` | Runnable Quarkus application — wires core + casehub modules |
-| `python/` | Python SDK — `before_prompt_build` hook, `appendSystemContext` |
+| `core` | `ContextMessage`, `WindowContent`, `ChannelRingBuffer`, `ChannelContextWindowService`, `OpenClawHookClient`, REST context endpoint. `OpenClawHookClient.invoke()` has a 5-arg overload accepting explicit `deliveryUrl` — used by `OversightGateService` for oversight delivery. `OpenClawCasehubConfig.Oversight` group: `Optional<String> agentId()` (dedicated messaging agent for oversight; falls back to work agent if absent). |
+| `casehub` | `ChannelContextWindowObserver` (`MessageObserver` SPI), `OpenClawChannelBackend` (`ChannelBackend` SPI), `OpenClawWorkerProvisioner`, `OpenClawCaseChannelProvider`, `OpenClawWorkerStatusListener`, `OpenClawAgentRegistry` (tracks agentId → session registration). **Epic 6:** `OversightGateService` (owns `evaluate()`+`fulfill()` gate lifecycle), `ActionRiskClassifier` + `DefaultActionRiskClassifier` (local SPI placeholder for engine#402; Phase 1: always AUTONOMOUS — override via `@Alternative @Priority(1)`), `SpeechActClassifier` + `DefaultSpeechActClassifier` (Phase 1: always DONE — override via `@Alternative @Priority(1)`), `CaseChannelNames` (package-private channel name utility). |
+| `app` | Runnable Quarkus application — wires core + casehub modules. REST endpoints: `POST /openclaw/delivery/channel/{channelId}` (deliver:webhook → `OversightGateService.evaluate()`), `POST /openclaw/delivery/oversight/{gateId}` (oversight response → `OversightGateService.fulfill()`), `GET /channel-context/{agentId}?since={seq}` |
+| `plugin/` | TypeScript OpenClaw plugin — `before_prompt_build` hook via Plugin SDK; published to npm. TypeScript-only due to OpenClaw Plugin SDK design — see ADR 0001. |
+| `python/` | Python channel client library (thin HTTP wrapper); published to PyPI. No hook registration (hooks are TypeScript-only). |
 
 ### Hook API
 
@@ -48,9 +49,30 @@ Integration tier module (like Claudony). Bridges CaseHub ↔ OpenClaw. Provision
 
 Implements the Qhorus `ChannelBackend` SPI to wire bidirectional message flow between a Qhorus channel and an OpenClaw agent. Inbound (CaseHub → OpenClaw) routes via `/hooks/agent`. Outbound (OpenClaw → CaseHub) routes via the `deliver:webhook` normaliser.
 
-### Python SDK
+### Oversight Gate (Epic 6)
 
-Hooks into OpenClaw's `before_prompt_build` lifecycle. Calls `GET /channel-context/{agentId}` and invokes `appendSystemContext` to prepend the CaseHub channel window to the agent's system prompt before each LLM call.
+`OversightGateService` owns the gate lifecycle:
+
+- `evaluate(workChannelId, agentId, output)` — called by the delivery webhook for every OpenClaw result:
+  1. `SpeechActClassifier.classify()` → `MessageType` (Phase 1: always DONE)
+  2. `ActionRiskClassifier.classify()` → `RiskDecision` (Phase 1: always AUTONOMOUS)
+  3. AUTONOMOUS: dispatch to work channel. GATE_REQUIRED: post COMMAND to oversight channel + invoke OpenClaw to deliver the gate question to a human
+- `fulfill(gateId, rawOutput)` — called by the oversight delivery webhook when human responds:
+  1. Parse approval (first word must be `"approved"`; null/blank → rejected)
+  2. Look up `Commitment` by `correlationId=gateId` (durable — survives restart)
+  3. Dispatch RESPONSE/DECLINE to oversight (closes Commitment) + STATUS to work channel
+
+**Phase 1 behaviour:** `ActionRiskClassifier` always returns AUTONOMOUS — gate never fires. The oversight gate is fully wired and integration-tested but inert until a risk classifier implementation is registered.
+
+**Known limitation:** STATUS dispatched to work channel instead of DONE because `inReplyTo` (original COMMAND message ID) is not available at delivery time (openclaw#16).
+
+**Cross-repo:** `ActionRiskClassifier` SPI will migrate to `casehub-engine-api` (engine#402); `SpeechActClassifier` Phase 2/3 tracked in openclaw#10.
+
+### Plugin SDK (Epic 5)
+
+TypeScript `before_prompt_build` hook implemented via OpenClaw Plugin SDK in `plugin/`. Calls `GET /channel-context/{agentId}` and invokes `appendSystemContext` to prepend CaseHub channel history into the agent's system prompt before each LLM call. Published to npm. ADR 0001 documents the TypeScript-only decision.
+
+The `python/` library is a thin HTTP client (no hook registration); published to PyPI independently.
 
 ---
 
@@ -94,7 +116,8 @@ These two modes are mutually exclusive per invocation. A given agent interaction
 - Epic 2 (OpenClaw hook API client): complete — `OpenClawHookClient`, session registry, `deliver:webhook` normaliser (branch `issue-002-openclaw-hook-client`)
 - Epic 3 (ChannelContextWindow service): complete — in-memory ring buffer, `ChannelContextWindowObserver`, REST endpoint (branch `issue-003-channel-context-window`)
 - Epic 4 (CaseHub SPIs: `WorkerProvisioner`, `ChannelBackend`, `CaseChannelProvider`, `WorkerStatusListener`): complete — branch `issue-4-casehub-spi-implementations`
-- Epic 5+: pending
+- Epic 5 (TypeScript Plugin SDK + Python client library): complete — `plugin/` (npm), `python/` (PyPI), ADR 0001
+- Epic 6 (OversightGateService, ActionRiskClassifier, SpeechActClassifier, oversight delivery endpoint): complete
 
 ---
 
