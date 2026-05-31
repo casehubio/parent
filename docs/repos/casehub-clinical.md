@@ -36,8 +36,10 @@ The tutorial structure emerges from the natural adoption sequence. Each layer ad
 - Trust dimensions: `safety-accuracy`, `eligibility-precision`, `protocol-adherence`
 - Multi-site trial `CasePlanModel` — site-level sub-cases with trial-level aggregation
 - Adverse event escalation — 24h/7d GCP SLA WorkItems with CTCAE grading
-- PI authorisation — formal COMMAND creates Commitment; deviation requires named PI approval; MAJOR deviations trigger GCP §4.5 sponsor notification via `SponsorNotifier` SPI (casehub-connectors-core)
-- `SafetyOfficerNotifier` SPI — observes `AdverseEventReportedEvent` (Grade 3+ only); dispatches via casehub-connectors-core; writes `SafetyOfficerNotificationLedgerEntry` for GCP/FDA audit — clinical#11 ✅
+- PI authorisation — formal COMMAND creates Commitment; deviation requires named PI approval; MAJOR deviations trigger GCP §4.5 sponsor notification via `SponsorNotifier` SPI (`api/spi/`) — dispatches via casehub-connectors-core
+- `SafetyOfficerNotifier` SPI (`api/spi/`) — observes `AdverseEventReportedEvent` (Grade 3+ only); dispatches via casehub-connectors-core; writes `SafetyOfficerNotificationLedgerEntry` for GCP/FDA audit — clinical#11 ✅
+
+  **Notification SPI pattern** (`SponsorNotifier` + `SafetyOfficerNotifier`): both follow the same pattern — SPI interface in `api/spi/`, `@DefaultBean` no-op in `runtime/service/`, connector delivery via `casehub-connectors-core`. When adding a third notification SPI, mirror this structure. Both interfaces use `Connector.send()` internally — no direct connector coupling in the SPI contract.
 - IRB/ethics committee gate — `ClinicalDeviationCaseHub` + `deviation-review.yaml`: CRITICAL protocol deviation + PI approval → 72h WorkItem → four terminal outcomes (APPROVED/REJECTED/DEFERRED/EXPIRED); `IrbDecisionListener` bridges WorkItem lifecycle to `IrbApproval` entity + ledger
 - AE escalation policy SPI — `AdverseEventEscalationPolicy` + `DefaultAdverseEventEscalationPolicy` (CTCAE-based): Grade 3 → senior monitor gate; Grade 4+ → senior monitor + DSMB in parallel; `ClinicalAdverseEventCaseHub` + `ae-escalation.yaml` drives adaptive routing via `contextChange.filter`
 - `ClinicalTrialCaseHub` + `trial-coordination.yaml` — trial-level DSMB rollup binding (cross-site Grade 4+ pattern detection); owns trial-level `CasePlanModel` not just IRB gate and AE escalation
