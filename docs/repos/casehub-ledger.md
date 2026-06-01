@@ -42,6 +42,8 @@ The ledger provides services for: cryptographic verification and inclusion proof
 
 `LedgerEnricherPipeline` is an `@ApplicationScoped` CDI bean that owns enricher pipeline execution — shared by the JPA `@EntityListeners` path and the in-memory path. It is not an SPI (consumers do not implement it) but is the shared execution point for any consumer that adds enrichers.
 
+`ReactiveAgentIdentityVerificationService` is a `@DefaultBean @Unremovable` Mutiny bridge wrapping `AgentIdentityVerificationService` on the blocking worker pool. Always active regardless of `reactive.enabled`.
+
 See `docs/DESIGN.md` for service class structure.
 
 ### SPIs (Consumer-Implemented or Built-In Alternatives)
@@ -56,6 +58,7 @@ See `docs/DESIGN.md` for service class structure.
 | `LedgerTraceIdProvider` | OTel span | — | Override OTel trace ID extraction |
 | `TrustImportService` | no-op default | JPA default (seed-if-absent) | Import trust scores from external payload |
 | `TrustBootstrapSource` | no-op default | — | Fetch prior trust data for first-time actors |
+| `ActorDIDProvider` | — | `ScimActorDIDProvider @Alternative @Priority(1)` (explicit activation via `quarkus.arc.selected-alternatives`) | Resolves actorId → DID via SCIM2 Agent endpoint; TTL cache; config prefix `casehub.ledger.agent-identity.scim.*` |
 
 ### Agent Identity Pipeline
 
@@ -154,6 +157,28 @@ See `docs/DESIGN.md` for the leaf hash scheme.
 Format: `{model-family}:{persona}@{major}` — e.g. `"claude:tarkus-reviewer@v1"`.  
 Major version bump resets trust baseline to Beta(1,1) = 0.5 prior.  
 Bump criteria: model family change, persona behaviour change, scope change. Do NOT bump for: bug fixes, tuning, CLAUDE.md changes that don't alter behaviour.
+
+### Key Events and Services
+
+**`AgentKeyRotatedEvent`** — CDI event fired by `KeyRotationService` and `ReactiveKeyRotationService` after a rotation is persisted. Observers: `ActorIdentityValidationEnricher` and `ScimActorDIDProvider` each evict their per-actorId cache on receipt.
+
+**`ScimActorDIDProvider`** — `@Alternative` enterprise resolver. Maps actorId → DID via a SCIM2 Agent endpoint with a configurable TTL cache. Activated via `quarkus.arc.selected-alternatives`. See `docs/integration/scim2-agent-identity.md` for integration guide.
+
+---
+
+## Configuration
+
+### Agent Identity / SCIM
+
+Config prefix: `casehub.ledger.agent-identity.scim.*`
+
+| Key | Purpose |
+|-----|---------|
+| `endpoint` | SCIM2 Agent endpoint URL |
+| `auth-token` | Bearer token for the SCIM2 endpoint |
+| `timeout-ms` | HTTP request timeout |
+| `cache-ttl-minutes` | TTL for the per-actorId DID cache |
+| `require-https` | Reject non-HTTPS endpoint URLs |
 
 ---
 
