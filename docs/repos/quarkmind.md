@@ -2,7 +2,7 @@
 
 **GitHub:** [mdproctor/quarkmind](https://github.com/mdproctor/quarkmind)
 **Tier:** Application — Living Lab
-**Status:** Active — SC2 layer through replay-accurate multi-base mining model (690 tests); harness layer documentation in progress
+**Status:** Active — SC2 layer through replay-accurate multi-base mining model (828 unit/integration tests + 288 Playwright E2E); harness layer documentation in progress
 **Note:** In the `mdproctor/` namespace, not `casehubio/` — a personal project using the CaseHub pattern. Does not participate in the casehubio CI pipeline.
 
 ## What It Is
@@ -67,7 +67,7 @@ quarkmind
 
 ## Current State
 
-690 tests passing. The SC2 emulation layer is substantially complete for the Protoss vs Protoss / Terran matchup:
+828 unit/integration tests passing (288 Playwright E2E excluded from default surefire run). The SC2 emulation layer is substantially complete for the Protoss vs Protoss / Terran matchup:
 
 **Emulation accuracy (post-Phase 6 calibration):**
 - Sub-tick train timing: `TimedIntent` with `completesAt` derived from `SC2Data.trainTimeInLoops` (integer-loop rounding calibrated from replays — #149); `firstUnitDivergenceTick ≥ 80`, `maxUnitDelta ≤ 2`; cross-validated across all 30 IEM10 games (#150)
@@ -82,7 +82,12 @@ quarkmind
 - Three.js 3D terrain with height shading, fog of war, mineral patches, geysers, creep
 - 65+ canvas sprites across all 3 races; directional facing, teamColour decals
 - Click-to-inspect unit/building panel; HP/shield bars; replay scrub control
-- `ReplayVisualizerIT` pixel tests; Playwright end-to-end suite (218+ tests)
+- `ReplayVisualizerIT` pixel tests; Playwright end-to-end suite (288 tests)
+- **Phase 5 visualiser additions (quarkmind#131):**
+  - Mineral HUD: comma-formatted mineral count + colour tiers (< 50 critical red, 50–149 amber, 150+ normal)
+  - Probe/unit spread: `applyUnitSpread()` distributes co-located sprites in a ring around the centroid (prevents sprite stacking)
+  - Canvas sprites: `makeResourceMaterial()` factory — mineral patches (blue with cross) and geysers (teal with X) replacing solid-colour placeholders
+  - Time-based tests: `window.__test.gameTimeSeconds()` + `tickForSeconds()` helper enabling `mineralIncomeScalesWithGameTime` and similar time-anchored assertions
 
 **Harness layer (Layer 2 active):** `AgentOrchestrator` dispatches plugins via `casehub-engine` CaseFile per tick. Layer-by-layer tutorial documentation in progress — Layer 1 (conceptual baseline) and Layer 2 (casehub-engine blackboard) are documented in `LAYER-LOG.md`. Layers 3–7 tracked in quarkmind#155–#159.
 
