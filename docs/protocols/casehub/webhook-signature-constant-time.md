@@ -6,7 +6,7 @@ scope: platform
 applies_to: "Any casehub module that verifies inbound webhook signatures (casehub-connectors-webhook and any future webhook-receiving module)"
 severity: critical
 refs:
-  - ../../docs/specs/2026-05-29-inbound-connector-spi-design.md
+  - ../../specs/2026-05-29-inbound-connector-spi-design.md
 violation_hint: "signature.equals(computed) or Arrays.equals(expected, actual) in any HMAC verification path"
 created: 2026-05-29
 ---

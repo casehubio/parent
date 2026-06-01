@@ -6,7 +6,7 @@ scope: platform
 applies_to: "Any casehubio module with a named datasource that adds reactive PostgreSQL integration tests"
 severity: guidance
 refs:
-  - ../../../PLATFORM.md
+  - ../../PLATFORM.md
 violation_hint: "Using Testcontainers directly, hardcoding a PostgreSQL JDBC URL, or putting reactive-pg config in the default %test profile (which breaks H2-only builds)"
 created: 2026-05-28
 ---

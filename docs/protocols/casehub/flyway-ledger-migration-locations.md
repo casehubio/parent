@@ -7,7 +7,7 @@ applies_to: "Any module whose test classpath transitively includes casehub-ledge
 severity: critical
 refs:
   - ../../repos/casehub-work.md
-  - ../../../PLATFORM.md
+  - ../../PLATFORM.md
 violation_hint: "Flyway startup fails with 'Table LEDGER_ENTRY not found' when running V2001+ migrations — the base ledger tables were never created because db/ledger/migration was not scanned"
 created: 2026-05-24
 ---

@@ -7,7 +7,7 @@ applies_to: "Any module declaring a dependency on io.casehub:casehub-platform"
 severity: critical
 refs:
   - ../../repos/casehub-work.md
-  - ../../../PLATFORM.md
+  - ../../PLATFORM.md
 violation_hint: "All @QuarkusTest tests pass, then the build fails ~20s later with UnsatisfiedResolutionException for PreferenceProvider during Quarkus augmentation"
 created: 2026-05-24
 ---

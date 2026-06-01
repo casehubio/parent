@@ -7,7 +7,7 @@ applies_to: "Any module implementing WorkerProvisioner, CaseChannelProvider, Wor
 severity: critical
 refs:
   - ../../repos/casehub-engine.md
-  - ../../../PLATFORM.md
+  - ../../PLATFORM.md
 violation_hint: "31+ CDI deployment problems at startup: Unsatisfied dependency for WorkerExecutionManager, CaseInstanceRepository, EventLogRepository, JobScheduler — none of the errors name the incorrect artifact"
 created: 2026-05-29
 ---
