@@ -57,6 +57,27 @@ See `docs/DESIGN.md` for service class structure.
 | `TrustImportService` | no-op default | JPA default (seed-if-absent) | Import trust scores from external payload |
 | `TrustBootstrapSource` | no-op default | — | Fetch prior trust data for first-time actors |
 
+### Agent Identity Pipeline
+
+Ledger consumes identity SPIs from `casehub-platform-identity` — it does not own them.
+
+The write-time pipeline (enrichers, always active):
+
+| Enricher | Priority | What it does |
+|----------|----------|--------------|
+| `ActorDIDEnricher` | 40 | Calls `ActorDIDProvider` (from `casehub-platform-identity`); populates `LedgerEntry.actorDid` |
+| `ActorIdentityValidationEnricher` | 50 | Calls `DIDResolver` + `AgentCredentialValidator` (from `casehub-platform-identity`); sets `pendingIdentityStatus` |
+
+The binding persistence observer (`ActorIdentityBindingObserver`) fires async and calls the JPA-backed
+`JpaActorIdentityBindingRepository` to persist each validation outcome as an `ActorIdentityBindingEntry`
+(V1008 schema). This is the ledger's own concern — platform does not touch persistence.
+
+Enforcement: `LedgerIdentityEnforcementListener` (`@EntityListeners`) gates persist in ENFORCE mode
+(`casehub.ledger.agent-identity.validation-mode=ENFORCE`). Config prefix for validation mode
+stays in ledger; DID resolution and SCIM lookup config moved to `casehub.identity.*`.
+
+See [`docs/repos/casehub-identity.md`](casehub-identity.md) for the identity module deep-dive.
+
 ### Supplements (Optional Attachments)
 
 | Supplement | Purpose |
@@ -79,14 +100,18 @@ Consumers must add this path to their `quarkus.flyway.locations` config.
 | V1005 | `agent_signature` + `agent_public_key` columns on `ledger_entry` |
 | V1006 | `agent_key_ref` column on `ledger_entry` |
 | V1007 | `key_rotation_entry` subclass table |
+| V1008 | `actor_did` column on `ledger_entry` + `actor_identity_binding` join table |
 
-**Consumers** own V1008+ for their own subclass join tables (V1004–V1007 are now ledger base).
+**Consumers** own V2000+ for their own subclass join tables.
 
 ---
 
 ## Depends On
 
-Nothing in the casehubio ecosystem. Quarkus + Hibernate ORM only.
+| Repo | What |
+|------|------|
+| `casehub-platform-api` | `ActorType`, `ActorTypeResolver` (identity primitives) |
+| `casehub-platform-identity` | `ActorDIDProvider`, `DIDResolver`, `AgentCredentialValidator` SPIs; identity model types and CDI event records |
 
 ## Depended On By
 
@@ -106,6 +131,8 @@ Nothing in the casehubio ecosystem. Quarkus + Hibernate ORM only.
 - Capture domain events (consumers wire their own `@ObservesAsync` observers)
 - Replay events or project CQRS views
 - Know anything about WorkItems, Cases, or agent channels
+- Own DID resolution or VC validation logic (those live in `casehub-platform-identity`)
+- Own SCIM2 agent lookup (that is `ScimActorDIDProvider` in `casehub-platform-identity`)
 
 ---
 
@@ -113,9 +140,10 @@ Nothing in the casehubio ecosystem. Quarkus + Hibernate ORM only.
 
 Consumers:
 1. Extend `LedgerEntry` as a JPA `@Entity` (`@DiscriminatorValue`)
-2. Add their own Flyway migration (V1004+ range) for the subclass join table
+2. Add their own Flyway migration (V2000+ range) for the subclass join table
 3. Wire a CDI observer to capture domain events as ledger entries
 4. Optionally attach `ComplianceSupplement` or `ProvenanceSupplement`
+5. Optionally activate a `casehub-platform-identity` alternative (`KeyDIDResolver`, `WebDIDResolver`, `ScimActorDIDProvider`) for agent identity binding
 
 See `docs/DESIGN.md` for the leaf hash scheme.
 
@@ -131,9 +159,10 @@ Bump criteria: model family change, persona behaviour change, scope change. Do N
 
 ## Current State
 
-- 449 tests passing, native image validated
+- 523 tests passing, native image validated
 - Reactive/blocking service parity enforced at build time via `BlockingReactiveParityTest` (ArchUnit 1.4.1) — auto-discovers all `Reactive*Service` classes and asserts bidirectional method parity and `Uni<T>` returns
-- All epics complete: MMR, PROV-DM, privacy/pseudonymisation, EigenTrust, trust routing signals, OTel auto-wiring
+- All epics complete: MMR, PROV-DM, privacy/pseudonymisation, EigenTrust, trust routing signals, OTel auto-wiring, agent DID/VC binding
+- Identity infrastructure (SPIs, resolvers, SCIM provider) extracted to `casehub-platform-identity` — ledger retains enrichers, binding persistence, and enforcement
 - No deployed production instances — schema migrations can be rewritten in place (no incremental migration scripts needed)
 - Quarkiverse submission pending (eligibility discussion ongoing)
 
