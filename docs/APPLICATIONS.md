@@ -58,6 +58,7 @@ See [PLATFORM.md — Build Order](PLATFORM.md) for the full dependency graph.
 | AML domain logic (investigation, SAR workflow, FinCEN compliance) | `casehub-aml` |
 | Clinical trial domain logic (protocol, site management, GCP/FDA) | `casehub-clinical` |
 | Personal life automation (household, health, finance, care, legal) | `casehub-life` |
+| MCP-driven document review (multi-LLM critique, version-tracked revisions) | `casehub-drafthouse` |
 | SC2 game AI (strategy, economics, tactics, scouting plugin agents) | `quarkmind` |
 
 All other capabilities live in the foundation. See [PLATFORM.md — Capability Ownership](PLATFORM.md).
