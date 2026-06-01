@@ -5,6 +5,8 @@ This document applies to every CaseHub application repo:
 
 Read this at session start alongside your CLAUDE.md.
 
+> **Transitional note:** The primary architectural record is **`ARC42STORIES.MD`** (Arc42Stories spec + CaseHub profile). This supersedes `LAYER-LOG.md` and `DESIGN.md`, which are absorbed into §9.4 and §10 respectively. Repos not yet migrated continue using LAYER-LOG.md — see [Migration](#migration-layer-log-to-arc42storiesmd) below. CLAUDE.md files in individual repos will be updated in a forthcoming mass update; where your CLAUDE.md still references LAYER-LOG.md, follow the ARC42STORIES.MD instructions in this guide instead.
+
 ---
 
 ## What You Are
@@ -35,7 +37,7 @@ they recognise from their own work.
 
 **Secondary — Architectural documentation for understanding, evolution, and cross-domain reuse**
 
-ARC42STORIES.MD, LAYER-LOG.md, blog entries, and git history together form the
+ARC42STORIES.MD, blog entries, and git history together form the
 architectural record. Its primary documentation purpose is **understanding** — how the
 system is structured and how its parts come together. This understanding is necessary
 for humans and LLMs to refactor, improve, extend, and fix the system with confidence.
@@ -61,7 +63,7 @@ A domain entity is not justified when it duplicates a foundation primitive (`Wor
 **The production-first test — apply before writing any class:**
 > "Would this class exist in a production system built to this layer and no further?"
 
-If the answer is no, do not build it. Document the architecture in LAYER-LOG.md instead.
+If the answer is no, do not build it. Document the architecture in ARC42STORIES.MD instead.
 
 **Anti-patterns that have appeared and are wrong:**
 
@@ -93,140 +95,86 @@ problem, not a CDI configuration problem.
 
 ## Build Order — Vertical Slice First
 
-**The layer ordering in LAYER-LOG.md is for reading** — the sequence a developer
-follows to understand the system. **Building follows vertical slices:** identify a
-slice (a user-visible capability), implement each layer it requires in turn, deliver
-the slice end-to-end, then move to the next slice. Layers are the implementation unit;
-slices are the planning and delivery unit.
+**The layer ordering in ARC42STORIES.MD §9.4 is for reading** — the sequence a developer
+follows to understand the system. **Building follows vertical slices (Chapters):** identify a
+Chapter (a user-visible capability), implement each layer it requires in turn, deliver
+the Chapter end-to-end, then move to the next. Layers are the implementation unit;
+Chapters are the planning and delivery unit.
 
-Full guidance, planning criteria, and LAYER-LOG.md structure:
-`docs/protocols/universal/vertical-slice-planning.md`
+Full guidance: `docs/protocols/universal/vertical-slice-planning.md`
 
-**LAYER-LOG.md structure** (applies to all harness apps):
-1. Vertical Slice Index at the top — what the system can DO at each milestone
-2. Layer entries below — how each capability was built, with slice cross-references
+**ARC42STORIES.MD §9 structure:**
+1. §9.2 Chapter Index at the top — what the system can DO at each milestone (the Vertical Slice Index)
+2. §9.3 Chapter Entries — one per delivered capability, in delivery sequence
+3. §9.4 Layer Entries — how each integration was built, with Chapter cross-references
 
-**Retrospective note.** Devtown, AML, and clinical were built without slice planning.
-Each repo has an open issue to add the Vertical Slice Index retrospectively (the layer
-entries do not need rewriting). Future work in all repos follows vertical slice first.
+**Retrospective note.** Devtown, AML, and clinical were built without Chapter planning.
+The §9.2 Chapter Index should be added retrospectively (§9.4 Layer Entries do not need
+rewriting — they map directly). Future work in all repos follows Chapter-first.
 
 ---
 
 ## What to Produce and Maintain
 
-### LAYER-LOG.md — the primary architectural record
+### ARC42STORIES.MD — the primary architectural record
 
-One file at the project root. A structured record that grows across sessions as each
-layer is built. This is the primary architectural record — the navigational hub for
-understanding what the system can do and how each integration was built. **A layer is not
-complete until its LAYER-LOG.md entry is fully written — but entries are written
-incrementally, not all at once.**
+One file at the workspace root. Follows the [Arc42Stories spec](arc42stories-spec.md) and the [CaseHub Application-tier profile](arc42stories-casehub-profile.md). This is the primary architectural record — the navigational hub for understanding what the system can do and how each integration was built. **A layer is not complete until its §9.4 Layer Entry is fully written — but entries are written incrementally, not all at once.**
 
-**Epics and layers are not the same thing.** Epics organize work by build convenience.
-Layers organize knowledge by reading progression — the sequence in which a developer
-encounters the architecture to understand it. One layer may span several
-epics. Do not wait for a layer to be fully built before starting its log entry — write
-what is known, mark pending sections with `🔲`, and let future sessions fill them in.
+**Chapters and layers are not the same thing.** Chapters (§9.3) organise work by delivery — what the system can do after each milestone. Layers (§9.4) organise knowledge by reading progression — the sequence in which a developer encounters the architecture to understand it. One layer may span several Chapters. Do not wait for a layer to be fully built before starting its entry — write what is known, mark pending sections with `🔲`, and let future sessions fill them in.
 
-The layers in the log are ordered for learning, not for chronology. When generating
-tutorials or how-tos, the order can be adjusted for the audience. Git history captures
-chronology; LAYER-LOG.md captures the architectural layer progression.
+Layer entries in §9.4 are ordered for learning, not for chronology. Git history captures chronology; §9.4 captures the architectural layer progression.
 
-Each entry captures:
+Each §9.4 Layer Entry captures:
 - What was built and what gap it closes
-- The accountability gaps documented in LAYER-LOG.md that this layer closes
+- Accountability gaps this layer closes
 - Key wiring (the non-obvious configuration — not in the code, not in the docs)
 - Gotchas (what went wrong, what would go wrong without prior knowledge)
-- Pattern to replicate — domain-agnostic numbered steps an LLM can follow in a
-  different domain
-- Cross-references to commits, blog entries, issues, and design specs — so future
-  sessions and future LLMs can find the source material without reconstructing it
+- Pattern to replicate — domain-agnostic numbered steps an LLM can follow in a different domain
+- Cross-references to commits, blog entries, issues, and design specs
 
-See `docs/protocols/universal/layer-log.md` in casehub-parent for the full format
-including placeholder guidance.
-See `LAYER-LOG.md` in casehub-aml for a reference implementation (Layers 1 and 2).
+See the full §9.4 Layer Entry format in `docs/arc42stories-spec.md §9.4`.
 
-**Augmented format — each completed layer entry must include:**
-
-```markdown
-### Summary
-What foundation module was integrated and what it enables (1 paragraph).
-
-### Accountability gaps closed
-| Gap | What breaks without it | Closed by |
-|-----|----------------------|-----------|
-| No formal deadline | Compliance reviews sit indefinitely | casehub-work WorkItem SLA |
-
-### Key wiring
-Non-obvious configuration — not visible in code, not in official docs.
-
-### Architectural decisions
-Why this approach, tradeoffs considered, alternatives rejected.
-
-### Pattern introduced
-The key pattern this layer establishes (named, referenceable).
-
-### Pattern anchor
-1–2 key reference points: class name + method. Not a code listing — a pointer.
-
-### Gotchas
-What went wrong, what would go wrong without prior knowledge.
-
-### Pattern to replicate
-Domain-agnostic numbered steps an LLM can follow in a different domain.
-
-### Navigation
-`git log --grep="#N" --oneline`
-```
-
-The existing sections (key files, pattern to replicate) are kept — this is additive.
+**Repos not yet migrated from LAYER-LOG.md** continue using LAYER-LOG.md until migration is complete — see [Migration](#migration-layer-log-to-arc42storiesmd) below.
 
 ---
 
-## The Three-Document Design System
+## The Design System
 
-Every harness application maintains three design documents that form an explicit chain.
-Understanding the chain prevents duplication and drift:
+Every harness application maintains two permanent documents and one ephemeral working doc:
 
 | Document | What it captures | Granularity | Lives in |
 |---|---|---|---|
-| `LAYER-LOG.md` | **SIAL** — what the system CAN DO, organized by vertical slice + layer; navigational hub | Application lifetime | project repo |
-| `DESIGN.md` | **Decision record** — cross-cutting architectural decisions distilled from epics; the *why* behind specific technical choices | Per decision | workspace |
-| `design/JOURNAL.md` | **Working doc** — in-session design reasoning for the current epic; ephemeral | Per epic | workspace |
+| `ARC42STORIES.MD` | Primary architectural record — §9.2 Chapter Index, §9.3 Chapter Entries, §9.4 Layer Entries, §10 cross-cutting decisions | Application lifetime | workspace root |
+| `design/JOURNAL.md` | Per-epic working doc — in-session design reasoning; ephemeral | Per epic | workspace `design/` |
 
 **The flow at epic close:**
-1. `design/JOURNAL.md` → distil what-was-built into the LAYER-LOG layer entry
-2. `design/JOURNAL.md` → distil cross-cutting architectural decisions into `DESIGN.md`
-3. Each LAYER-LOG layer entry cross-references the relevant `DESIGN.md` section for the *why*
-4. Each `DESIGN.md` entry references the LAYER-LOG layer that generated it
+1. `design/JOURNAL.md` → distil what-was-built into §9.3 Chapter Entry and §9.4 Layer Entry
+2. `design/JOURNAL.md` → distil cross-cutting architectural decisions into §10
+3. Each §9.4 Layer Entry cross-references the relevant §10 decision for the *why*
 
 **What goes where:**
-- "We built `QhorusAmlInvestigator` to dispatch typed COMMANDs" → LAYER-LOG layer entry
-- "Why we put `SlaBreachPolicy` in `work-api` instead of `platform-api`" → DESIGN.md
+- "We built `QhorusAmlInvestigator` to dispatch typed COMMANDs" → §9.4 Layer Entry
+- "Why we put `SlaBreachPolicy` in `work-api` instead of `platform-api`" → §10
 - "Session reasoning on whether to use `@DefaultBean` or `@Alternative`" → JOURNAL.md (not preserved)
 
-**What DESIGN.md is not:** it is not a design spec (that lives in `docs/specs/`), not an ADR (that lives in `docs/adr/`), and not a session narrative (that is `blog/`). It is the accumulated record of cross-cutting decisions that would otherwise be lost between epics.
-
-### Existing habits to maintain
+### Artifacts maintained per session
 
 | Artifact | Purpose | Where |
 |----------|---------|-------|
-| `LAYER-LOG.md` | SIAL — slice index + layer entries (primary architecture record) | project repo |
-| `DESIGN.md` | Cross-cutting decision record — feeds LAYER-LOG; distilled from JOURNAL | workspace |
-| `design/JOURNAL.md` | Per-epic working doc — feeds DESIGN.md + LAYER-LOG at close | workspace |
+| `ARC42STORIES.MD` | Primary architecture record (§9 + §10) | workspace root |
+| `design/JOURNAL.md` | Per-epic working doc — feeds ARC42STORIES.MD at close | workspace `design/` |
 | Blog/diary entries | Narrative context per session | workspace `blog/` |
 | `CLAUDE.md` | Session conventions, always current | project root |
 | GitHub issues/epics | Work tracking | GitHub |
 | ADRs | Significant architectural decisions requiring formal record | `docs/adr/` |
 
-Blog entries correlate with LAYER-LOG.md but serve a different purpose — narrative for
-humans; the log is structured for LLMs. Both are needed.
+Blog entries complement ARC42STORIES.MD — narrative for humans; the architectural record is structured for LLMs. Both are needed.
 
 ---
 
 ## Retroactive Work
 
-When starting a new session in an app that has existing code but no LAYER-LOG.md:
+When starting a new session in an app that has existing code but no ARC42STORIES.MD (or one that needs its §9 populated):
 
 ### Step 1 — Establish what has been built
 
@@ -266,15 +214,15 @@ If the layer table shows all layers as "pending" but epics are closed, **the lay
 is wrong**. Update it: closed epics represent progress within a layer, even if the layer
 is not fully complete.
 
-### Step 4 — Write LAYER-LOG.md entries
+### Step 4 — Populate ARC42STORIES.MD §9
 
-One entry per layer that has any work done — including in-progress layers. Use git
-history, blog entries, and issues as source material. Mark sections that cannot yet
-be written with `🔲` — include the expected content or pointer so future sessions
-can fill them in without context reconstruction. See the protocol for placeholder
-guidance: `docs/protocols/universal/layer-log.md`.
+If ARC42STORIES.MD already exists, populate the §9.2 Chapter Index and §9.4 Layer Entries. If it doesn't exist, create it using the CaseHub Application-tier preamble template from `docs/arc42stories-casehub-profile.md`, then populate §9.
 
-### Step 5 — Identify the current layer
+One §9.4 Layer Entry per layer that has any work done — including in-progress layers. Use git history, blog entries, and issues as source material. Mark sections that cannot yet be written with `🔲` — include the expected content or pointer so future sessions can fill them in without context reconstruction.
+
+If the repo has an existing LAYER-LOG.md, use it as source material — the entry format maps directly to §9.4. See [Migration](#migration-layer-log-to-arc42storiesmd) below.
+
+### Step 5 — Identify the current Chapter
 
 From the layer table in your repo deep-dive: what is the next layer to complete?
 Create a GitHub issue for it if none exists (check Epics for this layer first).
@@ -283,20 +231,21 @@ Create a GitHub issue for it if none exists (check Epics for this layer first).
 
 ## Ongoing Maintenance (per layer)
 
-LAYER-LOG.md has two triggers per layer:
+ARC42STORIES.MD §9.4 has two triggers per layer:
 
-- **When work begins:** start the entry — add what is known, `🔲` the rest with context
+- **When work begins:** start the §9.4 entry — add what is known, `🔲` the rest with context
 - **When code ships:** fill the entry — complete all `🔲` sections, set **Completed** date
 
 When a layer's code ships:
 
-1. Fill all remaining `🔲` sections in the LAYER-LOG.md entry before closing the issue
-2. The completed entry is part of the PR / commit, not a follow-up
-3. Update your repo deep-dive in casehub-parent — change layer status from `pending`
+1. Fill all remaining `🔲` sections in the §9.4 Layer Entry before closing the issue
+2. Add or update the §9.3 Chapter Entry for any Chapter that completes with this layer
+3. The completed entries are part of the PR / commit, not a follow-up
+4. Update your repo deep-dive in casehub-parent — change layer status from `pending`
    to `in progress` or `complete` (create issue on casehubio/parent if you cannot
    commit there directly)
-4. Write a blog entry for the session
-5. Check CLAUDE.md for drift
+5. Write a blog entry for the session
+6. Check CLAUDE.md for drift
 
 ---
 
@@ -307,8 +256,7 @@ Your layer structure is defined in two places:
 - `docs/tutorial-strategy.md §{N}` in casehub-parent — layer objectives and code
   sketches per layer
 
-**Reference implementation:** casehub-aml — Layers 1 and 2 complete. Read
-`LAYER-LOG.md` in casehub-aml before writing your own. The AML log is the pattern.
+**Reference implementation:** casehub-devtown `ARC42STORIES.MD` — see `docs/arc42stories-casehub-profile.md §Reference Implementations` for the current pointer.
 
 ---
 
@@ -320,6 +268,48 @@ Before implementing any layer, read:
 2. `docs/protocols/casehub/HARNESS-INDEX.md` in casehub-parent — CaseHub app conventions
 
 Key protocols that apply immediately:
-- `layer-log.md` — LAYER-LOG.md as definition of done
+- `docs/arc42stories-spec.md` + `docs/arc42stories-casehub-profile.md` — ARC42STORIES.MD as definition of done
 - Hexagonal module placement (pending — follow AML's pattern: `api/` JPA-free, `app/` owns use-case orchestration)
-- casehub-work Hibernate scan packages (pending — see AML LAYER-LOG.md Layer 2 §Key wiring)
+- casehub-work Hibernate scan packages (pending — see AML LAYER-LOG.md Layer 2 §Key wiring until AML migrates to ARC42STORIES.MD)
+
+---
+
+## Migration — LAYER-LOG to ARC42STORIES.MD
+
+For repos still using LAYER-LOG.md and DESIGN.md, migrate when starting substantive new work in the repo. Do not migrate mid-epic.
+
+### What maps where
+
+| Old artifact | Maps to |
+|---|---|
+| LAYER-LOG.md Vertical Slice Index | ARC42STORIES.MD §9.2 Chapter Index |
+| LAYER-LOG.md layer entries | ARC42STORIES.MD §9.4 Layer Entries (same fields; see format below) |
+| DESIGN.md cross-cutting decisions | ARC42STORIES.MD §10 Architectural Decisions |
+| `design/JOURNAL.md` | unchanged — still the per-epic working doc |
+
+### Field mapping — LAYER-LOG entry → §9.4 Layer Entry
+
+| LAYER-LOG field | §9.4 field |
+|---|---|
+| Summary | What it adds |
+| Accountability gaps closed | Accountability gaps closed |
+| Key wiring | Key wiring |
+| Architectural decisions | Architectural decisions |
+| Pattern introduced | Pattern introduced |
+| Pattern anchor | Pattern anchor |
+| Gotchas | Gotchas |
+| Pattern to replicate | Pattern to replicate |
+| Navigation / git log | Navigation |
+| Key files | Key files |
+
+The §9.4 format adds: **Participates in chapters**, **Key protocols**, **Design refs**, **Blog**, **Improvement refs**, **Completed**. Populate from LAYER-LOG cross-references and issue refs.
+
+### Migration steps
+
+1. Create `ARC42STORIES.MD` at workspace root using the Application-tier preamble template from `docs/arc42stories-casehub-profile.md`
+2. Complete §1–§8 (§8 inherits from the profile; add project-specific anti-patterns inline)
+3. Build §9.2 Chapter Index from the LAYER-LOG Vertical Slice Index (or reconstruct from git history if absent)
+4. Convert each LAYER-LOG layer entry to a §9.4 Layer Entry using the field mapping above
+5. Move cross-cutting decisions from DESIGN.md to §10
+6. Delete or archive LAYER-LOG.md and DESIGN.md — add a one-line forwarding comment at their former location if needed: `# Archived — see ARC42STORIES.MD §9.4 and §10`
+7. Update CLAUDE.md to reference ARC42STORIES.MD (coordinate with the mass CLAUDE.md update if in progress)
