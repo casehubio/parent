@@ -7,7 +7,7 @@ applies_to: "Any casehub platform bean with a TTL cache that must be invalidated
 severity: important
 refs:
   - ../../repos/casehub-identity.md
-  - ../../../PLATFORM.md
+  - ../../PLATFORM.md
 violation_hint: "Platform bean observes a domain event directly — creates a backwards dependency from platform to the domain module"
 created: 2026-06-01
 ---
