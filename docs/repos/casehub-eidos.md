@@ -34,9 +34,19 @@ Four-layer record: identity (`id`, `name`, `agentId`), slot (open `String` — d
 
 **Slot is deliberately open** — platform never constrains. `casehub-eidos-vocab` provides starting-point vocabularies (SVO, Conscientiousness, CasehubSlot) but they are entirely optional.
 
+**Validation (compact constructor):** validates all required fields (`agentId`, `name`, `slot`, `tenancyId`) and all optional string fields (`version`/`provider`/`modelFamily`/`modelVersion` ≤200, `weightsFingerprint` ≤255, vocabulary URIs ≤500, `jurisdiction`/`dataHandlingPolicy` ≤1000). All fields reject C0/C1 control chars, BiDi direction overrides, and zero-width chars. Validation is at construction time — no invalid descriptor can exist in any context. Throws `AgentValidationException` on violation.
+
 ### AgentCapability
 
 Declares a named capability with an optional `qualityHint` (Double, 0–1) and `epistemicDomains` map (domain → confidence, e.g. `{"java": 0.95, "rust": 0.42}`). The `epistemicDomains` map qualifies *how well* the agent handles the declared capability in specific subject domains — it is not a list of separate capabilities.
+
+**Validation (compact constructor):** `name` required ≤100; `costHint` optional ≤200; list items in `inputTypes`/`outputTypes`/`tags` ≤200 each; `epistemicDomains` keys ≤200. Same character-set rules as `AgentDescriptor`. Throws `AgentValidationException` on violation.
+
+### AgentDisposition
+
+Open-string axes describing behavioural profile: `socialOrient`, `ruleFollowing`, `riskAppetite`, `autonomy`. All axes are optional.
+
+**Validation (compact constructor):** all axes null-permissive (absent is valid), blank-rejecting, ≤200 chars, no banned characters (C0/C1, BiDi, zero-width). Throws `AgentValidationException` on violation.
 
 ### AgentRegistry / ReactiveAgentRegistry
 
@@ -59,6 +69,8 @@ SPI for term registration, resolution, and cross-vocabulary equivalence. `CdiVoc
 ### SystemPromptRenderer (Phase 3 — complete)
 
 SPI: `render(AgentDescriptor, AgentPromptContext)` → `RenderedPrompt`. `ClaudeMarkdownRenderer @DefaultBean` implements a two-step pipeline: structural YAML serialization → optional LangChain4j `ChatModel` semantic pass → markdown assembly. `AgentPromptContext` carries `Optional<GoalContext>`, `List<Resource>`, `situationalContext`, `RenderFormat` — re-renderable as agent context evolves. Works without LLM (structural-only). Hashes enable cache invalidation.
+
+**`RenderFormat`** — 3 values: `MARKDOWN` (was `CLAUDE_MD`), `PROSE` (consolidates `OPENAI_SYSTEM` + `GEMINI` — structurally identical), `A2A_CARD`.
 
 ### AgentStateStore (Phase 3 — complete)
 
