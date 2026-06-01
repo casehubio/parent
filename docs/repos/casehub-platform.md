@@ -18,6 +18,7 @@ config/         ← optional: scope-aware YAML + SmallRye Config preference prov
 oidc/           ← optional: @RequestScoped CurrentPrincipal backed by SecurityIdentity + JWT
 memory-inmem/   ← optional: volatile ConcurrentHashMap adapter (@Alternative @Priority(1)) — test-scope for isolation; compile for ephemeral
 memory-jpa/     ← optional: JPA/PostgreSQL adapter (@ApplicationScoped) — FTS via websearch_to_tsquery; Flyway V1000 at classpath:db/memory/migration
+memory-sqlite/  ← optional: SQLite adapter (@Alternative @Priority(1)) — HikariCP WAL + FTS5; Flyway programmatic; configure casehub.memory.sqlite.path
 ```
 
 `platform-api/` must never import Quarkus, CDI, JPA, or any casehubio artifact. This constraint is what makes the SPIs useful to every module in the stack — including modules that have no Quarkus dependency of their own.
@@ -188,10 +189,11 @@ This is an explicit design choice, not a missing feature. The two patterns serve
 |--------|----------|-------------|---------|-------|----------|
 | `memory-inmem/` | `casehub-platform-memory-inmem` | @Alternative @Priority(1) | ConcurrentHashMap — volatile | test or compile | Test isolation per @QuarkusTest; ephemeral installs without a database |
 | `memory-jpa/` | `casehub-platform-memory-jpa` | @ApplicationScoped | PostgreSQL + Flyway V1000 | compile | Default persistence; FTS via `websearch_to_tsquery` when `MemoryQuery.question` is set |
+| `memory-sqlite/` | `casehub-platform-memory-sqlite` | @Alternative @Priority(1) | SQLite + HikariCP WAL + FTS5 | compile | Durable single-process deployments. Configure `casehub.memory.sqlite.path` |
 
-Both adapters displace `NoOpCaseMemoryStore @DefaultBean` automatically by classpath presence. Do not combine `memory-inmem/` and `memory-jpa/` in production scope — `@Priority(1)` wins and jpa store is bypassed.
+All adapters displace `NoOpCaseMemoryStore @DefaultBean` automatically by classpath presence. Do not combine adapters in the same scope — `@Priority(1)` wins and lower-priority stores are bypassed.
 
-Consumers must add `classpath:db/memory/migration` to `quarkus.flyway.locations` when using `memory-jpa/`.
+Consumers must add `classpath:db/memory/migration` to `quarkus.flyway.locations` when using `memory-jpa/`. `memory-sqlite/` uses programmatic Flyway at `classpath:db/memory-sqlite/migration` — no `quarkus.flyway.locations` entry needed.
 
 ---
 
@@ -257,6 +259,7 @@ Add as a test-scoped dependency:
 | `persistence-mongodb/` | ✅ shipped (#7) | MongoDB alternative for preferences — @Alternative @Priority(1), beats JPA when co-deployed, no Flyway |
 | `memory-inmem/` | ✅ shipped (#32) | Volatile CaseMemoryStore — ConcurrentHashMap, @Alternative @Priority(1). Test-scope for isolation; compile for ephemeral installs |
 | `memory-jpa/` | ✅ shipped (#32) | JPA CaseMemoryStore — PostgreSQL, Flyway V1000 at `classpath:db/memory/migration`, FTS via websearch_to_tsquery |
+| `memory-sqlite/` | ✅ shipped (#37) | SQLite CaseMemoryStore — xerial JDBC + HikariCP WAL + FTS5, programmatic Flyway at `classpath:db/memory-sqlite/migration`. @Alternative @Priority(1). Configure `casehub.memory.sqlite.path` |
 | `scim/` | ✅ shipped (#45) | SCIM 2.0 GroupMembershipProvider — @ApplicationScoped, displaces mock by classpath presence |
 | `preferences-editor/` | 🔜 #8 | Admin write path for preferences — REST API, separate from providers |
 
