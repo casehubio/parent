@@ -6,7 +6,7 @@ scope: repo
 applies_to: "SystemPromptRenderer.RenderFormat in casehub-eidos-api; any future output format enum in casehub-eidos"
 severity: important
 refs:
-  - ../casehub-eidos.md
+  - ../../repos/casehub-eidos.md
 violation_hint: "A format value is named after a provider (e.g. CLAUDE_MD, OPENAI_SYSTEM, GEMINI) rather than output structure — or two format values produce structurally identical output and differ only by a micro-styling choice."
 created: 2026-05-31
 ---

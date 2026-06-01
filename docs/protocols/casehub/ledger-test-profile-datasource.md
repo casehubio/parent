@@ -6,7 +6,7 @@ scope: repo
 applies_to: "Any @QuarkusTest class whose @TestProfile causes a Quarkus context restart AND uses casehub-ledger JPA beans (JpaActorTrustScoreRepository, LedgerWriteService, TrustGateService, etc.)"
 severity: important
 refs:
-  - docs/protocols/casehub/flyway-ledger-migration-locations.md
+  - flyway-ledger-migration-locations.md
 violation_hint: "Test fails with UnknownNamedQueryException on ActorTrustScore or ledger entity named queries after a profile restart — @LedgerPersistenceUnit routes to the default PU where ledger named queries are not registered."
 created: 2026-05-29
 ---

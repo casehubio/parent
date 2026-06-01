@@ -6,7 +6,7 @@ scope: repo
 applies_to: "casehub-connectors — all InboundConnector and WebhookInboundConnector implementations that write numeric metadata"
 severity: important
 refs:
-  - ../repos/casehub-connectors.md
+  - ../../repos/casehub-connectors.md
   - inbound-connector-id-is-type-not-account.md
 violation_hint: "A connector that omits 'attachment-count' when there are no attachments, requiring observers to use containsKey() rather than parsing the value directly"
 created: 2026-05-31
