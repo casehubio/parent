@@ -1,53 +1,83 @@
-# casehub-drafthouse — Deep Dive
+# casehub-drafthouse — Platform Deep Dive
 
-## What It Is
+**GitHub:** [casehubio/drafthouse](https://github.com/casehubio/drafthouse) (local: `~/claude/casehub/drafthouse`)  
+**Platform doc:** [PLATFORM.md](https://raw.githubusercontent.com/casehubio/parent/main/docs/PLATFORM.md)
 
-DraftHouse is an MCP-driven document review tool. Any LLM (Claude Code, Claudony, or
-any MCP client) can open a document, show before/after versions, create reviewer LLM
-agents, and have grounded conversations about specific parts of the document.
+---
 
-Evolved from md-compare — a side-by-side markdown comparison tool. Promoted to CaseHub
-application tier to leverage Qhorus for conversation channels and LangChain4j for
-provider-agnostic LLM calls.
+## Purpose
 
-## What It Owns
+MCP-driven document review tool. Any LLM (Claude Code, Claudony, or any MCP client) can open a document, show before/after versions, create reviewer LLM agents, and have grounded conversations about specific document regions. Evolved from md-compare; promoted to the CaseHub application tier to leverage Qhorus channels and LangChain4j for provider-agnostic LLM calls.
 
-- Document comparison UI (side-by-side rendered markdown with LCS diff)
-- MCP tool surface for LLM-driven document review
-- Reviewer agent lifecycle (personality library, conversation strategies)
-- Document version history (git worktree-based)
-
-## What It Does NOT Own
-
-Everything in the CaseHub foundation: audit trail (casehub-ledger), channels and
-messaging (casehub-qhorus), case orchestration (casehub-engine), human task inbox
-(casehub-work), outbound notifications (casehub-connectors), agent identity
-(casehub-eidos).
-
-## Dependencies
-
-```
-casehub-qhorus    — channels, typed messages, instance registry
-LangChain4j       — provider-agnostic LLM calls (Quarkus extension)
-JGit              — version history via git worktrees
-```
-
-Future: casehub-engine (if case orchestration needed), casehub-eidos (agent identity).
+---
 
 ## Module Structure
 
-Currently flat (`server/` with Quarkus app). Will adopt `api/` + `app/` hexagonal
-structure when the first CaseHub foundation dependency is wired in.
+| Module | Artifact ID | Purpose |
+|--------|-------------|---------|
+| `api/` | `casehub-drafthouse-api` | Pure Java domain model — `ReviewSession`, `ReviewResult`, `DocumentSide`, `ReviewSessionRegistry` |
+| `runtime/` | `casehub-drafthouse` | Quarkus 3.34.3 app — MCP endpoints, Qhorus integration, LLM reviewer wiring |
 
-## Key Epics
+---
 
-1. Scaffold — infrastructure migration from md-compare (done)
-2. MCP tool surface — start_review, push_revision, get_cursor_context, get_diff, end_review
-3. Qhorus channels — conversation threading per review session
-4. LangChain4j reviewer — single internal reviewer agent
-5. Selection-scoped conversations — per-selection Qhorus channels with anchored UI
-6. Multi-LLM reviewers — personality library, ReviewStrategy SPI
+## Key Abstractions
+
+| Concept | Role |
+|---|---|
+| `ReviewSession` | A document review context: document sides (before/after), reviewer agents, grounded conversation |
+| `DocumentSide` | One version of a document (before or after) within a review session |
+| `ReviewResult` | Structured feedback from a reviewer agent |
+| `ReviewSessionRegistry` | SPI for storing and retrieving active review sessions |
+
+---
+
+## Depends On
+
+| Repo | Module | Nature |
+|------|--------|--------|
+| `casehub-qhorus-api` | `app` | `ChannelService`, `MessageService`, `ChannelGateway`, `DataService`, `InstanceService` — channel mesh SPIs |
+| `casehub-qhorus` (runtime) | `runtime` | Channel mesh runtime — commitment lifecycle, typed messages |
+| `quarkus-langchain4j-anthropic 1.9.1` | `runtime` | LLM calls via `@AiService` for reviewer agents (Phase 2) |
+
+Future additions: `casehub-engine`, `casehub-eidos`.
+
+## Depended On By
+
+Nothing in the casehubio ecosystem — application tier only.
+
+---
+
+## What This Repo Explicitly Does NOT Do
+
+- Provide general-purpose document storage (no document database — review state is in-memory or JPA when added)
+- Implement consensus or voting across reviewers (each reviewer is independent)
+- Know anything about git, PRs, or source control (`casehub-devtown` owns that domain)
+- Implement audit trail, case orchestration, or agent identity — those are foundation concerns
+
+---
+
+## Channel Usage Pattern
+
+DraftHouse uses a single APPEND channel per review session with QUERY/RESPONSE. This is idiomatic for a non-normative consumer — it does not apply the 3-channel NormativeChannelLayout (work/observe/oversight), which is Claudony's concern. QUERY/COMMAND from `casehub-qhorus`'s 9-type speech-act taxonomy are used for grounded review conversations.
+
+---
+
+## Planned MCP Tool Surface (Phase 2)
+
+`start_review`, `push_revision`, `get_cursor_context`, `get_diff`, `end_review`
+
+---
+
+## Current State
+
+- Two-module Maven project (`api/` + `runtime/`) — restructured in drafthouse#21
+- `casehub-qhorus 0.2-SNAPSHOT` dependency wired
+- `quarkus-langchain4j-anthropic 1.9.1` added for Phase 2 LLM reviewer integration
+- No deployed production instances
+
+---
 
 ## Design Documents
 
 - Research spec: `docs/superpowers/specs/2026-05-26-document-review-tool-research.md` (in drafthouse repo)
+- [CLAUDE.md](https://raw.githubusercontent.com/casehubio/drafthouse/main/CLAUDE.md) — stack, module coordinates, key design decisions
