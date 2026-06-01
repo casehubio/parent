@@ -136,7 +136,7 @@ Four tiers, always kept separate:
 | Repo | GitHub | One-liner | Tier |
 |------|--------|-----------|------|
 | `casehub-parent` | [casehubio/parent](https://github.com/casehubio/parent) | BOM, CI dashboards, full-stack build tooling | — |
-| `casehub-platform` | [casehubio/platform](https://github.com/casehubio/platform) | Zero-dep foundational SPIs — Path, Preferences, Identity, Memory. Modules: `platform-api` (SPIs), `platform` (@DefaultBean mocks + ReactiveCaseMemoryStore SPI + BlockingToReactiveBridge), `testing` (@Alternative identity fixtures), `config/` (YAML preference provider), `oidc/` (OIDC CurrentPrincipal), `expression/` (JQEvaluator), `persistence-jpa/` (JPA PreferenceProvider — Flyway, @ApplicationScoped), `persistence-mongodb/` (MongoDB PreferenceProvider — @Alternative @Priority(1), no Flyway), `memory-inmem/` (@Alternative @Priority(1) volatile CaseMemoryStore — ConcurrentHashMap, no quarkus:build goal. Add test-scope for @QuarkusTest isolation; compile for ephemeral installs. Do NOT combine with memory-jpa in production scope), `memory-jpa/` (@ApplicationScoped JPA CaseMemoryStore — PostgreSQL, Flyway V1000 at `classpath:db/memory/migration`, FTS via websearch_to_tsquery when question provided. No quarkus:build goal), `scim/` (SCIM 2.0 GroupMembershipProvider — @ApplicationScoped, displaces mock by classpath presence, platform#45). Adapters are submodules — extracted to a standalone repo only when a confirmed non-CaseHub consumer warrants it (see `PP-20260529-spi-adapter-placement`). | Foundation |
+| `casehub-platform` | [casehubio/platform](https://github.com/casehubio/platform) | Zero-dep foundational SPIs — Path, Preferences, Identity, Memory. Modules: `platform-api` (SPIs), `platform` (@DefaultBean mocks + ReactiveCaseMemoryStore SPI + BlockingToReactiveBridge), `testing` (@Alternative identity fixtures), `config/` (YAML preference provider), `oidc/` (OIDC CurrentPrincipal), `expression/` (JQEvaluator), `persistence-jpa/` (JPA PreferenceProvider — Flyway, @ApplicationScoped), `persistence-mongodb/` (MongoDB PreferenceProvider — @Alternative @Priority(1), no Flyway), `memory-inmem/` (@Alternative @Priority(1) volatile CaseMemoryStore — ConcurrentHashMap, no quarkus:build goal. Add test-scope for @QuarkusTest isolation; compile for ephemeral installs. Do NOT combine with memory-jpa in production scope), `memory-jpa/` (@ApplicationScoped JPA CaseMemoryStore — PostgreSQL, Flyway V1000 at `classpath:db/memory/migration`, FTS via websearch_to_tsquery when question provided. No quarkus:build goal), `scim/` (SCIM 2.0 GroupMembershipProvider — @ApplicationScoped, displaces mock by classpath presence, platform#45), `identity/` (DID resolution, VC validation, SCIM2 agent DID lookup — `ActorDIDProvider`, `DIDResolver`, `AgentCredentialValidator` SPIs + `KeyDIDResolver`, `WebDIDResolver`, `ScimActorDIDProvider` built-in alternatives; config prefix `casehub.identity.*`; see [casehub-identity.md](repos/casehub-identity.md)). Adapters are submodules — extracted to a standalone repo only when a confirmed non-CaseHub consumer warrants it (see `PP-20260529-spi-adapter-placement`). | Foundation |
 | `casehub-ledger` | [casehubio/ledger](https://github.com/casehubio/ledger) | Immutable tamper-evident audit ledger + trust scoring. Modules: `api`, `runtime`, `deployment`, `persistence-memory` (`casehub-ledger-memory` — zero-datasource in-memory SPIs) | Foundation |
 | `casehub-work` | [casehubio/work](https://github.com/casehubio/work) | Human task lifecycle (WorkItem inbox, SLA, delegation, routing) | Foundation |
 | `casehub-qhorus` | [casehubio/qhorus](https://github.com/casehubio/qhorus) | Peer-to-peer agent communication mesh | Foundation |
@@ -158,7 +158,7 @@ Application tier (devtown, aml, clinical, life, drafthouse, quarkmind): see [APP
 ```
 casehub-parent              (BOM — publish first; all others import it)
   casehub-platform          (no casehubio deps — foundational SPIs + CaseMemoryStore adapters as submodules, publishes before ledger)
-  casehub-ledger            (no casehubio deps)
+  casehub-ledger            (depends on casehub-platform-identity for DID/VC SPIs)
   casehub-connectors        (no casehubio deps)
   casehub-work              (api: depends on casehub-platform-api; core: zero other casehubio deps; ledger module: depends on casehub-ledger)
   casehub-qhorus            (depends on casehub-ledger)
@@ -186,6 +186,8 @@ casehub-parent              (BOM — publish first; all others import it)
 |-------------------|---------------|-----------------|--------|
 | `casehub-platform-api` | `casehub-work` | `api` | `Path`, `Preferences`, `ActorType`, `ActorTypeResolver` in SPI signatures |
 | `casehub-platform-api` | `casehub-ledger` | `api` | `ActorType`, `ActorTypeResolver` (moved from ledger in ledger#88) |
+| `casehub-platform-identity-api` | `casehub-ledger` | `runtime` | `ActorDIDProvider`, `DIDResolver`, `AgentCredentialValidator` SPIs; identity model types + CDI event records |
+| `casehub-platform-identity` | `casehub-ledger` | `runtime` | `@DefaultBean` no-ops + built-in alternatives activated via `quarkus.arc.selected-alternatives` |
 | `casehub-platform-api` | `casehub-qhorus` | `api` | `ActorType`, `ActorTypeResolver` (identity primitives from `io.casehub.platform.api.identity`) |
 | `casehub-platform-api` | `casehub-qhorus` | `runtime` | transitive via api |
 | `casehub-ledger-api` | `casehub-qhorus` | `api` | SPI types |
@@ -281,6 +283,7 @@ casehub-parent              (BOM — publish first; all others import it)
 | GDPR Art.17 erasure / Art.22 decision records | `casehub-ledger` | `LedgerErasureService`, `ComplianceSupplement` |
 | W3C PROV-DM lineage export | `casehub-ledger` | `LedgerProvExportService` |
 | OTel trace linkage to audit entries | `casehub-ledger` | `LedgerTraceListener` auto-populates `traceId` from active OTel span |
+| DID resolution / VC validation / agent identity lookup | `casehub-platform-identity` | `ActorDIDProvider` SPI (resolve actorId → DID URI), `DIDResolver` SPI (resolve DID URI → `DIDDocument`), `AgentCredentialValidator` SPI (validate W3C VC). Built-in alternatives: `KeyDIDResolver` (did:key, no HTTP), `WebDIDResolver` (did:web, SSRF protection), `ConfiguredActorDIDProvider` (static config), `ScimActorDIDProvider` (SCIM2 lookup with TTL cache). All `@DefaultBean` no-ops — activate an alternative to enable. **Consumer:** `casehub-ledger` calls these at write time via `ActorDIDEnricher` (@Priority 40) and `ActorIdentityValidationEnricher` (@Priority 50). Binding persistence and ENFORCE mode gate remain in `casehub-ledger`. Config: `casehub.identity.*`. See [casehub-identity.md](repos/casehub-identity.md). |
 | Human task inbox (WorkItem lifecycle) | `casehub-work` | 10 statuses, SLA, delegation, escalation, spawn |
 | SLA breach policy | `casehub-work-api` | `SlaBreachPolicy` SPI — replaces `EscalationPolicy`; returns `BreachDecision` (Fail / EscalateTo / Extend) with `thenOnBreach` fallback chaining; `SlaBreachContext(BreachType, BreachedTask, Path, Preferences)`; casehub-work executes the decision, fires `SlaBreachEvent` CDI event for side-effect observers. See casehubio/work#213 |
 | Named outcome classifications for WorkItems | `casehub-work` | `Outcome` record in `casehub-work-api`; `WorkItemTemplate.outcomes` declares valid names; `WorkItem.outcome` stores resolved name at completion; `WorkItemLifecycleEvent.outcome` carries it for engine routing without parsing `resolution` JSON |
@@ -399,6 +402,8 @@ All GDPR concerns centralised in `casehub-ledger`:
 ### Agent Identity
 
 Format: `{model-family}:{persona}@{major}` — e.g. `"claude:analyst@v1"`. Defined in casehub-ledger ADR 0004. Major version bump resets trust baseline.
+
+DID/VC binding infrastructure (resolution SPIs, resolvers, SCIM2 lookup) lives in  — platform-wide, not ledger-specific. Ledger is the primary consumer:  +  run at write time;  gates persist in ENFORCE mode. Binding outcomes are persisted as  records (V1008). See [casehub-identity.md](repos/casehub-identity.md).
 
 ### Agent Communication Mesh
 
