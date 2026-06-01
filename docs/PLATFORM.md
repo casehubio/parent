@@ -243,7 +243,7 @@ casehub-parent              (BOM — publish first; all others import it)
 
 | `casehub-qhorus-api` | `casehub-openclaw` | `core` | `ChannelBackend`, `MessageObserver` SPIs |
 | `casehub-qhorus` (runtime) | `casehub-openclaw` | `casehub` | Qhorus runtime for SPI registration |
-| `casehub-qhorus-api` | `casehub-drafthouse` | `app` | `ChannelService`, `MessageService`, `ChannelGateway`, `DataService`, `InstanceService` — channel mesh SPIs |
+| `casehub-qhorus-api` | `casehub-drafthouse` | `runtime` | `ChannelService`, `MessageService`, `ChannelGateway`, `DataService`, `InstanceService` — channel mesh SPIs |
 | `casehub-qhorus` (runtime) | `casehub-drafthouse` | `runtime` | Channel mesh runtime — commitment lifecycle, typed messages |
 | `casehub-engine-api` | `casehub-openclaw` | `casehub` | `WorkerProvisioner`, `CaseChannelProvider`, `WorkerStatusListener` SPI implementations; uses api (not runtime) to avoid engine CDI beans with unsatisfied persistence SPIs |
 | `casehub-platform-api` | `casehub-openclaw` | `core` | `CurrentPrincipal`, `GroupMembershipProvider` (permission-aware context) |

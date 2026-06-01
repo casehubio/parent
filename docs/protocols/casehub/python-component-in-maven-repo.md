@@ -6,8 +6,8 @@ scope: platform
 applies_to: "Integration-tier repos (casehub-openclaw and any future repos mixing Java and Python)"
 severity: guidance
 refs:
-  - docs/repos/casehub-openclaw.md
-  - docs/new-repo-checklist.md
+  - ../../repos/casehub-openclaw.md
+  - ../../new-repo-checklist.md
 violation_hint: "A python/ directory appears in <module> list in pom.xml, or Python sources are placed inside a Java Maven module's src/ tree"
 created: 2026-05-25
 ---

@@ -6,7 +6,7 @@ scope: platform
 applies_to: "Every casehubio repo with a publish.yml workflow"
 severity: important
 refs:
-  - docs/new-repo-checklist.md
+  - ../../new-repo-checklist.md
 violation_hint: "A repo only rebuilds on direct push/PR but never when upstream dependencies publish new snapshots — stale artifacts accumulate silently"
 created: 2026-05-25
 ---
