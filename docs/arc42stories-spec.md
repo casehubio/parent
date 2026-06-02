@@ -455,6 +455,7 @@ Before generating any section of this document, load the following files from th
 - `voice/anti-slop.md` — universal banned words and banned patterns
 - `voice/mandatory-rules.md` — voice and content policy
 - `forms/technical-documentation.md` — dual-audience rules and no-content-loss rule
+- `modes/_universal.md` — heading test, element selection, sentence rules (load before other mode files)
 - `modes/reference.md` — constraint set for lookup, pointer, and inventory sections
 - `modes/explanations.md` — constraint set for comparative sections
 - `modes/how-to.md` — constraint set for diagnostic sections (anti-patterns, gotchas)
@@ -478,7 +479,7 @@ not the root cause.
 | §8 Crosscutting pointer table | Reference/pointer | One row per concern; one-line description per reference |
 | §8 Anti-patterns | How-to/diagnostic | **Symptom:** → **Cause:** → **Fix:** labels; Fix is exact action, not direction |
 | §9.1–9.2 Journey + Chapter Index | Reference/lookup | Tables and flowchart; no prose narrative |
-| §9.3 "What this delivers" | Explanation/comparative | 2–3 sentences; user-visible outcome only; Before implicit, After explicit |
+| §9.3 Chapter Entries — "What this delivers" | Explanation/comparative | 2–3 sentences; user-visible outcome only; Before implicit, After explicit |
 | §9.4 Key files | Reference/inventory | `path/to/File.java` — one sentence: what it is and what it does |
 | §9.4 Key wiring | Reference/lookup | **Bold lead-in** (the fact) + 1–3 sentences (the reasoning); consequence stated |
 | §9.4 "What it adds" | Explanation/comparative | See below |
@@ -592,48 +593,3 @@ A **Profile** is a domain- or stack-specific instantiation of Arc42Stories. A Pr
 - [C4 Model](https://c4model.com) — Simon Brown
 - [Vertical Slice Architecture](https://jimmybogard.com/vertical-slice-architecture/) — Jimmy Bogard (distinct from Arc42Stories Chapters)
 - [Arc42Stories CaseHub Profile](arc42stories-casehub-profile.md)
-
-## Writing Style
-
-ARC42STORIES.MD is a multi-mode document. Each section type has a declared mode
-that determines its structural constraints. Write to the mode, not to prose instinct.
-
-Constraint sets for each mode live in the `write-content` skill (`modes/` directory).
-When using the skill, it loads the correct mode file automatically. When writing
-without the skill, apply the structural rules below directly.
-
-### Generator pre-conditions
-
-Before generating any section of this document, load the following files from the
-`write-content` skill. Do not generate any content until all are loaded.
-
-- `voice/anti-slop.md` — universal banned words and banned patterns
-- `voice/mandatory-rules.md` — voice and content policy
-- `forms/technical-documentation.md` — dual-audience rules and no-content-loss rule
-- `modes/reference.md` — constraint set for lookup, pointer, and inventory sections
-- `modes/explanations.md` — constraint set for comparative sections
-- `modes/how-to.md` — constraint set for diagnostic sections (anti-patterns, gotchas)
-- `modes/tutorial.md` — constraint set for pattern-to-replicate sections
-- `modes/argumentation.md` — constraint set for architectural decisions and ADRs
-
-Identify the section's mode from the mode map below before writing each section.
-Apply its constraint set, then generate. Mode-first generation prevents anti-slop
-failures before they appear — the banned words are symptoms of wrong-mode generation,
-not the root cause.
-
-### Mode map
-
-| Section | Mode | Structural constraint |
-|---|---|---|
-| §1–3 Introduction, Constraints, Context | Reference/lookup | Tables and bullets; no prose narrative |
-| §4 Solution Strategy | Explanation/comparative | Before:/After: or named-contrast structure; bullets for what changes |
-| §5 Building Block View | Reference/lookup | Tables and diagrams; one-line descriptions per component |
-| §6 Runtime View | Explanation/comparative | Scenario as sequence diagram + 1–2 sentences of prose framing only |
-| §7 Deployment View | Reference/lookup | Tables and diagrams; no prose narrative |
-| §8 Crosscutting pointer table | Reference/pointer | One row per concern; one-line description per reference |
-| §8 Anti-patterns | How-to/diagnostic | **Symptom:** → **Cause:** → **Fix:** labels; Fix is exact action, not direction |
-| §9.1–9.2 Journey + Chapter Index | Reference/lookup | Tables and flowchart; no prose narrative |
-| §9.3 Chapter Detail | How-to/diagnostic | Gotchas/wiring: **Symptom:** → **Cause:** → **Fix:**; patterns: bold lead-in + description |
-| §9.4 Layer Entries | Tutorial/pattern | **Pattern to replicate:** + code block; **Key wiring:** lead-in + detail |
-| §10 Decisions | Argumentation | MADR format: Context → Drivers → Options → Decision → Consequences |
-| §11–12 Quality / Risks | Reference/lookup | Tables; no prose |
