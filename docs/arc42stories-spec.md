@@ -154,7 +154,7 @@ Mermaid's C4 auto-layout can be hard to control on large diagrams. Keep each dia
 | **Delta** | The amount of change a Chapter introduces to a layer: `None` / `Low` / `Medium` / `High` |
 | **Accountability gap** | A formal requirement — compliance, audit, or user-visible — not met before this Chapter ships |
 | **Pattern to replicate** | Domain-agnostic numbered steps an LLM follows to implement the same layer in a different project |
-| **Profile** | A domain- or stack-specific instantiation of Arc42Stories that defines default layer taxonomy, artifact schema, and conventions. Declared in the document preamble. Not required for standalone applications. |
+| **Profile** | A domain- or stack-specific instantiation of Arc42Stories (e.g. CaseHub Profile, Spring Boot Profile) |
 | **Project artifact schema** | A project-defined table mapping artifact types to their naming format — so cross-references throughout the document are unambiguous |
 
 **Naming note:** "Chapter" is used deliberately rather than "slice" to avoid confusion with [Vertical Slice Architecture](https://jimmybogard.com/vertical-slice-architecture/) — a code organisation pattern where source code is co-located by feature. Chapters are a documentation and delivery planning concept, not a code organisation pattern. The metaphor is the same — a vertical cut through horizontal layers — but the domain is different.
@@ -183,7 +183,7 @@ Define the schema in §1 Introduction and Goals, immediately after the project d
 **Rules:**
 - The `PREFIX` in improvement log entries is project-specific. Choose a short, memorable abbreviation (e.g. `DT` for devtown, `AML` for AML, `CLI` for clinical). Use it consistently throughout the document.
 - All other format columns are suggestions — projects may use whatever format their tooling produces. The schema table is the declaration; the document follows it.
-- A Profile may define default schema conventions for its stack. Documents following the profile inherit these defaults and need only declare project-specific values (e.g. an improvement log prefix) in the preamble.
+- A Profile may define default schema conventions for its stack (e.g. the CaseHub Profile defines `GE-YYYYMMDD-XXXXXX` for garden entries).
 - Any reference in the document that matches a defined format is a navigable cross-reference. LLMs reading the document use the schema to resolve references without asking.
 
 ---
@@ -262,7 +262,7 @@ Infrastructure, hosting, and deployment topology.
 
 System-wide patterns — security, observability, error handling, coding conventions. Reference external protocol documents rather than duplicating them here.
 
-**Anti-patterns belong here.** Include a concise anti-patterns subsection covering the failure modes most likely when extending this system. Use Symptom → Cause → Fix format (consistent with Gotchas in §9.4). Do not merely reference an external document — if the anti-pattern matters, the content belongs here. A reader with only ARC42STORIES.MD in context will not follow external references.
+**Anti-patterns belong here.** Include a concise anti-patterns subsection covering the failure modes most likely when extending this system. Use Symptom → Cause → Fix format (consistent with Gotchas in §9.4). Do not merely reference an external document — if the anti-pattern matters, the content belongs here. Actionable content buried in a referenced document costs a context switch, can drift independently from this document, and is less likely to surface during a scan. Self-contain what a reader must act on; reference only for depth and authority.
 
 ---
 
@@ -438,43 +438,89 @@ Definitions of terms used in this document and in the domain.
 
 ---
 
+## Writing Style
+
+ARC42STORIES.MD is a multi-mode document. Each section type has a declared mode
+that determines its structural constraints. Write to the mode, not to prose instinct.
+
+Constraint sets for each mode live in the `write-content` skill (`modes/` directory).
+When using the skill, it loads the correct mode file automatically. When writing
+without the skill, apply the structural rules below directly.
+
+### Generator pre-conditions
+
+Before generating any section of this document, load the following files from the
+`write-content` skill. Do not generate any content until all are loaded.
+
+- `voice/anti-slop.md` — universal banned words and banned patterns
+- `voice/mandatory-rules.md` — voice and content policy
+- `forms/technical-documentation.md` — dual-audience rules and no-content-loss rule
+- `modes/reference.md` — constraint set for lookup, pointer, and inventory sections
+- `modes/explanations.md` — constraint set for comparative sections
+- `modes/how-to.md` — constraint set for diagnostic sections (anti-patterns, gotchas)
+- `modes/tutorial.md` — constraint set for pattern-to-replicate sections
+- `modes/argumentation.md` — constraint set for architectural decisions and ADRs
+
+Identify the section's mode from the mode map below before writing each section.
+Apply its constraint set, then generate. Mode-first generation prevents anti-slop
+failures before they appear — the banned words are symptoms of wrong-mode generation,
+not the root cause.
+
+### Mode map
+
+| Section | Mode | Structural constraint |
+|---|---|---|
+| §1–3 Introduction, Constraints, Context | Reference/lookup | Tables and bullets; no prose narrative |
+| §4 Solution Strategy | Explanation/comparative | Before:/After: or named-contrast structure; bullets for what changes |
+| §5 Building Block View | Reference/lookup | Tables and diagrams; one-line descriptions per component |
+| §6 Runtime View | Explanation/comparative | Scenario as sequence diagram + 1–2 sentences of prose framing only |
+| §7 Deployment View | Reference/lookup | Tables and diagrams; no prose narrative |
+| §8 Crosscutting pointer table | Reference/pointer | One row per concern; one-line description per reference |
+| §8 Anti-patterns | How-to/diagnostic | **Symptom:** → **Cause:** → **Fix:** labels; Fix is exact action, not direction |
+| §9.1–9.2 Journey + Chapter Index | Reference/lookup | Tables and flowchart; no prose narrative |
+| §9.3 "What this delivers" | Explanation/comparative | 2–3 sentences; user-visible outcome only; Before implicit, After explicit |
+| §9.4 Key files | Reference/inventory | `path/to/File.java` — one sentence: what it is and what it does |
+| §9.4 Key wiring | Reference/lookup | **Bold lead-in** (the fact) + 1–3 sentences (the reasoning); consequence stated |
+| §9.4 "What it adds" | Explanation/comparative | See below |
+| §9.4 Gotchas | How-to/diagnostic | **Symptom:** → **Cause:** → **Fix:** labels; Fix is exact action, not direction |
+| §9.4 Pattern to replicate | Tutorial | Numbered imperative steps; one action per step; domain-agnostic language |
+| §9.4 Architectural decisions | Argumentation/rationale | **Why X rather than Y:** reason. Tradeoff: what X costs. No hedging. |
+| §10 ADRs | Argumentation/decision | Context → Decision → Consequences; name the alternative considered |
+| §11–12 Quality/Risk tables | Reference/lookup | Tables only; no prose narrative |
+| §13 Glossary | Reference/lookup | Term — one-sentence definition; what it is, not what it's for |
+
+### "What it adds" — structural prescription
+
+This is the highest-risk section for prose drift. Apply these rules:
+
+**Before:** `[Previous state]` — what existed before this layer, in one clause.
+**After:** `[Component @Annotation]` — what displaced or extended it, in one clause.
+
+What this layer adds:
+- **[Named capability]** — [specific mechanism]; [what it prevents or enables]
+- **[Named capability]** — [specific mechanism]; [what it prevents or enables]
+
+Not closed here: [Layer N] ([what it still lacks]), [Layer M] ([what it still lacks]).
+
+**Rules:**
+- Lead with Before:/After: — no context-setting prose before the contrast
+- Each bullet names a capability, not a file. The mechanism follows the em dash.
+- "Not closed here" is mandatory — explicit scope boundary prevents inference
+- Hard length cap: 2–4 sentences of prose + bullets. If it needs more, the section is carrying reasoning that belongs in Architectural decisions.
+- No personal voice ("we found", "during implementation", "I discovered")
+- Active specific verbs: "displaces", "fires", "opens a CaseInstance" — not "is designed to", "allows for"
+
+### Anti-slop
+
+Apply `write-content/voice/anti-slop.md`. Mode-specific voice texture lives in each mode file. No additional rules here.
+
+---
+
 ## The Arc42Stories Document
 
 The Arc42Stories document for an application is named **`ARC42STORIES.MD`** — all caps, at the project or workspace root, consistent with other prominent session-critical documents (`CLAUDE.md`, `HANDOFF.md`).
 
 This naming makes the standard explicit: any reader seeing `ARC42STORIES.MD` immediately knows the document follows this specification.
-
----
-
-### Document Preamble
-
-Every `ARC42STORIES.MD` opens with a preamble before §1. The preamble declares which spec version and profile the document follows, plus any project-specific values that override or extend the profile's defaults.
-
-**Minimal preamble (no profile — standalone application):**
-
-```markdown
-# [System Name] — ARC42STORIES.MD
-
-**Spec:** Arc42Stories v0.1
-**Layer taxonomy:** [brief description — e.g. "Domain / Application / Infrastructure"]
-```
-
-**With a profile:**
-
-```markdown
-# [System Name] — ARC42STORIES.MD
-
-**Spec:** Arc42Stories v0.1
-**Profile:** [Profile name and tier]
-**Profile ref:** `[local relative path]` · fallback: `[raw HTTPS URL]`
-[Profile-defined fields — e.g. Prefix, Platform position]
-```
-
-**Profile reference path convention:** the local path is relative to the repository root (e.g. `../parent/docs/my-profile.md` for a peer repo). If the path does not resolve locally, fall back to the raw HTTPS URL. This allows both local development and remote LLM sessions to resolve the profile without repo cloning.
-
-**Defaults and overrides:** a profile defines default values for artifact schema, layer taxonomy, and crosscutting conventions. The preamble need only declare the profile and specify what is project-specific (e.g. a prefix or platform position). Repeat profile content in the document only when overriding it.
-
----
 
 ---
 
@@ -495,45 +541,30 @@ Every `ARC42STORIES.MD` opens with a preamble before §1. The preamble declares 
 ## Profiles
 
 A **Profile** is a domain- or stack-specific instantiation of Arc42Stories. A Profile defines:
-- **Default layer taxonomy** — replaces the generic UI/Application/Domain/Persistence model with stack-specific layers. A standalone application defines its own layer taxonomy directly in §4/§5 without a profile.
-- **Default artifact schema** — naming formats for issues, ADRs, blog entries, and other artifacts. Documents inherit these defaults and declare only what's project-specific (e.g. an improvement log prefix).
-- **Default §8 conventions** — crosscutting protocols and standards for the stack.
-- **Preamble field definitions** — which fields appear in the document preamble for each component type the profile covers.
-- **Reference implementations** — pointers to real `ARC42STORIES.MD` documents in the stack that demonstrate the profile in use.
-
-**No profile required.** A standalone application — one with no platform ecosystem and no shared stack conventions — uses the base spec directly. Define your own layer taxonomy in §4/§5 and omit the Profile field from the preamble.
-
-**Profiles are not prescriptive about component type.** A profile may cover multiple component types (e.g. platform components, foundation modules, standalone applications) and define different preamble fields and conventions for each. The document's preamble declares which type it is.
-
-**Layer taxonomy is always project/profile-defined.** The base spec does not prescribe what layers are. They could be architectural tiers (UI/Domain/Infrastructure), capability domains, integration phases, or anything that reflects the system's horizontal structure. A system with a single coherent layer has one layer. The Layer × Chapter matrix and Chapter sequencing work regardless of how many layers exist or what they represent.
+- The layer taxonomy for the target stack (replaces generic UI/Application/Domain/Persistence)
+- Stack-specific protocols and conventions referenced from §8
+- Example Journeys and Chapters for the domain
 
 **Defining a Profile:**
 ```markdown
 ## Arc42Stories Profile: [Name]
 
-### Component types covered
-[What kinds of components this profile applies to, and how they differ]
+### Layer Taxonomy
+| Layer | What it represents | Typical Delta range |
+|---|---|---|
+| [Layer 1] | [Description] | Low–High |
+| [Layer 2] | [Description] | Low–Medium |
+...
 
-### Preamble fields
-[Fields that appear in the document preamble, per component type]
+### Conventions
+[Stack-specific conventions for §8 Crosscutting Concepts]
 
-### Default layer taxonomy
-[Per component type — or omit if layers are always self-defined]
-
-### Default artifact schema
-[Naming formats inherited by all documents following this profile]
-
-### Default §8 conventions
-[Stack-specific crosscutting protocols and standards]
-
-### Reference implementations
-[Pointers to real ARC42STORIES.MD documents in the stack]
+### Example Journey and Chapters
+[A worked example showing the profile in use]
 ```
 
-**Modularity:** `ARC42STORIES.MD` is designed as a single file to guarantee complete context for LLM sessions. For large mature systems where §9.4 Layer Entries grow unwieldy, a modular extension (separate layer files declared in the preamble) is anticipated but not yet specified. Implement as a single file until size becomes a genuine constraint.
-
 **Available Profiles:**
-- [Arc42Stories CaseHub Profile](arc42stories-casehub-profile.md) — CaseHub ecosystem components (application and foundation tiers)
+- [Arc42Stories CaseHub Profile](arc42stories-casehub-profile.md) — CaseHub agentic harness applications
 - *(More profiles welcome — contribute via Hortora)*
 
 ---
@@ -561,3 +592,48 @@ A **Profile** is a domain- or stack-specific instantiation of Arc42Stories. A Pr
 - [C4 Model](https://c4model.com) — Simon Brown
 - [Vertical Slice Architecture](https://jimmybogard.com/vertical-slice-architecture/) — Jimmy Bogard (distinct from Arc42Stories Chapters)
 - [Arc42Stories CaseHub Profile](arc42stories-casehub-profile.md)
+
+## Writing Style
+
+ARC42STORIES.MD is a multi-mode document. Each section type has a declared mode
+that determines its structural constraints. Write to the mode, not to prose instinct.
+
+Constraint sets for each mode live in the `write-content` skill (`modes/` directory).
+When using the skill, it loads the correct mode file automatically. When writing
+without the skill, apply the structural rules below directly.
+
+### Generator pre-conditions
+
+Before generating any section of this document, load the following files from the
+`write-content` skill. Do not generate any content until all are loaded.
+
+- `voice/anti-slop.md` — universal banned words and banned patterns
+- `voice/mandatory-rules.md` — voice and content policy
+- `forms/technical-documentation.md` — dual-audience rules and no-content-loss rule
+- `modes/reference.md` — constraint set for lookup, pointer, and inventory sections
+- `modes/explanations.md` — constraint set for comparative sections
+- `modes/how-to.md` — constraint set for diagnostic sections (anti-patterns, gotchas)
+- `modes/tutorial.md` — constraint set for pattern-to-replicate sections
+- `modes/argumentation.md` — constraint set for architectural decisions and ADRs
+
+Identify the section's mode from the mode map below before writing each section.
+Apply its constraint set, then generate. Mode-first generation prevents anti-slop
+failures before they appear — the banned words are symptoms of wrong-mode generation,
+not the root cause.
+
+### Mode map
+
+| Section | Mode | Structural constraint |
+|---|---|---|
+| §1–3 Introduction, Constraints, Context | Reference/lookup | Tables and bullets; no prose narrative |
+| §4 Solution Strategy | Explanation/comparative | Before:/After: or named-contrast structure; bullets for what changes |
+| §5 Building Block View | Reference/lookup | Tables and diagrams; one-line descriptions per component |
+| §6 Runtime View | Explanation/comparative | Scenario as sequence diagram + 1–2 sentences of prose framing only |
+| §7 Deployment View | Reference/lookup | Tables and diagrams; no prose narrative |
+| §8 Crosscutting pointer table | Reference/pointer | One row per concern; one-line description per reference |
+| §8 Anti-patterns | How-to/diagnostic | **Symptom:** → **Cause:** → **Fix:** labels; Fix is exact action, not direction |
+| §9.1–9.2 Journey + Chapter Index | Reference/lookup | Tables and flowchart; no prose narrative |
+| §9.3 Chapter Detail | How-to/diagnostic | Gotchas/wiring: **Symptom:** → **Cause:** → **Fix:**; patterns: bold lead-in + description |
+| §9.4 Layer Entries | Tutorial/pattern | **Pattern to replicate:** + code block; **Key wiring:** lead-in + detail |
+| §10 Decisions | Argumentation | MADR format: Context → Drivers → Options → Decision → Consequences |
+| §11–12 Quality / Risks | Reference/lookup | Tables; no prose |
