@@ -61,7 +61,7 @@ The file path determines the repo: if the file lives under `Workspace`, use the 
 |------------|-------------|-------|
 | adr        | project     | lands in `docs/adr/` |
 | blog       | workspace   | staged here; published to mdproctor.github.io via publish-blog |
-| design     | workspace   | epic journal (`design/JOURNAL.md`) |
+| design     | project     | journal file lives in workspace design/; DESIGN.md merge target is project docs/DESIGN.md |
 | snapshots  | workspace   | |
 | specs      | project     | lands in project `docs/` |
 | plans      | workspace   | |
