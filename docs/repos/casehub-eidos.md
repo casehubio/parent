@@ -20,6 +20,7 @@ Structured agent identity for LLM agents on the CaseHub platform. Any Quarkus ap
 | `persistence-memory/` | `casehub-eidos-memory` | Optional module | `InMemoryAgentRegistry` + `InMemoryAgentStateStore` — `@Alternative @Priority(1)`; activate by adding as dep |
 | `deployment/` | `casehub-eidos-deployment` | Quarkus build step | `EidosProcessor` + `EidosBuildTimeConfig` |
 | `vocab/` | `casehub-eidos-vocab` | Optional module | Well-known vocabularies: SVO, Conscientiousness, CasehubSlot |
+| `eval/` | `casehub-eidos-eval` | Test-only, not deployed | Offline quality evaluation harness: `EvalCase` sealed interface (`SyntheticEvalCase` + `ProfiledEvalCase`), `EvalDataset`, `PromptJudge`, `ProximityJudge`, `VocabularyExpressivenessJudge`, `TraitExpressionJudge`, `PairContrastJudge`; real-world agent profile library (8 YAML profiles grounded in O*NET and practitioner sources); three-stage personality preservation measurement system |
 | `examples/agent-scenarios/` | — | Test-only | `@QuarkusTest` integration examples covering team, cross-vocab, epistemic, tenancy, disposition |
 
 ---
@@ -28,7 +29,7 @@ Structured agent identity for LLM agents on the CaseHub platform. Any Quarkus ap
 
 ### AgentDescriptor
 
-Four-layer record: identity (`id`, `name`, `agentId`), slot (open `String` — domain-defined, e.g. `"planner"` or `"reviewer"`), capabilities (`AgentCapability` list with `qualityHint` and `epistemicDomains`), disposition (`AgentDisposition` with open-String axes + `canDelegate`).
+Four-layer record: identity (`id`, `name`, `agentId`), slot (open `String` — domain-defined, e.g. `"planner"` or `"reviewer"`), capabilities (`AgentCapability` list with `qualityHint` and `epistemicDomains`), disposition (`AgentDisposition` with open-String axes + boolean `delegation`).
 
 `tenancyId` is always required. `domainVocabulary` sets the default vocabulary URI for all fields; per-field overrides: `slotVocabulary`, `dispositionVocabulary`.
 
@@ -44,7 +45,7 @@ Declares a named capability with an optional `qualityHint` (Double, 0–1) and `
 
 ### AgentDisposition
 
-Open-string axes describing behavioural profile: `socialOrient`, `ruleFollowing`, `riskAppetite`, `autonomy`. All axes are optional.
+Open-string axes describing behavioural profile: `socialOrient`, `ruleFollowing`, `riskAppetite`, `autonomy`. All axes are optional. `delegation` is a separate boolean field (not an axis) — indicates whether the agent may delegate tasks.
 
 **Validation (compact constructor):** all axes null-permissive (absent is valid), blank-rejecting, ≤200 chars, no banned characters (C0/C1, BiDi, zero-width). Throws `AgentValidationException` on violation.
 
@@ -125,6 +126,7 @@ JPA/Flyway — version range V1–V999 in `classpath:db/eidos/migration`. No Fly
 
 - Phases 1 and 2 complete and merged to main (96 tests across 7 modules, all green).
 - Phase 3 — `SystemPromptRenderer` + `ClaudeMarkdownRenderer` + `AgentStateStore` + `InMemoryAgentStateStore` — complete (eidos#5). Structural rendering + optional LangChain4j semantic pass.
+- eidos#23 — Real-world agent profile library — complete. 8 YAML profiles (Belbin/DISC grounded), `AgentProfileLoader` with Stage 0 pair isolation validation, `ProximityJudge` (semantic proximity scoring), three-stage personality preservation measurement (`VocabularyExpressivenessJudge` / `TraitExpressionJudge` / `PairContrastJudge`).
 - Phase 4 (knowledge graph) — next.
 - Engine integration (`Worker.agentDescriptor`, `NoOpCapabilityHealth`, `WorkOrchestrator` probe dispatch) — engine#341, design agreed.
 

@@ -91,9 +91,25 @@ Qhorus exposes MCP tools across six capability groups: instance management, chan
 
 See docs/DESIGN.md for the full tool inventory.
 
+### Channel Read-model Projection
+
+Left-fold SPI over channel message history. Consumers implement `ChannelProjection<S>` to derive deterministic read-models (vote tallies, review manifests, digests) without scanning raw messages on every read.
+
+| Type | Location | Purpose |
+|---|---|---|
+| `MessageView` | `api/message/` | Read-side DTO — canonical representation of a message for consumers; `type` field (not `messageType` — intentional rename matching `DispatchResult`) |
+| `ChannelProjection<S>` | `api/spi/` | Pure left-fold SPI — `identity()` returns fresh empty state; `apply(S, MessageView)` folds one message |
+| `ProjectionResult<S>` | `api/spi/` | Fold result: `state` (materialised S) + `lastMessageId` (null when channel was empty); pass as `previous` to incremental `project()` overload to resume without full rescan |
+| `ProjectionService` | `runtime/message/` | `@ApplicationScoped` — four overloads: full, scoped-full, incremental, scoped-incremental; scope validation rejects conflicting `channelId` and `descending=true` |
+| `ReactiveProjectionService` | `runtime/message/` | `@IfBuildProperty(casehub.qhorus.reactive.enabled=true)` — reactive mirror; uses `ReactiveMessageStore.stream()` + `collect().in()` |
+
+Refs: qhorus#230 (projection SPI + `ProjectionService`), qhorus#231 (`ReactiveProjectionService`).
+
 ### Store SPIs
 
 Six store interfaces (blocking and reactive mirrors) cover the full domain: channels, messages, instances, shared data, watchdogs, and commitments.
+
+**New in qhorus#231:** `ReactiveMessageStore.stream(MessageQuery) → Multi<Message>` — streaming message query used by `ReactiveProjectionService` to collect message history reactively.
 
 **New in engine#56:**
 - `CommitmentStore.findOpenByObligor(String obligor)` — cross-channel query returning all OPEN commitments for a given obligor. Used by `casehub-engine-actor-state` to assemble the obligations slice of the actor state view.
@@ -110,9 +126,9 @@ See docs/DESIGN.md for SPI interfaces.
 
 | Module | Contents |
 |--------|----------|
-| `api` | SPIs: `ChannelBackend`, `MessageObserver`, `HumanParticipatingChannelBackend`; domain event types |
+| `api` | SPIs: `ChannelBackend`, `MessageObserver`, `HumanParticipatingChannelBackend`, `ChannelProjection<S>`; DTOs: `MessageView`; Records: `ProjectionResult<S>`; domain event types |
 | `connectors` | Optional — `WatchdogAlertEvent → ConnectorService.send()` bridge; activates by classpath presence |
-| `runtime` | `MessageService`, `ChannelGateway`, `QhorusDashboardService`, ledger integration, MCP tools, A2A endpoint |
+| `runtime` | `MessageService`, `ChannelGateway`, `QhorusDashboardService`, `ProjectionService`, `ReactiveProjectionService`, ledger integration, MCP tools, A2A endpoint |
 | `connector-backend` | Optional — `ConnectorChannelBackend` implements `HumanParticipatingChannelBackend`; bridges `InboundMessage` CDI events (`@ObservesAsync`) from casehub-connectors into Qhorus channel dispatch; self-registers for channels with a `ChannelBackend` type of `CONNECTOR`. Activates by classpath presence. |
 | `deployment` | Quarkus extension deployment descriptors |
 | `testing` | In-memory store implementations for `@QuarkusTest` |
