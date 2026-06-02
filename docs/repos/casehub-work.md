@@ -17,7 +17,7 @@ A `WorkItem` is deliberately NOT called `Task` — CNCF Serverless Workflow and 
 
 | Module | Type | Purpose |
 |---|---|---|
-| `casehub-work-api` | Pure-Java SPI (no Quarkus) | All SPIs: worker selection, registry, workload provision, SLA breach policy, spawn, skill profiling, notification channel. Depends on `casehub-platform-api` for `Path` and `Preferences` used in `SlaBreachContext`. Also owns `ActorType` / `ActorTypeResolver` via `casehub-platform-api` (moved there in ledger#88). |
+| `casehub-work-api` | Pure-Java SPI (no Quarkus) | All SPIs: worker selection, registry, workload provision, SLA breach policy, spawn, skill profiling, notification channel. Depends on `casehub-platform-api` for `Path` and `Preferences` used in `SlaBreachContext`. Also owns `ActorType` / `ActorTypeResolver` via `casehub-platform-api` (moved there in ledger#88). New in engine#56: `WorkItemCallerRef.parseCaseId(String callerRef): UUID` — parses the `caseId:planItemId` callerRef format set by casehub-engine on engine-created WorkItems; returns `null` for non-engine callerRefs. |
 | `casehub-work-core` | Jandex library (no JPA) | `WorkBroker` and built-in `WorkerSelectionStrategy` implementations — used for human task routing only; casehub-engine uses its own `AgentRoutingStrategy` SPI (engine#337) |
 | `runtime` | Full Quarkus extension | WorkItem entity, services, REST API, filter engine |
 | `deployment` | Quarkus extension deployment | Build-time processor (`@BuildStep`); pairs with `runtime` |
@@ -103,7 +103,7 @@ See `docs/DESIGN.md` for event payload shape.
 
 - Orchestrate — it fires events and provides primitives. It does not decide what completing a WorkItem means.
 - **Heterogeneous plan-item completion** — whether named plan items A, B, and C have all completed to advance a Stage; that is CaseHub (see LAYERING.md). Homogeneous M-of-N group completion IS casehub-work (multi-instance coordinator).
-- Interpret `callerRef` — stored and echoed opaquely.
+- Interpret `callerRef` — stored and echoed opaquely. **Convention:** `casehub-engine-work-adapter` sets `callerRef` to `"caseId:planItemId"` for engine-created WorkItems. `WorkItemCallerRef.parseCaseId()` in `casehub-work-api` is the canonical parser for this format.
 - Provision or manage AI agents (that is CaseHub/Claudony).
 - Know when to spawn child WorkItems (callers drive spawn via `SpawnPort`).
 

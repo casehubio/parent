@@ -1,13 +1,13 @@
 ---
 id: PP-20260525-5b1efa
-title: "Cross-repo tracking issues belong in casehubio/parent, not individual module repos"
+title: "casehubio/parent issues are for coordinating simultaneous execution across 2+ repos"
 type: rule
 scope: platform
-applies_to: "Any issue that spans or applies to multiple casehubio repos"
+applies_to: "Any issue requiring changes spanning multiple casehubio repos"
 severity: guidance
 refs: []
-violation_hint: "A cross-repo tracking issue (e.g. 'apply X to all repos') is filed in casehubio/work or another module repo instead of casehubio/parent"
+violation_hint: "Filing a new-SPI implementation issue in casehubio/parent because 'multiple repos will consume it' — the implementation work is in one repo; file there. Only use parent when the work across repos must execute simultaneously and a blocker/blocked-by chain between repo issues is insufficient."
 created: 2026-05-25
 ---
 
-Issues that track work spanning multiple casehubio repos must be filed in `casehubio/parent` so the platform owner can triage and route them. Filing a cross-repo issue in an individual module repo (e.g. casehubio/work) makes it invisible to maintainers of other repos who have work to do — the parent repo is the shared inbox for platform-wide concerns. Individual module repos should only track issues scoped to that module; any issue with a "repos to review" list or cross-repo checklist belongs in parent.
+casehubio/parent is the coordination inbox for work that requires simultaneous execution across two or more repos — where a blocker/blocked-by chain between individual repo issues is not sufficient because everything must land together. Artifact renames that must propagate atomically, BOM updates affecting all consumers, CI pipeline changes, and platform-wide protocol sweeps are parent issues. A new SPI in casehub-qhorus that consuming repos will later implement is NOT a parent issue — the implementation work is in qhorus, and consumers follow sequentially. File in parent only when the work itself cannot be sequenced across repos.

@@ -95,6 +95,10 @@ See docs/DESIGN.md for the full tool inventory.
 
 Six store interfaces (blocking and reactive mirrors) cover the full domain: channels, messages, instances, shared data, watchdogs, and commitments.
 
+**New in engine#56:**
+- `CommitmentStore.findOpenByObligor(String obligor)` — cross-channel query returning all OPEN commitments for a given obligor. Used by `casehub-engine-actor-state` to assemble the obligations slice of the actor state view.
+- `ChannelStore.findByIds(Collection<UUID> ids)` — batch lookup emitting a single `IN(?)` query. Used when a set of channel IDs is already known and full `Channel` records are needed without N individual fetches.
+
 See docs/DESIGN.md for SPI interfaces.
 
 ### External APIs

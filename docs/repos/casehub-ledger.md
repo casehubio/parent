@@ -40,6 +40,8 @@ See `docs/DESIGN.md` for field model and entry type vocabulary.
 
 The ledger provides services for: cryptographic verification and inclusion proofs, Merkle tree operations (RFC 9162 MMR), optional Ed25519 tlog-checkpoint publishing, W3C PROV-DM lineage export, GDPR Art.17 token-severing erasure, nightly trust score recomputation with CDI routing events, trust score read-model export, and trust bootstrapping for new actors.
 
+**`TrustGateService.allCapabilityScores(String actorId): Map<String, Double>`** — returns all CAPABILITY-scoped trust scores for an actor as a capability-tag → score map. Added in ledger#56 for the actor state view; complements the existing per-capability `currentScore()` method with a bulk read that avoids N individual queries.
+
 `LedgerEnricherPipeline` is an `@ApplicationScoped` CDI bean that owns enricher pipeline execution — shared by the JPA `@EntityListeners` path and the in-memory path. It is not an SPI (consumers do not implement it) but is the shared execution point for any consumer that adds enrichers.
 
 `ReactiveAgentIdentityVerificationService` is a `@DefaultBean @Unremovable` Mutiny bridge wrapping `AgentIdentityVerificationService` on the blocking worker pool. Always active regardless of `reactive.enabled`.
@@ -59,27 +61,6 @@ See `docs/DESIGN.md` for service class structure.
 | `TrustImportService` | no-op default | JPA default (seed-if-absent) | Import trust scores from external payload |
 | `TrustBootstrapSource` | no-op default | — | Fetch prior trust data for first-time actors |
 | `ActorDIDProvider` | — | `ScimActorDIDProvider @Alternative @Priority(1)` (explicit activation via `quarkus.arc.selected-alternatives`) | Resolves actorId → DID via SCIM2 Agent endpoint; TTL cache; config prefix `casehub.ledger.agent-identity.scim.*` |
-
-### Agent Identity Pipeline
-
-Ledger consumes identity SPIs from `casehub-platform-identity` — it does not own them.
-
-The write-time pipeline (enrichers, always active):
-
-| Enricher | Priority | What it does |
-|----------|----------|--------------|
-| `ActorDIDEnricher` | 40 | Calls `ActorDIDProvider` (from `casehub-platform-identity`); populates `LedgerEntry.actorDid` |
-| `ActorIdentityValidationEnricher` | 50 | Calls `DIDResolver` + `AgentCredentialValidator` (from `casehub-platform-identity`); sets `pendingIdentityStatus` |
-
-The binding persistence observer (`ActorIdentityBindingObserver`) fires async and calls the JPA-backed
-`JpaActorIdentityBindingRepository` to persist each validation outcome as an `ActorIdentityBindingEntry`
-(V1008 schema). This is the ledger's own concern — platform does not touch persistence.
-
-Enforcement: `LedgerIdentityEnforcementListener` (`@EntityListeners`) gates persist in ENFORCE mode
-(`casehub.ledger.agent-identity.validation-mode=ENFORCE`). Config prefix for validation mode
-stays in ledger; DID resolution and SCIM lookup config moved to `casehub.identity.*`.
-
-See [`docs/repos/casehub-identity.md`](casehub-identity.md) for the identity module deep-dive.
 
 ### Supplements (Optional Attachments)
 
@@ -103,18 +84,14 @@ Consumers must add this path to their `quarkus.flyway.locations` config.
 | V1005 | `agent_signature` + `agent_public_key` columns on `ledger_entry` |
 | V1006 | `agent_key_ref` column on `ledger_entry` |
 | V1007 | `key_rotation_entry` subclass table |
-| V1008 | `actor_did` column on `ledger_entry` + `actor_identity_binding` join table |
 
-**Consumers** own V2000+ for their own subclass join tables.
+**Consumers** own V1008+ for their own subclass join tables (V1004–V1007 are now ledger base).
 
 ---
 
 ## Depends On
 
-| Repo | What |
-|------|------|
-| `casehub-platform-api` | `ActorType`, `ActorTypeResolver` (identity primitives) |
-| `casehub-platform-identity` | `ActorDIDProvider`, `DIDResolver`, `AgentCredentialValidator` SPIs; identity model types and CDI event records |
+Nothing in the casehubio ecosystem. Quarkus + Hibernate ORM only.
 
 ## Depended On By
 
@@ -134,8 +111,6 @@ Consumers must add this path to their `quarkus.flyway.locations` config.
 - Capture domain events (consumers wire their own `@ObservesAsync` observers)
 - Replay events or project CQRS views
 - Know anything about WorkItems, Cases, or agent channels
-- Own DID resolution or VC validation logic (those live in `casehub-platform-identity`)
-- Own SCIM2 agent lookup (that is `ScimActorDIDProvider` in `casehub-platform-identity`)
 
 ---
 
@@ -143,10 +118,9 @@ Consumers must add this path to their `quarkus.flyway.locations` config.
 
 Consumers:
 1. Extend `LedgerEntry` as a JPA `@Entity` (`@DiscriminatorValue`)
-2. Add their own Flyway migration (V2000+ range) for the subclass join table
+2. Add their own Flyway migration (V1004+ range) for the subclass join table
 3. Wire a CDI observer to capture domain events as ledger entries
 4. Optionally attach `ComplianceSupplement` or `ProvenanceSupplement`
-5. Optionally activate a `casehub-platform-identity` alternative (`KeyDIDResolver`, `WebDIDResolver`, `ScimActorDIDProvider`) for agent identity binding
 
 See `docs/DESIGN.md` for the leaf hash scheme.
 
@@ -184,10 +158,9 @@ Config prefix: `casehub.ledger.agent-identity.scim.*`
 
 ## Current State
 
-- 523 tests passing, native image validated
+- 449 tests passing, native image validated
 - Reactive/blocking service parity enforced at build time via `BlockingReactiveParityTest` (ArchUnit 1.4.1) — auto-discovers all `Reactive*Service` classes and asserts bidirectional method parity and `Uni<T>` returns
-- All epics complete: MMR, PROV-DM, privacy/pseudonymisation, EigenTrust, trust routing signals, OTel auto-wiring, agent DID/VC binding
-- Identity infrastructure (SPIs, resolvers, SCIM provider) extracted to `casehub-platform-identity` — ledger retains enrichers, binding persistence, and enforcement
+- All epics complete: MMR, PROV-DM, privacy/pseudonymisation, EigenTrust, trust routing signals, OTel auto-wiring
 - No deployed production instances — schema migrations can be rewritten in place (no incremental migration scripts needed)
 - Quarkiverse submission pending (eligibility discussion ongoing)
 
