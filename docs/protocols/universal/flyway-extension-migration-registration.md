@@ -89,22 +89,6 @@ Some extensions ship Flyway migrations but do **not** produce a `NativeImageReso
 in their deployment module. Any extension that co-deploys them in native mode must add an
 additional `includeGlob` for those paths.
 
-**Known gap: `casehub-ledger`** — `LedgerProcessor` does not self-register `db/ledger/migration/*.sql`.
-Any extension co-deploying casehub-ledger must add the ledger glob alongside its own:
-
-```java
-@BuildStep
-NativeImageResourcePatternsBuildItem registerMigrationResources() {
-    return NativeImageResourcePatternsBuildItem.builder()
-            .includeGlob("db/<repo>/migration/*.sql")     // own migrations
-            .includeGlob("db/ledger/migration/*.sql")     // casehub-ledger (does not self-register)
-            .build();
-}
-```
-
-Without the ledger glob, ledger tables are absent in native builds and the failure is silent until
-Flyway runs at startup. See GE-20260530-0dc6de (garden jvm domain).
-
 ## Reference implementation
 
 casehub-work:
@@ -113,4 +97,4 @@ casehub-work:
 - `WorkItemsProcessor.registerMigrationCustomizer()` — `AdditionalBeanBuildItem.setUnremovable()`
 
 casehub-qhorus (casehubio/qhorus#219):
-- `QhorusProcessor.registerMigrationResources()` — two globs: `db/qhorus/migration/*.sql` + `db/ledger/migration/*.sql`
+- `QhorusProcessor.registerMigrationResources()` — `db/qhorus/migration/*.sql` (ledger self-registers since casehubio/ledger#99)
