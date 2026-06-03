@@ -68,6 +68,45 @@ Implements the Qhorus `ChannelBackend` SPI to wire bidirectional message flow be
 
 **Cross-repo:** `ActionRiskClassifier` SPI will migrate to `casehub-engine-api` (engine#402); `SpeechActClassifier` Phase 2/3 tracked in openclaw#10.
 
+### Layer 0 — Quarkus MCP Endpoint (Epic 7)
+
+Exposes CaseHub accountability primitives as MCP tools and resources. Implements Direction 2 of the CaseHub ↔ OpenClaw integration: OpenClaw agents calling CaseHub.
+
+**Transport:** `POST /mcp` — streamable-HTTP via `quarkus-mcp-server`.
+
+**Tools:**
+
+| Tool | Purpose |
+|------|---------|
+| `casehub_commit` | Declare a commitment for a channel |
+| `casehub_done` | Mark a commitment fulfilled |
+| `casehub_reject` | Decline/reject a commitment |
+| `casehub_checkpoint` | Record a progress checkpoint |
+| `casehub_escalate` | Escalate to oversight channel |
+| `casehub_create_workitem` | Create a human WorkItem |
+| `casehub_open_case` | Open a new case instance |
+| `casehub_status` | Query agent commitment status |
+| `casehub_queue` | Queue a task for deferred execution |
+
+**Resources:**
+
+| URI | What it exposes |
+|-----|----------------|
+| `casehub://agent/{id}/commitments` | Active commitments for a given agent |
+| `casehub://agent/{id}/cases` | Open cases for a given agent |
+| `casehub://channel/{id}/recent` | Recent messages in a channel |
+
+**Plugin hooks (TypeScript):**
+
+| Hook | Role |
+|------|------|
+| `before_tool_call` | Pre-flight commitment check before tool execution |
+| `agent_end` | Flush pending commitments on session close |
+| `session_start` | Bootstrap session context and active commitments |
+| `heartbeat_prompt_contribution` | Inject commitment state into recurring heartbeat prompts |
+
+Global SKILL.md files (stateless) drive the agent's accountability behaviour via the MCP layer. See `docs/specs/openclaw-skill-pack.md`.
+
 ### Plugin SDK (Epic 5)
 
 TypeScript `before_prompt_build` hook implemented via OpenClaw Plugin SDK in `plugin/`. Calls `GET /channel-context/{agentId}` and invokes `appendSystemContext` to prepend CaseHub channel history into the agent's system prompt before each LLM call. Published to npm. ADR 0001 documents the TypeScript-only decision.
@@ -118,6 +157,7 @@ These two modes are mutually exclusive per invocation. A given agent interaction
 - Epic 4 (CaseHub SPIs: `WorkerProvisioner`, `ChannelBackend`, `CaseChannelProvider`, `WorkerStatusListener`): complete — branch `issue-4-casehub-spi-implementations`
 - Epic 5 (TypeScript Plugin SDK + Python client library): complete — `plugin/` (npm), `python/` (PyPI), ADR 0001
 - Epic 6 (OversightGateService, ActionRiskClassifier, SpeechActClassifier, oversight delivery endpoint): complete
+- Epic 7 (Layer 0 — Quarkus MCP endpoint, 9 tools, 3 resources, 4 plugin hooks, global SKILL.md files): complete (openclaw#19)
 
 ---
 
