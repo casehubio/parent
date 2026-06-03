@@ -1,161 +1,161 @@
-# Standalone RAG/Retrieval Module — Design Brief
+# Universal RAG/Retrieval Library — Design Brief
 
 **Date:** 2026-06-03  
-**Status:** Pre-design brief  
-**Consumers:** casehub (all application and foundation repos), Hortora  
+**Status:** Pre-design — pending Hortora validation  
+**Consumers:** casehub (all tiers), Hortora  
 **Tracking:** casehubio/parent#158
+
+---
+
+## What This Is
+
+A standalone, framework-agnostic retrieval library. Not casehub-specific. Both casehub and Hortora are consumers — neither owns it. It is a universal RAG primitive that any JVM project can depend on.
+
+Hortora already runs this technology stack in production: **Tika + ONNX + SPLADE + Qdrant**. The goal is an SPI-based library around that proven stack that both projects share — casehub taking it as a foundation dependency, Hortora adopting or aligning with it as a standardised interface over its existing implementation.
+
+**Hortora must validate the SPI design before implementation begins.** See the validation checklist below.
 
 ---
 
 ## Why Standalone
 
-Both casehub and Hortora need retrieval infrastructure. Designing it inside casehub and having Hortora take a dependency on casehub would import a large, domain-specific surface (ledger, engine, qhorus) into a project that needs none of it.
+If this is built inside casehub, Hortora takes a dependency on casehub. That imports casehub-ledger, casehub-engine, and the full domain surface — none of which Hortora needs. The boundary collapses.
 
-The correct approach: design this as a self-contained library with zero casehub-domain dependencies in the core. casehub takes a dependency on it; Hortora takes the same dependency. Both get retrieval without coupling to each other's runtimes.
-
-This also makes the module independently useful — any Quarkus application, or any JVM application, could use it.
+The correct structure: a neutral library that both projects depend on. `retrieval-api` and `retrieval-core` have zero framework and zero domain dependencies. Each project brings its own CDI wiring or framework adapter. The shared code is the SPI contract and pipeline coordination, not the runtime.
 
 ---
 
-## What it Does
+## The Technology Stack
 
-Ground AI agent responses in a persistent, queryable body of organisational knowledge.
+These are not decisions to be made — they are the known proven stack from Hortora's production usage:
 
-**The gap it fills:** `CaseMemoryStore` is short-term operational context, case-scoped, queryable by an agent during a running case. The retrieval corpus is long-lived, organisation-scoped, and indexed by content — it is the knowledge the organisation has accumulated, not the context of a specific running case.
+| Technology | Role | Why |
+|------------|------|-----|
+| **Apache Tika** | `DocumentIngester` | 1000+ formats: PDF, Word, Excel, HTML, email, images, audio, video. OCR via Tesseract. Language detection. Metadata extraction. |
+| **ONNX Runtime (JVM)** | `EmbeddingProvider` (dense) | No API call. No Python. Deterministic. Any ONNX-format model. Runs air-gapped — required for regulated deployments (clinical, AML, financial). |
+| **SPLADE** | `EmbeddingProvider` (sparse) | Lexical + expansion. Better than BM25 for regulatory and clinical text where terminology carries precise weight. Interpretable — which terms drove the match. Auditable. |
+| **Qdrant** | `VectorStore` | Named vector spaces — stores both dense (ONNX) and sparse (SPLADE) vectors per document. Payload filtering for tenancy isolation. Production-grade. |
 
----
-
-## Core Pipeline
-
-```
-Document → [Ingester] → [Chunker] → [EmbeddingProvider] → [VectorStore]
-                                                                  ↑
-Query → [EmbeddingProvider] → [VectorStore.query()] → [RankedChunks] → [ContextAssembler] → Prompt context
-```
-
-Each stage is an SPI. The pipeline coordinates them; it does not implement any stage.
+**The hybrid architecture:** every document gets two vector representations. Qdrant stores both in named vector spaces per point. Retrieval uses either or both, depending on query type. Dense for semantic similarity; sparse for terminology-precise domains. This is already how Hortora works.
 
 ---
 
-## SPI Definitions (retrieval-api — zero dependencies)
+## SPI Design (retrieval-api — zero dependencies)
+
+The core is technology-agnostic. The stack above is the reference implementation tier.
 
 ```java
-// What goes in
+// What gets ingested
 interface DocumentIngester {
-    IngestedDocument ingest(RawDocument doc);  // extract text, metadata, source ref
+    IngestedDocument ingest(RawDocument doc);
+    // Tika implementation: universal format extraction + metadata
 }
 
-// How to split
+// How documents are split
 interface Chunker {
     List<Chunk> chunk(IngestedDocument doc, ChunkingConfig config);
+    // Default impls: fixed-size, sentence-boundary, paragraph
 }
 
-// How to represent
+// How chunks become vectors
 interface EmbeddingProvider {
-    List<float[]> embed(List<String> texts);  // batch — minimise API calls
+    EmbeddingType type();                                          // DENSE | SPARSE
+    List<float[]> embed(List<String> texts);                      // ONNX dense
+    List<Map<Integer,Float>> embedSparse(List<String> texts);     // SPLADE sparse
 }
 
-// Where to store and query
+// Where vectors are stored and queried
 interface VectorStore {
     void upsert(List<EmbeddedChunk> chunks);
-    List<RankedChunk> query(float[] queryEmbedding, VectorQuery query);
+    List<RankedChunk> query(VectorQuery query);   // carries both dense + sparse vectors
     void delete(String documentId);
+    // Qdrant impl: named vector spaces, payload filtering, tenant isolation
 }
 
-// How to rank and filter results
+// How results are ranked and fused
 interface RetrievalStrategy {
     List<RankedChunk> rank(List<RankedChunk> candidates, RetrievalContext context);
+    // Default: RRF fusion of dense + sparse results
 }
 
-// How to present to an LLM
+// How results become LLM context
 interface ContextAssembler {
     String assemble(List<RankedChunk> chunks, AssemblyConfig config);
+    // Formats chunks into prompt-injectable context with source citations
 }
 ```
 
-Domain types: `RawDocument`, `IngestedDocument`, `Chunk`, `EmbeddedChunk`, `RankedChunk`, `VectorQuery`, `RetrievalContext`, `AssemblyConfig`. All pure Java records. No framework types.
+Domain types: `RawDocument`, `IngestedDocument`, `Chunk`, `EmbeddedChunk`, `RankedChunk`, `VectorQuery`, `RetrievalContext`, `EmbeddingType`, `AssemblyConfig`. All pure Java records. No framework types, no casehub types.
 
 ---
 
 ## Module Structure
 
 ```
-retrieval-api/
-  — Pure Java, zero external dependencies
-  — All SPIs + domain types
-  — Suitable as a compile dep for any JVM project
-
-retrieval-core/
-  — Pipeline coordination: ingestion → chunking → embedding → store
-  — Default chunking implementations (fixed-size, sentence-boundary, paragraph)
-  — Default context assembly (markdown, numbered, with source citations)
-  — Depends on: retrieval-api only
-
-retrieval-quarkus/
-  — CDI @DefaultBean wiring for all SPIs
-  — @QuarkusTest support (in-memory store activated by test profile)
-  — Quarkus config integration (chunk size, overlap, embedding model, etc.)
-  — Depends on: retrieval-core + Quarkus
-
-retrieval-pgvector/
-  — VectorStore implementation using PostgreSQL pgvector extension
-  — Flyway migration for vector column setup
-  — Depends on: retrieval-api + Hibernate Reactive / JDBC
-
-retrieval-inmem/
-  — In-memory VectorStore (cosine similarity over ArrayList — test and development only)
-  — Depends on: retrieval-api only
-
-retrieval-langchain4j/
-  — EmbeddingProvider backed by LangChain4j ChatModel
-  — Works with any LangChain4j-compatible provider (OpenAI, Claude, local)
-  — Depends on: retrieval-api + langchain4j-core (no specific provider lock-in)
+retrieval-api/          — zero deps: all SPIs + domain types
+retrieval-core/         — pipeline coordination, default chunkers, default context assembly
+retrieval-tika/         — DocumentIngester backed by Apache Tika + Tesseract
+retrieval-onnx/         — EmbeddingProvider (DENSE) backed by ONNX Runtime JVM
+retrieval-splade/       — EmbeddingProvider (SPARSE) via SPLADE model loaded through ONNX
+retrieval-qdrant/       — VectorStore backed by Qdrant (REST + gRPC); named vector spaces
+retrieval-inmem/        — in-memory VectorStore (cosine similarity) for testing only
+retrieval-quarkus/      — CDI @DefaultBean wiring + @QuarkusTest support (casehub only)
 ```
+
+Hortora takes: `retrieval-api` + `retrieval-core` + whichever impl modules it needs.  
+Hortora does **not** take: `retrieval-quarkus`.
+
+ArchUnit rule enforced from day one: `retrieval-api` and `retrieval-core` have no dependencies on any casehub artifact, Quarkus, or Spring. Compile-time guarantee of the clean boundary.
+
+---
+
+## CaseHub Use Cases
+
+Beyond document retrieval for LLM context grounding, the stack applies across the future capability roadmap:
+
+**Typed fact space (AI Fusion brief)**  
+Qdrant stores historical case fact vectors — enables retrieval of "cases with similar fact patterns" as context for the current case. This is distinct from the live fact space (in-memory/JPA). The retrieval module provides the historical pattern layer.
+
+**Policy engine (#155) — SPLADE for interpretable policy matching**  
+Agent actions described in natural language matched against a policy corpus using SPLADE sparse retrieval. The interpretability of which terms drove the match is a compliance audit requirement in regulated deployments.
+
+**AI observability (#154) — ONNX for local hallucination detection**  
+`HallucinationDetectionHook` SPI implementation using an ONNX NLI model — scores LLM output faithfulness against input facts. No API call. Deterministic. Runs on every inference in production.
+
+**casehub-openclaw ActionRiskClassifier**  
+The current stub (always AUTONOMOUS) replaced with a per-deployment ONNX classifier evaluating agent output risk without API dependency. Fine-tuned per domain (clinical vs AML vs enterprise).
+
+**casehub-eidos epistemic confidence estimation**  
+An ONNX model estimating dynamic epistemic domain confidence from agent output history — more accurate than statically-declared `epistemicDomains` values. Feeds into `CapabilityHealth.probe()`.
+
+**AML + clinical — SPLADE for regulatory text**  
+SAR typology matching, clinical protocol retrieval, regulatory clause lookup — SPLADE's lexical precision outperforms dense embeddings in terminology-precise regulatory domains.
+
+---
+
+## Hortora Validation Checklist
+
+Before implementation begins, Hortora should validate:
+
+1. Does the SPI design match how Hortora currently uses Tika, ONNX, SPLADE, and Qdrant — or would adopting this require changing Hortora's retrieval approach?
+2. Is the hybrid dense+sparse architecture (named vector spaces in Qdrant) consistent with Hortora's Qdrant collection structure?
+3. Are there chunking or context assembly strategies Hortora uses that the default implementations in `retrieval-core` should cover?
+4. Does Hortora have SPLADE model distribution or packaging patterns worth standardising in `retrieval-splade`?
+5. Any Qdrant collection management patterns (index config, quantisation, tenant isolation) worth standardising in `retrieval-qdrant`?
+6. Is the `EmbeddingProvider` split between DENSE and SPARSE the right interface shape, or does Hortora's usage suggest a different decomposition?
 
 ---
 
 ## Repo Decision
 
-Two options:
-
-**Option A — New standalone repo** (`mdproctor/quark-retrieval` or similar)
-- Pros: clear boundary, both casehub and Hortora take a versioned artifact dep; no casehub repo awareness needed in Hortora
-- Cons: another repo to maintain, CI, publish pipeline
-
-**Option B — casehub-retrieval module in casehubio/parent BOM, extracted if needed**
-- Pros: simpler initially; casehub CI handles it; extract to standalone repo when Hortora integration is ready
-- Cons: Hortora would depend on casehubio artifact, which may feel wrong even if the code has zero casehub domain deps
-
-**Recommendation:** Start as `casehub-retrieval` under casehubio, with the explicit design constraint of zero casehub-domain dependencies in `retrieval-api` and `retrieval-core`. Extract to a standalone repo when Hortora integration is ready. The zero-domain-dep constraint is enforceable via ArchUnit from day one.
+**Start as `casehub-retrieval` under casehubio.** ArchUnit enforces zero-domain-dep constraint on `retrieval-api` and `retrieval-core` from day one. Extract to standalone repo (e.g. `mdproctor/quark-retrieval`) when Hortora integration is ready — at that point the boundary is already proven clean and the extraction is mechanical.
 
 ---
 
-## Relationship to Other Modules
+## Sequencing
 
-| Module | Relationship |
-|--------|-------------|
-| `casehub-platform CaseMemoryStore` | Different scope: CaseMemoryStore is short-term, case-scoped operational context. Retrieval corpus is long-lived, org-scoped knowledge. They are complementary — an agent might use both in the same step. |
-| `casehub-artifacts` (#157) | Artifact pipeline feeds retrieval ingestion. An ingested document is an artifact. They are separate concerns: artifacts own lifecycle and storage; retrieval owns chunking, embedding, and query. |
-| `casehub-eidos AgentGraphStore` | Agent task history, not knowledge corpus. Unrelated. |
-| `casehub-engine WorkOrchestrator` | Engine dispatches a retrieval step as a QuarkusFlow Worker or directly injects retrieval context into LLM prompt compilation (via fact space — see AI Fusion brief). |
+1. **Typed fact space** (AI Fusion brief) — higher priority; enables Drools + QuarkusFlow + LLM synthesis
+2. **This module** — unblocks both casehub knowledge grounding and Hortora alignment
+3. **Artifact pipeline (#157)** — feeds retrieval ingestion; delivers incrementally
 
----
-
-## What Hortora Gets
-
-Hortora takes `retrieval-api` + `retrieval-core` as dependencies. It brings its own:
-- `EmbeddingProvider` implementation (or uses `retrieval-langchain4j` with its own model config)
-- `VectorStore` implementation (or uses `retrieval-pgvector` / `retrieval-inmem`)
-- Whatever runtime wiring fits Hortora's framework
-
-Hortora does not take `retrieval-quarkus`. It does not take any casehub-domain module. The boundary is clean.
-
----
-
-## Sequencing Relative to AI Fusion
-
-The retrieval module is independent of the typed fact space (AI Fusion brief). Both are needed; neither blocks the other. Suggested order:
-
-1. AI Fusion typed fact space (higher priority — enables Drools + QuarkusFlow + LLM synthesis)
-2. Retrieval module (enables knowledge-grounded LLM reasoning; also unblocks Hortora need)
-3. Artifact pipeline (feeds retrieval; can be delivered incrementally)
+Hortora validation should happen in parallel with the typed fact space work so the retrieval module design is confirmed before implementation begins.
