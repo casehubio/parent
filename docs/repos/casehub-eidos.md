@@ -20,6 +20,7 @@ Structured agent identity for LLM agents on the CaseHub platform. Any Quarkus ap
 | `persistence-memory/` | `casehub-eidos-memory` | Optional module | `InMemoryAgentRegistry` + `InMemoryAgentStateStore` — `@Alternative @Priority(1)`; activate by adding as dep |
 | `deployment/` | `casehub-eidos-deployment` | Quarkus build step | `EidosProcessor` + `EidosBuildTimeConfig` |
 | `vocab/` | `casehub-eidos-vocab` | Optional module | Well-known vocabularies: SVO, Conscientiousness, CasehubSlot |
+| `graph/` | `casehub-eidos-graph` | Optional module (Jandex library) | Phase 4 knowledge graph — `AgentGraphStore` SPI (write), `AgentGraphQuery` SPI (read), `AgentGraphBackfill` SPI (ledger ingestion), `TaskSemanticEnricher` SPI (application-tier enrichment at query time). Activates by classpath presence. |
 | `eval/` | `casehub-eidos-eval` | Test-only, not deployed | Offline quality evaluation harness: `EvalCase` sealed interface (`SyntheticEvalCase` + `ProfiledEvalCase`), `EvalDataset`, `PromptJudge`, `ProximityJudge`, `VocabularyExpressivenessJudge`, `TraitExpressionJudge`, `PairContrastJudge`; real-world agent profile library (8 YAML profiles grounded in O*NET and practitioner sources); three-stage personality preservation measurement system |
 | `examples/agent-scenarios/` | — | Test-only | `@QuarkusTest` integration examples covering team, cross-vocab, epistemic, tenancy, disposition |
 
@@ -127,7 +128,7 @@ JPA/Flyway — version range V1–V999 in `classpath:db/eidos/migration`. No Fly
 - Phases 1 and 2 complete and merged to main (96 tests across 7 modules, all green).
 - Phase 3 — `SystemPromptRenderer` + `ClaudeMarkdownRenderer` + `AgentStateStore` + `InMemoryAgentStateStore` — complete (eidos#5). Structural rendering + optional LangChain4j semantic pass.
 - eidos#23 — Real-world agent profile library — complete. 8 YAML profiles (Belbin/DISC grounded), `AgentProfileLoader` with Stage 0 pair isolation validation, `ProximityJudge` (semantic proximity scoring), three-stage personality preservation measurement (`VocabularyExpressivenessJudge` / `TraitExpressionJudge` / `PairContrastJudge`).
-- Phase 4 (knowledge graph) — next.
+- Phase 4 (knowledge graph) — complete. `casehub-eidos-graph` module: `AgentGraphStore` / `AgentGraphQuery` / `AgentGraphBackfill` SPIs + `TaskSemanticEnricher` SPI (application-tier extension point, eidos pulls at query time). Activates by classpath presence (Jandex library pattern). Refs eidos#32.
 - Engine integration (`Worker.agentDescriptor`, `NoOpCapabilityHealth`, `WorkOrchestrator` probe dispatch) — engine#341, design agreed.
 
 ---

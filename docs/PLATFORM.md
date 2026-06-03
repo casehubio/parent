@@ -230,6 +230,7 @@ casehub-parent              (BOM — publish first; all others import it)
 | `casehub-engine-ledger` | `devtown` | `app` | trust-weighted agent routing — activates `TrustWeightedAgentStrategy` + `WorkerDecisionEventCapture` |
 | `casehub-platform-config` | `devtown` | `app` | YAML-backed preference provider for trust routing policies (`trust-routing.yaml`) |
 | `casehub-eidos-api` | `casehub-engine` | `engine-api` | optional capability probe — `AgentDescriptor` on `Worker`; `CapabilityHealth.probe()` in `WorkOrchestrator` |
+| `casehub-eidos-api` | `casehub-engine` | `engine-api` / `runtime` | write-path SPI calls: `AgentGraphStore.recordTask()`, `recordOutcome()` from `WorkOrchestrator` (eidos#32) |
 | `casehub-engine-api` | `casehub-engine-ai` | `ai` | `AgentRoutingStrategy` SPI consumer; `AgentEmbeddingProvider` SPI definition |
 
 | `casehub-platform` | `casehub-aml` | `app` | `@DefaultBean` mocks for casehub-engine CDI wiring (runtime scope — required when engine is present) |
@@ -249,6 +250,7 @@ casehub-parent              (BOM — publish first; all others import it)
 | `casehub-qhorus` (runtime) | `casehub-openclaw` | `casehub` | Qhorus runtime for SPI registration |
 | `casehub-qhorus-api` | `casehub-drafthouse` | `runtime` | `ChannelService`, `MessageService`, `ChannelGateway`, `DataService`, `InstanceService` — channel mesh SPIs |
 | `casehub-qhorus` (runtime) | `casehub-drafthouse` | `runtime` | Channel mesh runtime — commitment lifecycle, typed messages |
+| `casehub-qhorus-api` | `casehub-drafthouse` | `api` | `ChannelProjection<S>`, `MessageView`, `MessageType` — debate projection SPI (qhorus#230) |
 | `casehub-engine-api` | `casehub-openclaw` | `casehub` | `WorkerProvisioner`, `CaseChannelProvider`, `WorkerStatusListener` SPI implementations; uses api (not runtime) to avoid engine CDI beans with unsatisfied persistence SPIs |
 | `casehub-platform-api` | `casehub-openclaw` | `core` | `CurrentPrincipal`, `GroupMembershipProvider` (permission-aware context) |
 | `casehub-ledger` (runtime) | `casehub-life` | `app` | Merkle audit, GDPR erasure, trust scoring |
@@ -318,6 +320,10 @@ casehub-parent              (BOM — publish first; all others import it)
 | CaseHub accountability tools for OpenClaw (MCP) | `casehub-openclaw` | Four-layer architecture: Quarkus MCP endpoint (`casehub_commit`, `casehub_done`, `casehub_reject`, `casehub_checkpoint`, `casehub_escalate`, `casehub_create_workitem`, `casehub_queue`, `casehub_status`), MCP resources (`casehub://agent/{id}/commitments`, `casehub://channel/{id}/recent`), TypeScript plugin hooks (`before_tool_call`, `agent_end`, `session_start`), global skill + stateless SKILL.md files. Direction 2 of OpenClaw ↔ CaseHub integration: OpenClaw agents calling CaseHub. See [`docs/repos/casehub-openclaw.md`](repos/casehub-openclaw.md) §Layer 0. |
 | Ecosystem CI dashboards | `casehub-parent` | `dashboard.yml`, `pr-dashboard.yml`, `full-stack-build.yml` |
 | Application domain logic (devtown, aml, clinical, life, drafthouse, quarkmind) | Application tier | See [APPLICATIONS.md](APPLICATIONS.md) |
+| Agent task history (write) | `casehub-eidos` | `AgentGraphStore` SPI — called by casehub-engine at dispatch/completion via `AgentGraphStore.recordTask()` / `recordOutcome()` from `WorkOrchestrator` |
+| Agent task history (read) | `casehub-eidos` | `AgentGraphQuery` SPI — history, outcome stats, attestation chain |
+| Agent graph backfill | `casehub-eidos` | `AgentGraphBackfill` SPI — ingests historical casehub-ledger attestations |
+| Semantic task enrichment | `casehub-eidos` | `TaskSemanticEnricher` SPI — application-tier implementations; eidos pulls at query time |
 | Agent descriptor (structured 4-layer identity) | `casehub-eidos` | `AgentDescriptor` record — identity, slot, capabilities, disposition; `tenancyId` always required; `AgentQuery` for criteria-based discovery |
 | Agent registry (store + discover by slot/capability) | `casehub-eidos` | `AgentRegistry` (blocking) + `ReactiveAgentRegistry` (reactive, build-gated `casehub.eidos.reactive.enabled`); `InMemoryAgentRegistry` + `InMemoryAgentStateStore` for ephemeral installs via `casehub-eidos-memory` |
 | Vocabulary registry (term resolution + cross-vocab equivalence) | `casehub-eidos` | `VocabularyRegistry` SPI + `CdiVocabularyRegistry` @DefaultBean; discovers `@Produces Vocabulary` CDI beans at startup |

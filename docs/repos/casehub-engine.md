@@ -106,6 +106,30 @@ Three external signal entry points that reach a running case:
 
 `QhorusMessageSignalBridge` — CDI `@ObservesAsync` observer for `MessageReceivedEvent`; bridges commitment-resolving Qhorus messages (RESPONSE, DONE, DECLINE, FAILURE) on `case-{caseId}/{purpose}` channels to `CaseHubRuntime.signal()`. Enables human channel messages to unblock WAITING cases. Protocol: `PP-20260526-case-channel-message-signal`.
 
+### Tenancy Enforcement (persistence-hibernate)
+
+All JPA repositories in `casehub-engine-persistence-hibernate` extend `TenantAwareRepository`, which injects `SET LOCAL "casehub.tenancy_id"` into every reactive transaction for PostgreSQL Row Level Security (RLS).
+
+**Helpers:** `withTenantTransaction()` (RLS enforced) / `withCrossTenantTransaction()` (BYPASSRLS role — platform-internal only).
+
+**Config:** `casehub.rls.enabled` (default false). When true, `RlsPolicyApplicator` creates the `casehub_crosstenancy` BYPASSRLS role at startup and applies RLS policies.
+
+**Cross-tenant repository:** `JpaCrosstenantEventLogRepository` is a separate class from `JpaEventLogRepository` — queries without tenancy constraint. Produced with `@CrossTenant` CDI qualifier (see below).
+
+**Cross-tenant test setup:** `quarkus.datasource.devservices.init-script-path=db/init-crosstenancy-role.sql` pattern — creates the BYPASSRLS role in the test database.
+
+### @CrossTenant CDI Qualifier
+
+`@CrossTenant` qualifier (in `common/qualifier/`) gates access to cross-tenant SPIs. `CrossTenantProducer` (in `runtime/internal/identity/`) produces:
+- `@CrossTenant CrossTenantEventLogRepository`
+- `@CrossTenant CrossTenantCaseInstanceRepository`
+
+`SystemCurrentPrincipal` (`@ApplicationScoped @EngineSystem`) serves as the interim platform system actor until `casehub-platform` ships a system-actor principal. All 6 cross-tenant injection sites are updated with the `@CrossTenant` qualifier.
+
+### CaseDefinitionRegistry uses CaseKey record
+
+`DefaultCaseDefinitionRegistry` stores definitions in `Map<CaseKey, RegistryEntry>` where `CaseKey` is an immutable record `(namespace, name, version)`. Eliminates the mutable-hashCode map key bug (engine#410). `RegistryEntry` is an inner record `(CaseDefinition, CaseMetaModel)`.
+
 ### CapabilityHealth Integration
 
 Optional integration with `casehub-eidos-api`. `WorkOrchestrator` probes agent-backed workers via `CapabilityHealth.probe()` before candidate selection:

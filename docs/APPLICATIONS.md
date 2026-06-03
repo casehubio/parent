@@ -28,7 +28,7 @@ The pattern: **bring your domain, use the platform, modify nothing below.**
 | `casehub-aml` | [casehubio/aml](https://github.com/casehubio/aml) | Anti-money laundering investigation — FinCEN-compliant audit, SAR workflow, adaptive investigation paths | Active |
 | `casehub-clinical` | [casehubio/clinical](https://github.com/casehubio/clinical) | Clinical trial coordination — GCP/FDA compliance, multi-site sub-cases, adverse event escalation | Active |
 | `casehub-life` | [casehubio/life](https://github.com/casehubio/life) | Personal life automation — household coordination, health, finance, elder care, legal compliance; tutorial: OpenClaw as execution layer | Layer 2 (casehub-work) |
-| `casehub-drafthouse` | [casehubio/drafthouse](https://github.com/casehubio/drafthouse) | MCP-driven document review — multi-LLM critique, selection-scoped conversations, version-tracked revisions | Scaffold |
+| `casehub-drafthouse` | [casehubio/drafthouse](https://github.com/casehubio/drafthouse) | MCP-driven document review — structured agent-to-agent debate loop (review manifest), deterministic summary projection via `ChannelProjection<ReviewState>`, LangChain4j + Claude Agent SDK provider pattern | Active |
 | `quarkmind` | [mdproctor/quarkmind](https://github.com/mdproctor/quarkmind) | StarCraft II game AI — living lab proving the CaseHub harness pattern at millisecond game-loop granularity outside regulated domains | Active |
 
 ---
