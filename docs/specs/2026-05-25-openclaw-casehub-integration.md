@@ -872,7 +872,7 @@ The normative channel separation enforces this structurally:
 |---|---|---|
 | `/observe` | STATUS, EVENT | Factual, descriptive; no Commitments created |
 | `/work` | COMMAND, RESPONSE, DONE, DECLINE, HANDOFF, FAILURE | Prescriptive; Commitments created and tracked |
-| `/oversight` | COMMAND, RESPONSE | Human governance gate; workflow pauses until RESPONSE |
+| `/oversight` | all except EVENT (`deniedTypes=EVENT`) — COMMAND, RESPONSE, DONE, DECLINE, FAILURE, STATUS, HANDOFF | Human governance gate; workflow pauses until RESPONSE. EVENT excluded — telemetry has no commitment effect and has no place on the governance channel. |
 
 Monitoring agents emit to observe. Task agents emit to work. Spending decisions above
 threshold route to oversight for human confirmation. This is architectural, not per-skill

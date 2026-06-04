@@ -44,8 +44,12 @@ inverted and silently wrong.
 1. Declare a `RoutingPolicy` for every trust-sensitive capability in the domain registry.
 2. Every capability with a routing policy MUST declare a `fallbackType` (the human oversight
    type to escalate to when the all-borderline pool condition is met).
-3. Never hard-code trust thresholds — use YAML config via `casehub-platform-config` +
-   `PreferenceKey` per field. See `DevtownTrustRoutingPolicyProvider` as the reference impl.
+3. Split routing policy fields between code and YAML:
+   - **Code** (domain design decisions — express domain knowledge, not operational knobs):
+     `threshold`, `minimumObservations`, `borderlineMargin`, `fallbackType`
+   - **YAML via `casehub-platform-config` + `PreferenceKey`** (operational tuning —
+     runtime-adjustable without redeployment): `blendFactor`, quality floor dimensions
+   See `DevtownTrustRoutingPolicyProvider` as the reference implementation (devtown#57).
 
 ## Reference
 
