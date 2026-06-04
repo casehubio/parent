@@ -23,6 +23,8 @@ Quick reference:
 | [casehub/dual-trail-audit-pattern.md](casehub/dual-trail-audit-pattern.md) | Operational trail ≠ compliance ledger; CDI event required |
 | [casehub/alternative-extension-patterns.md](casehub/alternative-extension-patterns.md) | @Alternative: ledger vs work extension patterns |
 | [casehub/auth-retrofit-readiness.md](casehub/auth-retrofit-readiness.md) | Keep auth addable; gateway topology |
+| [casehub/ledger-hash-chain-disabled-in-h2-tests.md](casehub/ledger-hash-chain-disabled-in-h2-tests.md) | Disable Merkle hash chain in H2 @QuarkusTest — concurrent Quartz races on frontier |
+| [casehub/engine-investigation-test-drain.md](casehub/engine-investigation-test-drain.md) | Drain every investigation test to 'completed' before returning |
 
 ## Universal Protocols
 
