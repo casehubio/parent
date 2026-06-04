@@ -70,6 +70,7 @@ jobs:
           git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/platform.git" casehub/platform
           git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/ledger.git" casehub/ledger
           git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/eidos.git" casehub/eidos
+          git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/neural-text.git" casehub/neural-text
           git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/connectors.git" casehub/connectors
           git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/work.git" casehub/work
           git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/qhorus.git" casehub/qhorus
@@ -93,6 +94,7 @@ jobs:
           PL=$(git -C casehub/platform rev-parse HEAD)
           L=$(git -C casehub/ledger rev-parse HEAD)
           EI=$(git -C casehub/eidos rev-parse HEAD)
+          NT=$(git -C casehub/neural-text rev-parse HEAD)
           C=$(git -C casehub/connectors rev-parse HEAD)
           W=$(git -C casehub/work rev-parse HEAD)
           Q=$(git -C casehub/qhorus rev-parse HEAD)
@@ -102,8 +104,9 @@ jobs:
           echo "sha_parent=$P"     >> $GITHUB_OUTPUT
           echo "sha_platform=$PL" >> $GITHUB_OUTPUT
           echo "sha_ledger=$L"     >> $GITHUB_OUTPUT
-          echo "sha_eidos=$EI"     >> $GITHUB_OUTPUT
-          echo "sha_connectors=$C" >> $GITHUB_OUTPUT
+          echo "sha_eidos=$EI"        >> $GITHUB_OUTPUT
+          echo "sha_neural_text=$NT"  >> $GITHUB_OUTPUT
+          echo "sha_connectors=$C"    >> $GITHUB_OUTPUT
           echo "sha_work=$W"       >> $GITHUB_OUTPUT
           echo "sha_qhorus=$Q"     >> $GITHUB_OUTPUT
           echo "sha_engine=$E"     >> $GITHUB_OUTPUT
@@ -132,8 +135,9 @@ jobs:
           echo "parent:     $P"
           echo "platform:   $PL"
           echo "ledger:     $L"
-          echo "eidos:      $EI"
-          echo "connectors: $C"
+          echo "eidos:        $EI"
+          echo "neural-text:  $NT"
+          echo "connectors:   $C"
           echo "work:       $W"
           echo "qhorus:     $Q"
           echo "engine:     $E"
@@ -157,7 +161,7 @@ jobs:
         env:
           FORCE_REBUILD: ${{ inputs.force_rebuild }}
         run: |
-          MODULES=(parent platform ledger eidos connectors work qhorus engine claudony)
+          MODULES=(parent platform ledger eidos neural-text connectors work qhorus engine claudony)
           [ "${{ inputs.include_applications }}" = "true" ] && MODULES+=(openclaw devtown aml clinical life drafthouse quarkmind flow)
           if [ "$FORCE_REBUILD" = "true" ] || [ ! -f .incremental-state/shas.txt ]; then
             for m in "${MODULES[@]}"; do echo "sha_${m}=none" >> $GITHUB_OUTPUT; done
@@ -293,6 +297,39 @@ jobs:
               cd casehub/eidos && mvn install --batch-mode $F $MAVEN_EXTRA ;;
           esac
           echo $((SECONDS - START)) > .build-times/eidos
+
+      - name: "Build: neural-text"
+        id: neural-text
+        continue-on-error: true
+        env:
+          CUR: ${{ steps.shas.outputs.sha_neural_text }}
+          PRV: ${{ steps.prev.outputs.sha_neural_text }}
+          CUR_PL: ${{ steps.shas.outputs.sha_platform }}
+          PRV_PL: ${{ steps.prev.outputs.sha_platform }}
+          SKIP_TESTS: ${{ inputs.skip_tests }}
+          SKIP_ITS: ${{ inputs.skip_integration_tests }}
+          MAVEN_EXTRA: ${{ inputs.maven_args }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          D=$(./scripts/incremental-build-decision.sh \
+            --module neural-text --current-sha "$CUR" --previous-sha "${PRV:-none}" \
+            --dep "platform:${CUR_PL}:${PRV_PL:-none}")
+          echo "decision=$D" >> $GITHUB_OUTPUT
+          START=$SECONDS
+          case "$D" in
+            SKIP) echo "⏭️  neural-text: SKIP" ;;
+            TEST)
+              if [ "$SKIP_TESTS" = "true" ]; then echo "⏭️  neural-text: SKIP (TEST — tests disabled)"
+              else
+                ITS=""; [ "$SKIP_ITS" = "true" ] && ITS="-DskipITs"
+                cd casehub/neural-text && mvn test --batch-mode $ITS $MAVEN_EXTRA
+              fi ;;
+            BUILD)
+              F=""; [ "$SKIP_TESTS" = "true" ] && F="-DskipTests"
+              [ "$SKIP_ITS" = "true" ] && F="$F -DskipITs"
+              cd casehub/neural-text && mvn install --batch-mode $F $MAVEN_EXTRA ;;
+          esac
+          echo $((SECONDS - START)) > .build-times/neural-text
 
       - name: "Build: connectors"
         id: connectors
@@ -851,6 +888,7 @@ jobs:
           SHA_PLATFORM: ${{ steps.shas.outputs.sha_platform }}
           SHA_LEDGER: ${{ steps.shas.outputs.sha_ledger }}
           SHA_EIDOS: ${{ steps.shas.outputs.sha_eidos }}
+          SHA_NEURAL_TEXT: ${{ steps.shas.outputs.sha_neural_text }}
           SHA_CONNECTORS: ${{ steps.shas.outputs.sha_connectors }}
           SHA_WORK: ${{ steps.shas.outputs.sha_work }}
           SHA_QHORUS: ${{ steps.shas.outputs.sha_qhorus }}
@@ -866,6 +904,7 @@ jobs:
           PREV_PLATFORM: ${{ steps.prev.outputs.sha_platform }}
           PREV_LEDGER: ${{ steps.prev.outputs.sha_ledger }}
           PREV_EIDOS: ${{ steps.prev.outputs.sha_eidos }}
+          PREV_NEURAL_TEXT: ${{ steps.prev.outputs.sha_neural_text }}
           PREV_CONNECTORS: ${{ steps.prev.outputs.sha_connectors }}
           PREV_WORK: ${{ steps.prev.outputs.sha_work }}
           PREV_QHORUS: ${{ steps.prev.outputs.sha_qhorus }}
@@ -881,6 +920,7 @@ jobs:
           OUTCOME_PLATFORM: ${{ steps.platform.outcome }}
           OUTCOME_LEDGER: ${{ steps.ledger.outcome }}
           OUTCOME_EIDOS: ${{ steps.eidos.outcome }}
+          OUTCOME_NEURAL_TEXT: ${{ steps.neural-text.outcome }}
           OUTCOME_CONNECTORS: ${{ steps.connectors.outcome }}
           OUTCOME_WORK: ${{ steps.work.outcome }}
           OUTCOME_QHORUS: ${{ steps.qhorus.outcome }}
@@ -907,8 +947,9 @@ jobs:
             echo "parent=${SHA_PARENT}"
             record platform   "$SHA_PLATFORM"   "${PREV_PLATFORM:-none}"   "$OUTCOME_PLATFORM"
             record ledger     "$SHA_LEDGER"     "${PREV_LEDGER:-none}"     "$OUTCOME_LEDGER"
-            record eidos      "$SHA_EIDOS"      "${PREV_EIDOS:-none}"      "$OUTCOME_EIDOS"
-            record connectors "$SHA_CONNECTORS" "${PREV_CONNECTORS:-none}" "$OUTCOME_CONNECTORS"
+            record eidos       "$SHA_EIDOS"        "${PREV_EIDOS:-none}"        "$OUTCOME_EIDOS"
+            record neural-text "$SHA_NEURAL_TEXT"  "${PREV_NEURAL_TEXT:-none}"  "$OUTCOME_NEURAL_TEXT"
+            record connectors  "$SHA_CONNECTORS"   "${PREV_CONNECTORS:-none}"   "$OUTCOME_CONNECTORS"
             record work       "$SHA_WORK"       "${PREV_WORK:-none}"       "$OUTCOME_WORK"
             record qhorus     "$SHA_QHORUS"     "${PREV_QHORUS:-none}"     "$OUTCOME_QHORUS"
             record engine     "$SHA_ENGINE"     "${PREV_ENGINE:-none}"     "$OUTCOME_ENGINE"
@@ -945,6 +986,7 @@ jobs:
           DECISION_PLATFORM: ${{ steps.platform.outputs.decision }}
           DECISION_LEDGER: ${{ steps.ledger.outputs.decision }}
           DECISION_EIDOS: ${{ steps.eidos.outputs.decision }}
+          DECISION_NEURAL_TEXT: ${{ steps.neural-text.outputs.decision }}
           DECISION_CONNECTORS: ${{ steps.connectors.outputs.decision }}
           DECISION_WORK: ${{ steps.work.outputs.decision }}
           DECISION_QHORUS: ${{ steps.qhorus.outputs.decision }}
@@ -960,6 +1002,7 @@ jobs:
           OUTCOME_PLATFORM: ${{ steps.platform.outcome }}
           OUTCOME_LEDGER: ${{ steps.ledger.outcome }}
           OUTCOME_EIDOS: ${{ steps.eidos.outcome }}
+          OUTCOME_NEURAL_TEXT: ${{ steps.neural-text.outcome }}
           OUTCOME_CONNECTORS: ${{ steps.connectors.outcome }}
           OUTCOME_WORK: ${{ steps.work.outcome }}
           OUTCOME_QHORUS: ${{ steps.qhorus.outcome }}
@@ -981,12 +1024,13 @@ jobs:
           fi
           [ "$FORCE_REBUILD" = "true" ] && TEST_MODE="$TEST_MODE — forced rebuild"
 
-          MODULES=(platform ledger eidos connectors work qhorus engine claudony)
+          MODULES=(platform ledger eidos neural-text connectors work qhorus engine claudony)
           [ "$INCLUDE_APPLICATIONS" = "true" ] && MODULES+=(devtown aml clinical drafthouse quarkmind flow)
           declare -A DECISIONS=(
             [platform]="$DECISION_PLATFORM"
             [ledger]="$DECISION_LEDGER"
             [eidos]="$DECISION_EIDOS"
+            [neural-text]="$DECISION_NEURAL_TEXT"
             [connectors]="$DECISION_CONNECTORS"
             [work]="$DECISION_WORK"
             [qhorus]="$DECISION_QHORUS"
@@ -1003,6 +1047,7 @@ jobs:
             [platform]="$OUTCOME_PLATFORM"
             [ledger]="$OUTCOME_LEDGER"
             [eidos]="$OUTCOME_EIDOS"
+            [neural-text]="$OUTCOME_NEURAL_TEXT"
             [connectors]="$OUTCOME_CONNECTORS"
             [work]="$OUTCOME_WORK"
             [qhorus]="$OUTCOME_QHORUS"
