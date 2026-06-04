@@ -29,6 +29,7 @@ jobs:
             casehubio/platform \
             casehubio/ledger \
             casehubio/eidos \
+            casehubio/neural-text \
             casehubio/connectors \
             casehubio/work \
             casehubio/qhorus \

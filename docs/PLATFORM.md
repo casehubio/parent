@@ -145,6 +145,7 @@ Four tiers, always kept separate:
 | `claudony` | [casehubio/claudony](https://github.com/casehubio/claudony) | Remote Claude CLI sessions + unified ecosystem dashboard | Integration |
 | `casehub-openclaw` | [casehubio/openclaw](https://github.com/casehubio/openclaw) | CaseHub × OpenClaw integration — ChannelContextWindow, WorkerProvisioner, ChannelBackend SPI, Python SDK context hook | Integration |
 | `casehub-eidos` | [casehubio/eidos](https://github.com/casehubio/eidos) | Agent identity — descriptor, discovery registry, vocabulary system, system prompt generation | Foundation |
+| `casehub-neural-text` | [casehubio/neural-text](https://github.com/casehubio/neural-text) | ONNX neural text inference (NLI, classification, SPLADE, reranking) + LangChain4j RAG integration with hybrid search | Foundation |
 | `casehub-poc` | [casehubio/casehub](https://github.com/casehubio/casehub) | **Retiring** — original POC; no new features | — |
 | `quarkmind` | [mdproctor/quarkmind](https://github.com/mdproctor/quarkmind) | StarCraft II game AI — living lab proving the CaseHub harness pattern at millisecond game-loop granularity outside regulated domains | Application |
 | `flow` | [mdproctor/flow](https://github.com/mdproctor/flow) | Standalone Quarkus engine app with REST endpoints — tier and platform coherence pending analysis (external contributor) | TBD |
@@ -163,6 +164,7 @@ casehub-parent              (BOM — publish first; all others import it)
   casehub-work              (api: depends on casehub-platform-api; core: zero other casehubio deps; ledger module: depends on casehub-ledger)
   casehub-qhorus            (depends on casehub-ledger)
   casehub-eidos             (depends on casehub-ledger; casehub-eidos-api depends on nothing)
+  casehub-neural-text       (inference-*: zero casehubio deps; rag-*: depends on casehub-platform-api + LangChain4j)
   casehub-engine            (depends on casehub-work-core + optionally casehub-ledger + optionally casehub-eidos-api)
   casehub-engine-ai         (optional — depends on casehub-engine-api; adds AgentEmbeddingProvider SPI + SemanticAgentRoutingStrategy)
   claudony                  (depends on casehub-qhorus + implements casehub-engine SPIs)
@@ -231,6 +233,11 @@ casehub-parent              (BOM — publish first; all others import it)
 | `casehub-platform-config` | `devtown` | `app` | YAML-backed preference provider for trust routing policies (`trust-routing.yaml`) |
 | `casehub-eidos-api` | `casehub-engine` | `engine-api` | optional capability probe — `AgentDescriptor` on `Worker`; `CapabilityHealth.probe()` in `WorkOrchestrator` |
 | `casehub-eidos-api` | `casehub-engine` | `engine-api` / `runtime` | write-path SPI calls: `AgentGraphStore.recordTask()`, `recordOutcome()` from `WorkOrchestrator` (eidos#32) |
+| `casehub-platform-api` | `casehub-neural-text` | `rag` | `CurrentPrincipal`, `TenancyConstants` — tenant-scoped corpus isolation |
+| `casehub-inference-api` | `casehub-eidos` | `runtime` | `ScalarRegressor` — dynamic epistemic domain confidence estimation (future) |
+| `casehub-inference-api` | `casehub-openclaw` | `casehub` | `TextClassifier` — `ActionRiskClassifier` SPI implementation (future) |
+| `casehub-inference-api` | `casehub-engine` | `runtime` | `NliClassifier` — hallucination detection hook (future, #154) |
+| `casehub-rag-api` | `casehub-engine` | `runtime` | `CaseRetriever` — fact space prompt compiler context injection (future) |
 | `casehub-engine-api` | `casehub-engine-ai` | `ai` | `AgentRoutingStrategy` SPI consumer; `AgentEmbeddingProvider` SPI definition |
 
 | `casehub-platform` | `casehub-aml` | `app` | `@DefaultBean` mocks for casehub-engine CDI wiring (runtime scope — required when engine is present) |
@@ -320,6 +327,9 @@ casehub-parent              (BOM — publish first; all others import it)
 | CaseHub accountability tools for OpenClaw (MCP) | `casehub-openclaw` | Four-layer architecture: Quarkus MCP endpoint (`casehub_commit`, `casehub_done`, `casehub_reject`, `casehub_checkpoint`, `casehub_escalate`, `casehub_create_workitem`, `casehub_queue`, `casehub_status`), MCP resources (`casehub://agent/{id}/commitments`, `casehub://channel/{id}/recent`), TypeScript plugin hooks (`before_tool_call`, `agent_end`, `session_start`), global skill + stateless SKILL.md files. Direction 2 of OpenClaw ↔ CaseHub integration: OpenClaw agents calling CaseHub. See [`docs/repos/casehub-openclaw.md`](repos/casehub-openclaw.md) §Layer 0. |
 | Ecosystem CI dashboards | `casehub-parent` | `dashboard.yml`, `pr-dashboard.yml`, `full-stack-build.yml` |
 | Application domain logic (devtown, aml, clinical, life, drafthouse, quarkmind) | Application tier | See [APPLICATIONS.md](APPLICATIONS.md) |
+| ONNX neural text inference (NLI, classification, regression, reranking) | `casehub-neural-text` | `inference-tasks` — typed adapters over `InferenceModel` SPI; `inference-inmem` for testing |
+| SPLADE sparse embeddings | `casehub-neural-text` | `inference-splade` — log-saturation SPLADE output; sparse leg of hybrid RAG search |
+| Knowledge corpus retrieval (RAG) | `casehub-neural-text` | `rag` — LangChain4j pipeline, Qdrant, hybrid RRF fusion; `CorpusStore` + `CaseRetriever` SPIs |
 | Agent task history (write) | `casehub-eidos` | `AgentGraphStore` SPI — called by casehub-engine at dispatch/completion via `AgentGraphStore.recordTask()` / `recordOutcome()` from `WorkOrchestrator` |
 | Agent task history (read) | `casehub-eidos` | `AgentGraphQuery` SPI — history, outcome stats, attestation chain |
 | Agent graph backfill | `casehub-eidos` | `AgentGraphBackfill` SPI — ingests historical casehub-ledger attestations |
@@ -472,6 +482,7 @@ Full index: [`docs/protocols/INDEX.md`](protocols/INDEX.md)
 | `casehub-work` | `repos/casehub-work.md` |
 | `casehub-qhorus` | `repos/casehub-qhorus.md` |
 | `casehub-engine` | `repos/casehub-engine.md` |
+| `casehub-neural-text` | `repos/casehub-neural-text.md` |
 | `claudony` | `repos/claudony.md` |
 | `casehub-connectors` | `repos/casehub-connectors.md` |
 | `casehub-devtown` | `repos/casehub-devtown.md` |

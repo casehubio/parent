@@ -1,0 +1,127 @@
+# casehub-neural-text — Platform Deep Dive
+
+**GitHub:** [casehubio/neural-text](https://github.com/casehubio/neural-text) (local: `~/claude/casehub/neural-text`)  
+**Platform doc:** [PLATFORM.md](https://raw.githubusercontent.com/casehubio/parent/main/docs/PLATFORM.md)
+
+---
+
+## Purpose
+
+Two related capabilities in one repo:
+
+**Neural Text Inference** — a standalone, general-purpose ONNX inference layer for JVM projects. Zero casehub domain dependencies in `inference-api`, `inference-runtime`, `inference-tasks`, and `inference-splade`. Shared with Hortora. Fills the gap LangChain4j leaves: NLI, classification, regression, SPLADE sparse embeddings, cross-encoder reranking.
+
+**RAG Integration** — casehub-specific LangChain4j RAG pipeline wiring. Tenancy-isolated Qdrant corpus storage, hybrid dense+sparse search via RRF fusion. Exposes `CorpusStore` and `CaseRetriever` SPIs for use by engine case steps and the typed fact space.
+
+---
+
+## Module Structure
+
+| Module | artifactId | Type | Purpose |
+|--------|-----------|------|---------|
+| `inference-api/` | `casehub-inference-api` | Pure Java, zero deps | `InferenceModel` SPI, `InferenceInput`, `InferenceOutput`, `ModelConfig` |
+| `inference-runtime/` | `casehub-inference-runtime` | JVM library | ONNX Runtime JVM + HuggingFace Tokenizers JNI; session management, tokenization |
+| `inference-tasks/` | `casehub-inference-tasks` | JVM library | `NliClassifier`, `TextClassifier`, `ScalarRegressor`, `CrossEncoderReranker` |
+| `inference-splade/` | `casehub-inference-splade` | JVM library | SPLADE sparse embeddings (`Map<Integer, Float>`); log-saturation + threshold |
+| `inference-inmem/` | `casehub-inference-inmem` | Test library | Deterministic `InferenceModel` stubs; no JNI; safe in all test contexts |
+| `inference-quarkus/` | `casehub-inference-quarkus` | Quarkus extension | CDI wiring, `@InferenceModel` qualifier, Dev Services, `@QuarkusTest` support |
+| `rag-api/` | `casehub-rag-api` | Pure Java, zero deps | `CorpusStore` SPI, `CaseRetriever` SPI, `RetrievedChunk`, `CorpusRef` |
+| `rag/` | `casehub-rag` | Quarkus module | LangChain4j pipeline, Qdrant, hybrid RRF fusion, tenancy isolation |
+| `rag-testing/` | `casehub-rag-testing` | Test library | In-memory `CorpusStore` + `CaseRetriever` stubs for `@QuarkusTest` |
+
+---
+
+## Key Abstractions
+
+### InferenceModel / Task Adapters
+
+`InferenceModel` SPI — runs any ONNX model: `run(InferenceInput)` / `runBatch(List<InferenceInput>)`. Callers work through typed task adapters in `inference-tasks`, never raw tensors.
+
+| Adapter | Model type | Use case |
+|---------|-----------|----------|
+| `NliClassifier` | NLI | Hallucination detection — scores LLM output faithfulness against facts |
+| `TextClassifier` | Classification | Action risk classification in casehub-openclaw |
+| `ScalarRegressor` | Regression | Epistemic domain confidence estimation in casehub-eidos |
+| `CrossEncoderReranker` | Cross-encoder | Precision-mode reranking — top-N from top-K candidates |
+
+### SparseEmbedder (inference-splade)
+
+`SparseEmbedder.embed(String text)` → `Map<Integer, Float>` — sparse term weights after log-saturation (`log(1 + relu(weight))`) and threshold filtering. Output is suitable for direct Qdrant named vector space upsert. Forms the sparse leg of hybrid search in `casehub-rag`.
+
+### CorpusStore / CaseRetriever (rag-api)
+
+`CorpusStore` — ingest, delete, and list documents per tenant corpus. Tenancy-scoped; `CorpusRef` carries tenant ID + corpus name.
+
+`CaseRetriever` — retrieval entry point for case steps and the fact space. `retrieve(query, CorpusRef)` → `List<RetrievedChunk>`. Hybrid search: LangChain4j `OnnxEmbeddingModel` (dense) + `SparseEmbedder` (sparse) fused via RRF. Reranked by `CrossEncoderReranker` in precision mode.
+
+---
+
+## Relationship to LangChain4j
+
+This module sits **below** LangChain4j for inference, and **above** LangChain4j for RAG:
+
+| Capability | Where it lives |
+|---|---|
+| Dense float-vector embeddings | LangChain4j `OnnxEmbeddingModel` |
+| RAG pipeline, chunking, vector stores | LangChain4j |
+| Sparse embeddings (SPLADE) | `inference-splade` (this module) |
+| NLI, classification, regression | `inference-tasks` (this module) |
+| Cross-encoder reranking | `inference-tasks` (this module) |
+| casehub-specific RAG wiring + tenancy | `rag` / `rag-api` (this module) |
+
+---
+
+## Shared with Hortora
+
+`inference-api`, `inference-runtime`, `inference-tasks`, `inference-splade`, `inference-inmem` have zero casehub/Quarkus/LangChain4j dependencies. Hortora depends on these directly and wires them into their own stack. The `rag-*` modules are casehub-specific — Hortora does not take them.
+
+ArchUnit enforced from day one: zero-domain-dep constraint on all `inference-*` modules.
+
+---
+
+## Native Image Gate
+
+Two JNI layers must work in Quarkus native image on macOS ARM before `inference-quarkus` is used:
+1. ONNX Runtime (`com.microsoft.onnxruntime`)
+2. HuggingFace Tokenizers JNI
+
+The prototype is the first deliverable. Until confirmed, all `inference-*` modules operate JVM-only. `casehub-rag` does not require native image.
+
+---
+
+## Depends On
+
+| Repo / Library | Module | How |
+|---|---|---|
+| `casehub-platform-api` | `rag` | `CurrentPrincipal`, `TenancyConstants` — tenant isolation |
+| LangChain4j | `rag` | RAG pipeline, `OnnxEmbeddingModel`, Qdrant `EmbeddingStore` |
+| ONNX Runtime JVM | `inference-runtime` | Model session management |
+| HuggingFace Tokenizers JNI | `inference-runtime` | Tokenization |
+
+## Depended On By (future)
+
+| Repo | Module | How |
+|---|---|---|
+| `casehub-eidos` | `runtime` | `ScalarRegressor` for dynamic epistemic confidence |
+| `casehub-openclaw` | `casehub` | `TextClassifier` for `ActionRiskClassifier` SPI |
+| `casehub-engine` | `runtime` | `NliClassifier` for hallucination detection (#154) |
+| `casehub-engine` | `runtime` | `CaseRetriever` for fact space prompt compilation |
+
+---
+
+## Current State
+
+Scaffold complete (2026-06-04). No source code. Design agreed — see:
+- `docs/specs/2026-06-03-ai-fusion-hybrid-fact-space.md` (typed fact space + RAG context)
+- `docs/specs/2026-06-03-standalone-rag-retrieval-brief.md` (inference module design)
+- `Hortora/spec: docs/superpowers/specs/2026-06-03-onnx-inference-module-design.md` (authoritative inference design)
+
+Native image prototype is Epic 2 — gates `inference-quarkus` and Hortora's native binary goal.
+
+---
+
+## Design Documents
+
+- [casehubio/parent#158](https://github.com/casehubio/parent/issues/158) — casehubio/neural-text tracking issue
+- [casehubio/parent#164](https://github.com/casehubio/parent/issues/164) — casehub-rag tracking issue
+- [Hortora/spec#15](https://github.com/Hortora/spec/issues/15) — Hortora alignment
