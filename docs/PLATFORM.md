@@ -432,7 +432,7 @@ The platform uses a normative 3-channel layout for agent-to-agent and agent-to-h
 |---------|---------|---------------------|
 | `work` | Task assignment and completion (prescriptive) | COMMAND, RESPONSE, DONE, DECLINE, EXPIRED |
 | `observe` | Passive monitoring and state sharing (descriptive) | EVENT, QUERY, STATUS |
-| `oversight` | Human governance gates (commitment-based) | COMMAND → human, RESPONSE from human |
+| `oversight` | Human governance gates (commitment-based) | All obligation-carrying types (COMMAND, QUERY, RESPONSE, DONE, DECLINE, FAILURE, STATUS, HANDOFF); EVENT excluded — no telemetry on the governance channel (`deniedTypes = EVENT`) |
 
 These map to the 4-layer normative accountability framework implemented by casehub-qhorus:
 1. **Illocutionary** — what was said (speech act type, channel)
