@@ -1,8 +1,8 @@
-# casehubio/onnx-inference — Design Brief
+# casehubio/inference — Design Brief
 
 **Date:** 2026-06-03  
 **Status:** Design agreed — pending native image prototype  
-**Repo:** `casehubio/onnx-inference`  
+**Repo:** `casehubio/inference`  
 **Consumers:** casehub, Hortora  
 **Tracking:** casehubio/parent#158, Hortora/spec#15  
 **Authoritative design spec:** `Hortora/spec: docs/superpowers/specs/2026-06-03-onnx-inference-module-design.md`
@@ -49,13 +49,13 @@ This module sits **below** LangChain4j, not beside it.
 
 ## How Each Project Uses It
 
-**casehub** takes `casehubio/onnx-inference` as a dependency in:
+**casehub** takes `casehubio/inference` as a dependency in:
 - `casehub-rag` (#164) — `inference-splade` for the sparse leg of hybrid search; `CrossEncoderReranker` for precision-mode reranking
 - `casehub-openclaw` — `TextClassifier` replaces the always-AUTONOMOUS `ActionRiskClassifier` stub
 - `casehub-engine` (observability) — `NliClassifier` for hallucination detection
 - `casehub-eidos` — `ScalarRegressor` for dynamic epistemic confidence estimation
 
-**Hortora** takes `casehubio/onnx-inference` directly:
+**Hortora** takes `casehubio/inference` directly:
 - `inference-splade` — sparse leg of hybrid search with Qdrant
 - `CrossEncoderReranker` — precision-mode reranking for human-facing retrieval UI
 
@@ -68,7 +68,7 @@ Each project wires LangChain4j RAG independently for their own runtime and domai
 - **casehub** → `casehub-rag` (#164): Quarkus CDI, casehub tenancy isolation, `CorpusStore` SPI, `CaseRetriever` SPI, fact space integration
 - **Hortora** → their own equivalent wiring for their stack
 
-No code is shared between the two LangChain4j wiring layers. `casehubio/onnx-inference` is the only shared artifact between the two projects.
+No code is shared between the two LangChain4j wiring layers. `casehubio/inference` is the only shared artifact between the two projects.
 
 ---
 
