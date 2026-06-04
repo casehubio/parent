@@ -29,6 +29,7 @@ Hybrid choreography+orchestration coordination engine for multi-agent work. Impl
 | `casehub-engine-persistence-hibernate` | `persistence-hibernate` | Module | JPA/Panache persistence (PostgreSQL) |
 | `casehub-engine-persistence-memory` | `persistence-memory` | Test module | In-memory thread-safe persistence for `@QuarkusTest` without Docker |
 | `casehub-engine-codegen` | `codegen` | Build-time | Code generation utilities |
+| `casehub-engine-flow` | `flow` | Optional module | Enables `Worker(Workflow)` to dispatch casehub workers from Serverless Workflow steps and await results reactively. `FlowWorkerExecutor @ApplicationScoped` wins over `NoOpWorkflowExecutor @DefaultBean` fallback in runtime by classpath presence. Depends on `casehub-engine-common` only (not runtime). Provides: `FlowWorkerExecutor`, `FlowExecutionRegistry`, `CasehubDispatch`, `CasehubCallableTaskBuilder` (`call: casehub:dispatch` YAML steps via Java SPI), `CasehubFlow` (FuncDSL helper, blocks on cached thread pool). |
 | `casehub-engine-testing` | `testing` | Test module | Shared test utilities |
 
 ---
@@ -52,7 +53,7 @@ Two execution paths: choreography (evaluates bindings on context change) and orc
 
 - `CaseContextChangedEventHandler` — evaluates `contextChange.filter` AND `binding.when()` to find eligible bindings for RUNNING and WAITING cases, selects via `LoopControl` (which owns state eligibility), dispatches by target type. `PlanningStrategyLoopControl` handles WAITING by filtering already-dispatched (RUNNING/DELEGATED) bindings; `ChoreographyLoopControl` restricts to RUNNING only.
 - `WorkerScheduleEventHandler` — opens channel, builds `CommandContent`, dispatches via `postToChannel` with `correlationId` and `deadline` as first-class SPI params
-- `WorkOrchestrator` — synchronous dispatch path; integrates `CapabilityHealth` probe to filter/sort agent-backed candidates before selection; routing delegated to `AgentRoutingStrategy` SPI
+- `WorkOrchestrator` (interface in `common/spi/`, implemented by `DefaultWorkOrchestrator` in runtime; `common/spi/` placement avoids circular dep since it uses `CaseInstance`) — synchronous dispatch path; integrates `CapabilityHealth` probe to filter/sort agent-backed candidates before selection; routing delegated to `AgentRoutingStrategy` SPI. `Worker(Workflow)` execution uses a non-blocking path: Quartz fires `workflowExecutor.execute()` and returns immediately; success/failure communicated via event bus (`WORKER_EXECUTION_FINISHED` / `WorkflowExecutionFailed`).
 
 ### AgentRoutingStrategy SPI (`api/spi/`)
 

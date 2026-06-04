@@ -1,9 +1,9 @@
 # QuarkMind
 
-**GitHub:** [mdproctor/quarkmind](https://github.com/mdproctor/quarkmind)
+**GitHub:** [casehubio/quarkmind](https://github.com/casehubio/quarkmind)
 **Tier:** Application — Living Lab
 **Status:** Active — SC2 layer through replay-accurate multi-base mining model (828 unit/integration tests + 288 Playwright E2E); harness layer documentation in progress
-**Note:** In the `mdproctor/` namespace, not `casehubio/` — a personal project using the CaseHub pattern. Does not participate in the casehubio CI pipeline.
+**Note:** Transferred from `mdproctor/quarkmind` to `casehubio/quarkmind`. A personal project using the CaseHub pattern — does not participate in the casehubio CI pipeline.
 
 ## What It Is
 

@@ -44,6 +44,8 @@ A `WorkItem` is deliberately NOT called `Task` — CNCF Serverless Workflow and 
 
 10-status lifecycle from creation through terminal states (pending, assigned, in-progress, completed, cancelled, expired, delegated, rejected, on-hold, claim-expired).
 
+`DELEGATED` is a pre-acceptance state — item forwarded to a named actor who must explicitly accept (`PUT /workitems/{id}/accept-delegation?claimant=X`) or decline (`PUT /workitems/{id}/decline-delegation?actor=X`); non-terminal (`isTerminal()` = false, `isActive()` = true; can expire). On decline, `DELEGATION_DECLINED` fires the `AssignmentTrigger` and the item returns to `PENDING` (POOL) or `ASSIGNED` (DELEGATOR) per `DeclineTarget` scope preference (`casehub.work.delegation.decline-target`: POOL/DELEGATOR, default POOL). `EXPIRED` and `ESCALATED` are both terminal.
+
 **Key field:** `scope VARCHAR(255)` (V31 migration) — hierarchical scope path for SLA preference resolution via `casehub-platform-api`'s `Path` type; null = org root. Set by callers; propagated from casehub-engine via `HumanTaskTarget.scope` (engine#330).
 
 See `docs/DESIGN.md` for status enumeration and field model.
@@ -58,7 +60,7 @@ See `docs/DESIGN.md` for service class structure and the M-of-N coordination mod
 
 ### REST API
 
-REST endpoints cover: WorkItem inbox and creation, lifecycle transitions (start, complete, cancel, delegate), audit history, child instance queries with group progress, SLA compliance reports, dynamic filter rules, and child WorkItem spawning.
+REST endpoints cover: WorkItem inbox and creation, lifecycle transitions (start, complete, cancel, delegate, accept-delegation, decline-delegation), audit history, child instance queries with group progress, SLA compliance reports, dynamic filter rules, and child WorkItem spawning.
 
 See `docs/DESIGN.md` for the full endpoint inventory.
 
@@ -75,10 +77,10 @@ See `docs/DESIGN.md` for event payload shape.
 | `WorkerSelectionStrategy` | `select(SelectionContext, List<WorkerCandidate>)` | Pluggable routing — LeastLoaded (default), ClaimFirst, RoundRobin built-in |
 | `WorkerRegistry` | `resolveGroup(String)` | Resolves candidateGroup names to `WorkerCandidate` objects |
 | `WorkloadProvider` | `getActiveWorkCount(String)` | Active WorkItem count per worker (used by LeastLoaded) |
-| `SlaBreachPolicy` | `onBreach(SlaBreachContext) → BreachDecision` | SLA breach handling: returns `Fail`, `EscalateTo(groups, deadline)`, `Extend(by)`, or `Chained`. Replaces removed `EscalationPolicy`. |
+| `SlaBreachPolicy` | `onBreach(SlaBreachContext) → BreachDecision` | SLA breach handling: returns `Fail`, `EscalateTo(groups, deadline)`, `Extend(by)`, `Chained`, or `Exhausted(String reason)` (all Chained branches fail — sets `WorkItemStatus.ESCALATED` terminal). Replaces removed `EscalationPolicy`. |
 | `ExclusionPolicy` | `check(userId, excludedUsers) → PolicyDecision` | Conflict-of-interest user exclusion |
 | `SpawnPort` | `spawn(SpawnRequest) → SpawnResult` | Child WorkItem creation with idempotency |
-| `AssignmentTrigger` | enum | Values: `CREATED`, `RELEASED`, `DELEGATED`, `SLA_ESCALATED` — strategies subscribe via `triggers()` |
+| `AssignmentTrigger` | enum | Values: `CREATED`, `RELEASED`, `DELEGATED`, `SLA_ESCALATED`, `DELEGATION_DECLINED` — strategies subscribe via `triggers()` |
 | `SlaBreachPolicy` | `onBreach(SlaBreachContext) → BreachDecision` | `SlaBreachContext` carries `BreachType` (CLAIM_EXPIRED / COMPLETION_EXPIRED), `BreachedTask`, `Path scope`, and `Preferences`. `SLA_ESCALATED` trigger fires after `EscalateTo` execution — strategies pre-assign before `put()`. |
 
 ---

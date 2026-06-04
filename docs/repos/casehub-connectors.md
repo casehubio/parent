@@ -19,6 +19,10 @@ This is the **canonical notification infrastructure** for the platform. Any repo
 
 The `Connector` CDI SPI has two methods: an id accessor and a send method that takes a message with destination, title, and body. Custom connectors implement it as CDI beans — auto-discovered. See docs/DESIGN.md for method signatures and the ConnectorMessage type.
 
+### ConnectorMeshBridge SPI (in `casehub-connectors-core`)
+
+Called by MCP tools after successful delivery. No-op `@DefaultBean @Unremovable` default. Qhorus bridge implementation activates by classpath presence (qhorus#249) and posts `EVENT` to the active observe channel. Contract: must return quickly, never throw, tolerate absent case context.
+
 ### Inbound SPI — `InboundConnector` / `WebhookInboundConnector`
 
 Two inbound SPIs:
@@ -35,6 +39,7 @@ Consumers observe `Event<InboundMessage>` and react accordingly — they never c
 | `casehub-connectors` | `Connector` SPI + Slack, Teams, Twilio SMS, WhatsApp outbound impls; `InboundConnector` SPI + `InboundConnectorService` polling engine; `WebhookInboundConnector` abstract base |
 | `casehub-connectors-email` | SMTP outbound via `quarkus-mailer` |
 | `casehub-connectors-email-inbound` | `EmailInboundConnector` — IMAP polling, `EmailInboundAccountProvider` SPI |
+| `casehub-connectors-mcp` | MCP tool surface: `send_slack`, `send_teams`, `send_sms`, `send_whatsapp`, `send_email`. Depends on `core` + `email` + `quarkus-mcp-server-core:1.11.1`. Consuming apps add `quarkus-mcp-server-http` for transport. Integrates with Qhorus via `ConnectorMeshBridge` SPI when `connector-backend` is on classpath (qhorus#249). |
 | `casehub-connectors-qhorus` | Optional — `WatchdogAlertEvent → ConnectorService.send()` bridge (Qhorus → connectors); activates by classpath presence |
 | *(qhorus-side)* `casehub-qhorus-connector-backend` | Optional — `InboundMessage → ConnectorChannelBackend` bridge (connectors → Qhorus); lives in casehub-qhorus repo; activates by classpath presence |
 
@@ -47,7 +52,7 @@ Consumers observe `Event<InboundMessage>` and react accordingly — they never c
 | `slack` | `casehub-connectors` | Webhook URL in `destination` |
 | `teams` | `casehub-connectors` | Webhook URL in `destination` |
 | `twilio-sms` | `casehub-connectors` | Account SID + Auth Token in config |
-| `whatsapp` | `casehub-connectors` | API Token + Phone Number ID in config |
+| `whatsapp` | `casehub-connectors` | API Token + Phone Number ID in config. Template messages: `ConnectorMessage.attributes("templateName")` + `attributes("templateLanguage")` (default `en_US`). MCP surface exposes both as optional parameters. |
 | `email` | `casehub-connectors-email` | SMTP via `quarkus-mailer` |
 
 **Inbound:**

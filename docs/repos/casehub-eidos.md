@@ -20,7 +20,7 @@ Structured agent identity for LLM agents on the CaseHub platform. Any Quarkus ap
 | `persistence-memory/` | `casehub-eidos-memory` | Optional module | `InMemoryAgentRegistry` + `InMemoryAgentStateStore` — `@Alternative @Priority(1)`; activate by adding as dep |
 | `deployment/` | `casehub-eidos-deployment` | Quarkus build step | `EidosProcessor` + `EidosBuildTimeConfig` |
 | `vocab/` | `casehub-eidos-vocab` | Optional module | Well-known vocabularies: SVO, Conscientiousness, CasehubSlot |
-| `graph/` | `casehub-eidos-graph` | Optional module (Jandex library) | Phase 4 knowledge graph — `AgentGraphStore` SPI (write), `AgentGraphQuery` SPI (read), `AgentGraphBackfill` SPI (ledger ingestion), `TaskSemanticEnricher` SPI (application-tier enrichment at query time). Activates by classpath presence. |
+| `graph/` | `casehub-eidos-graph` | Optional module (Jandex library) | Phase 4 knowledge graph — `AgentGraphStore` SPI (write), `AgentGraphQuery` SPI (read), `AgentGraphBackfill` SPI (ledger ingestion), `TaskSemanticEnricher` SPI (application-tier enrichment at query time). Activates by classpath presence. `AgentOutcome.observedAt: Instant` added (eidos#36) — business time of observation (not persistence time); compact constructor validates all four required fields including NaN guard on confidence. `ReactiveAgentGraphQuery`: not build-gated — `BlockingToReactiveGraphBridge @DefaultBean @ApplicationScoped` always active by classpath presence. |
 | `eval/` | `casehub-eidos-eval` | Test-only, not deployed | Offline quality evaluation harness: `EvalCase` sealed interface (`SyntheticEvalCase` + `ProfiledEvalCase`), `EvalDataset`, `PromptJudge`, `ProximityJudge`, `VocabularyExpressivenessJudge`, `TraitExpressionJudge`, `PairContrastJudge`; real-world agent profile library (8 YAML profiles grounded in O*NET and practitioner sources); three-stage personality preservation measurement system |
 | `examples/agent-scenarios/` | — | Test-only | `@QuarkusTest` integration examples covering team, cross-vocab, epistemic, tenancy, disposition |
 
@@ -107,7 +107,11 @@ SPI: `record(agentId, DegradationReason, expiresAt)`, `query(agentId)` → `Opti
 
 ## Reactive Build Gating
 
-Both `ReactiveAgentRegistry` and `ReactiveCapabilityHealth` are gated on `casehub.eidos.reactive.enabled=true` (build-time config in `deployment/`). Default false — blocking-only consumers pay no Hibernate Reactive cost. Pattern mirrors the platform-wide reactive build gating protocol.
+Both `ReactiveAgentRegistry` and `ReactiveCapabilityHealth` are gated on `casehub.eidos.reactive.enabled=true` (build-time config in `deployment/`). Default false — blocking-only consumers pay no Hibernate Reactive cost.
+
+`ReactiveAgentGraphQuery` is **not** build-gated. `BlockingToReactiveGraphBridge @DefaultBean @ApplicationScoped` wraps `JpaAgentGraphQuery` via `Uni.createFrom().item(Supplier).runSubscriptionOn(Infrastructure.getDefaultWorkerPool())` and is always active by classpath presence, regardless of `casehub.eidos.reactive.enabled`.
+
+Pattern mirrors the platform-wide reactive build gating protocol.
 
 ---
 

@@ -19,7 +19,7 @@ The tutorial structure emerges from the natural adoption sequence. Each layer ad
 | 3 | casehub-qhorus | No commitment tracking; no oversight gates | **complete** (casehubio/life#4) |
 | 4 | casehub-ledger | No tamper-evident audit for health/financial decisions | **complete** (casehubio/life#5) |
 | 5 | casehub-engine | No multi-step workflow orchestration | pending |
-| 6 | Trust routing | No trust model for agent routing | pending |
+| 6 | Trust routing | No trust model for agent routing | **complete** (casehubio/life#11) |
 | 7 | casehub-openclaw | OpenClaw as WorkerProvisioner; pre-built skill ecosystem | pending |
 
 ## What It Owns
