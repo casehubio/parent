@@ -2,6 +2,7 @@
 
 | File | Rule Summary | Applies To |
 |------|-------------|------------|
+| [arc42stories-foundation-tier-layer-taxonomy.md](arc42stories-foundation-tier-layer-taxonomy.md) | Foundation-tier ARC42STORIES.MD defines its own layer taxonomy — do not use the CaseHub Profile harness layer sequence | Any CaseHub foundation-tier module writing ARC42STORIES.MD |
 | [blackboard-registry-get-blocking-required.md](blackboard-registry-get-blocking-required.md) | @ConsumeEvent handlers calling BlackboardRegistry.get() must declare blocking=true — registry queries JPA on post-restart miss | casehub-engine-blackboard — any @ConsumeEvent handler calling BlackboardRegistry.get() |
 | [consumer-spi-placement.md](consumer-spi-placement.md) | Consumer-facing SPI interfaces MUST live in api/<domain>/ — not runtime/ | Any casehubio extension or library module defining an SPI interface |
 | [bridge-module-spi-placement.md](bridge-module-spi-placement.md) | SPIs whose parameter types reference bridge-internal dependencies live in the bridge module, not api/spi/ | Bridge modules: connector-backend, engine-ledger, etc. |
