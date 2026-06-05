@@ -68,6 +68,14 @@ SPI: `probe(AgentDescriptor, capabilityTag, ProbeContext)` → `CapabilityStatus
 
 SPI for term registration, resolution, and cross-vocabulary equivalence. `CdiVocabularyRegistry` (`@DefaultBean`) discovers `Instance<Vocabulary>` CDI beans at startup — any bean that implements `Vocabulary` is auto-discovered.
 
+**Vocabulary design reference:** `docs/personality-frameworks.md` maps 11 personality and team-role frameworks (Belbin, Big Five, DISC, Thomas-Kilmann, O*NET, SFIA, etc.) to `AgentDescriptor` fields. Prerequisite for eidos#26 (Belbin/DISC vocabulary module) and the authoritative source for vocabulary term design decisions.
+
+**DISC types are disposition vocabulary** — not slot vocabulary. eidos#29 made this architectural call explicit: DISC axes map to `AgentDisposition` fields, never to `AgentCapability.slot`.
+
+**Pending vocabulary modules:** `urn:casehub:vocab:belbin` and `urn:casehub:vocab:disc` — eidos#26 (depends on eidos#29).
+
+**Open design decisions:** `conflictMode` as 5th disposition axis (eidos#38); open Map disposition (eidos#39); axis-aware `equivalentValues()` (eidos#40).
+
 ### SystemPromptRenderer (Phase 3 — complete)
 
 SPI: `render(AgentDescriptor, AgentPromptContext)` → `RenderedPrompt`. `ClaudeMarkdownRenderer @DefaultBean` implements a two-step pipeline: structural YAML serialization → optional LangChain4j `ChatModel` semantic pass → markdown assembly. `AgentPromptContext` carries `Optional<GoalContext>`, `List<Resource>`, `situationalContext`, `RenderFormat` — re-renderable as agent context evolves. Works without LLM (structural-only). Hashes enable cache invalidation.
