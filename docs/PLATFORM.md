@@ -239,6 +239,7 @@ casehub-parent              (BOM — publish first; all others import it)
 | `casehub-platform-api` | `casehub-neural-text` | `rag` | `CurrentPrincipal`, `TenancyConstants` — tenant-scoped corpus isolation |
 | `casehub-inference-api` | `casehub-eidos` | `runtime` | `ScalarRegressor` — dynamic epistemic domain confidence estimation (future) |
 | `casehub-inference-api` | `casehub-openclaw` | `casehub` | `TextClassifier` — `ActionRiskClassifier` SPI implementation (future) |
+| `casehub-inference-api` | `casehub-openclaw` | `casehub` | `TextClassifier` — `SpeechActClassifier` NLI implementation (future, openclaw#27) |
 | `casehub-inference-api` | `casehub-engine` | `runtime` | `NliClassifier` — hallucination detection hook (future, #154) |
 | `casehub-rag-api` | `casehub-engine` | `runtime` | `CaseRetriever` — fact space prompt compiler context injection (future) |
 | `casehub-engine-api` | `casehub-engine-ai` | `ai` | `AgentRoutingStrategy` SPI consumer; `AgentEmbeddingProvider` SPI definition |
