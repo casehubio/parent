@@ -67,7 +67,16 @@
       "Skill(git-squash)",
       "Skill(project-init)",
       "Skill(work-end)",
-      "Skill(write-content)"
+      "Skill(write-content)",
+      "Bash(xargs -I{} git -C /Users/mdproctor/claude/public/casehub show {}:HANDOFF.md)",
+      "Bash(xargs -I{} sh -c 'git -C /Users/mdproctor/claude/public/casehub show {}:HANDOFF.md 2>/dev/null | grep -q \"Cross-Module\" && git -C /Users/mdproctor/claude/public/casehub show {}:HANDOFF.md')",
+      "Bash(mvn --batch-mode test -pl app -f /Users/mdproctor/claude/casehub/aml/pom.xml -Dtest=\"AmlTrustRoutingPolicyProviderTest,AmlTrustRoutingPolicyProviderWiringTest\")",
+      "Bash(mvn --batch-mode test -pl app -f /Users/mdproctor/claude/casehub/aml/pom.xml)",
+      "mcp__intellij__read_file",
+      "mcp__intellij__search_file",
+      "Bash(mvn --batch-mode dependency:list -pl engine/work-adapter -f /Users/mdproctor/claude/casehub/engine/pom.xml -q)",
+      "Bash(mvn *)",
+      "Bash(jar tf *)"
     ]
   }
 }

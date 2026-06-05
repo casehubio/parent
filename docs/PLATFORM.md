@@ -143,6 +143,7 @@ Four tiers, always kept separate:
 | `casehub-work` | [casehubio/work](https://github.com/casehubio/work) | Human task lifecycle (WorkItem inbox, SLA, delegation, routing) | Foundation |
 | `casehub-qhorus` | [casehubio/qhorus](https://github.com/casehubio/qhorus) | Peer-to-peer agent communication mesh | Foundation |
 | `casehub-connectors` | [casehubio/connectors](https://github.com/casehubio/connectors) | Outbound and inbound message connectors (Slack, Teams, SMS, email outbound; webhook + IMAP email inbound) | Foundation |
+| `casehub-iot` | [casehubio/casehub-iot](https://github.com/casehubio/casehub-iot) | Typed IoT device abstraction layer — `DeviceEntity` hierarchy (Matter-aligned), `DeviceProvider` SPI, `StateChangeEvent` CDI bus, `DeviceCommand` dispatch. Modules: `iot-api` (public API — semver), `iot-homeassistant` (HA REST + WebSocket provider + HA supplement types), `iot-openhab` (OpenHAB REST + SSE provider + OpenHAB supplement types), `iot-testing` (MockDeviceProvider, fixture devices), `iot-bridge` (lightweight local bridge for cloud/hybrid deployment). Triggers `casehub-life` downstream on publish. | Foundation |
 | `casehub-engine` | [casehubio/engine](https://github.com/casehubio/engine) | Hybrid choreography+blackboard orchestration engine | Orchestration |
 | `claudony` | [casehubio/claudony](https://github.com/casehubio/claudony) | Remote Claude CLI sessions + unified ecosystem dashboard | Integration |
 | `casehub-openclaw` | [casehubio/openclaw](https://github.com/casehubio/openclaw) | CaseHub × OpenClaw integration — ChannelContextWindow, WorkerProvisioner, ChannelBackend SPI, Python SDK context hook | Integration |
@@ -163,6 +164,7 @@ casehub-parent              (BOM — publish first; all others import it)
   casehub-platform          (no casehubio deps — foundational SPIs + CaseMemoryStore adapters as submodules, publishes before ledger)
   casehub-ledger            (no casehubio deps)
   casehub-connectors        (no casehubio deps)
+  casehub-iot               (no casehubio deps — iot-api: pure Java SPIs; providers: platform-specific REST/WebSocket clients)
   casehub-work              (api: depends on casehub-platform-api; core: zero other casehubio deps; ledger module: depends on casehub-ledger)
   casehub-qhorus            (depends on casehub-ledger)
   casehub-eidos             (depends on casehub-ledger; casehub-eidos-api depends on nothing)
@@ -317,6 +319,7 @@ casehub-parent              (BOM — publish first; all others import it)
 | Label-based queue views | `casehub-work-queues` | Optional module on casehub-work |
 | Agent routing / selection | `casehub-engine-api` | `AgentRoutingStrategy` SPI; CDI priority resolution in `WorkOrchestrator` (`@Any Instance<AgentRoutingStrategy>`). Implementations: `LeastLoadedAgentStrategy` (engine runtime, `@Priority(0)` default), `TrustWeightedAgentStrategy` (casehub-engine-ledger, `@Priority(1)`), `SemanticAgentRoutingStrategy` (casehub-engine-ai, `@Priority(2)`, optional) |
 | Agent embedding vector provider | `casehub-engine-ai` | `AgentEmbeddingProvider` SPI — required by `SemanticAgentRoutingStrategy`; activates semantic agent routing when on classpath (see [`optional-module-pattern.md`](protocols/optional-module-pattern.md)). SPI lives in `casehub-engine-ai` (not `casehub-engine-api`) so the entire feature is opt-in — no embedding provider contract imposed on deployments that don't use semantic routing. |
+| IoT device abstraction (typed device hierarchy, state events, command dispatch) | `casehub-iot` | `DeviceProvider` SPI — `discover()`, `dispatch(DeviceCommand)`, `status()`. `DeviceRegistry @DefaultBean` (`CdiDeviceRegistry`) maintains in-memory device map. `StateChangeEvent` (CDI `fireAsync`) carries before/after `DeviceEntity` + `changedCapabilities` set. Common device classes aligned with Matter vocabulary: `SwitchDevice`, `LightDevice`, `ThermostatDevice`, `SensorDevice`, `PresenceSensor`, `PowerSensor`, `LockDevice`, `CoverDevice`, `MediaPlayerDevice`, `FanDevice`. Vendor supplements in `iot-homeassistant` and `iot-openhab` extend common types for unmappable fields only. Bridge runtime (`iot-bridge`) for cloud/hybrid deployment. **`iot-api` is a public API — semver from first release.** |
 | Outbound notifications (Slack, Teams, SMS, email) | `casehub-connectors` | `Connector` SPI; `casehub-work-notifications` must delegate here |
 | MCP notification tools (LLM agent surface) | `casehub-connectors-mcp` | `send_slack`, `send_teams`, `send_sms`, `send_whatsapp`, `send_email` MCP tools for Quarkus MCP server. `ConnectorMeshBridge` SPI bridges successful delivery to Qhorus observe channel (no-op default; Qhorus impl activates by classpath presence via qhorus#249). |
 | Inbound message reception (webhook push + IMAP pull) | `casehub-connectors` | `WebhookInboundConnector` SPI (push); `InboundConnector` SPI + `InboundConnectorService` polling (pull); fires `Event<InboundMessage>` CDI event; `casehub-connectors-email-inbound` for IMAP via `EmailInboundAccountProvider` SPI |
@@ -516,6 +519,7 @@ SPIs and capabilities that exist in the wrong module pending extraction. Do not 
 | `casehub-neural-text` | `repos/casehub-neural-text.md` |
 | `claudony` | `repos/claudony.md` |
 | `casehub-connectors` | `repos/casehub-connectors.md` |
+| `casehub-iot` | `repos/casehub-iot.md` *(pending — create after first module ships)* |
 | `casehub-devtown` | `repos/casehub-devtown.md` |
 | `casehub-aml` | `repos/casehub-aml.md` |
 | `casehub-clinical` | `repos/casehub-clinical.md` |
