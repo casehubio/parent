@@ -33,11 +33,12 @@ See `docs/DESIGN.md` for class structure and expiry policy implementations.
 
 ### CaseHub SPI Implementations (`claudony-casehub`)
 
-Implements all 4 casehub-engine worker provisioner SPIs:
-- **WorkerProvisioner** — creates a tmux session running the Claude CLI
-- **CaseChannelProvider** — creates a Qhorus channel per case/purpose; `postToChannel` receives `correlationId` and `deadline` as first-class params (engine#343) — no longer parsed from content JSON
-- **WorkerContextProvider** — builds the Claude startup prompt from ledger lineage
-- **WorkerStatusListener** — maps tmux lifecycle events to CaseHub worker states
+Implements all casehub-engine worker provisioner and execution SPIs:
+- **`ClaudonyReactiveWorkerProvisioner`** (`WorkerProvisioner`) — creates a tmux session running the Claude CLI
+- **`ClaudonyWorkerExecutionManager`** (`WorkerExecutionManager`) — virtual thread watcher; publishes `WorkflowExecutionCompleted` when tmux session exits; supports recovery after server restart via tmux session options (claudony#146)
+- **`CaseChannelProvider`** — creates a Qhorus channel per case/purpose; `postToChannel` receives `correlationId` and `deadline` as first-class params (engine#343) — no longer parsed from content JSON
+- **`WorkerContextProvider`** — builds the Claude startup prompt from ledger lineage
+- **`WorkerStatusListener`** — maps tmux lifecycle events to CaseHub worker states
 
 See `docs/DESIGN.md` for the implementation details and the ledger lineage query interface.
 
