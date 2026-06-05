@@ -69,6 +69,38 @@ Multiple Tier-2 backends can coexist if they target different deployment profile
 
 ---
 
+## Tier 3 — Test Override (`@Alternative @Priority(10+)`)
+
+A higher-priority alternative that beats Tier-2 production overrides. Two deployment modes:
+
+- **Test scope** (primary use case): added as `<scope>test</scope>` — invisible to production
+  augmentation, beats Tier-2 adapters only on the test classpath.
+- **Compile scope** (ephemeral installs): added as `<scope>compile</scope>` — visible in
+  production and beats all Tier-2 adapters. Intentional for deployments where no durable store
+  is needed. Must never coexist with a Tier-1 or Tier-2 adapter in the same scope.
+
+```java
+// Tier 3 — beats all production adapters in test scope
+@Alternative @Priority(10)
+@ApplicationScoped
+public class InMemoryMemoryStore implements CaseMemoryStore {
+    // volatile ConcurrentHashMap — no external dependencies
+}
+```
+
+**Priority reserved bands:**
+
+| CDI Mechanism | Tier | Purpose |
+|---|---|---|
+| `@DefaultBean` | 0 — no-op | Active when no adapter on classpath |
+| `@ApplicationScoped` (no qualifier) | 1 — production SQL | Standard JPA/SQL impl; beats Tier 0 by CDI rules |
+| `@Alternative @Priority(1–9)` | 2 — production override | Specialised backend (MongoDB, SQLite, REST); beats Tier 1 |
+| `@Alternative @Priority(10+)` | 3 — test override | In-memory or stub; beats Tier 2 in test classpath only |
+
+Tiers 0 and 1 use CDI mechanism (not `@Priority`). Only Tiers 2 and 3 use `@Alternative @Priority(N)`.
+
+---
+
 ## Reactive Bridge Variant
 
 When a SPI has both a blocking and a reactive interface (`PlanItemStore` + `ReactivePlanItemStore`, `CaseMemoryStore` + `ReactiveCaseMemoryStore`):
@@ -118,7 +150,7 @@ The `@DefaultBean` mock module (`casehub-platform`, `casehub-eidos-memory`, `cas
 | SPI | Tier 0 | Tier 1 | Tier 2 |
 |-----|--------|--------|--------|
 | `PreferenceProvider` | `MockPreferenceProvider @DefaultBean` (casehub-platform) | `JpaPreferenceProvider @ApplicationScoped` (casehub-platform-persistence-jpa) | `MongoDbPreferenceProvider @Alternative @Priority(1)` (casehub-platform-persistence-mongodb) |
-| `CaseMemoryStore` | `NoOpCaseMemoryStore @DefaultBean` (casehub-platform) | — | Memori/Mem0/Graphiti adapters `@Alternative @Priority(N)` (casehub-platform submodules) |
+| `CaseMemoryStore` | `NoOpCaseMemoryStore @DefaultBean` (casehub-platform) | `JpaMemoryStore @ApplicationScoped` (casehub-platform-memory-jpa) | `SqliteMemoryStore`, `Mem0CaseMemoryStore` `@Alternative @Priority(1)` (Tier 2); `InMemoryMemoryStore` `@Alternative @Priority(10)` (Tier 3 — test override) |
 | `ReactiveCaseMemoryStore` | `BlockingToReactiveBridge @DefaultBean` (casehub-platform) | — | Native async adapters `@Alternative @Priority(N)` |
 | `AgentStateStore` | `NoOpAgentStateStore @DefaultBean` (casehub-eidos) | *(JPA impl deferred, eidos#7)* | `InMemoryAgentStateStore @Alternative @Priority(1)` (casehub-eidos-memory) |
 | `TrustImportService` | `NoOpTrustImportService @DefaultBean` (casehub-ledger) | `JpaTrustImportService @Alternative` — **exception**: no `@Priority`; requires explicit `beans.xml` activation, not classpath presence (seed-if-absent semantics) | — |
