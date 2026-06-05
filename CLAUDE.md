@@ -137,7 +137,7 @@ filtering or dropping commits that touch these paths.
 | Path | What it is |
 |------|------------|
 | `CLAUDE.md` | Project conventions |
-| `docs/` | Platform documentation (PLATFORM.md, APPLICATIONS.md, repo deep-dives) |
+| `docs/` | Platform documentation (PLATFORM.md, APPLICATIONS.md, repo deep-dives, arc42stories spec + README) |
 | `docs/adr/` | Architecture decision records |
 
 
