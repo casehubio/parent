@@ -2,6 +2,7 @@
 
 | File | Rule Summary | Applies To |
 |------|-------------|------------|
+| [auto-channel-key-sanitisation.md](auto-channel-key-sanitisation.md) | AutoChannelPolicy must sanitise external keys via sanitiseSegment() (with hash) and connector IDs via slugifyConnectorId() (hash-free) | casehub-qhorus connector-backend — any AutoChannelPolicy implementation embedding external identifiers |
 | [arc42stories-foundation-tier-layer-taxonomy.md](arc42stories-foundation-tier-layer-taxonomy.md) | Foundation-tier ARC42STORIES.MD defines its own layer taxonomy — do not use the CaseHub Profile harness layer sequence | Any CaseHub foundation-tier module writing ARC42STORIES.MD |
 | [blackboard-registry-get-blocking-required.md](blackboard-registry-get-blocking-required.md) | @ConsumeEvent handlers calling BlackboardRegistry.get() must declare blocking=true — registry queries JPA on post-restart miss | casehub-engine-blackboard — any @ConsumeEvent handler calling BlackboardRegistry.get() |
 | [consumer-spi-placement.md](consumer-spi-placement.md) | Consumer-facing SPI interfaces MUST live in api/<domain>/ — not runtime/ | Any casehubio extension or library module defining an SPI interface |
