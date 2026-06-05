@@ -24,10 +24,6 @@ on:
         description: "Extra Maven args (e.g. -T 1C)"
         type: string
         default: ''
-      include_langchain4j:
-        description: "Include quarkus-langchain4j (slow — only when that fork changed)"
-        type: boolean
-        default: false
       include_applications:
         description: "Include application repos (devtown, aml, clinical, drafthouse, life, quarkmind, flow) — off by default"
         type: boolean
@@ -61,12 +57,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.GH_PAT }}
-          INCLUDE_LANGCHAIN4J: ${{ inputs.include_langchain4j }}
           INCLUDE_APPLICATIONS: ${{ inputs.include_applications }}
         run: |
           mkdir -p .build-times casehub
-          [ "$INCLUDE_LANGCHAIN4J" = "true" ] && \
-            git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/quarkus-langchain4j.git" quarkus-langchain4j
           git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/platform.git" casehub/platform
           git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/ledger.git" casehub/ledger
           git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/eidos.git" casehub/eidos

@@ -18,11 +18,6 @@ on:
         required: false
         default: ''
         type: string
-      include_langchain4j:
-        description: "Include quarkus-langchain4j (slow — only needed when that fork changes)"
-        required: false
-        default: false
-        type: boolean
       include_applications:
         description: "Include application repos (devtown, aml, clinical) — off by default"
         required: false
@@ -62,12 +57,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.GH_PAT }}
-          INCLUDE_LANGCHAIN4J: ${{ inputs.include_langchain4j }}
           INCLUDE_APPLICATIONS: ${{ inputs.include_applications }}
         run: |
           mkdir -p .build-times casehub
-          [ "$INCLUDE_LANGCHAIN4J" = "true" ] && \
-            git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/quarkus-langchain4j.git" quarkus-langchain4j
           git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/platform.git" casehub/platform
           git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/ledger.git" casehub/ledger
           git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/eidos.git" casehub/eidos
@@ -89,23 +81,6 @@ jobs:
           fi
 
       # continue-on-error: true ensures all steps run and we get per-module outcomes
-
-      - name: "Build: quarkus-langchain4j"
-        id: langchain4j
-        if: inputs.include_langchain4j
-        continue-on-error: true
-        env:
-          SKIP_TESTS: ${{ inputs.skip_tests }}
-          SKIP_ITS: ${{ inputs.skip_integration_tests }}
-          MAVEN_EXTRA: ${{ inputs.maven_args }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          FLAGS=""
-          [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
-          [ "$SKIP_ITS" = "true" ] && FLAGS="$FLAGS -DskipITs"
-          START=$SECONDS
-          cd quarkus-langchain4j && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
-          echo $((SECONDS - START)) > ../.build-times/quarkus-langchain4j
 
       - name: "Build: platform"
         id: platform
@@ -393,9 +368,7 @@ jobs:
           ACTOR: ${{ github.actor }}
           SKIP_TESTS: ${{ inputs.skip_tests }}
           SKIP_ITS: ${{ inputs.skip_integration_tests }}
-          INCLUDE_LANGCHAIN4J: ${{ inputs.include_langchain4j }}
           INCLUDE_APPLICATIONS: ${{ inputs.include_applications }}
-          OUTCOME_LANGCHAIN4J: ${{ steps.langchain4j.outcome }}
           OUTCOME_PLATFORM: ${{ steps.platform.outcome }}
           OUTCOME_LEDGER: ${{ steps.ledger.outcome }}
           OUTCOME_EIDOS: ${{ steps.eidos.outcome }}
@@ -421,10 +394,9 @@ jobs:
             TEST_MODE="full test suite"
           fi
 
-          MODULES=(quarkus-langchain4j platform ledger eidos connectors work qhorus engine claudony)
+          MODULES=(platform ledger eidos connectors work qhorus engine claudony)
           [ "$INCLUDE_APPLICATIONS" = "true" ] && MODULES+=(openclaw devtown aml clinical life drafthouse quarkmind flow)
           declare -A OUTCOMES=(
-            [quarkus-langchain4j]="$OUTCOME_LANGCHAIN4J"
             [platform]="$OUTCOME_PLATFORM"
             [ledger]="$OUTCOME_LEDGER"
             [eidos]="$OUTCOME_EIDOS"
@@ -443,7 +415,6 @@ jobs:
             [flow]="$OUTCOME_FLOW"
           )
           declare -A GH_REPO=(
-            [quarkus-langchain4j]="casehubio/quarkus-langchain4j"
             [platform]="casehubio/platform"
             [ledger]="casehubio/ledger"
             [eidos]="casehubio/eidos"
@@ -482,9 +453,7 @@ jobs:
               success)  icon="✅" ;;
               failure)  icon="❌"; FAIL_COUNT=$((FAIL_COUNT + 1)) ;;
               skipped)
-                if [ "$module" = "quarkus-langchain4j" ] && [ "$INCLUDE_LANGCHAIN4J" != "true" ]; then
-                  icon="⏭️ excluded"
-                elif { [ "$module" = "openclaw" ] || [ "$module" = "devtown" ] || [ "$module" = "aml" ] || [ "$module" = "clinical" ] || [ "$module" = "life" ] || [ "$module" = "drafthouse" ] || [ "$module" = "quarkmind" ] || [ "$module" = "flow" ]; } && [ "$INCLUDE_APPLICATIONS" != "true" ]; then
+                if { [ "$module" = "openclaw" ] || [ "$module" = "devtown" ] || [ "$module" = "aml" ] || [ "$module" = "clinical" ] || [ "$module" = "life" ] || [ "$module" = "drafthouse" ] || [ "$module" = "quarkmind" ] || [ "$module" = "flow" ]; } && [ "$INCLUDE_APPLICATIONS" != "true" ]; then
                   icon="⏭️ excluded"
                 else
                   icon="⏭️ skipped"; FAIL_COUNT=$((FAIL_COUNT + 1))

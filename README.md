@@ -19,7 +19,6 @@ Org-level parent POM and BOM for the [casehubio](https://github.com/casehubio) e
 | [casehub-engine](https://github.com/casehubio/engine) | [![casehub-engine](https://github.com/casehubio/engine/actions/workflows/maven.yml/badge.svg?branch=main)](https://github.com/casehubio/engine/actions/workflows/maven.yml) |
 | [casehub-claudony](https://github.com/casehubio/claudony) | [![casehub-claudony](https://github.com/casehubio/claudony/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/casehubio/claudony/actions/workflows/ci.yml) |
 | [casehub-openclaw](https://github.com/casehubio/openclaw) | [![casehub-openclaw](https://github.com/casehubio/openclaw/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/openclaw/actions/workflows/publish.yml) |
-| [quarkus-langchain4j](https://github.com/casehubio/quarkus-langchain4j) | [![quarkus-langchain4j](https://github.com/casehubio/quarkus-langchain4j/actions/workflows/casehub-publish.yml/badge.svg?branch=main)](https://github.com/casehubio/quarkus-langchain4j/actions/workflows/casehub-publish.yml) |
 
 **Applications**
 
@@ -43,7 +42,6 @@ Org-level parent POM and BOM for the [casehubio](https://github.com/casehubio) e
   - [Incremental build logic](#incremental-build-logic)
   - [Replaying a build](#replaying-a-build)
 - [CI/CD pipeline](#cicd-pipeline)
-- [The quarkus-langchain4j fork](#the-quarkus-langchain4j-fork)
 - [Adding a new project](#adding-a-new-project)
 - [Local developer setup](#local-developer-setup)
 
@@ -119,7 +117,6 @@ Each project in the ecosystem has its own Maven parent (casehub projects use int
 | `casehub-qhorus` | `io.casehub` | `casehubio/qhorus` |
 | `casehub-engine` | `io.casehub` | `casehubio/engine` |
 | `casehub-claudony` | `dev.claudony` | `casehubio/claudony` |
-| `quarkus-langchain4j` | (upstream fork) | `casehubio/quarkus-langchain4j` |
 
 Dependency order (each project may depend on those above it):
 
@@ -301,60 +298,6 @@ Because each project publishes independently, upstream artifacts must be availab
 6. `casehub-claudony` → depends on BOM + `casehub-qhorus`
 
 If `casehub-ledger` CI hasn't published yet when `casehub-work` CI runs, `casehub-work` will fail with `Could not resolve io.casehub:casehub-ledger:0.2-SNAPSHOT`. Re-running the failing job after the upstream publish completes resolves this.
-
-### `quarkus-langchain4j`
-
-`casehubio/quarkus-langchain4j` is a fork of the upstream Quarkus LangChain4j project maintained here until upstream fixes are merged and published. It is **not** configured with casehubio CI/CD and does not use the casehub-parent BOM. It is included in the ecosystem only as a build dependency; consuming projects reference it at whatever version casehub-engine declares.
-
----
-
-## The quarkus-langchain4j fork
-
-The casehubio ecosystem depends on [quarkus-langchain4j](https://github.com/quarkiverse/quarkus-langchain4j) for AI agent capabilities. However, fixes required by the ecosystem are not yet merged into an upstream release. Until those PRs land and a new release is published, the ecosystem uses a casehubio-maintained fork.
-
-### Why the fork exists
-
-`casehub-engine` depends on specific `quarkus-langchain4j` behaviour that contains fixes not present in the latest public release. Depending directly on the public release would produce runtime failures in casehub-engine.
-
-### How it works
-
-The fork lives at `casehubio/quarkus-langchain4j`. It contains:
-- All upstream code from `quarkiverse/quarkus-langchain4j` at a chosen base commit
-- The specific fix commits cherry-picked on top
-
-The fork publishes its artifacts to casehubio GitHub Packages as version `999-SNAPSHOT` (the fork's own working version) via `.github/workflows/casehub-publish.yml`. This workflow is **casehubio-specific and must not be included in upstream PRs**.
-
-### What consumers reference
-
-Consumers declare `999-SNAPSHOT` for langchain4j artifacts rather than the public release version:
-
-```xml
-<!-- In casehub-engine pom.xml -->
-<version.io.quarkiverse.langchain4j>999-SNAPSHOT</version.io.quarkiverse.langchain4j>
-```
-
-The `github-casehubio` repository is already configured in all casehubio project poms, so `999-SNAPSHOT` resolves from GitHub Packages without any additional setup.
-
-### Why `999-SNAPSHOT` keeps the pom clean
-
-The fork's `pom.xml` in git already declares `999-SNAPSHOT` — no version changes are committed to the fork. The `casehub-publish.yml` workflow simply runs `mvn deploy` against the existing pom. This means any fix commits cherry-picked back to the upstream repo contain no casehubio-specific changes — only the functional fix.
-
-### Pushing fixes upstream
-
-When a fix is ready to contribute upstream:
-1. Create a branch from the base commit (before the casehub cherry-picks)
-2. Cherry-pick only the functional fix commits — **not** `casehub-publish.yml`
-3. Open a PR against `quarkiverse/quarkus-langchain4j`
-
-The `.github/workflows/casehub-publish.yml` file is the only casehubio-specific file in the fork. It is not part of any fix commit.
-
-### Removing the fork
-
-When the required fixes are merged upstream and a new release is published:
-1. Update `version.io.quarkiverse.langchain4j` in `casehub-engine` to the new upstream release version
-2. Remove the fork from `build-all.sh` REPOS list
-3. Remove the wildcard GitHub Packages URL still resolves other artifacts — no other config changes needed
-4. Archive `casehubio/quarkus-langchain4j`
 
 ---
 

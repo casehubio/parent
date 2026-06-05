@@ -80,7 +80,7 @@ type: java
 Root parent POM for the CaseHub ecosystem. Owns shared build configuration, CI/CD workflows, cross-module conventions, and the full-stack build orchestration.
 
 **Peer repos (each has its own Claude session — do not commit to these):**
-platform, eidos, ledger, connectors, work, qhorus, engine, claudony, quarkus-langchain4j, openclaw, neural-text, devtown, aml, clinical, drafthouse, life, quarkmind, flow
+platform, eidos, ledger, connectors, work, qhorus, engine, claudony, openclaw, neural-text, devtown, aml, clinical, drafthouse, life, quarkmind, flow
 
 ## Build Commands
 
@@ -102,8 +102,6 @@ mvn --batch-mode deploy -DskipTests
 | `clear-snapshot-packages.yml` | manual only | Delete SNAPSHOT artifacts from GitHub Packages |
 
 **Key rule:** Cross-repo `repository_dispatch` requires `GH_TOKEN: ${{ secrets.GH_PAT }}` (classic PAT). `GITHUB_TOKEN` is repo-scoped only and returns 403 on cross-repo calls.
-
-**langchain4j** is excluded from standard builds by default. Tick `include_langchain4j` only when that fork has changed.
 
 ## Cross-Repo Conventions
 
