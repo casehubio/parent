@@ -76,7 +76,8 @@
       "mcp__intellij__search_file",
       "Bash(mvn --batch-mode dependency:list -pl engine/work-adapter -f /Users/mdproctor/claude/casehub/engine/pom.xml -q)",
       "Bash(mvn *)",
-      "Bash(jar tf *)"
+      "Bash(jar tf *)",
+      "Skill(publish-blog)"
     ]
   }
 }

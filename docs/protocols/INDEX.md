@@ -26,6 +26,7 @@ Quick reference:
 | [casehub/ledger-hash-chain-disabled-in-h2-tests.md](casehub/ledger-hash-chain-disabled-in-h2-tests.md) | Disable Merkle hash chain in H2 @QuarkusTest — concurrent Quartz races on frontier |
 | [casehub/engine-investigation-test-drain.md](casehub/engine-investigation-test-drain.md) | Drain every investigation test to 'completed' before returning |
 | [casehub/memory-storeall-transactional-contract.md](casehub/memory-storeall-transactional-contract.md) | storeAll() overrides: single @Transactional, per-item assertTenant, no partial writes |
+| [casehub/workitem-template-constraints-snapshot-at-instantiation.md](casehub/workitem-template-constraints-snapshot-at-instantiation.md) | Snapshot template constraints (outcomes, schemas) onto WorkItem at instantiation; never re-read at completion |
 
 ## Universal Protocols
 
