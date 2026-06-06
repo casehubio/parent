@@ -93,3 +93,23 @@ Review against `docs/PLATFORM.md` and relevant protocols in `casehub/garden/docs
 Be skeptical of: claimed necessity vs convenience, accidental complexity, and abstractions that
 exist to paper over a design gap. Prioritize architectural concerns over implementation details.
 ```
+
+---
+
+## Spec re-review (iterative)
+
+Paste when the spec has been revised and needs a follow-up review. Include the implementor's
+response from the previous round so the reviewer has the full context of what changed and why:
+
+```
+The spec has been revised. Review the changes — do not re-raise concerns already resolved.
+
+Focus on:
+- Whether the revisions actually address the concerns from the last round, or only partially
+- Any new issues introduced by the changes
+- Residual concerns that weren't fully addressed
+- Whether any fix creates a regression elsewhere in the design
+
+Here is the implementor's response from the last round:
+[paste response]
+```
