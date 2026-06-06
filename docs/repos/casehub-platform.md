@@ -184,7 +184,7 @@ This is an explicit design choice, not a missing feature. The two patterns serve
 **`eraseById` carve-out:** The SPI default for `eraseById` throws `UnsupportedOperationException` — a GDPR guard forcing adapters to implement erasure explicitly. `NoOpCaseMemoryStore` overrides this to a true no-op (nothing was stored, so erasure is vacuously complete). Adapter implementors must not rely on the SPI default for `eraseById` — override it unconditionally.
 
 **Reactive bridge:**
-`BlockingToReactiveBridge @DefaultBean` in `platform/` wraps any blocking `CaseMemoryStore` implementation as a `ReactiveCaseMemoryStore`. Native async adapters override with `@Alternative @Priority(N)` — the same CDI priority ladder used throughout the platform. See [`docs/protocols/universal/persistence-backend-cdi-priority.md`](protocols/universal/persistence-backend-cdi-priority.md).
+`BlockingToReactiveBridge @DefaultBean` in `platform/` wraps any blocking `CaseMemoryStore` implementation as a `ReactiveCaseMemoryStore`. Native async adapters override with `@Alternative @Priority(N)` — the same CDI priority ladder used throughout the platform. See `casehub/garden: docs/protocols/universal/persistence-backend-cdi-priority.md`.
 
 **Adapter implementations (submodules in this repo — add as dependency to activate):**
 
@@ -276,7 +276,7 @@ Add as a test-scoped dependency:
 
 ## See Also
 
-- `docs/protocols/casehub/typed-preference-keys.md` — `PreferenceKey<T>` contract
-- `docs/protocols/casehub/platform-spi-contract.md` — implementation rules for all three SPIs
-- `docs/protocols/universal/module-tier-structure.md` — Tier 1/2/3 rules and `persistence-memory/` decision guide
+- `casehub/garden: docs/protocols/casehub/typed-preference-keys.md` — `PreferenceKey<T>` contract
+- `casehub/garden: docs/protocols/casehub/platform-spi-contract.md` — implementation rules for all three SPIs
+- `casehub/garden: docs/protocols/universal/module-tier-structure.md` — Tier 1/2/3 rules and `persistence-memory/` decision guide
 - ADRs in `casehubio/platform`: 0001 (Path API), 0002 (PreferenceKey contract), 0003 (null-returning get)

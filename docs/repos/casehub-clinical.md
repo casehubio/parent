@@ -85,7 +85,7 @@ casehub-clinical
 
 These apply to any consumer adding casehub-engine to a CaseHub application. Documented from clinical Layer 5 (clinical#6).
 
-**CDI wiring:** casehub-platform and casehub-platform-expression must be on the runtime classpath when casehub-engine is present. Without `casehub-platform`, the engine's `@DefaultBean` mock beans are absent and CDI resolution fails at augmentation time (symptom: `UnsatisfiedResolutionException` for `PreferenceProvider`). Use `<scope>runtime</scope>` — not `test` — in application modules that run the Quarkus build goal. See `docs/protocols/casehub/casehub-platform-dependency-scope.md`.
+**CDI wiring:** casehub-platform and casehub-platform-expression must be on the runtime classpath when casehub-engine is present. Without `casehub-platform`, the engine's `@DefaultBean` mock beans are absent and CDI resolution fails at augmentation time (symptom: `UnsatisfiedResolutionException` for `PreferenceProvider`). Use `<scope>runtime</scope>` — not `test` — in application modules that run the Quarkus build goal. See `casehub/garden: docs/protocols/casehub/casehub-platform-dependency-scope.md`.
 
 **Quartz incompatibility:** `casehub-engine-scheduler-quartz` and the casehub-work scheduler beans conflict if both are on the classpath in the same deployment unit without isolation. Use separate modules or `@IfBuildProperty` gating to avoid double-scheduler registration.
 

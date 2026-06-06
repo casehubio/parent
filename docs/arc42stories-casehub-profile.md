@@ -52,7 +52,7 @@ All CaseHub components inherit this schema. Declare only the **Prefix** in the p
 | Improvement log entry | `[PREFIX]-NNN` | `DT-042` | `docs/PROGRESS.md` |
 | Issue | `#NNN` or `casehubio/[repo]#NNN` | `#52`, `casehubio/devtown#52` | GitHub Issues |
 | Garden entry | `GE-YYYYMMDD-XXXXXX` | `GE-20260521-e39ad1` | `~/.hortora/garden/` |
-| Protocol | `PP-YYYYMMDD-XXXXXX` | `PP-20260522-f08b62` | `casehub-parent/docs/protocols/` |
+| Protocol | `PP-YYYYMMDD-XXXXXX` | `PP-20260522-f08b62` | `casehub/garden: docs/protocols/` |
 | ADR | `ADR-NNNN` | `ADR-0007` | `docs/adr/` |
 | Blog entry | `YYYY-MM-DD-[initials]NN-title` | `2026-05-19-mdp01-layer-5-lands` | workspace `blog/` |
 | Design spec | `YYYY-MM-DD-topic-design` | `2026-05-15-epic3-design` | `docs/specs/` |
@@ -103,10 +103,10 @@ Reference these protocols in §8 rather than duplicating their content:
 
 | Concern | Protocol |
 |---|---|
-| Module structure | `docs/protocols/universal/module-tier-structure.md` |
-| Flyway migrations | `docs/protocols/casehub/flyway-version-range-allocation.md` |
+| Module structure | `casehub/garden: docs/protocols/universal/module-tier-structure.md` |
+| Flyway migrations | `casehub/garden: docs/protocols/casehub/flyway-version-range-allocation.md` |
 | Named datasources | `docs/PLATFORM.md` §Persistence |
-| CDI displacement (`@DefaultBean`) | `docs/protocols/casehub/alternative-extension-patterns.md` |
+| CDI displacement (`@DefaultBean`) | `casehub/garden: docs/protocols/casehub/alternative-extension-patterns.md` |
 | SPI placement | `docs/PLATFORM.md` §Step 4 |
 | Architectural patterns | `docs/ARCHITECTURE.md` |
 | Capability ownership | `docs/PLATFORM.md` Capability Ownership table |
@@ -182,4 +182,4 @@ If no — do not build it. Document the architecture in the Arc42Stories documen
 - `docs/AGENTIC-HARNESS-GUIDE.md` — production-first rules, anti-patterns, session conventions
 - `docs/ARCHITECTURE.md` — CaseHub architectural patterns
 - `docs/PLATFORM.md` — capability ownership and boundary rules
-- `docs/protocols/universal/` — cross-cutting conventions applicable across all casehub modules (module structure, Maven naming, persistence patterns)
+- `casehub/garden: docs/protocols/universal/` — cross-cutting conventions applicable across all casehub modules (module structure, Maven naming, persistence patterns)

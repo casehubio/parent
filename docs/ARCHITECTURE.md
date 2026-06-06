@@ -178,7 +178,7 @@ Pure pattern adherence is rare in production systems. CaseHub uses a deliberate 
 | Cross-cutting | **Strategy + Registry + Observer** | Pluggable algorithms, runtime discovery, decoupled notification |
 | Application tier | **Hexagonal + Vertical Slices** | Domain capability organized by what the system can DO, layered on the horizontal foundation |
 
-The recommended blend for a new AI platform starting today: **Hexagonal + Clean + Vertical Slices** — clean domain core, ports for all external concerns, and slices organised by business capability. CaseHub's foundation arrived at the first two organically; the application tier now uses vertical slices as the primary planning and delivery unit (see `docs/protocols/universal/vertical-slice-planning.md`).
+The recommended blend for a new AI platform starting today: **Hexagonal + Clean + Vertical Slices** — clean domain core, ports for all external concerns, and slices organised by business capability. CaseHub's foundation arrived at the first two organically; the application tier now uses vertical slices as the primary planning and delivery unit (see `casehub/garden: docs/protocols/universal/vertical-slice-planning.md`).
 
 ---
 
@@ -204,7 +204,7 @@ The foundation tier (qhorus, ledger, work, engine) is organized horizontally by 
 
 The application tier (devtown, AML, clinical) is organized by vertical slice — each slice is a user-visible capability that cuts through whichever horizontal layers it needs. A slice is planned, built, and documented as a unit before the next slice begins.
 
-**The planning protocol:** `docs/protocols/universal/vertical-slice-planning.md` — how to identify slices, order them, and structure LAYER-LOG.md around them.
+**The planning protocol:** `casehub/garden: docs/protocols/universal/vertical-slice-planning.md` — how to identify slices, order them, and structure LAYER-LOG.md around them.
 
 **What LAYER-LOG.md documents:** each application maintains a LAYER-LOG.md with a Vertical Slice Index at the top (what the system can DO at each milestone, with architectural pattern cross-references) and detailed layer entries below (how each integration was built, with references to the relevant sections of this document, the applicable protocols, and the garden).
 

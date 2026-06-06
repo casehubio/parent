@@ -101,7 +101,7 @@ Chapter (a user-visible capability), implement each layer it requires in turn, d
 the Chapter end-to-end, then move to the next. Layers are the implementation unit;
 Chapters are the planning and delivery unit.
 
-Full guidance: `docs/protocols/universal/vertical-slice-planning.md`
+Full guidance: `casehub/garden: docs/protocols/universal/vertical-slice-planning.md`
 
 **ARC42STORIES.MD §9 structure:**
 1. §9.2 Chapter Index at the top — what the system can DO at each milestone (the Vertical Slice Index)
@@ -264,8 +264,8 @@ Your layer structure is defined in two places:
 
 Before implementing any layer, read:
 
-1. `docs/protocols/universal/INDEX.md` in casehub-parent — universal Java/Quarkus conventions
-2. `docs/protocols/casehub/HARNESS-INDEX.md` in casehub-parent — CaseHub app conventions
+1. `casehub/garden: docs/protocols/universal/INDEX.md` in casehub/garden — universal Java/Quarkus conventions
+2. `casehub/garden: docs/protocols/casehub/HARNESS-INDEX.md` in casehub/garden — CaseHub app conventions
 
 Key protocols that apply immediately:
 - `docs/arc42stories-spec.md` + `docs/arc42stories-casehub-profile.md` — ARC42STORIES.MD as definition of done

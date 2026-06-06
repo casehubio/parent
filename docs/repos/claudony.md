@@ -49,7 +49,7 @@ REST and WebSocket endpoints for session management and terminal streaming. WebA
 - `FleetMessageRelayObserver` — CLUSTER-scoped `MessageObserver` SPI implementation; on every Qhorus message dispatch, relays a channel-name tick to all healthy fleet peers via `POST /api/internal/channels/notify`. Enables real-time SSE delivery of `ChannelEventBus` ticks across fleet nodes when Qhorus shares a PostgreSQL instance (claudony#118).
 - `ChannelSyncResource` has two endpoints: `POST /sync` (channel init, registers `ClaudonyChannelBackend`) and `POST /notify` (cross-node tick relay from `FleetMessageRelayObserver`).
 
-`MeshResource` exposes the Qhorus mesh data to the dashboard via `QhorusDashboardService` — the correct consumer integration tier for dashboard/UI code (not `ReactiveQhorusMcpTools`, which is the MCP protocol dispatch layer for Claude Code). See `docs/protocols/casehub/qhorus-consumer-integration-pattern.md`.
+`MeshResource` exposes the Qhorus mesh data to the dashboard via `QhorusDashboardService` — the correct consumer integration tier for dashboard/UI code (not `ReactiveQhorusMcpTools`, which is the MCP protocol dispatch layer for Claude Code). See `casehub/garden: docs/protocols/casehub/qhorus-consumer-integration-pattern.md`.
 
 See `docs/DESIGN.md` for the endpoint inventory and authentication mechanism detail.
 

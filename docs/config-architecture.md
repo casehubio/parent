@@ -106,7 +106,7 @@ For each topic: the **authoritative** location, plus acceptable secondary appear
 
 | Location | Role |
 |----------|------|
-| `~/claude/casehub/parent/docs/protocols/INDEX.md` ← **authoritative** | All platform-wide architectural rules |
+| `~/claude/casehub/garden/docs/protocols/INDEX.md` ← **authoritative** | All platform-wide architectural rules |
 | `PLATFORM.md` Implementation Conventions section | Summary table of key entries — pointer to full index |
 | `protocol` skill | Tool for CAPTURE / SWEEP / SEARCH / HEALTH operations on protocol files |
 

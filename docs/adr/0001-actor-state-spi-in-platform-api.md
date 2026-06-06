@@ -56,4 +56,4 @@ Chosen option: **Option A**, because both interfaces use zero domain types and a
 ## Links
 
 * [parent#56](https://github.com/casehubio/parent/issues/56) — actor state view implementation
-* [docs/protocols/casehub/platform-api-scope.md](../protocols/casehub/platform-api-scope.md) — scope rule referenced
+* [casehub/garden: docs/protocols/casehub/platform-api-scope.md](../protocols/casehub/platform-api-scope.md) — scope rule referenced
