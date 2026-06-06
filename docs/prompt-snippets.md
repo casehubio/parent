@@ -19,11 +19,13 @@ Steps are sequential. If pasted mid-session, acknowledge completed steps and ski
 
 2) invoke work-start first.
 
-3) superpowers:brainstorming before designing — design in tandem with `docs/PLATFORM.md` and relevant
-   protocols in `casehub/garden/docs/protocols/`: read them before proposing anything, consult them
-   throughout, and do a final coherence review of the complete design against both before leaving
-   brainstorming. Any deferred concerns or out-of-scope items must be captured as GitHub issues before
-   leaving brainstorming, not just noted in the spec.
+3) superpowers:brainstorming before designing — design in tandem with `docs/PLATFORM.md`, relevant
+   protocols in `casehub/garden/docs/protocols/`, and domain-relevant entries in `~/.hortora/garden`
+   (use `forage SEARCH <keywords>` to find gotchas, techniques, and undocumented behaviours): read
+   all three before proposing anything, consult them throughout, and do a final coherence review of
+   the complete design against all three before leaving brainstorming. Any deferred concerns or
+   out-of-scope items must be captured as GitHub issues before leaving brainstorming, not just noted
+   in the spec.
 
 4) superpowers:test-driven-development before implementing. [java-dev|python-dev|ts-dev] for all
    [Java|Python|TypeScript].
