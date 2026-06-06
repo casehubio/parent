@@ -64,3 +64,30 @@ Replace `[java-dev|python-dev|ts-dev]` with the appropriate dev skill for the pr
 | 5 | `superpowers:requesting-code-review` | Review gate before any commit; unfixed findings Minor or above → GitHub issue(s) before sign-off |
 | 6 | `implementation-doc-sync` | Checks only docs touched this session, not the whole project |
 | 7 | Design philosophy | Cost (blast radius, migrations, API breaks) is always worth paying. Workarounds and wrappers are bad design — stop and fix the design instead. Simplicity must serve architecture, not avoid work. |
+
+---
+
+## Spec review
+
+Paste when handing a spec to Claude for critical review before implementation begins:
+
+```
+Here is the spec. Review it critically — do not update it or start implementing.
+
+Think hard, go deep, be systematic, exhaustive, and diligent. Cover:
+
+- What's missing — requirements, edge cases, error paths, operational concerns not addressed
+- What's wrong — incorrect assumptions, internal contradictions, mismatches with platform
+  patterns or protocols
+- What could be cleaner — abstractions that don't earn their keep, complexity that a different
+  foundational choice would eliminate, naming or layering that will cause confusion later
+- Early rearchitecting — for each significant concern, ask: would a different approach at the
+  root eliminate this entire class of problem? Prefer raising these early over accepting a design
+  that will need retrofitting
+
+Review against `docs/PLATFORM.md` and relevant protocols in `casehub/garden/docs/protocols/`
+— flag anything that contradicts or doesn't fit the platform's patterns.
+
+Be skeptical of: claimed necessity vs convenience, accidental complexity, and abstractions that
+exist to paper over a design gap. Prioritize architectural concerns over implementation details.
+```
