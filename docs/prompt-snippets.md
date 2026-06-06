@@ -113,3 +113,22 @@ Focus on:
 Here is the implementor's response from the last round:
 [paste response]
 ```
+
+---
+
+## Spec revision (implementor response)
+
+Paste when handing reviewer feedback back to the implementor to revise the spec:
+
+```
+Here is the feedback. Revise the spec to address it — do not start implementing.
+
+For each concern raised:
+- Address it in the spec, or
+- Explain why you disagree and are not making the change
+
+Provide a summary of what changed and why, so the reviewer knows what to focus on
+in the next round.
+
+[paste feedback]
+```
