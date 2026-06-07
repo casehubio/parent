@@ -15,11 +15,11 @@ Structured agent identity for LLM agents on the CaseHub platform. Any Quarkus ap
 
 | Module | artifactId | Type | Purpose |
 |---|---|---|---|
-| `api/` | `casehub-eidos-api` | Pure Java, no CDI | SPIs and domain types — `AgentDescriptor`, `AgentRegistry`, `CapabilityHealth`, `VocabularyRegistry`, `SystemPromptRenderer`, `AgentStateStore`; top-level types: `AgentPromptContext`, `DegradationReason`, `GoalContext`, `Resource` |
+| `api/` | `casehub-eidos-api` | Pure Java, no CDI | SPIs and domain types — `AgentDescriptor`, `AgentRegistry`, `CapabilityHealth`, `VocabularyRegistry`, `SystemPromptRenderer`, `AgentStateStore`; top-level types: `AgentPromptContext`, `DegradationReason`, `GoalContext`, `Resource`; vocabulary types: `VocabularyTerm` (interface — replaced record), `VocabularyRegistrar` (@FunctionalInterface CDI SPI), `VocabularyMetadata` (annotation on enum classes), `DispositionAxis` (enum: SOCIAL_ORIENTATION, RULE_FOLLOWING, RISK_APPETITE, AUTONOMY) |
 | `runtime/` | `casehub-eidos` | Quarkus extension | CDI registry, health implementations, renderer; `@DefaultBean` for all SPIs; `runtime/renderer/` — `ClaudeMarkdownRenderer`; `runtime/health/` — `NoOpAgentStateStore` |
 | `persistence-memory/` | `casehub-eidos-memory` | Optional module | `InMemoryAgentRegistry` + `InMemoryAgentStateStore` — `@Alternative @Priority(1)`; activate by adding as dep |
 | `deployment/` | `casehub-eidos-deployment` | Quarkus build step | `EidosProcessor` + `EidosBuildTimeConfig` |
-| `vocab/` | `casehub-eidos-vocab` | Optional module | Well-known vocabularies: SVO, Conscientiousness, CasehubSlot |
+| `vocab/` | `casehub-eidos-vocab` | Optional module | Well-known vocabularies: `SvoTerm`, `ConscientiousnessTerm`, `CasehubSlotTerm` enums with bidirectional `exactMatch()`; each accompanied by a `VocabularyRegistrar` bean; Jandex-indexed for CDI discovery |
 | `graph/` | `casehub-eidos-graph` | Optional module (Jandex library) | Phase 4 knowledge graph — `AgentGraphStore` SPI (write), `AgentGraphQuery` SPI (read), `AgentGraphBackfill` SPI (ledger ingestion), `TaskSemanticEnricher` SPI (application-tier enrichment at query time). Activates by classpath presence. `AgentOutcome.observedAt: Instant` added (eidos#36) — business time of observation (not persistence time); compact constructor validates all four required fields including NaN guard on confidence. `ReactiveAgentGraphQuery`: not build-gated — `BlockingToReactiveGraphBridge @DefaultBean @ApplicationScoped` always active by classpath presence. |
 | `eval/` | `casehub-eidos-eval` | Test-only, not deployed | Offline quality evaluation harness: `EvalCase` sealed interface (`SyntheticEvalCase` + `ProfiledEvalCase`), `EvalDataset`, `PromptJudge`, `ProximityJudge`, `VocabularyExpressivenessJudge`, `TraitExpressionJudge`, `PairContrastJudge`; real-world agent profile library (8 YAML profiles grounded in O*NET and practitioner sources); three-stage personality preservation measurement system |
 | `examples/agent-scenarios/` | — | Test-only | `@QuarkusTest` integration examples covering team, cross-vocab, epistemic, tenancy, disposition |
@@ -46,7 +46,7 @@ Declares a named capability with an optional `qualityHint` (Double, 0–1) and `
 
 ### AgentDisposition
 
-Open-string axes describing behavioural profile: `socialOrient`, `ruleFollowing`, `riskAppetite`, `autonomy`. All axes are optional. `delegation` is a separate boolean field (not an axis) — indicates whether the agent may delegate tasks.
+Open-string axes describing behavioural profile: `socialOrient`, `ruleFollowing`, `riskAppetite`, `autonomy`. All axes are optional. `delegation` is a separate boolean field (not an axis) — indicates whether the agent may delegate tasks. `get(DispositionAxis)` — exhaustive switch method mapping `DispositionAxis` enum value to the corresponding field (eidos#40).
 
 **Validation (compact constructor):** all axes null-permissive (absent is valid), blank-rejecting, ≤200 chars, no banned characters (C0/C1, BiDi, zero-width). Throws `AgentValidationException` on violation.
 
@@ -66,7 +66,7 @@ SPI: `probe(AgentDescriptor, capabilityTag, ProbeContext)` → `CapabilityStatus
 
 ### VocabularyRegistry
 
-SPI for term registration, resolution, and cross-vocabulary equivalence. `CdiVocabularyRegistry` (`@DefaultBean`) discovers `Instance<Vocabulary>` CDI beans at startup — any bean that implements `Vocabulary` is auto-discovered.
+SPI for term registration, resolution, and cross-vocabulary equivalence. Vocabularies are Java enums implementing `VocabularyTerm` interface (not records). `CdiVocabularyRegistry` (`@DefaultBean`) discovers `Instance<VocabularyRegistrar>` CDI beans at startup. Axis-aware overload: `equivalentValues(fromUri, value, toUri, DispositionAxis)` — typed bypass registration (eidos#40).
 
 **Vocabulary design reference:** `docs/personality-frameworks.md` maps 11 personality and team-role frameworks (Belbin, Big Five, DISC, Thomas-Kilmann, O*NET, SFIA, etc.) to `AgentDescriptor` fields. Prerequisite for eidos#26 (Belbin/DISC vocabulary module) and the authoritative source for vocabulary term design decisions.
 
@@ -74,7 +74,7 @@ SPI for term registration, resolution, and cross-vocabulary equivalence. `CdiVoc
 
 **Pending vocabulary modules:** `urn:casehub:vocab:belbin` and `urn:casehub:vocab:disc` — eidos#26 (depends on eidos#29).
 
-**Open design decisions:** `conflictMode` as 5th disposition axis (eidos#38); open Map disposition (eidos#39); axis-aware `equivalentValues()` (eidos#40).
+**Open design decisions:** `conflictMode` as 5th disposition axis (eidos#38); open Map disposition (eidos#39); minor robustness gaps (eidos#42). Axis-aware `equivalentValues()` (eidos#40) — **closed, implemented**.
 
 ### SystemPromptRenderer (Phase 3 — complete)
 
