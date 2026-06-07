@@ -37,6 +37,15 @@ LAYER-LOG.md in the project root is the authoritative layer-by-layer record with
 - Trust-weighted selection strategy for code review domain. See docs/DESIGN.md for implementation detail.
 - Post-merge trust feedback — FLAGGED attestation when production incident traced to missed review
 - GitHub integration — PR webhook receiver, CI status reader, merge executor worker
+- **CaseMemoryStore integration (devtown#43):** contributor history, reviewer agent context, and code-area history injected before PR review case starts; review outcomes written to memory at case close.
+  - New domain types: `DevtownMemoryDomain`, `DevtownMemoryKeys`, `ReviewOutcome`, `ModulePathNormalizer` (devtown-domain)
+  - New review types: `ReviewCompletedEvent`, `MemoryContext` (devtown-review)
+  - New CDI components: `ReviewOutcomeObserver`, `CaseMemoryEmitter`, `CaseMemoryRecaller` (devtown-app)
+  - `PrPayload` enhanced with `contributor` + `changedPaths`
+  - Emission flow: `PlanItemCompletedEvent` → `ReviewOutcomeObserver` → `ReviewCompletedEvent` → `CaseMemoryEmitter` → `storeAll()`
+  - Recall: `CaseMemoryRecaller` called before `PrReviewCaseService.startCase()`
+  - Known tech debt: `CrossTenantCaseInstanceRepository` in async observer (engine#429 tracks fix)
+  - Follow-up: engine#428–430, qhorus#251, devtown#65–68
 
 ## What It Does NOT Own
 
@@ -56,6 +65,7 @@ casehub-devtown
   → casehub-work     (human review WorkItem, SLA, escalation)
   → casehub-qhorus   (COMMAND/RESPONSE per reviewer, commitment lifecycle)
   → casehub-connectors (Slack/Teams for review assignments and failures)
+  → casehub-platform-memory-inmem (in-memory CaseMemoryStore for @QuarkusTest isolation)
 ```
 
 ## Key Epics
