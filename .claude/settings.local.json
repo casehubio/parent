@@ -92,6 +92,9 @@
       "Bash(git -C /Users/mdproctor/claude/public/casehub ls-tree issue-6-sla-propagation -- blog/)",
       "Skill(git-commit)",
       "mcp__intellij__search_in_files_by_text",
-      "mcp__intellij__search_in_files_by_regex"    ]
+      "mcp__intellij__search_in_files_by_regex",
+      "Bash(GIT_SEQUENCE_EDITOR=\"cp /tmp/squash_plan.txt\" git -C /Users/mdproctor/claude/casehub/parent rebase -i upstream/main)",
+      "Bash(awk 'NR % 3 == 0 {print}')"
+    ]
   }
 }
