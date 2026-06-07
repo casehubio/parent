@@ -40,6 +40,7 @@ Consumers observe `Event<InboundMessage>` and react accordingly — they never c
 | `casehub-connectors-email` | SMTP outbound via `quarkus-mailer` |
 | `casehub-connectors-email-inbound` | `EmailInboundConnector` — IMAP polling, `EmailInboundAccountProvider` SPI |
 | `casehub-connectors-mcp` | MCP tool surface: `send_slack`, `send_teams`, `send_sms`, `send_whatsapp`, `send_email`. Depends on `core` + `email` + `quarkus-mcp-server-core:1.11.1`. Consuming apps add `quarkus-mcp-server-http` for transport. Integrates with Qhorus via `ConnectorMeshBridge` SPI when `connector-backend` is on classpath (qhorus#249). |
+| `casehub-connectors-slack-bot` | `SlackBotClient` — pure `java.net.http` client for the Slack Web API (`chat.postMessage`). Designed for use by `casehub-qhorus-slack-channel` (pending qhorus issue). No Slack SDK dependency (connectors#2). Also adds `InboundConnectorIds.SLACK_INBOUND = "slack-inbound"` constant and `slack-ts` / `slack-thread-ts` metadata fields to `casehub-connectors-core`. |
 | `casehub-connectors-qhorus` | Optional — `WatchdogAlertEvent → ConnectorService.send()` bridge (Qhorus → connectors); activates by classpath presence |
 | *(qhorus-side)* `casehub-qhorus-connector-backend` | Optional — `InboundMessage → ConnectorChannelBackend` bridge (connectors → Qhorus); lives in casehub-qhorus repo; activates by classpath presence |
 
@@ -79,6 +80,7 @@ Nothing in the casehubio ecosystem. Pure Java (`java.net.http.HttpClient`) + opt
 | `casehub-work-notifications` | Should delegate to `casehub-connectors` rather than maintain its own Slack/Teams implementations |
 | `casehub-qhorus` | Optional — `WatchdogAlertEvent → ConnectorService.send()` bridge activates by classpath presence |
 | `casehub-life` | Household and care notifications (contractor alerts, carer escalations) |
+| `casehub-qhorus` | `casehub-qhorus-slack-channel` (pending) — will depend on `casehub-connectors-slack-bot` for `SlackBotClient` |
 
 ---
 

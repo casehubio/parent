@@ -69,8 +69,6 @@
       "Skill(work-end)",
       "Skill(write-content)",
       "Bash(xargs -I{} git -C /Users/mdproctor/claude/public/casehub show {}:HANDOFF.md)",
-      "Bash(xargs -I{} sh -c 'git -C /Users/mdproctor/claude/public/casehub show {}:HANDOFF.md 2>/dev/null | grep -q \"Cross-Module\" && git -C /Users/mdproctor/claude/public/casehub show {}:HANDOFF.md')",
-      "Bash(mvn --batch-mode test -pl app -f /Users/mdproctor/claude/casehub/aml/pom.xml -Dtest=\"AmlTrustRoutingPolicyProviderTest,AmlTrustRoutingPolicyProviderWiringTest\")",
       "Bash(mvn --batch-mode test -pl app -f /Users/mdproctor/claude/casehub/aml/pom.xml)",
       "mcp__intellij__read_file",
       "mcp__intellij__search_file",
@@ -78,8 +76,22 @@
       "Bash(mvn *)",
       "Bash(jar tf *)",
       "Skill(publish-blog)",
-      "Bash(GIT_SEQUENCE_EDITOR=\"cp /tmp/squash_todo.txt\" git -C /Users/mdproctor/claude/casehub/parent rebase -i 244d447117307c6997ae76b388c7be07d1cf0fb0)",
-      "Bash(awk 'NR % 5 == 0 {print}')"
-    ]
+      "Bash(awk 'NR % 5 == 0 {print}')",
+      "Bash(xargs -I {} basename {})",
+      "Bash(git -C /Users/mdproctor/claude/casehub/parent stash pop)",
+      "Bash(git -C /Users/mdproctor/claude/casehub/parent fetch origin main)",
+      "Bash(git -C /Users/mdproctor/claude/casehub/parent cherry-pick 94910c6)",
+      "Bash(git -C /Users/mdproctor/claude/casehub/parent cherry-pick 1d5f2a4)",
+      "Bash(git -C /Users/mdproctor/claude/public/casehub push)",
+      "Bash(git -C /Users/mdproctor/claude/public/casehub branch -a)",
+      "Bash(git -C /Users/mdproctor/claude/public/casehub branch --show-current)",
+      "Bash(git -C /Users/mdproctor/claude/casehub/parent branch -a)",
+      "Bash(git -C /Users/mdproctor/claude/public/casehub ls-tree main blog/)",
+      "Bash(awk '{print $4}')",
+      "Bash(git -C /Users/mdproctor/claude/public/casehub ls-tree issue-94-work-lifecycle blog/)",
+      "Bash(git -C /Users/mdproctor/claude/public/casehub ls-tree issue-6-sla-propagation -- blog/)",
+      "Skill(git-commit)",
+      "mcp__intellij__search_in_files_by_text",
+      "mcp__intellij__search_in_files_by_regex"    ]
   }
 }
