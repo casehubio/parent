@@ -58,9 +58,15 @@ See `docs/DESIGN.md` for service class structure and the M-of-N coordination mod
 
 **Inbox query:** `WorkItemStore.scanRoots(assignee, candidateUser, candidateGroups)` — three independent OR predicates; returns root WorkItems (no `parentId`) including parents of visible children.
 
+### Conditional Outcomes (work#177)
+
+`Outcome` is now a 3-arg record: `Outcome(String name, String displayName, String condition)`. The `condition` field is a nullable JEXL expression evaluated at completion/rejection. `WorkItem.permittedOutcomes` stores full `Outcome` objects (not plain name strings); legacy rows are decoded transparently via format detection. `OutcomeValidator` (`runtime/service/`) encapsulates outcome name + condition validation, injected into `WorkItemService`. REST responses `WorkItemResponse.permittedOutcomes` and `WorkItemWithAuditResponse.permittedOutcomes` are now `List<Outcome>` (was `List<String>`).
+
 ### REST API
 
 REST endpoints cover: WorkItem inbox and creation, lifecycle transitions (start, complete, cancel, delegate, accept-delegation, decline-delegation), audit history, child instance queries with group progress, SLA compliance reports, dynamic filter rules, and child WorkItem spawning.
+
+**`PATCH /workitem-templates/{id}`** (work#199) — merge-patch endpoint (`Content-Type: application/merge-patch+json`, RFC 7396). Absent fields are unchanged; null clears.
 
 See `docs/DESIGN.md` for the full endpoint inventory.
 
