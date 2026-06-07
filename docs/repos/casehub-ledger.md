@@ -40,6 +40,8 @@ See `docs/DESIGN.md` for field model and entry type vocabulary.
 
 The ledger provides services for: cryptographic verification and inclusion proofs, Merkle tree operations (RFC 9162 MMR), optional Ed25519 tlog-checkpoint publishing, W3C PROV-DM lineage export, GDPR Art.17 token-severing erasure, nightly trust score recomputation with CDI routing events, trust score read-model export, and trust bootstrapping for new actors.
 
+**Incremental trust recomputation (ledger#115):** When `casehub.ledger.trust-score.incremental.enabled=true` (default false), `saveAttestation()` fires `AttestationRecordedEvent` → `IncrementalTrustUpdateObserver` (AFTER_SUCCESS + REQUIRES_NEW) → `PerActorTrustComputer` recomputes the affected actor's scores immediately using the same Bayesian Beta algorithm as the batch job. Fires `TrustScoreActorUpdatedEvent` on completion. The nightly `TrustScoreJob` remains as a consistency backstop.
+
 **`TrustGateService.allCapabilityScores(String actorId): Map<String, Double>`** — returns all CAPABILITY-scoped trust scores for an actor as a capability-tag → score map. Added in ledger#56 for the actor state view; complements the existing per-capability `currentScore()` method with a bulk read that avoids N individual queries.
 
 `LedgerEnricherPipeline` is an `@ApplicationScoped` CDI bean that owns enricher pipeline execution — shared by the JPA `@EntityListeners` path and the in-memory path. It is not an SPI (consumers do not implement it) but is the shared execution point for any consumer that adds enrichers.
