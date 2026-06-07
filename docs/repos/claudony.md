@@ -35,7 +35,10 @@ See `docs/DESIGN.md` for class structure and expiry policy implementations.
 
 Implements all casehub-engine worker provisioner and execution SPIs:
 - **`ClaudonyReactiveWorkerProvisioner`** (`WorkerProvisioner`) — creates a tmux session running the Claude CLI
-- **`ClaudonyWorkerExecutionManager`** (`WorkerExecutionManager`) — virtual thread watcher; publishes `WorkflowExecutionCompleted` when tmux session exits; supports recovery after server restart via tmux session options (claudony#146)
+- **`ClaudonyWorkerExecutionManager`** (`WorkerExecutionManager`) — virtual thread watcher; when a tmux session exits, stores `pendingExitSignals.put(caseId, roleName)` before publishing `WorkflowExecutionCompleted`; supports recovery after server restart via tmux session options (claudony#146)
+- **`ClaudonyLedgerEventCapture`** — replaces casehub-ledger's excluded `CaseLedgerEventCapture`; on `WorkerExecutionCompleted`, drains `pendingExitSignals` and calls `CaseHubRuntime.signal('workers.<role>.exited', true)`, patching case context and triggering goal evaluation (`ConcurrentHashMap` drain pattern, same as `drainCausalContext`)
+- **`CasehubStartupService`** — plain Java extraction from `ServerStartup.bootstrapCasehubWatchers()`; iterates registry on startup and restarts exit watchers for in-flight workers after server restart
+- **`ResearcherCase`** — first production CaseHub case definition in claudony; extends `YamlCaseHub`; triggers on `.topic != null`; auto-completes when `workers.researcher.exited == true` (claudony#148)
 - **`CaseChannelProvider`** — creates a Qhorus channel per case/purpose; `postToChannel` receives `correlationId` and `deadline` as first-class params (engine#343) — no longer parsed from content JSON
 - **`WorkerContextProvider`** — builds the Claude startup prompt from ledger lineage
 - **`WorkerStatusListener`** — maps tmux lifecycle events to CaseHub worker states
