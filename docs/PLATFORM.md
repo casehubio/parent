@@ -440,6 +440,18 @@ casehub-parent              (BOM — publish first; all others import it)
 | Channel write ACL | `casehub-qhorus` | `allowed_writers` on `Channel` |
 | Internal service-to-service | Network boundary | Trust implicit — no token auth on Qhorus, engine, or work REST resources |
 
+### Role Name Convention (`@RolesAllowed`)
+
+Role names used in `@RolesAllowed` annotations are CaseHub group names — `CurrentPrincipal.roles()` delegates to `groups()`, so group membership IS role membership. Role names must be documented when first introduced in any harness.
+
+**Known roles:**
+
+| Role name | Harness | What it gates |
+|---|---|---|
+| `admin` | `casehub-devtown` | `MemoryAdminResource` — internal memory store admin operations (devtown#71) |
+
+**Convention:** role names are lowercase, domain-prefixed when ambiguous (e.g. `devtown-admin` if `admin` becomes overloaded). `@RolesAllowed` is inert until `casehub-platform-oidc` is on classpath and OIDC is configured — add the module and configure the OIDC provider to issue the group claims.
+
 ### Privacy (GDPR)
 
 All GDPR concerns centralised in `casehub-ledger`:
