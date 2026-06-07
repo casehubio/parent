@@ -267,7 +267,8 @@ casehub-parent              (BOM — publish first; all others import it)
 | `casehub-qhorus` (runtime) | `casehub-openclaw` | `casehub` | Qhorus runtime for SPI registration |
 | `casehub-qhorus-api` | `casehub-drafthouse` | `runtime` | `ChannelService`, `MessageService`, `ChannelGateway`, `DataService`, `InstanceService` — channel mesh SPIs |
 | `casehub-qhorus` (runtime) | `casehub-drafthouse` | `runtime` | Channel mesh runtime — commitment lifecycle, typed messages |
-| `casehub-qhorus-api` | `casehub-drafthouse` | `api` | `ChannelProjection<S>`, `MessageView`, `MessageType` — debate projection SPI (qhorus#230) |
+| `casehub-qhorus-api` | `casehub-drafthouse` | `api` | `ChannelProjection<S>`, `RenderableProjection<S>`, `ProjectionResult<S>`, `MessageView`, `MessageType` — debate projection SPI |
+| `casehub-qhorus` (runtime) | `casehub-drafthouse` | `runtime` | `ProjectionService` — channel history fold for LLM context |
 | `casehub-engine-api` | `casehub-openclaw` | `casehub` | `WorkerProvisioner`, `CaseChannelProvider`, `WorkerStatusListener` SPI implementations; uses api (not runtime) to avoid engine CDI beans with unsatisfied persistence SPIs |
 | `casehub-platform-api` | `casehub-openclaw` | `core` | `CurrentPrincipal`, `GroupMembershipProvider` (permission-aware context) |
 | `casehub-ledger` (runtime) | `casehub-life` | `app` | Merkle audit, GDPR erasure, trust scoring |
