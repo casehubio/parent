@@ -82,6 +82,19 @@ All eight ship with `@DefaultBean @ApplicationScoped` no-op defaults that yield 
 
 **`CaseChannel.parseCaseId(String channelName): UUID`** — static utility in `casehub-engine-api` that parses a `case-{caseId}/{purpose}` channel name and returns the embedded `caseId`. Returns `null` for non-case channel names. Used by the actor-state module to resolve channels back to their originating case.
 
+### ActionRiskClassifier SPI (`api/spi/` — engine#402)
+
+Platform-level oversight gate for consequential worker actions. Workers return `WorkerResult` (breaking change — replaced `Map<String,Object>`) containing an optional `PlannedAction`. If `PlannedAction` is present, the engine gates via a WorkItem before advancing the case.
+
+Key facts:
+- `Agent.execute()` returns `WorkerResult`
+- `@RiskClassifier @ApplicationScoped` for consumer implementations (e.g. `TextClassifier` from `casehub-neural-text`)
+- Gate resolved via `WorkItem` in casehub-work — requires `casehub-engine-work-adapter` on classpath
+- `pendingActionGate` is in-memory only in v1 — a server restart loses pending gates (tracked engine#433)
+- Gate approval re-fires `WorkflowExecutionCompleted(plannedAction=null)` — normal completion path
+
+Consumer exploration issues: aml#42, clinical#47, devtown#56, life#20, openclaw#6.
+
 ### Blackboard / PlanItem Lifecycle
 
 `BlackboardRegistry` tracks `CasePlanModel` per case. Each binding creates a `PlanItem` that transitions through: `PENDING` → `DELEGATED` (control handed to external system, e.g. human task) or `RUNNING` (Quartz-executed capability worker) → terminal.
@@ -200,6 +213,7 @@ casehub-engine is Layer 4 (Enforcement) in the Qhorus normative accountability f
 - `casehub-work-adapter`: done — two-way bridge with atomicity guarantees
 - `CapabilityHealth` integration: in progress (engine#341)
 - `AgentRoutingStrategy` SPI: done — `casehub-work-core` removed from engine runtime routing; `TrustWeightedAgentStrategy` in ledger module (engine#337, engine#336)
+- `ActionRiskClassifier` SPI — platform-level oversight gate for consequential worker actions: done (engine#402)
 - Resilience module (DLQ, PoisonPill, timeout): done
 - Worker↔Session↔Channel triple correlation: not yet stored
 - Escalation rules, lineage-driven planning: ahead

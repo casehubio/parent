@@ -343,7 +343,7 @@ casehub-parent              (BOM — publish first; all others import it)
 | MCP server for controller Claude | `claudony` | Claudony exposes an MCP server that Claude Code (and other LLM clients) use to manage sessions, inspect cases, and post to channels. Distinct from Qhorus MCP tools — claudony's MCP surface is operator-facing; Qhorus MCP tools are agent-facing. |
 | Browser + agent authentication | `claudony` | WebAuthn passkeys + `X-Api-Key` header |
 | Oversight gate lifecycle | `casehub-openclaw` | `OversightGateService` — evaluate whether an agent action requires human oversight, route to oversight channel, await and fulfill the commitment. **Intended home: `casehub-engine-api`** — currently in casehub-openclaw pending extraction. See Known Placement Violations below. |
-| Action risk classification | `casehub-openclaw` | `ActionRiskClassifier` SPI — classifies an action as requiring oversight before execution. `TextClassifier` from `casehub-neural-text` is the recommended implementation. **Intended home: `casehub-engine-api`** — currently in casehub-openclaw; tracked in engine#402. See Known Placement Violations below. |
+| Action risk classification | `casehub-engine` | `ActionRiskClassifier` SPI — workers return `WorkerResult` containing a `PlannedAction`; engine gates via WorkItem before case advances. `@RiskClassifier @ApplicationScoped` for consumer implementations. Gate resolved via casehub-work-adapter (requires classpath presence). `pendingActionGate` in-memory only in v1 (engine#433). Gate approval re-fires `WorkflowExecutionCompleted(plannedAction=null)`. Consumers: aml, clinical, devtown, life, openclaw. `TextClassifier` from `casehub-neural-text` is the recommended implementation. Shipped engine#402. |
 | OpenClaw worker provisioner | `casehub-openclaw` | `WorkerProvisioner` SPI implementation — provisions OpenClaw instances via `POST /hooks/agent`; no heartbeat required for in-case steps. Two modes: heartbeat (OpenClaw autonomous monitoring → creates CaseHub case) vs direct call (CaseHub case step → on-demand skill execution). See [`docs/repos/casehub-openclaw.md`](repos/casehub-openclaw.md). |
 | Qhorus ↔ OpenClaw channel bridge | `casehub-openclaw` | `ChannelBackend` SPI — bidirectional: Qhorus dispatches → `ChannelBackend.post()` → `/hooks/agent`; OpenClaw output → `deliver:webhook` → Qhorus endpoint → `MessageService.dispatch()` |
 | ChannelContextWindow (short-term channel context for LLM injection) | `casehub-openclaw` | `MessageObserver` SPI → per-channel ring buffer (configurable size + TTL) → REST `GET /channel-context/{agentId}?since={sequenceNumber}`. Python SDK `before_prompt_build` hook injects result as `appendSystemContext` (compaction-safe). Best-effort — correctness guaranteed by Qhorus; intelligence layer only. |
@@ -501,7 +501,6 @@ SPIs and capabilities that exist in the wrong module pending extraction. Do not 
 | Capability | Current home | Intended home | Tracking |
 |---|---|---|---|
 | `CaseChannelLayout` — normative 3-channel constants | `claudony-casehub` | `casehub-engine-api` or `casehub-platform-api` | parent#93 |
-| `ActionRiskClassifier` SPI | `casehub-openclaw` | `casehub-engine-api` | engine#402 |
 | `OversightGateService` | `casehub-openclaw` | `casehub-engine-api` | *(untracked — file issue before implementing)* |
 
 ---
