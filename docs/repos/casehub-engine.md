@@ -78,6 +78,8 @@ Eight operational SPIs (4 blocking + 4 reactive mirrors):
 
 All eight ship with `@DefaultBean @ApplicationScoped` no-op defaults that yield automatically to consumer-provided implementations.
 
+**`WorkerProvisioner.provision()` returns `ProvisionResult(UUID causedByEntryId)`** (blocking) / `Uni<ProvisionResult>` (reactive). The `causedByEntryId` carries the ledger entry ID of the Qhorus COMMAND that triggered provisioning, for causal audit linkage. Implementations that cannot resolve a causal entry return `ProvisionResult.empty()`. See `casehub/garden: docs/protocols/casehub/provisioner-spi-provision-result.md`. Claudony wiring tracked in claudony#140.
+
 **`WorkerExecutionManager.getActiveCaseIds(String workerId): List<UUID>`** — `default` method returning Quartz job case UUIDs currently scheduled for the given worker. Added in engine#56 for the actor state view; consumers that implement `WorkerExecutionManager` inherit the default unless they override it.
 
 **`CaseChannel.parseCaseId(String channelName): UUID`** — static utility in `casehub-engine-api` that parses a `case-{caseId}/{purpose}` channel name and returns the embedded `caseId`. Returns `null` for non-case channel names. Used by the actor-state module to resolve channels back to their originating case.
@@ -95,6 +97,12 @@ Key facts:
 
 Consumer exploration issues: aml#42, clinical#47, devtown#56, life#20, openclaw#6.
 
+**Binding guard requirement:** Case definitions with consequential workers MUST include rejection handler bindings. The binding trigger condition must exclude gate signal paths to prevent re-scheduling while a gate is pending:
+```java
+.on(new ContextChangeTrigger(".result == null and .actionGateRejected == null and .actionGateApproved == null"))
+```
+Without this, a pending gate triggers `CONTEXT_CHANGED`, which re-evaluates the trigger and re-schedules the worker before the gate resolves — producing an infinite loop with no obvious cause.
+
 ### Blackboard / PlanItem Lifecycle
 
 `BlackboardRegistry` tracks `CasePlanModel` per case. Each binding creates a `PlanItem` that transitions through: `PENDING` → `DELEGATED` (control handed to external system, e.g. human task) or `RUNNING` (Quartz-executed capability worker) → terminal.
@@ -106,6 +114,8 @@ Consumer exploration issues: aml#42, clinical#47, devtown#56, life#20, openclaw#
 Two-way bridge:
 - **Outbound** (`HumanTaskScheduleHandler`) — creates WorkItems from `HumanTaskTarget` bindings (inline or template mode), sets `callerRef`, `scope`, `payload`. Atomicity: WorkItem creation + `planItemStore.save(DELEGATED)` + `markDelegated()` in single `@Transactional`.
 - **Inbound** (`WorkItemLifecycleAdapter`) — translates `WorkItemLifecycleEvent` (COMPLETED, REJECTED, CANCELLED, EXPIRED — ESCALATED excluded as non-terminal) to PlanItem transitions, evaluates `outputMapping`, fires `CONTEXT_CHANGED`. Also observes `WorkItemGroupLifecycleEvent` for M-of-N SpawnGroup outcomes.
+
+**`workItemEscalated` context signal:** When a WorkItem is ESCALATED (SLA breach, all escalation groups exhausted), the adapter writes `{workItemId, newGroups, bindingName}` to the case context and fires `CONTEXT_CHANGED`. Case definitions can react via `contextChange(".workItemEscalated")` bindings — useful for audit, monitoring, or triggering a fallback worker. The PlanItem stays in its current state (ESCALATED is non-terminal for the PlanItem). Refs engine#338, engine#400.
 
 ### CaseSignalSink SPI (`casehub-work-api`)
 
