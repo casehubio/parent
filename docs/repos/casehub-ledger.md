@@ -42,7 +42,12 @@ The ledger provides services for: cryptographic verification and inclusion proof
 
 **Incremental trust recomputation (ledger#115):** When `casehub.ledger.trust-score.incremental.enabled=true` (default false), `saveAttestation()` fires `AttestationRecordedEvent` → `IncrementalTrustUpdateObserver` (AFTER_SUCCESS + REQUIRES_NEW) → `PerActorTrustComputer` recomputes the affected actor's scores immediately using the same Bayesian Beta algorithm as the batch job. Fires `TrustScoreActorUpdatedEvent` on completion. The nightly `TrustScoreJob` remains as a consistency backstop.
 
-**`TrustGateService.allCapabilityScores(String actorId): Map<String, Double>`** — returns all CAPABILITY-scoped trust scores for an actor as a capability-tag → score map. Added in ledger#56 for the actor state view; complements the existing per-capability `currentScore()` method with a bulk read that avoids N individual queries.
+**`TrustGateService` API (ledger#118):** now injects `TrustScoreSource` (not `ActorTrustScoreRepository`); returns `OptionalDouble` (was `Optional<Double>`); `findScore()` removed; `dimensionScores()` renamed to `allDimensionScores()`. `TrustGateService.allCapabilityScores(String actorId): Map<String, Double>` — returns all CAPABILITY-scoped trust scores as a capability-tag → score map (ledger#56 for actor state view).
+
+**Trust score architecture (ledger#118):** On-read computation via `TrustScoreSource` SPI — three implementations:
+- `MaterializedTrustScoreSource` — reads pre-computed scores from `ActorTrustScoreRepository` (original path)
+- `CachedTrustScoreSource` — wraps `MaterializedTrustScoreSource` with in-memory TTL cache; replaces the engine-side `TrustScoreCache` (engine migration tracked in ledger#123)
+- `ComputedTrustScoreSource` — computes on demand via `TrustScoreCalculator` (pure computation extracted from `PerActorTrustComputer`)
 
 `LedgerEnricherPipeline` is an `@ApplicationScoped` CDI bean that owns enricher pipeline execution — shared by the JPA `@EntityListeners` path and the in-memory path. It is not an SPI (consumers do not implement it) but is the shared execution point for any consumer that adds enrichers.
 
@@ -57,6 +62,7 @@ See `docs/DESIGN.md` for service class structure.
 | `LedgerEntryRepository` / `ReactiveLedgerEntryRepository` | — | JPA default; `InMemoryLedgerEntryRepository @Alternative @Priority(1)` in `casehub-ledger-memory` (wins over JPA by priority) | Persistence for ledger entries |
 | `LedgerMerkleFrontierRepository` | — | JPA default (`JpaLedgerMerkleFrontierRepository @Alternative`) | Read/replace the per-subject Merkle MMR frontier — extracted from direct `EntityManager` injection in `LedgerVerificationService` |
 | `ActorTrustScoreRepository` | — | JPA default | Persistence for trust scores |
+| `TrustScoreSource` | `MaterializedTrustScoreSource` | `CachedTrustScoreSource`, `ComputedTrustScoreSource` | On-read trust score retrieval; injected into `TrustGateService` (ledger#118) |
 | `ActorIdentityProvider` | — | JPA default | Tokenise / resolve / erase actor identities (GDPR) |
 | `DecisionContextSanitiser` | no-op | — | Sanitise PII from decision context JSON before storage |
 | `LedgerTraceIdProvider` | OTel span | — | Override OTel trace ID extraction |
