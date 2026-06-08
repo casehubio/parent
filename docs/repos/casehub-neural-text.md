@@ -19,8 +19,8 @@ Two related capabilities in one repo:
 
 | Module | artifactId | Type | Purpose |
 |--------|-----------|------|---------|
-| `inference-api/` | `casehub-inference-api` | Pure Java, zero deps | `InferenceModel` SPI, `InferenceInput`, `InferenceOutput`, `ModelConfig` |
-| `inference-runtime/` | `casehub-inference-runtime` | JVM library | ONNX Runtime JVM + HuggingFace Tokenizers JNI; session management, tokenization |
+| `inference-api/` | `casehub-inference-api` | Pure Java, zero deps | `InferenceModel` SPI, `InferenceInput`, `InferenceOutput`, `InferenceException` |
+| `inference-runtime/` | `casehub-inference-runtime` | JVM library | ONNX Runtime JVM + HuggingFace Tokenizers JNI; `OnnxInferenceModel`, `ModelConfig`, `ModelLoadException`; session management, tokenization |
 | `inference-tasks/` | `casehub-inference-tasks` | JVM library | `NliClassifier`, `TextClassifier`, `ScalarRegressor`, `CrossEncoderReranker` |
 | `inference-splade/` | `casehub-inference-splade` | JVM library | SPLADE sparse embeddings (`Map<Integer, Float>`); log-saturation + threshold |
 | `inference-inmem/` | `casehub-inference-inmem` | Test library | Deterministic `InferenceModel` stubs; no JNI; safe in all test contexts |
@@ -111,7 +111,12 @@ The prototype is the first deliverable. Until confirmed, all `inference-*` modul
 
 ## Current State
 
-Scaffold complete (2026-06-04). No source code. Design agreed — see:
+C3 (SPI Foundation) complete (neural-text#3). Implemented:
+- `inference-api`: `InferenceModel` SPI, `InferenceInput`, `InferenceOutput`, `InferenceException`
+- `inference-runtime`: `OnnxInferenceModel`, `ModelConfig` (construction concern — moved here from api), `ModelLoadException`; C2 bridge classes (`OnnxSessionLoader`, `RawInference`, `TokenizerLoader`) deleted and replaced by `OnnxInferenceModel`
+- `inference-inmem`: `InMemoryInferenceModel` — deterministic stubs, no JNI, safe in all test contexts
+
+Design specs:
 - `docs/specs/2026-06-03-ai-fusion-hybrid-fact-space.md` (typed fact space + RAG context)
 - `docs/specs/2026-06-03-standalone-rag-retrieval-brief.md` (inference module design)
 - `Hortora/spec: docs/superpowers/specs/2026-06-03-onnx-inference-module-design.md` (authoritative inference design)

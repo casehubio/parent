@@ -21,7 +21,7 @@ A `WorkItem` is deliberately NOT called `Task` — CNCF Serverless Workflow and 
 | `casehub-work-core` | Jandex library (no JPA) | `WorkBroker` and built-in `WorkerSelectionStrategy` implementations — used for human task routing only; casehub-engine uses its own `AgentRoutingStrategy` SPI (engine#337) |
 | `runtime` | Full Quarkus extension | WorkItem entity, services, REST API, filter engine |
 | `deployment` | Quarkus extension deployment | Build-time processor (`@BuildStep`); pairs with `runtime` |
-| `casehub-work-testing` | Test utilities | In-memory stores (WorkItem, audit, notes, issue links); zero-datasource alternative to JPA stores |
+| `casehub-work-persistence-memory` (`persistence-memory/`) | Test utilities | In-memory stores (WorkItem, audit, notes, issue links, routing cursor) using `ConcurrentHashMap` (thread-safe); `@Alternative @Priority(100)` (Tier 3 — ephemeral); zero-datasource alternative to JPA stores |
 | `casehub-work-ledger` | Optional module | Attaches casehub-ledger for WorkItem ledger entries, trust scoring, and peer attestation. Requires both `db/migration` and `db/ledger/migration` Flyway locations in test config (since ledger#95 moved base migrations). |
 | `casehub-work-queues` | Optional module | Label-based queue views with JEXL/JQ filter expressions |
 | `casehub-work-queues-dashboard` | Optional module | SSE-based queue dashboard UI |
@@ -48,13 +48,13 @@ A `WorkItem` is deliberately NOT called `Task` — CNCF Serverless Workflow and 
 
 **Key field:** `scope VARCHAR(255)` (V31 migration) — hierarchical scope path for SLA preference resolution via `casehub-platform-api`'s `Path` type; null = org root. Set by callers; propagated from casehub-engine via `HumanTaskTarget.scope` (engine#330).
 
-See `docs/DESIGN.md` for status enumeration and field model.
+See `docs/ARC42STORIES.MD` for status enumeration and field model.
 
 ### Core Services
 
 Services cover: WorkItem lifecycle management (create, claim, complete, delegate, expire, cancel) with schema validation against templates; template CRUD and instantiation with payload override support; worker assignment via pluggable selection strategies; conflict-of-interest exclusion policy; M-of-N parallel group completion coordination; child spawning with idempotency; label-based filter routing; and SLA compliance reporting.
 
-See `docs/DESIGN.md` for service class structure and the M-of-N coordination model.
+See `docs/ARC42STORIES.MD` for service class structure and the M-of-N coordination model.
 
 **Inbox query:** `WorkItemStore.scanRoots(assignee, candidateUser, candidateGroups)` — three independent OR predicates; returns root WorkItems (no `parentId`) including parents of visible children.
 
@@ -159,6 +159,5 @@ Each optional module owns a dedicated V-number range to prevent collision when m
 
 ## Design Documents
 
-- [docs/DESIGN.md](https://raw.githubusercontent.com/casehubio/work/main/docs/DESIGN.md) — implementation-tracking design doc
-- [docs/ARCHITECTURE.md](https://raw.githubusercontent.com/casehubio/work/main/docs/ARCHITECTURE.md) — module graph, domain model, SPI contracts
+- [docs/ARC42STORIES.MD](https://raw.githubusercontent.com/casehubio/work/main/docs/ARC42STORIES.MD) — module graph, domain model, SPI contracts, status enumeration, service class structure (migrated from DESIGN.md + ARCHITECTURE.md in work#246)
 - [adr/INDEX.md](https://raw.githubusercontent.com/casehubio/work/main/adr/INDEX.md) — architectural decision records

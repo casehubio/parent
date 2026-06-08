@@ -20,13 +20,14 @@ memory-inmem/   ← optional: volatile ConcurrentHashMap adapter (@Alternative @
 memory-jpa/     ← optional: JPA/PostgreSQL adapter (@ApplicationScoped) — FTS via websearch_to_tsquery; Flyway V1000 at classpath:db/memory/migration
 memory-sqlite/  ← optional: SQLite adapter (@Alternative @Priority(1)) — HikariCP WAL + FTS5; Flyway programmatic; configure casehub.memory.sqlite.path
 memory-mem0/    ← optional: Mem0 REST adapter (@Alternative @Priority(1)) — vector embeddings + semantic search via Mem0 OSS (Docker + pgvector); infer:false for verbatim 1:1 storage; compound user_id={tenantId}::{entityId} for tenant isolation
+memory-graphiti/ ← optional: @Alternative @Priority(2) Graphiti REST GraphCaseMemoryStore — extends CaseMemoryStore; adds graphQuery(GraphMemoryQuery) for temporal graph queries; LLM entity extraction (async); temporal knowledge graph (Neo4j/FalkorDB/Kuzu). Configure: quarkus.rest-client.graphiti.url, casehub.memory.graphiti.api-key
 agent-api/      ← optional: AgentProvider SPI (Mutiny only, no Quarkus) — package: io.casehub.platform.agent
 agent-claude/   ← optional: ClaudeAgentProvider @ApplicationScoped + ClaudeAgentClient @Startup — activates by classpath presence; requires Claude CLI; concurrent-session semaphore
 ```
 
 `platform-api/` must never import Quarkus, CDI, JPA, or any casehubio artifact. This constraint is what makes the SPIs useful to every module in the stack — including modules that have no Quarkus dependency of their own.
 
-**Package structure in `platform-api/`:** `identity` (`CurrentPrincipal`, `GroupMembershipProvider`, `GroupMember`, `ActorType`, `ActorTypeResolver`), `preferences` (`PreferenceProvider`, `PreferenceKey`, `Preferences`, `SettingsScope`), `path` (`Path`), `memory` (`CaseMemoryStore`, `MemoryInput`, `Memory`, `MemoryQuery`, `EraseRequest`, `MemoryDomain`, `MemoryPermissions`). `ReactiveCaseMemoryStore` lives in `platform/`, not `platform-api/` — Mutiny is a Quarkus dep and would violate the zero-dep constraint.
+**Package structure in `platform-api/`:** `identity` (`CurrentPrincipal`, `GroupMembershipProvider`, `GroupMember`, `ActorType`, `ActorTypeResolver`), `preferences` (`PreferenceProvider`, `PreferenceKey`, `Preferences`, `SettingsScope`), `path` (`Path`), `memory` (`CaseMemoryStore`, `GraphCaseMemoryStore` (graph-native SPI extension — adds `graphQuery(GraphMemoryQuery)` for temporal queries), `MemoryCapability` (self-description enum — adapters declare `capabilities()`; callers use `requireCapability()` for typed exceptions), `MemoryInput`, `Memory`, `MemoryQuery`, `GraphMemoryQuery`, `EraseRequest`, `MemoryDomain`, `MemoryPermissions`). `ReactiveCaseMemoryStore` lives in `platform/`, not `platform-api/` — Mutiny is a Quarkus dep and would violate the zero-dep constraint.
 
 `config/` and `oidc/` are optional — consumers add them as compile-scope dependencies to activate the capability. Each displaces its corresponding `@DefaultBean` mock automatically via CDI without exclusion config.
 
@@ -194,6 +195,7 @@ This is an explicit design choice, not a missing feature. The two patterns serve
 | `memory-jpa/` | `casehub-platform-memory-jpa` | @ApplicationScoped | PostgreSQL + Flyway V1000 | compile | Default persistence; FTS via `websearch_to_tsquery` when `MemoryQuery.question` is set |
 | `memory-sqlite/` | `casehub-platform-memory-sqlite` | @Alternative @Priority(1) | SQLite + HikariCP WAL + FTS5 | compile | Durable single-process deployments. Configure `casehub.memory.sqlite.path` |
 | `memory-mem0/` | `casehub-platform-memory-mem0` | @Alternative @Priority(1) | Mem0 REST API + pgvector | compile | Vector embedding + semantic search. Configure `casehub.memory.mem0.api-key`, `quarkus.rest-client.mem0.url`. `infer=false` preserves 1:1 `store()`/memoryId contract. Do NOT combine with memory-inmem or memory-sqlite. |
+| `memory-graphiti/` | `casehub-platform-memory-graphiti` | @Alternative @Priority(2) | Graphiti REST API | compile | Temporal knowledge graph with LLM entity extraction (async). Extends `GraphCaseMemoryStore` SPI — adds `graphQuery(GraphMemoryQuery)` for temporal queries. Configure `quarkus.rest-client.graphiti.url`, `casehub.memory.graphiti.api-key`. Backend: Neo4j, FalkorDB, or Kuzu. |
 
 All adapters displace `NoOpCaseMemoryStore @DefaultBean` automatically by classpath presence. Do not combine adapters in the same scope — `@Priority(1)` wins and lower-priority stores are bypassed.
 
@@ -266,6 +268,7 @@ Add as a test-scoped dependency:
 | `memory-sqlite/` | ✅ shipped (#37) | SQLite CaseMemoryStore — xerial JDBC + HikariCP WAL + FTS5, programmatic Flyway at `classpath:db/memory-sqlite/migration`. @Alternative @Priority(1). Configure `casehub.memory.sqlite.path` |
 | `scim/` | ✅ shipped (#45) | SCIM 2.0 GroupMembershipProvider — @ApplicationScoped, displaces mock by classpath presence |
 | `memory-mem0/` | ✅ shipped (#33) | Mem0 REST CaseMemoryStore — @Alternative @Priority(1); vector embeddings via Mem0 OSS (Docker + pgvector); infer:false; compound user_id for tenant isolation; RELEVANCE via POST /search with top_k + threshold |
+| `memory-graphiti/` | ✅ shipped (#34) | `@Alternative @Priority(2)` Graphiti REST `GraphCaseMemoryStore` — temporal knowledge graph (Neo4j/FalkorDB/Kuzu); LLM entity extraction (async); `graphQuery(GraphMemoryQuery)` for temporal queries; extends `CaseMemoryStore` with graph-native SPI |
 | `agent-api/` | ✅ shipped (#55) | AgentProvider SPI — `run(AgentSessionConfig) → Multi<AgentEvent>`; Mutiny only, no Quarkus; package: `io.casehub.platform.agent` |
 | `agent-claude/` | ✅ shipped (#55) | `ClaudeAgentProvider @ApplicationScoped` + `ClaudeAgentClient @Startup` — activates by classpath presence; requires Claude CLI; concurrent-session semaphore (configurable); wall-clock timeout; three exception types: `AgentProcessException`, `AgentSessionLimitException`, `AgentTimeoutException` |
 | `preferences-editor/` | 🔜 #8 | Admin write path for preferences — REST API, separate from providers |

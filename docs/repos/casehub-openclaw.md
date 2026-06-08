@@ -18,7 +18,7 @@ Integration tier module (like Claudony). Bridges CaseHub ↔ OpenClaw. Provision
 | Module | Contents |
 |--------|----------|
 | `core` | `ContextMessage`, `WindowContent`, `ChannelRingBuffer`, `ChannelContextWindowService`, `OpenClawHookClient`, REST context endpoint. `OpenClawHookClient.invoke()` has a 5-arg overload accepting explicit `deliveryUrl` — used by `OversightGateService` for oversight delivery. `OpenClawCasehubConfig.Oversight` group: `Optional<String> agentId()` (dedicated messaging agent for oversight; falls back to work agent if absent). |
-| `casehub` | `ChannelContextWindowObserver` (`MessageObserver` SPI), `OpenClawChannelBackend` (`ChannelBackend` SPI), `OpenClawWorkerProvisioner`, `OpenClawCaseChannelProvider`, `OpenClawWorkerStatusListener`, `OpenClawAgentRegistry` (tracks agentId → session registration). **Epic 6:** `OversightGateService` (owns `evaluate()`+`fulfill()` gate lifecycle), `ActionRiskClassifier` + `DefaultActionRiskClassifier` (local SPI placeholder for engine#402; Phase 1: always AUTONOMOUS — override via `@Alternative @Priority(1)`), `SpeechActClassifier` + `DefaultSpeechActClassifier` (Phase 1: always DONE — override via `@Alternative @Priority(1)`), `CaseChannelNames` (package-private channel name utility). |
+| `casehub` | `ChannelContextWindowObserver` (`MessageObserver` SPI), `OpenClawChannelBackend` (`ChannelBackend` SPI), `OpenClawWorkerProvisioner`, `OpenClawCaseChannelProvider`, `OpenClawWorkerStatusListener`, `OpenClawAgentRegistry` (tracks agentId → session registration). **Epic 6:** `OversightGateService` — `evaluate()` archives deliver:webhook text as non-resolving STATUS (no commitment state change); `fulfill()` processes human oversight gate responses (Phase 2 gate entry wiring deferred to openclaw#30). `CaseChannelNames` (package-private channel name utility). |
 | `app` | Runnable Quarkus application — wires core + casehub modules. REST endpoints: `POST /openclaw/delivery/channel/{channelId}` (deliver:webhook → `OversightGateService.evaluate()`), `POST /openclaw/delivery/oversight/{gateId}` (oversight response → `OversightGateService.fulfill()`), `GET /channel-context/{agentId}?since={seq}` |
 | `plugin/` | TypeScript OpenClaw plugin — `before_prompt_build` hook via Plugin SDK; published to npm. TypeScript-only due to OpenClaw Plugin SDK design — see ADR 0001. |
 | `python/` | Python channel client library (thin HTTP wrapper); published to PyPI. No hook registration (hooks are TypeScript-only). |
@@ -53,20 +53,13 @@ Implements the Qhorus `ChannelBackend` SPI to wire bidirectional message flow be
 
 `OversightGateService` owns the gate lifecycle:
 
-- `evaluate(workChannelId, agentId, output)` — called by the delivery webhook for every OpenClaw result:
-  1. `SpeechActClassifier.classify()` → `MessageType` (Phase 1: always DONE)
-  2. `ActionRiskClassifier.classify()` → `RiskDecision` (Phase 1: always AUTONOMOUS)
-  3. AUTONOMOUS: dispatch to work channel. GATE_REQUIRED: post COMMAND to oversight channel + invoke OpenClaw to deliver the gate question to a human
+- `evaluate(workChannelId, agentId, output)` — called by the delivery webhook for every OpenClaw result: archives the agent text output as a non-resolving STATUS message on the work channel. Completion signaling is via MCP tool calls (`casehub_done`, `casehub_reject`, etc.) — no speech-act classification occurs. `commitmentId` is injected into the COMMAND message by `OpenClawChannelBackend.post()`.
 - `fulfill(gateId, rawOutput)` — called by the oversight delivery webhook when human responds:
   1. Parse approval (first word must be `"approved"`; null/blank → rejected)
   2. Look up `Commitment` by `correlationId=gateId` (durable — survives restart)
   3. Dispatch RESPONSE/DECLINE to oversight (closes Commitment) + STATUS to work channel
 
-**Phase 1 behaviour:** `ActionRiskClassifier` always returns AUTONOMOUS — gate never fires. The oversight gate is fully wired and integration-tested but inert until a risk classifier implementation is registered.
-
 **Known limitation:** STATUS dispatched to work channel instead of DONE because `inReplyTo` (original COMMAND message ID) is not available at delivery time (openclaw#16).
-
-**Cross-repo:** `ActionRiskClassifier` SPI will migrate to `casehub-engine-api` (engine#402); `SpeechActClassifier` Phase 2/3 tracked in openclaw#10.
 
 ### Layer 0 — Quarkus MCP Endpoint (Epic 7)
 
@@ -156,7 +149,7 @@ These two modes are mutually exclusive per invocation. A given agent interaction
 - Epic 3 (ChannelContextWindow service): complete — in-memory ring buffer, `ChannelContextWindowObserver`, REST endpoint (branch `issue-003-channel-context-window`)
 - Epic 4 (CaseHub SPIs: `WorkerProvisioner`, `ChannelBackend`, `CaseChannelProvider`, `WorkerStatusListener`): complete — branch `issue-4-casehub-spi-implementations`
 - Epic 5 (TypeScript Plugin SDK + Python client library): complete — `plugin/` (npm), `python/` (PyPI), ADR 0001
-- Epic 6 (OversightGateService, ActionRiskClassifier, SpeechActClassifier, oversight delivery endpoint): complete
+- Epic 6 (OversightGateService, oversight delivery endpoint): complete; subsequently simplified in openclaw#28 — `evaluate()` archives webhook text as non-resolving STATUS, gate entry wired to MCP tool calls (`casehub_done`/`casehub_reject`) rather than speech-act classification
 - Epic 7 (Layer 0 — Quarkus MCP endpoint, 9 tools, 3 resources, 4 plugin hooks, global SKILL.md files): complete (openclaw#19)
 
 ---

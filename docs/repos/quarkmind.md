@@ -40,6 +40,7 @@ Its primary value in the application family is as a **proof of generality**: the
 | Adaptive selection | Binding conditions | Plugin selection based on game state in CaseFile |
 | Durable execution | Quarkus Flow | `FlowEconomicsTask` — build order execution with retry |
 | Rule-based reasoning | Drools | `DroolsStrategyTask`, `DroolsTacticsTask`, `DroolsScoutingTask` |
+| Typed advisory channel | `casehub-qhorus` | `ScoutingIntelBroker` publishes to `quarkmind-scouting-intel`; LLM advisors subscribe as `MessageObserver`. Dual-stack: synchronous in-memory broker (for plugins) + async advisory channel (for LLM advisors — quarkmind#180/#181) |
 
 ## Tutorial Layers
 
@@ -49,7 +50,7 @@ The layered structure applies to the agentic harness — not to the SC2 emulatio
 |-------|------|---------------|--------|
 | 1 | Naive game loop — direct plugin calls, no CaseHub | Baseline: no adaptive coordination, no blackboard | pending documentation |
 | 2 | casehub-engine blackboard | No shared state between plugins; each plugin is an island | in use (active) |
-| 3 | casehub-qhorus | No typed inter-plugin communication | pending |
+| 3 | casehub-qhorus | No typed inter-plugin communication | in use (dual-stack) |
 | 4 | casehub-ledger | No audit trail for agent decisions | pending |
 | 5 | Adaptive plugin selection | Fixed plugin dispatch; no binding conditions | pending |
 | 6 | Trust routing | No plugin performance tracking; no routing based on outcome history | pending |
@@ -63,6 +64,8 @@ quarkmind
   → casehub-persistence-memory (in-memory store for fast game-loop ticks)
   → Drools           (rule-based strategy, tactics, scouting)
   → Quarkus Flow     (durable economics build order execution)
+  → casehub-qhorus   (advisory channel for LLM observers; persistence-memory for @QuarkusTest isolation)
+  → casehub-ledger   (plugin outcome recording, trust scoring — L4)
 ```
 
 ## Current State

@@ -20,7 +20,7 @@ LAYER-LOG.md in the project root is the authoritative layer-by-layer record with
 |-------|------|---------------|--------|
 | 1 | Naive Java — no CaseHub | Baseline: direct service calls to analysis agents, no accountability | ✅ complete — scaffold (#8), vocabulary (#9), naive service (#27) |
 | 2 | casehub-work | No formal SLA for reviewer response; reviewer assignments not tracked | **in progress** — devtown#41 ✅ devtown#42 ✅; LAYER-LOG entry pending engine#326 |
-| 3 | casehub-qhorus | No formal obligation per specialist reviewer; DECLINE when outside expertise | ✅ complete — devtown#52; LAYER-LOG entry complete |
+| 3 | casehub-qhorus | No formal obligation per specialist reviewer; DECLINE when outside expertise | ✅ complete — devtown#52 + devtown#64; LAYER-LOG entry complete. `QhorusPrReviewService` sets `allowedWriters=ORCHESTRATOR` on all three channels; `requireContract()` validates both `allowedTypes` and `allowedWriters`. DONE/DECLINE dispatches use ORCHESTRATOR sender (agents will use own identity in Layer 6). |
 | 4 | casehub-ledger | No tamper-evident review record; cannot trace production incident to missed finding | pending |
 | 5 | casehub-engine | Fixed review pipeline; no adaptive routing on security flags or architecture changes | ✅ complete — PR review CasePlanModel (#10); 38 tests |
 | 6 | Trust routing | No trust model; experienced security reviewers not prioritised on sensitive PRs | ✅ complete — devtown#57; LAYER-LOG entry complete |
@@ -32,6 +32,7 @@ LAYER-LOG.md in the project root is the authoritative layer-by-layer record with
 - Trust dimension definitions (`review-thoroughness`, `false-positive-rate`, `scope-calibration`)
 - Routing thresholds per capability (e.g. `security-review` requires ≥ 0.70 trust)
 - PR review `CasePlanModel` — goals, bindings, content-driven routing from code analysis findings
+- `PrReviewCaseDefinition` (promoted to `review/src/main/` in devtown#60) — fluent DSL factory with `LambdaExpressionEvaluator` for binding conditions; uses `HumanTaskTarget.inline()` for human-approval binding; `PrReviewCaseDefinitionEquivalenceTest` verifies structural parity with YAML
 - Merge queue `CasePlanModel` (casehub-refinery) — batch-then-bisect strategy as binding conditions
 - Cross-repo coordinated merge — parent case + per-repo sub-cases with automatic rollback on fault
 - Trust-weighted selection strategy for code review domain. See docs/DESIGN.md for implementation detail.
