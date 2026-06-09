@@ -95,6 +95,7 @@ The prototype is the first deliverable. Until confirmed, all `inference-*` modul
 |---|---|---|
 | `casehub-platform-api` | `rag` | `CurrentPrincipal`, `TenancyConstants` — tenant isolation |
 | LangChain4j | `rag` | RAG pipeline, `OnnxEmbeddingModel`, Qdrant `EmbeddingStore` |
+| `io.qdrant:client` | `rag` | Qdrant REST client for direct named-vector-space queries (sparse leg of hybrid RRF search — until langchain4j#4994 ships) |
 | ONNX Runtime JVM | `inference-runtime` | Model session management |
 | HuggingFace Tokenizers JNI | `inference-runtime` | Tokenization |
 
@@ -111,17 +112,22 @@ The prototype is the first deliverable. Until confirmed, all `inference-*` modul
 
 ## Current State
 
-C3 (SPI Foundation) complete (neural-text#3). Implemented:
-- `inference-api`: `InferenceModel` SPI, `InferenceInput`, `InferenceOutput`, `InferenceException`
-- `inference-runtime`: `OnnxInferenceModel`, `ModelConfig` (construction concern — moved here from api), `ModelLoadException`; C2 bridge classes (`OnnxSessionLoader`, `RawInference`, `TokenizerLoader`) deleted and replaced by `OnnxInferenceModel`
-- `inference-inmem`: `InMemoryInferenceModel` — deterministic stubs, no JNI, safe in all test contexts
+C3–C7 complete (neural-text#3, neural-text#7). All inference and RAG modules shipped:
+
+| Chapter | What shipped |
+|---------|-------------|
+| C3 — SPI Foundation | `InferenceModel` SPI, `InferenceInput`, `InferenceOutput`, `InferenceException`; `OnnxInferenceModel`, `ModelConfig`, `ModelLoadException`; `InMemoryInferenceModel` stubs; C2 bridge classes deleted |
+| C4 — Task Adapters | `NliClassifier`, `TextClassifier`, `ScalarRegressor`, `CrossEncoderReranker` in `inference-tasks` |
+| C5 — Quarkus CDI wiring | `@InferenceModel` qualifier, `InferenceModelProducer`, Dev Services, `@QuarkusTest` support in `inference-quarkus` |
+| C6 — SPLADE | `SparseEmbedder` in `inference-splade` — log-saturation output for Qdrant named vector spaces |
+| C7 — RAG Pipeline | `CorpusStore` SPI, `CaseRetriever` SPI, `QdrantCorpusStore`, `QdrantCaseRetriever` in `rag`; `rag-testing` in-memory stubs |
+
+Native image prototype (Epic 2) gates `inference-quarkus` native deployment and Hortora's native binary goal — currently JVM-only.
 
 Design specs:
 - `docs/specs/2026-06-03-ai-fusion-hybrid-fact-space.md` (typed fact space + RAG context)
 - `docs/specs/2026-06-03-standalone-rag-retrieval-brief.md` (inference module design)
 - `Hortora/spec: docs/superpowers/specs/2026-06-03-onnx-inference-module-design.md` (authoritative inference design)
-
-Native image prototype is Epic 2 — gates `inference-quarkus` and Hortora's native binary goal.
 
 ---
 

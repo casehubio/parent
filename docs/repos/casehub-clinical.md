@@ -57,6 +57,10 @@ The tutorial structure emerges from the natural adoption sequence. Each layer ad
 - `AeStatusUpdater` — CDI bean that extracts the COMPLETED write-back from `AeEscalationListener`; isolated in `@Transactional(REQUIRES_NEW)` for Panache mockability in tests
 - `IrbCommitteeAssignmentPolicy` SPI — maps `IrbCommitteeContext(deviationId, siteId, trialId, severity)` to `IrbCommitteeAssignment(committeeId, candidateGroups)`; interface in `api/spi/`, `@DefaultBean` in `runtime/service/`; mirrors `DeviationResponsePolicy` pattern. Full SPI control of WorkItem routing for `candidateGroups` blocked by engine#387 (dynamic `candidateGroups` from case context in YAML `humanTask` binding)
 - `SEVERE_GRADES = Set.of(GRADE_4, GRADE_5)` — shared grade threshold constant in signal services
+- **Multi-tenancy foundation (V116, clinical#69):** `tenant_id NOT NULL DEFAULT 'default'` added to all 6 domain entities (`ClinicalTrial`, `TrialSite`, `PatientEnrollment`, `ProtocolDeviation`, `AdverseEvent`, `IrbApproval`). 4 REST resources + `AdverseEventService` inject `CurrentPrincipal` and stamp `tenantId` at persist time. 3 CDI events (`AdverseEventReportedEvent`, `IrbApprovalResolvedEvent`, `ProtocolDeviationResolvedEvent`) + `SponsorNotificationRequest` carry `String tenantId`. Query isolation deferred to casehubio/clinical#71.
+- **`ClinicalMemoryService` (clinical#33):** central facade for `CaseMemoryStore` writes and reads. PATIENT domain: `storeAeReport` + `storeAeOutcome`. SITE domain: `storeDeviationReport` + `storePiDecision` (`EXPIRED` maps to `"TIMELINE_BREACH"` outcome). `querySiteContext` uses 180-day window + limit 50. Non-request-context writes (async CDI observers + Quartz threads) degrade to WARN until platform#79 ships. `AeEscalationCaseService.prepareAndMarkRequested()` injects `patientContext` + `siteContext` maps into engine `initialContext`; JQ-navigable (`.patientContext.hasPriorGrade3OrAbove`).
+- **Deferred memory domains:** DRUG domain (clinical#72) and IRB domain (clinical#73) — design questions on entityId convention and cross-tenant pharmacovigilance tradeoff to be resolved before implementing.
+- **Test workaround (clinical#74):** `ClinicalTestLedgerRepository` (in `test/support/`) replaces `InMemoryLedgerEntryRepository` in `selected-alternatives` because `casehub-ledger-memory` 0.2-SNAPSHOT was not updated simultaneously with `LedgerEntryRepository`'s 2-arg API change. Remove when `casehub-ledger-memory` catches up.
 - 3-site showcase scenario vs ClinicalAgent
 
 ## The Compliance Gap It Closes
@@ -83,6 +87,8 @@ casehub-clinical
   → casehub-work                    (IRB/PI WorkItems with SLA and escalation)
   → casehub-qhorus                  (COMMAND to PI, commitment lifecycle, safety agent channels)
   → casehub-connectors-core         (sponsor notification delivery — clinical#13; safety officer AE notification — clinical#11 ✅)
+  → casehub-platform-memory-jpa     (prod — JPA CaseMemoryStore; displaces NoOpCaseMemoryStore by classpath presence — clinical#33)
+  → casehub-platform-memory-inmem   (test scope — @Alternative CaseMemoryStore for @QuarkusTest isolation — clinical#33)
 ```
 
 ## Layer 5 Integration Notes (casehub-engine)
