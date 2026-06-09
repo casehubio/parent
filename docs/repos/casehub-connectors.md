@@ -36,11 +36,11 @@ Consumers observe `Event<InboundMessage>` and react accordingly — they never c
 
 | Module | Contents |
 |--------|----------|
-| `casehub-connectors` | `Connector` SPI + Slack, Teams, Twilio SMS, WhatsApp outbound impls; `InboundConnector` SPI + `InboundConnectorService` polling engine; `WebhookInboundConnector` abstract base |
+| `casehub-connectors` (`casehub-connectors-core`) | `Connector` SPI + Slack, Teams, Twilio SMS, WhatsApp outbound impls; `InboundConnector` SPI + `InboundConnectorService` polling engine; `WebhookInboundConnector` abstract base. `ConnectorDiscovery` SPI (connectors#16) — optional interface CDI beans implement when their targets are discoverable (e.g. Slack channels via `conversations.list`); `connectorId()` + `discover() → List<DiscoveredTarget>`. |
 | `casehub-connectors-email` | SMTP outbound via `quarkus-mailer` |
 | `casehub-connectors-email-inbound` | `EmailInboundConnector` — IMAP polling, `EmailInboundAccountProvider` SPI |
-| `casehub-connectors-mcp` | MCP tool surface: `send_slack`, `send_teams`, `send_sms`, `send_whatsapp`, `send_email`. Depends on `core` + `email` + `quarkus-mcp-server-core:1.11.1`. Consuming apps add `quarkus-mcp-server-http` for transport. Integrates with Qhorus via `ConnectorMeshBridge` SPI when `connector-backend` is on classpath (qhorus#249). |
-| `casehub-connectors-slack-bot` | `SlackBotClient` — pure `java.net.http` client for the Slack Web API (`chat.postMessage`). Designed for use by `casehub-qhorus-slack-channel` (pending qhorus issue). No Slack SDK dependency (connectors#2). Also adds `InboundConnectorIds.SLACK_INBOUND = "slack-inbound"` constant and `slack-ts` / `slack-thread-ts` metadata fields to `casehub-connectors-core`. |
+| `casehub-connectors-mcp` | MCP tool surface: `send_slack`, `send_teams`, `send_sms`, `send_whatsapp`, `send_email`, `send_slack_bot` (bot-token Slack posting via `SlackBotClient`, returns `ts` for thread replies), `list_channels` (aggregates all registered `ConnectorDiscovery` beans). Depends on `core` + `email` + `quarkus-mcp-server-core:1.11.1`. Consuming apps add `quarkus-mcp-server-http` for transport. Integrates with Qhorus via `ConnectorMeshBridge` SPI when `connector-backend` is on classpath (qhorus#249). |
+| `casehub-connectors-slack-bot` | `SlackBotClient` — pure `java.net.http` client for the Slack Web API (`chat.postMessage`). Implements `ConnectorDiscovery` via `conversations.list` — registers Slack channels as discoverable targets for `list_channels` MCP tool. Config: `casehub.connectors.slack-bot.token` (bot token). No Slack SDK dependency (connectors#2). Also adds `InboundConnectorIds.SLACK_INBOUND = "slack-inbound"` constant and `slack-ts` / `slack-thread-ts` metadata fields to `casehub-connectors-core`. |
 | `casehub-connectors-qhorus` | Optional — `WatchdogAlertEvent → ConnectorService.send()` bridge (Qhorus → connectors); activates by classpath presence |
 | *(qhorus-side)* `casehub-qhorus-connector-backend` | Optional — `InboundMessage → ConnectorChannelBackend` bridge (connectors → Qhorus); lives in casehub-qhorus repo; activates by classpath presence |
 
@@ -64,7 +64,11 @@ Consumers observe `Event<InboundMessage>` and react accordingly — they never c
 
 ### Configuration
 
-Twilio and WhatsApp require account credentials in config. Slack and Teams: no config — webhook URL is passed as the destination at call time. Email inbound: IMAP host, port, username, and password via MP Config. See docs/DESIGN.md for property names.
+Twilio and WhatsApp require account credentials in config. Slack and Teams webhook: no config — webhook URL is passed as the destination at call time. Email inbound: IMAP host, port, username, and password via MP Config.
+
+| Property | Module | Purpose |
+|---|---|---|
+| `casehub.connectors.slack-bot.token` | `casehub-connectors-slack-bot` | Bot OAuth token for `chat.postMessage` and `conversations.list` |
 
 ---
 
