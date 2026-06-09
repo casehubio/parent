@@ -441,6 +441,33 @@ casehub-parent              (BOM — publish first; all others import it)
 | Channel write ACL | `casehub-qhorus` | `allowed_writers` on `Channel` |
 | Internal service-to-service | Network boundary | Trust implicit — no token auth on Qhorus, engine, or work REST resources |
 
+### Outbound Authentication (external service calls)
+
+Three systems make outbound HTTP calls to external services: **workers** (`casehub-workers`), **connectors** (`casehub-connectors`), and **quarkus-flow `call: http` workflow steps**. All three must use a consistent authentication vocabulary.
+
+**The canonical model is Serverless Workflow 1.0's `AuthenticationPolicy`.** quarkus-flow already implements it. The five auth types — **Basic**, **Bearer**, **Digest**, **OAuth2** (client credentials), **OpenID Connect** — plus **named policy references** (`use("my-policy")`) cover every outbound auth pattern the platform needs.
+
+| Auth type | Use case | Mechanism |
+|---|---|---|
+| None | Internal services behind a gateway | No auth headers |
+| Bearer | Static API tokens (Slack, Twilio, external REST APIs) | `Authorization: Bearer <token>` |
+| Basic | Legacy services, SMTP relay | Base64 username:password |
+| OAuth2 | Machine-to-machine, cloud APIs (GCP, Azure, AWS) | Client credentials flow, Quarkus OIDC Client handles token lifecycle |
+| OIDC | Identity-propagating calls | Token exchange or forward |
+| Digest | HTTP digest auth | Challenge-response |
+| Named reference | Shared policy reuse | `use("salesforce-prod")` — resolves to a named policy definition |
+
+**Two tiers of outbound credentials:**
+
+| Tier | Scope | Config mechanism | Example |
+|---|---|---|---|
+| **Static deploy-time** | Fixed per deployment, single-vendor | `@ConfigProperty` (MicroProfile Config) | Twilio account SID, Slack bot token |
+| **Named endpoint** | Multi-endpoint, per-capability, potentially per-tenant | `EndpointRegistry` SPI (platform#73) with `credentialRef` | Worker dispatching to customer APIs with different auth per tenant |
+
+Connectors currently use Tier 1 (static `@ConfigProperty`), which is correct for their use case — they connect to a single vendor per connector type. Workers and quarkus-flow use Tier 2 when available, falling back to Tier 1 via config properties when `EndpointRegistry` hasn't shipped.
+
+**Secrets management:** Auth policies reference credentials by name (`credentialRef`), never inline in endpoint descriptors. Actual secret storage (Vault, k8s Secret, environment variable) is resolved by a secrets backend — out of scope for the auth vocabulary itself.
+
 ### Role Name Convention (`@RolesAllowed`)
 
 Role names used in `@RolesAllowed` annotations are CaseHub group names — `CurrentPrincipal.roles()` delegates to `groups()`, so group membership IS role membership. Role names must be documented when first introduced in any harness.
