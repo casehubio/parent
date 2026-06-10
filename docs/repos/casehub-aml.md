@@ -2,7 +2,7 @@
 
 **GitHub:** [casehubio/aml](https://github.com/casehubio/aml)
 **Tier:** Application
-**Status:** In progress — Layers 1–6, 8 complete; Layer 7 pending
+**Status:** In progress — Layers 1–6, 8, 9 complete; Layer 7 pending
 
 ## What It Is
 
@@ -26,6 +26,7 @@ The tutorial structure emerges from the natural adoption sequence — each layer
 | 6 | Trust routing | No trust model; random agent selection | ✅ complete (2026-05-29) — known: engine#395 scoping fix pending |
 | 7 | Comparison vs IBM AMLSim | — | pending |
 | 8 | casehub-platform `CaseMemoryStore` | No prior entity context across investigations; SAR outcomes not fed back to memory | ✅ complete (2026-06-04, aml#32) — prior entity context injected before each investigation; SAR outcomes written to memory; trust seeder fixed (senior-analyst-agent Beta(10,1)); YAML binding split to prevent double-dispatch Merkle race |
+| 9 | casehub-engine-work-adapter (`ActionRiskClassifier` oversight gate) | No human oversight gate for consequential agent actions (SAR filing, entity link creation) | ✅ complete (2026-06-10, aml#42) — `AmlActionRiskClassifier @RiskClassifier`; PEP and high-risk-score actions gate to compliance review; TRANSACTION_BLOCKING inverts (gates on low confidence); fail-closed preserves type metadata |
 
 ## Module Structure
 
@@ -50,6 +51,9 @@ Follows hexagonal architecture ([PP-20260512-9b8847](../protocols/casehub/hexago
 - `AmlSarOutcomeMemoryObserver`, `SarOutcomeRecordedEvent` — Layer 8 SAR outcome written to memory on case close
 - `AmlCaseOpenedLedgerEntry`, `AmlComplianceReviewLedgerEntry` — replace `AmlInvestigationLedgerEntry` (finer-grained audit trail)
 - Test protocols: PP-20260604-f45c95 (hash-chain disabled in H2 test scope), PP-20260604-820c35 (drain pattern for async memory observers)
+- `AmlActionType`, `AmlGroups` — consequential action vocabulary; encodes gate policy (ALWAYS, RISK_SCORE_THRESHOLD, CONFIDENCE_THRESHOLD), reversible, candidateGroups, scope per action type
+- `AmlActionRiskClassifier @RiskClassifier` — Layer 9 `ActionRiskClassifier` SPI implementation; fail-closed paths derive all gate metadata from domain type
+- `AmlOversightCaseHub`, `AmlOversightCoordinator`, `AmlLayer9Resource` — Layer 9 oversight harness; demonstrates PEP entity gating and low-risk CORPORATE autonomous path
 
 ## The Compliance Gap It Closes
 
@@ -72,6 +76,8 @@ casehub-aml
   → casehub-connectors      (Slack/Teams for SAR assignment notifications)
   → casehub-platform-memory-jpa    (Layer 8: JPA-backed CaseMemoryStore for production)
   → casehub-platform-memory-inmem  (Layer 8: in-memory CaseMemoryStore for test isolation)
+  → casehub-engine-work-adapter    (Layer 9: ActionGateWorkItemHandler + WorkItemLifecycleAdapter for oversight gate)
+  → casehub-engine-blackboard      (Layer 9: BlackboardRegistry — required for gate signal routing; transitive via work-adapter)
 ```
 
 ## Key Epics

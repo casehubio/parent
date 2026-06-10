@@ -25,9 +25,9 @@ Two related capabilities in one repo:
 | `inference-splade/` | `casehub-inference-splade` | JVM library | SPLADE sparse embeddings (`Map<Integer, Float>`); log-saturation + threshold |
 | `inference-inmem/` | `casehub-inference-inmem` | Test library | Deterministic `InferenceModel` stubs; no JNI; safe in all test contexts |
 | `inference-quarkus/` | `casehub-inference-quarkus` | Quarkus extension | CDI wiring, `@InferenceModel` qualifier, Dev Services, `@QuarkusTest` support |
-| `rag-api/` | `casehub-rag-api` | Pure Java, zero deps | `CorpusStore` SPI, `CaseRetriever` SPI, `RetrievedChunk`, `CorpusRef` |
-| `rag/` | `casehub-rag` | Quarkus module | LangChain4j pipeline, Qdrant, hybrid RRF fusion, tenancy isolation |
-| `rag-testing/` | `casehub-rag-testing` | Test library | In-memory `CorpusStore` + `CaseRetriever` stubs for `@QuarkusTest` |
+| `rag-api/` | `casehub-rag-api` | Pure Java, Mutiny provided | `CorpusStore` SPI, `CaseRetriever` SPI (blocking); `ReactiveCorpusStore`, `ReactiveCaseRetriever` (Mutiny `Uni<T>` variants — Mutiny `provided` scope per module-tier-structure protocol); `RetrievedChunk`, `CorpusRef` |
+| `rag/` | `casehub-rag` | Quarkus module | LangChain4j pipeline, Qdrant, hybrid RRF fusion, tenancy isolation; `BlockingToReactiveRagBridge @DefaultBean` wraps blocking adapters as reactive |
+| `rag-testing/` | `casehub-rag-testing` | Test library | In-memory `CorpusStore` + `CaseRetriever` + reactive stubs for `@QuarkusTest` |
 
 ---
 
@@ -52,7 +52,7 @@ Two related capabilities in one repo:
 
 `CorpusStore` — ingest, delete, and list documents per tenant corpus. Tenancy-scoped; `CorpusRef` carries tenant ID + corpus name.
 
-`CaseRetriever` — retrieval entry point for case steps and the fact space. `retrieve(query, CorpusRef)` → `List<RetrievedChunk>`. Hybrid search: LangChain4j `OnnxEmbeddingModel` (dense) + `SparseEmbedder` (sparse) fused via RRF. Reranked by `CrossEncoderReranker` in precision mode.
+`CaseRetriever` — retrieval entry point for case steps and the fact space. `retrieve(query, CorpusRef)` → `List<RetrievedChunk>`. Hybrid search: LangChain4j `OnnxEmbeddingModel` (dense) + `SparseEmbedder` (sparse) fused via RRF. Reranked by `CrossEncoderReranker` in precision mode. Reactive variant: `ReactiveCaseRetriever` — `retrieve()` → `Uni<List<RetrievedChunk>>`; `BlockingToReactiveRagBridge @DefaultBean` in `rag/` wraps blocking impl.
 
 ---
 
