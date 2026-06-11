@@ -17,7 +17,7 @@ Its primary value in the application family is as a **proof of generality**: the
 
 - SC2 domain model: game state, units, buildings, actions, intents; `SC2Data` — all game constants (costs, timings, ranges, armour, attributes)
 - Plugin seam interfaces: `StrategyTask`, `EconomicsTask`, `TacticsTask`, `ScoutingTask` — each extends CaseHub's `TaskDefinition`
-- Active plugin implementations: `DroolsStrategyTask`, `FlowEconomicsTask`, `DroolsTacticsTask`, `DroolsScoutingTask`
+- Active plugin implementations: `DroolsStrategyTask`, `FlowEconomicsTask`, `DroolsTacticsTask`, `DroolsScoutingTask`; competing strategy implementations (L6): `EarlyPressureStrategyTask`, `EconomicExpansionStrategyTask`
 - `QuarkMindCaseFile` — all CaseFile key constants; never use raw string keys
 - SC2 engine seam: `IntentQueue`, `GameStarted`/`GameStopped` events, sealed `Intent` interface (switch exhaustiveness at compile time)
 - Mock, emulated, replay, and real SC2 profiles
@@ -30,6 +30,7 @@ Its primary value in the application family is as a **proof of generality**: the
 - `TerrainGrid` (HIGH/LOW/RAMP/WALL height model), `AStarPathfinder`, `MovementStrategy`
 - Three.js 3D visualiser: 65+ unit/building sprites across all 3 races, fog of war, terrain shading, click-to-inspect panel, replay scrub control, Electron wrapper
 - Electron visualiser for replay and emulated mode
+- **Layer 6 — Trust-weighted strategy routing (quarkmind#158):** `StrategyTrustRouter` — four-phase Bayesian Beta maturity model (BOOTSTRAP/QUALIFIED/BORDERLINE/EXCLUDED) routing among competing `StrategyTask` implementations using `casehub-ledger` trust scores keyed by opponent context. `StrategySelector` — per-game volatile selection state. `GameOutcomeRecorder` — writes trust attestations to ledger on `@Observes GameStopped` (sync). `EnemyPostureClassifiedEvent` — CDI event for mid-game strategy checkpoint. `LedgerLifecycleAdapter` removed (was clearing ledger between games, breaking trust accumulation). Config required: `casehub.ledger.trust-score.{enabled,incremental.enabled,materialization.enabled}=true`. Note: `casehub-engine-ledger` NOT used — QuarkMind uses `casehub-ledger` core directly, not via engine-ledger. Known: records SOUND for all games until win/loss detection ships (quarkmind#189).
 
 ## Agentic Harness Structure
 
@@ -41,6 +42,7 @@ Its primary value in the application family is as a **proof of generality**: the
 | Durable execution | Quarkus Flow | `FlowEconomicsTask` — build order execution with retry |
 | Rule-based reasoning | Drools | `DroolsStrategyTask`, `DroolsTacticsTask`, `DroolsScoutingTask` |
 | Typed advisory channel | `casehub-qhorus` | `ScoutingIntelBroker` publishes to `quarkmind-scouting-intel`; LLM advisors subscribe as `MessageObserver`. Dual-stack: synchronous in-memory broker (for plugins) + async advisory channel (for LLM advisors — quarkmind#180/#181) |
+| Trust-weighted strategy routing | `casehub-ledger` | `StrategyTrustRouter` — four-phase Bayesian Beta maturity (BOOTSTRAP/QUALIFIED/BORDERLINE/EXCLUDED); `GameOutcomeRecorder` writes trust attestations on `GameStopped`; opponent-context keyed trust scores; `StrategySelector` volatile per-game state (quarkmind#158) |
 
 ## Tutorial Layers
 
@@ -53,7 +55,7 @@ The layered structure applies to the agentic harness — not to the SC2 emulatio
 | 3 | casehub-qhorus | No typed inter-plugin communication | in use (dual-stack) |
 | 4 | casehub-ledger | No audit trail for agent decisions | pending |
 | 5 | Adaptive plugin selection | Fixed plugin dispatch; no binding conditions | pending |
-| 6 | Trust routing | No plugin performance tracking; no routing based on outcome history | pending |
+| 6 | Trust routing | No plugin performance tracking; no routing based on outcome history | ✅ complete (quarkmind#158) — `StrategyTrustRouter` four-phase Bayesian Beta; `GameOutcomeRecorder`; known: SOUND recorded for all outcomes until win/loss detection (quarkmind#189) |
 | 7 | Comparison vs naive game AI | — | pending |
 
 ## Dependencies
@@ -65,7 +67,7 @@ quarkmind
   → Drools           (rule-based strategy, tactics, scouting)
   → Quarkus Flow     (durable economics build order execution)
   → casehub-qhorus   (advisory channel for LLM observers; persistence-memory for @QuarkusTest isolation)
-  → casehub-ledger   (plugin outcome recording, trust scoring — L4)
+  → casehub-ledger   (L6: trust-weighted strategy routing — StrategyTrustRouter, GameOutcomeRecorder; casehub-ledger core only, not casehub-engine-ledger)
 ```
 
 ## Current State
@@ -99,6 +101,6 @@ quarkmind
 ## What It Does NOT Own
 
 Everything below belongs in the foundation:
-- Trust scoring computation (casehub-ledger — pending)
+- Trust scoring computation (casehub-ledger — L6 complete for strategy routing; L4 full audit trail pending)
 - Commitment lifecycle (casehub-qhorus — pending)
 - Human task inbox (casehub-work — not applicable at game AI tick granularity)

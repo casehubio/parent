@@ -182,7 +182,11 @@ This is an explicit design choice, not a missing feature. The two patterns serve
 
 `NoOpCaseMemoryStore @DefaultBean` in `platform/` is correct for the vast majority of deployments at startup. Adapters activate by classpath presence — no configuration needed.
 
-**`eraseById` carve-out:** The SPI default for `eraseById` throws `UnsupportedOperationException` — a GDPR guard forcing adapters to implement erasure explicitly. `NoOpCaseMemoryStore` overrides this to a true no-op (nothing was stored, so erasure is vacuously complete). Adapter implementors must not rely on the SPI default for `eraseById` — override it unconditionally.
+**`eraseById` signature:** `eraseById(memoryId, entityId, tenantId)` — 3-arg form (platform#64). Entity mismatch is a silent no-op (no information leak). The SPI default throws `UnsupportedOperationException` — a GDPR guard forcing adapters to implement erasure explicitly. `NoOpCaseMemoryStore` overrides this to a true no-op. Adapter implementors must not rely on the SPI default — override it unconditionally.
+
+**`eraseEntity` return type:** `eraseEntity(entityId, tenantId)` returns `int` (count of records deleted) for GDPR Art.5(2) audit trail (platform#72). REST-backed adapters (Mem0: count-then-delete, Graphiti: episode count capped at 10k) are best-effort.
+
+**`MemoryPermissions` async overload (platform#79):** `assertTenant(tenantId, principal, boolean requestContextActive)` — 3-arg form skips the principal check when no CDI request scope is active (e.g. in `@ObservesAsync` handlers). All adapters use this form. `@QuarkusTest` adapter tests must be annotated `@ActivateRequestContext`.
 
 **Reactive bridge:**
 `BlockingToReactiveBridge @DefaultBean` in `platform/` wraps any blocking `CaseMemoryStore` implementation as a `ReactiveCaseMemoryStore`. Native async adapters override with `@Alternative @Priority(N)` — the same CDI priority ladder used throughout the platform. See `casehub/garden: docs/protocols/universal/persistence-backend-cdi-priority.md`.
