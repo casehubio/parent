@@ -23,6 +23,7 @@ memory-mem0/    ← optional: Mem0 REST adapter (@Alternative @Priority(1)) — 
 memory-graphiti/ ← optional: @Alternative @Priority(2) Graphiti REST GraphCaseMemoryStore — extends CaseMemoryStore; adds graphQuery(GraphMemoryQuery) for temporal graph queries; LLM entity extraction (async); temporal knowledge graph (Neo4j/FalkorDB/Kuzu). Configure: quarkus.rest-client.graphiti.url, casehub.memory.graphiti.api-key
 agent-api/      ← optional: AgentProvider SPI (Mutiny only, no Quarkus) — package: io.casehub.platform.agent
 agent-claude/   ← optional: ClaudeAgentProvider @ApplicationScoped + ClaudeAgentClient @Startup — activates by classpath presence; requires Claude CLI; concurrent-session semaphore
+endpoints-memory/ ← optional: @Alternative @Priority(100) InMemoryEndpointRegistry — volatile tenant-scoped endpoint registry; CDI Tier 4; data lost on restart
 ```
 
 `platform-api/` must never import Quarkus, CDI, JPA, or any casehubio artifact. This constraint is what makes the SPIs useful to every module in the stack — including modules that have no Quarkus dependency of their own.
@@ -275,6 +276,7 @@ Add as a test-scoped dependency:
 | `memory-graphiti/` | ✅ shipped (#34) | `@Alternative @Priority(2)` Graphiti REST `GraphCaseMemoryStore` — temporal knowledge graph (Neo4j/FalkorDB/Kuzu); LLM entity extraction (async); `graphQuery(GraphMemoryQuery)` for temporal queries; extends `CaseMemoryStore` with graph-native SPI |
 | `agent-api/` | ✅ shipped (#55) | AgentProvider SPI — `run(AgentSessionConfig) → Multi<AgentEvent>`; Mutiny only, no Quarkus; package: `io.casehub.platform.agent` |
 | `agent-claude/` | ✅ shipped (#55) | `ClaudeAgentProvider @ApplicationScoped` + `ClaudeAgentClient @Startup` — activates by classpath presence; requires Claude CLI; concurrent-session semaphore (configurable); wall-clock timeout; three exception types: `AgentProcessException`, `AgentSessionLimitException`, `AgentTimeoutException` |
+| `endpoints-memory/` | ✅ shipped (#73) | `InMemoryEndpointRegistry @Alternative @Priority(100)` — volatile ConcurrentHashMap `EndpointRegistry`; ephemeral (data lost on restart); Tier 4 CDI (beats future JPA and NoSQL adapters); add test scope for isolation, compile scope for ephemeral installs |
 | `preferences-editor/` | 🔜 #8 | Admin write path for preferences — REST API, separate from providers |
 
 `PreferenceProvider` is permanently read-only. The editor module writes directly to the backend; providers never own the write path.

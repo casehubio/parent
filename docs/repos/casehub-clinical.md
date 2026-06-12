@@ -2,7 +2,7 @@
 
 **GitHub:** [casehubio/clinical](https://github.com/casehubio/clinical)
 **Tier:** Application
-**Status:** Active — Layers 1–6 complete; Layer 7 (trust routing) pending
+**Status:** Active — Layers 1–6 complete; Layer 7 (trust routing) pending; Layer 8 (ActionRiskClassifier) partial
 
 ## What It Is
 
@@ -27,7 +27,8 @@ The tutorial structure emerges from the natural adoption sequence. Each layer ad
 | 5 | casehub-engine | Fixed trial pipeline; no adaptive paths for grade-based escalation or IRB gates | complete (Epic 6, 2026-05-23) |
 | 6 | trial-level blackboard aggregation — cross-site DSMB rollup | No cross-site pattern detection; no DSMB rollup when multiple sites have simultaneous Grade 4+ events | complete (Epic 3, 2026-05-25) |
 | 7 | Trust routing | No trust model; experienced safety agents not prioritised on complex CTCAE Grade 4+ events | pending |
-| 8 | Comparison vs ClinicalAgent | — | pending |
+| 8 | ActionRiskClassifier oversight gate | No risk classification gate for clinical actions; SUSAR criteria assessment not automated | partial (clinical#47): `ClinicalActionRiskClassifier` + `SusarCriteriaEvaluator` wired; worker binding to ae-escalation.yaml deferred (clinical#77); gate rejection/expiry handler pending (clinical#76) |
+| 9 | Comparison vs ClinicalAgent | — | pending |
 
 ## What It Owns
 
@@ -51,6 +52,8 @@ The tutorial structure emerges from the natural adoption sequence. Each layer ad
 - `TrialCaseLookup` — site → trial → engineCaseId lookup for signal routing
 - `TrialSafetySignalService` — owns all grade4 blackboard flag operations: `signalGrade4Active(siteId)` sets `grade4Active.<siteId>` on case start (called by `AeEscalationCaseService` after Phase 3); `onAeEscalationCompleted` observes `AeEscalationCompletedEvent` and clears the flag. All trial blackboard signaling routes through this service — `AeEscalationCaseService` no longer injects `CaseHubRuntime` or `TrialCaseLookup` directly.
 - `ClinicalTrial.engineCaseId` — UUID field (V110 migration) set on ACTIVE transition
+- `AdverseEvent.unexpected` — `boolean` (V111); marks the AE as unexpected per ICH E2A criteria; propagates into AE escalation engine case context
+- `AdverseEvent.suspected` — `boolean` (V111); marks suspected causal relationship; propagates into AE escalation engine case context
 - `AdverseEvent.escalationStatus` — `AeEscalationStatus` (V111, NOT NULL DEFAULT 'NONE'); tracks AE escalation case lifecycle (NONE / REQUESTED / COMPLETED / FAILED)
 - `AdverseEvent.engineCaseId` — UUID nullable (V112); set when AE escalation case starts
 - `ProtocolDeviation.engineCaseId` — UUID nullable (V113); set when IRB deviation case starts

@@ -2,7 +2,7 @@
 
 **GitHub:** [casehubio/devtown](https://github.com/casehubio/devtown)
 **Tier:** Application
-**Status:** Layers 1, 3, 5, 6 complete; Layer 2 code complete (LAYER-LOG entry pending engine#326)
+**Status:** Layers 1, 3, 4, 5, 6 complete; Layer 2 code complete (LAYER-LOG entry pending engine#326)
 
 ## What It Is
 
@@ -21,7 +21,7 @@ LAYER-LOG.md in the project root is the authoritative layer-by-layer record with
 | 1 | Naive Java — no CaseHub | Baseline: direct service calls to analysis agents, no accountability | ✅ complete — scaffold (#8), vocabulary (#9), naive service (#27) |
 | 2 | casehub-work | No formal SLA for reviewer response; reviewer assignments not tracked | **in progress** — devtown#41 ✅ devtown#42 ✅; LAYER-LOG entry pending engine#326 |
 | 3 | casehub-qhorus | No formal obligation per specialist reviewer; DECLINE when outside expertise | ✅ complete — devtown#52 + devtown#64; LAYER-LOG entry complete. `QhorusPrReviewService` sets `allowedWriters=ORCHESTRATOR` on all three channels; `requireContract()` validates both `allowedTypes` and `allowedWriters`. DONE/DECLINE dispatches use ORCHESTRATOR sender (agents will use own identity in Layer 6). |
-| 4 | casehub-ledger | No tamper-evident review record; cannot trace production incident to missed finding | pending |
+| 4 | casehub-ledger | No tamper-evident review record; cannot trace production incident to missed finding | ✅ complete (devtown#5, devtown#73) — `MergeDecisionLedgerEntry`, `MergeDecisionObserver`, `CodeReviewComplianceResource`, `domainContentBytes()` override; V2003: index on `(repository, pr_number)` + dropped `tenancy_id` from join table |
 | 5 | casehub-engine | Fixed review pipeline; no adaptive routing on security flags or architecture changes | ✅ complete — PR review CasePlanModel (#10); 38 tests |
 | 6 | Trust routing | No trust model; experienced security reviewers not prioritised on sensitive PRs | ✅ complete — devtown#57; LAYER-LOG entry complete |
 | 7 | Comparison vs naive AI code review | — | pending |
@@ -37,6 +37,7 @@ LAYER-LOG.md in the project root is the authoritative layer-by-layer record with
 - Cross-repo coordinated merge — parent case + per-repo sub-cases with automatic rollback on fault
 - Trust-weighted selection strategy for code review domain. See docs/DESIGN.md for implementation detail.
 - Post-merge trust feedback — FLAGGED attestation when production incident traced to missed review
+- **`POST /api/incident-feedback`** (devtown#5, devtown#73) — records FLAGGED attestations against agents whose PR reviews missed issues found in production incidents. `IncidentFeedbackService` + `IncidentFeedbackResource` with `@RolesAllowed("admin")`. Idempotent via `findAttestationsByAttestorIdAndCapabilityTag` (tokenisation-proof). New domain types: `IncidentSeverity` (severity→confidence mapping), `IncidentFeedback`, `IncidentFeedbackResult`, `FlaggedAgent`, `ReviewDomain.REVIEW_CAPABILITIES` validation set. V2003 migration: index on `(repository, pr_number)` for PR lookup; dropped `tenancy_id` column from `merge_decision_ledger_entry` join table (field shadowing removal per ledger#131).
 - GitHub integration — PR webhook receiver, CI status reader, merge executor worker
 - **CaseMemoryStore integration (devtown#43):** contributor history, reviewer agent context, and code-area history injected before PR review case starts; review outcomes written to memory at case close.
   - New domain types: `DevtownMemoryDomain`, `DevtownMemoryKeys`, `ReviewOutcome`, `ModulePathNormalizer` (devtown-domain)

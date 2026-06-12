@@ -22,6 +22,7 @@ Designed after research into A2A, AutoGen, LangGraph, OpenAI Swarm, Letta, and C
 | Channel | Typed communication channel with configurable delivery semantics and access control. |
 | Message | Speech-act message with a typed intent (query, command, response, etc.) — see ADR-0005. |
 | Commitment | Obligation with a defined lifecycle from open through resolution states. |
+| CommitmentDeclinedEvent | CDI event record in `api/message/` alongside `CommitmentState`; fired by `CommitmentService.decline()` when a commitment transitions to DECLINED; carries `commitmentId`, `correlationId`, `channelId`, `obligor`, `requester`; consumers observe for scope-calibration signals (trust dimension tracking). Refs qhorus#251. |
 | Instance | Agent registry entry with capability tags and multiple addressing modes. |
 | SharedData + ArtefactClaim | Shared artefact store with claim/release lifecycle. |
 | Watchdog | Condition-based alert registration. |
@@ -74,6 +75,8 @@ Outbound messages are routed through a channel backend SPI that supports multipl
 **`ChannelInitialisedEvent`** — a record in `casehub-qhorus-api` (`io.casehub.qhorus.api.gateway`) fired by `ChannelGateway.initChannel()` on every call — both on channel creation and on startup recovery. External backends observe this via `@Observes ChannelInitialisedEvent` to re-register without implementing their own restart recovery logic.
 
 **Startup recovery** — `ChannelGateway` rebuilds its in-memory registry from the channel store on `@Observes StartupEvent`. Previously the registry was empty after restart until channels were re-created or re-accessed. Each channel init is exception-isolated so a broken observer cannot abort the startup sequence.
+
+**`ChannelService.create()`** — calls `channelGateway.initChannel()` after persist. `ChannelBackend` implementations self-register for runtime-created channels without the caller needing to invoke `initChannel()` explicitly. Refs qhorus#254.
 
 **`findByNamePrefix`** — `ChannelService` and `ReactiveChannelService` expose `findByNamePrefix(prefix)`. The JPA path emits `LIKE 'prefix%' ESCAPE '!'` (metachar-safe, index-eligible). Use when listing channels by namespace prefix (e.g. all channels for a case) without a full table scan.
 
@@ -129,7 +132,7 @@ See docs/DESIGN.md for SPI interfaces.
 | `api` | SPIs: `ChannelBackend`, `MessageObserver`, `HumanParticipatingChannelBackend`, `ChannelProjection<S>`; DTOs: `MessageView`; Records: `ProjectionResult<S>`; domain event types |
 | `connectors` | Optional — `WatchdogAlertEvent → ConnectorService.send()` bridge; activates by classpath presence |
 | `runtime` | `MessageService`, `ChannelGateway`, `QhorusDashboardService`, `ProjectionService`, `ReactiveProjectionService`, ledger integration, MCP tools, A2A endpoint |
-| `connector-backend` | Optional — `ConnectorChannelBackend` implements `HumanParticipatingChannelBackend`; bridges `InboundMessage` CDI events (`@ObservesAsync`) from casehub-connectors into Qhorus channel dispatch; self-registers for channels with a `ChannelBackend` type of `CONNECTOR`. Activates by classpath presence. |
+| `connector-backend` | Optional — `ConnectorChannelBackend` implements `HumanParticipatingChannelBackend`; bridges `InboundMessage` CDI events (`@ObservesAsync`) from casehub-connectors into Qhorus channel dispatch; self-registers for channels with a `ChannelBackend` type of `CONNECTOR`. `ConnectorQhorusMeshBridge` implements `ConnectorMeshBridge`; posts a STATUS message to the configured delivery channel (`casehub.qhorus.connector-backend.delivery-channel`) after each successful MCP connector delivery; activates by classpath presence alongside `ConnectorChannelBackend`. Activates by classpath presence. |
 | `deployment` | Quarkus extension deployment descriptors |
 | `testing` | In-memory store implementations for `@QuarkusTest` |
 
@@ -158,6 +161,12 @@ See docs/DESIGN.md for SPI interfaces.
 - Provision or terminate AI agent processes (that is claudony)
 
 ---
+
+## Principal Integration
+
+**`QhorusInboundCurrentPrincipal`** — `@DefaultBean @ApplicationScoped` reads `X-Tenancy-ID` header via `TenancyContextFilter @PreMatching` and populates `CurrentPrincipal.tenancyId()` for all HTTP requests. Displaced by any `@Alternative` (test fixtures, `OidcCurrentPrincipal`). Refs qhorus#269.
+
+**Test note:** modules that include both `qhorus` runtime and `casehub-platform` must add `quarkus.arc.exclude-types=io.casehub.platform.mock.MockCurrentPrincipal` in test `application.properties` to prevent CDI ambiguity between `MockCurrentPrincipal @DefaultBean` and `QhorusInboundCurrentPrincipal @DefaultBean`.
 
 ## Named Datasource Requirement
 
