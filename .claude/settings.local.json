@@ -94,7 +94,13 @@
       "mcp__intellij__search_in_files_by_text",
       "mcp__intellij__search_in_files_by_regex",
       "Bash(GIT_SEQUENCE_EDITOR=\"cp /tmp/squash_plan.txt\" git -C /Users/mdproctor/claude/casehub/parent rebase -i upstream/main)",
-      "Bash(awk 'NR % 3 == 0 {print}')"
+      "Bash(awk 'NR % 3 == 0 {print}')",
+      "Skill(idea-log)",
+      "Bash(mkdir -p /Users/mdproctor/claude/casehub/desiredstate/.claude)",
+      "Bash(mkdir -p /Users/mdproctor/claude/casehub/ops/.claude)",
+      "Bash(env PATH=\"/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin\" which dirname)",
+      "Bash(env PATH=\"/opt/homebrew/bin:\\\\${PATH}\" which dirname)",
+      "Skill(update-config)"
     ]
   }
 }

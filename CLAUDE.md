@@ -1,5 +1,5 @@
 # parent Workspace
-**Name:** CaseHub Parent
+**Name:** casehub
 
 **Physical path:** `/Users/mdproctor/claude/casehub/parent/CLAUDE.md`
 **Symlinked at:** `/Users/mdproctor/claude/public/casehub/CLAUDE.md`
@@ -167,6 +167,6 @@ Living docs — check for drift after significant changes:
 
 ## Work Tracking
 
-**Issue tracking:** enabled
-**GitHub repo:** casehubio/parent
-**Changelog:** GitHub Releases
+Issue tracking: enabled
+GitHub repo: casehubio/parent
+Changelog: GitHub Releases
