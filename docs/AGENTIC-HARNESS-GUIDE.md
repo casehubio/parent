@@ -260,6 +260,30 @@ Your layer structure is defined in two places:
 
 ---
 
+## Case-Based Reasoning — A Harness Capability You Should Use
+
+Every harness application is a natural CBR system. CaseHub provides the building blocks; wiring them together is a per-application responsibility.
+
+**The four steps and where they live:**
+
+| Step | What it does | CaseHub owner |
+|------|-------------|--------------|
+| **Retain** | Store the outcome as a retrievable case | `casehub-ledger` (trust scores) + `CaseMemoryStore` (full case representation) |
+| **Retrieve** | Find the *k* most similar past cases by feature-vector similarity | `casehub-neural-text` — `CaseRetriever` SPI |
+| **Reuse** | Select or weight solutions from retrieved cases | `casehub-engine` — `TrustWeightedAgentStrategy` ✅ (workers); `ImplementationRoutingStrategy` (competing implementations — gap) |
+| **Revise** | Adapt the retrieved solution to the current context | Adaptive plan templates — gap, long-term |
+
+**What this means for your harness:**
+
+1. When a case closes, write both a ledger attestation AND a `CaseMemoryStore` entry — the full problem description (key CaseFile features at decision time) + solution + outcome.
+2. At case-open or decision time, invoke `CaseRetriever` with your domain's feature vector to find similar past cases. Do not invent an exact-match lookup — that is degenerate CBR.
+3. Use `TrustWeightedAgentStrategy` (already available via `casehub-engine-ledger`) for worker selection. Do not implement your own trust-based worker routing.
+4. If you have multiple competing `TaskDefinition` implementations for the same capability, the application-layer workaround (`canActivate()` gating) is temporary — migrate to `ImplementationRoutingStrategy` once it exists in the engine.
+
+Full specification, component map, and per-repo responsibilities: [`docs/CBR-CAPABILITY.md`](CBR-CAPABILITY.md) in casehub-parent.
+
+---
+
 ## Agentic Harness Protocols
 
 Before implementing any layer, read:
