@@ -100,7 +100,8 @@
       "Bash(mkdir -p /Users/mdproctor/claude/casehub/ops/.claude)",
       "Bash(env PATH=\"/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin\" which dirname)",
       "Bash(env PATH=\"/opt/homebrew/bin:\\\\${PATH}\" which dirname)",
-      "Skill(update-config)"
+      "Skill(update-config)",
+      "Skill(code-review)"
     ]
   }
 }
