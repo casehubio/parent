@@ -586,7 +586,7 @@ SPIs and capabilities that exist in the wrong module pending extraction. Do not 
 | `casehub-neural-text` | `repos/casehub-neural-text.md` |
 | `claudony` | `repos/claudony.md` |
 | `casehub-connectors` | `repos/casehub-connectors.md` |
-| `casehub-iot` | `repos/casehub-iot.md` *(pending — create after first module ships)* |
+| `casehub-iot` | `repos/casehub-iot.md` |
 | `casehub-devtown` | `repos/casehub-devtown.md` |
 | `casehub-aml` | `repos/casehub-aml.md` |
 | `casehub-clinical` | `repos/casehub-clinical.md` |
