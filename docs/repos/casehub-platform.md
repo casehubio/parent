@@ -208,6 +208,56 @@ Consumers must add `classpath:db/memory/migration` to `quarkus.flyway.locations`
 
 ---
 
+## Agent Infrastructure
+
+### AgentProvider SPI
+
+**Problem:** casehub modules need to invoke an AI agent — submit a prompt and stream back token-level text — without coupling to a specific model or runtime. `AgentProvider` in `agent-api/` is the abstraction. `NoOpAgentProvider @DefaultBean` in `platform/` emits a WARN per invocation so unconfigured deployments fail loudly.
+
+**Why only `TextDelta` in `AgentEvent`?**
+
+`AgentEvent` is a sealed interface with a single permit: `TextDelta`. Tool calls are intentionally absent. This is not an omission — it is a consequence of the execution model. The `claude-code-sdk` runs the full Claude Code CLI as a subprocess. Claude executes its tool loop internally (bash, file I/O, web fetch, MCP servers). By the time a token reaches the caller it is already post-reasoning, post-tool-use output. There is nothing to surface. If a future implementation backed by the Anthropic API directly (or LangChain4j) needed to expose tool calls to the caller, `AgentEvent` would need `ToolCall` and `ToolResult` variants — the sealed interface would have to be extended.
+
+### Why `claude-code-sdk`, not the official Anthropic Java SDK
+
+These two SDKs operate at entirely different levels of the stack and are not interchangeable:
+
+| | Anthropic official Java SDK (`anthropics/anthropic-sdk-java`) | Spring AI Community SDK (`org.springaicommunity:claude-code-sdk`) |
+|---|---|---|
+| What it provides | Raw API client — HTTP messages endpoint | Java wrapper around the Claude Code CLI |
+| Tool loop | **You** implement it (receive tool call → execute → feed back → repeat) | **Claude** runs it autonomously (bash, file I/O, glob, web fetch built-in) |
+| Tool calls visible to caller | Yes — you must handle them | No — opaque inside the subprocess |
+| MCP servers | Manual wiring | Native (`AgentMcpServer` sealed: Stdio / Sse / Http) |
+| Prompt caching | Requires explicit `cache_control` placement in your code | Handled natively by the Claude Code runtime |
+| Multi-step agents | You write the orchestration loop | Claude orchestrates; optional human-in-the-loop checkpoints built in |
+| What the SPI models | A chat completion API | A full autonomous agent subprocess |
+
+The official SDK is the right choice for simple API calls, content generation, and chat where you own the orchestration. The `claude-code-sdk` is the right choice for agents that need to reason, use tools autonomously, and run multi-step tasks — it exposes the same harness that powers Claude Code itself.
+
+### Why not LangChain4j as the default or alternative
+
+LangChain4j was in the original spec as a `@DefaultBean` implementation, but the design moved to `NoOpAgentProvider @DefaultBean` for two reasons:
+
+**1. Different execution model.** LangChain4j's `ChatModel` is a chat completion abstraction — the host app manages the tool loop. An `AgentProvider` backed by LangChain4j would expose tool calls to the caller and would need `AgentEvent` variants that don't exist yet (`ToolCall`, `ToolResult`). The current SPI assumes the execution model of `claude-code-sdk` (opaque autonomous agent). Grafting LangChain4j onto it without extending the SPI would produce a degraded implementation.
+
+**2. Prompt caching.** LangChain4j's Anthropic integration does not support Claude's prompt caching (`cache_control` breakpoints) — it is an open feature request ([langchain4j#1591](https://github.com/langchain4j/langchain4j/issues/1591)). Claude's native caching reduces token costs by 70–80% for repeated contexts (system prompts, large tool definitions, conversation history). Calling Claude via LangChain4j silently foregoes this. The `claude-code-sdk` subprocess handles caching natively.
+
+### Future evolution path
+
+The SPI is designed to support multiple implementations on the CDI priority ladder:
+
+- **`agent-claude/` (current):** wraps `claude-code-sdk` → full autonomous agent, native prompt caching, MCP, extended thinking. Best for Claude-native deployments.
+- **`agent-claude-api/` (future option):** wraps Anthropic Java SDK directly → chat completion with explicit `cache_control` management, tool loop in the implementation. Would require `AgentEvent` extension for `ToolCall`/`ToolResult` if tool transparency is needed.
+- **`agent-langchain4j/` (future option):** wraps LangChain4j `ChatModel` → provider-agnostic (OpenAI, Gemini, etc.), no prompt caching advantage, tool loop in the implementation. Requires `AgentEvent` extension. Right choice once multi-model support is needed.
+
+For Claude-native work, keep `agent-claude/`. The caching and autonomous tool-execution advantages are significant. For non-Claude LLMs, `agent-langchain4j/` would be the natural path — but extending `AgentEvent` first is the prerequisite.
+
+### `AgentSessionConfig` and MCP
+
+`AgentMcpServer` is a sealed interface with three variants: `Stdio` (subprocess MCP server), `Sse` (legacy HTTP SSE), and `Http` (streamable HTTP, current standard). `Sse` and `Http` are protocol-neutral. `Stdio` assumes a subprocess execution model (currently only Claude Code). All three map cleanly to the MCP spec, which is now a cross-provider standard — OpenAI, Google, and others adopted it in 2025. Including MCP in `AgentSessionConfig` is not Claude-specific.
+
+---
+
 ## Mock Implementation Pattern
 
 The original three SPIs (`PreferenceProvider`, `CurrentPrincipal`, `GroupMembershipProvider`) get `@DefaultBean @ApplicationScoped` configurable mocks in `platform/`. `CaseMemoryStore` follows the same structural pattern but uses a silent no-op rather than a configurable mock — see the CaseMemoryStore section above for the rationale. The shared pattern for all four:
