@@ -31,6 +31,7 @@ Hybrid choreography+orchestration coordination engine for multi-agent work. Impl
 | `casehub-engine-codegen` | `codegen` | Build-time | Code generation utilities |
 | `casehub-engine-flow` | `flow` | Optional module | Enables `Worker(Workflow)` to dispatch casehub workers from Serverless Workflow steps and await results reactively. `FlowWorkerExecutor @ApplicationScoped` wins over `NoOpWorkflowExecutor @DefaultBean` fallback in runtime by classpath presence. Depends on `casehub-engine-common` only (not runtime). Provides: `FlowWorkerExecutor`, `FlowExecutionRegistry`, `CasehubDispatch`, `CasehubCallableTaskBuilder` (`call: casehub:dispatch` YAML steps via Java SPI), `CasehubFlow` (FuncDSL helper, blocks on cached thread pool). |
 | `casehub-engine-testing` | `testing` | Test module | Shared test utilities |
+| `casehub-engine-inbound` | `inbound` | Optional module | Bridges qhorus `MessageReceivedEvent` to casehub-work WorkItems via `InboundWorkItemPolicy` SPI. Inert without a policy bean. Activated by classpath presence. |
 
 ---
 
@@ -83,6 +84,16 @@ All eight ship with `@DefaultBean @ApplicationScoped` no-op defaults that yield 
 **`WorkerExecutionManager.getActiveCaseIds(String workerId): List<UUID>`** — `default` method returning Quartz job case UUIDs currently scheduled for the given worker. Added in engine#56 for the actor state view; consumers that implement `WorkerExecutionManager` inherit the default unless they override it.
 
 **`CaseChannel.parseCaseId(String channelName): UUID`** — static utility in `casehub-engine-api` that parses a `case-{caseId}/{purpose}` channel name and returns the embedded `caseId`. Returns `null` for non-case channel names. Used by the actor-state module to resolve channels back to their originating case.
+
+### Inbound Message Bridge (`casehub-engine-inbound` — engine#468, engine#469)
+
+Optional module that bridges qhorus `MessageReceivedEvent` to casehub-work WorkItems via a consumer-provided SPI. Inert without a policy bean present; activated by classpath presence.
+
+- `InboundWorkItemBridge implements MessageObserver` — receives all channel messages, delegates to policy
+- `InboundWorkItemPolicy @FunctionalInterface` — SPI in the bridge module (not in `api/spi/` — references `WorkItemCreateRequest` from casehub-work); policies must self-filter by channel/messageType
+- `createdBy` stamped unconditionally as `"casehub-engine-inbound"`
+- At-most-once delivery via qhorus `afterCompletion` callback
+- Test setup: `StubWorkloadProvider` required (`WorkItemAssignmentService` direct-injects `WorkloadProvider`); no `casehub-engine-persistence-memory` or `casehub-engine-blackboard` needed (10 tests green)
 
 ### ActionRiskClassifier SPI (`api/spi/` — engine#402)
 

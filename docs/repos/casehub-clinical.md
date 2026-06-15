@@ -2,7 +2,7 @@
 
 **GitHub:** [casehubio/clinical](https://github.com/casehubio/clinical)
 **Tier:** Application
-**Status:** Active — Layers 1–6 complete; Layer 7 (trust routing) pending; Layer 8 (ActionRiskClassifier) partial
+**Status:** Active — Layers 1–6 complete; Layer 7 (trust routing) pending; Layer 8 complete (SUSAR oversight, GDPR withdrawal, EU AI Act ComplianceSupplement)
 
 ## What It Is
 
@@ -27,7 +27,7 @@ The tutorial structure emerges from the natural adoption sequence. Each layer ad
 | 5 | casehub-engine | Fixed trial pipeline; no adaptive paths for grade-based escalation or IRB gates | complete (Epic 6, 2026-05-23) |
 | 6 | trial-level blackboard aggregation — cross-site DSMB rollup | No cross-site pattern detection; no DSMB rollup when multiple sites have simultaneous Grade 4+ events | complete (Epic 3, 2026-05-25) |
 | 7 | Trust routing | No trust model; experienced safety agents not prioritised on complex CTCAE Grade 4+ events | pending |
-| 8 | ActionRiskClassifier oversight gate | No risk classification gate for clinical actions; SUSAR criteria assessment not automated | partial (clinical#47): `ClinicalActionRiskClassifier` + `SusarCriteriaEvaluator` wired; worker binding to ae-escalation.yaml deferred (clinical#77); gate rejection/expiry handler pending (clinical#76) |
+| 8 | ActionRiskClassifier oversight gate | No risk classification gate for clinical actions; SUSAR criteria assessment not automated | complete — `ClinicalActionRiskClassifier` + `SusarCriteriaEvaluator` (clinical#47); SUSAR oversight case + gate handler (clinical#77, clinical#76); GDPR consent withdrawal (clinical#7); EU AI Act Art.12 ComplianceSupplement |
 | 9 | Comparison vs ClinicalAgent | — | pending |
 
 ## What It Owns
@@ -64,6 +64,9 @@ The tutorial structure emerges from the natural adoption sequence. Each layer ad
 - **`ClinicalMemoryService` (clinical#33):** central facade for `CaseMemoryStore` writes and reads. PATIENT domain: `storeAeReport` + `storeAeOutcome`. SITE domain: `storeDeviationReport` + `storePiDecision` (`EXPIRED` maps to `"TIMELINE_BREACH"` outcome). `querySiteContext` uses 180-day window + limit 50. Non-request-context writes (async CDI observers + Quartz threads) degrade to WARN until platform#79 ships. `AeEscalationCaseService.prepareAndMarkRequested()` injects `patientContext` + `siteContext` maps into engine `initialContext`; JQ-navigable (`.patientContext.hasPriorGrade3OrAbove`).
 - **Deferred memory domains:** DRUG domain (clinical#72) and IRB domain (clinical#73) — design questions on entityId convention and cross-tenant pharmacovigilance tradeoff to be resolved before implementing.
 - **Test workaround (clinical#74):** `ClinicalTestLedgerRepository` (in `test/support/`) replaces `InMemoryLedgerEntryRepository` in `selected-alternatives` because `casehub-ledger-memory` 0.2-SNAPSHOT was not updated simultaneously with `LedgerEntryRepository`'s 2-arg API change. Remove when `casehub-ledger-memory` catches up.
+- **Layer 8 — SUSAR Oversight (clinical#77):** dedicated `ClinicalSusarOversightCaseHub` + `susar-oversight.yaml` (capability binding via `spec.capabilities` + programmatic `.function()` registration). Three-phase `SusarOversightCaseService` with idempotency guard. `SusarOversightStatus` enum (NONE/REQUESTED/COMPLETED/FAILED) mirrors `AeEscalationStatus`. `SusarGateDecisionListener` with DB-discriminated `@ConsumeEvent(blocking = true)` for all three gate outcomes (approved/rejected/expired). Writes `SusarDecisionLedgerEntry` (JOINED inheritance, qhorus datasource, V2021). Gate discrimination uses `AdverseEvent.findBySusarOversightCaseId` — avoids `CaseInstanceCache` race condition.
+- **Layer 8 — GDPR compliance (clinical#7):** `ConsentWithdrawalService` — GDPR Art.17: pseudonymizes `patientId`, calls `LedgerErasureService.erase()`, erases patient memories. Writes `ConsentWithdrawalLedgerEntry` (V2022). XA required. W3C PROV-DM export (`GET /audit/prov`) and Merkle inclusion proof (`GET /audit/entries/{id}/proof`) endpoints on `PatientResource`.
+- **Layer 8 — EU AI Act Art.12 (clinical#76):** `ClinicalComplianceSupplement` factory attaches a `ComplianceSupplement` to all six AI-agent decision ledger entry writers via `entry.attach(supplement)`.
 - 3-site showcase scenario vs ClinicalAgent
 
 ## The Compliance Gap It Closes

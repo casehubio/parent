@@ -44,19 +44,21 @@ Its primary value in the application family is as a **proof of generality**: the
 | Typed advisory channel | `casehub-qhorus` | `ScoutingIntelBroker` publishes to `quarkmind-scouting-intel`; LLM advisors subscribe as `MessageObserver`. Dual-stack: synchronous in-memory broker (for plugins) + async advisory channel (for LLM advisors — quarkmind#180/#181) |
 | Trust-weighted strategy routing | `casehub-ledger` | `StrategyTrustRouter` — four-phase Bayesian Beta maturity (BOOTSTRAP/QUALIFIED/BORDERLINE/EXCLUDED); `GameOutcomeRecorder` writes trust attestations on `GameStopped`; opponent-context keyed trust scores; `StrategySelector` volatile per-game state (quarkmind#158) |
 
-## Tutorial Layers
+## Layer Taxonomy
 
 The layered structure applies to the agentic harness — not to the SC2 emulation layer, which is domain-specific. An LLM or developer studying the harness pattern can follow the layers independent of SC2 knowledge.
 
+Architecture record: `ARC42STORIES.MD` in the quarkmind repo (LAYER-LOG.md retired in quarkmind#166).
+
 | Layer | Adds | Gap it closes | Status |
 |-------|------|---------------|--------|
-| 1 | Naive game loop — direct plugin calls, no CaseHub | Baseline: no adaptive coordination, no blackboard | pending documentation |
-| 2 | casehub-engine blackboard | No shared state between plugins; each plugin is an island | in use (active) |
-| 3 | casehub-qhorus | No typed inter-plugin communication | in use (dual-stack) |
-| 4 | casehub-ledger | No audit trail for agent decisions | pending |
-| 5 | Adaptive plugin selection | Fixed plugin dispatch; no binding conditions | pending |
-| 6 | Trust routing | No plugin performance tracking; no routing based on outcome history | ✅ complete (quarkmind#158) — `StrategyTrustRouter` four-phase Bayesian Beta; `GameOutcomeRecorder`; known: SOUND recorded for all outcomes until win/loss detection (quarkmind#189) |
-| 7 | Comparison vs naive game AI | — | pending |
+| 1 | Naive game loop — direct plugin calls, no CaseHub | Baseline: no adaptive coordination, no blackboard | complete (conceptual) |
+| 2 | casehub-engine blackboard | No shared state between plugins; each plugin is an island | complete |
+| 3 | casehub-qhorus | No typed inter-plugin communication | complete (dual-stack) |
+| 4 | casehub-ledger | No audit trail for agent decisions | complete |
+| 5 | Adaptive plugin selection | Fixed plugin dispatch; no binding conditions | complete |
+| 6 | Trust routing | No plugin performance tracking; no routing based on outcome history | complete (quarkmind#158) — `StrategyTrustRouter` four-phase Bayesian Beta; `GameOutcomeRecorder`; known: SOUND recorded for all outcomes until win/loss detection (quarkmind#189) |
+| 7 | Comparison vs naive game AI — vs L1 naive loop and ocraft/SC2 API; no tutorial README | — | pending (quarkmind#159) |
 
 ## Dependencies
 
@@ -94,7 +96,7 @@ quarkmind
   - Canvas sprites: `makeResourceMaterial()` factory — mineral patches (blue with cross) and geysers (teal with X) replacing solid-colour placeholders
   - Time-based tests: `window.__test.gameTimeSeconds()` + `tickForSeconds()` helper enabling `mineralIncomeScalesWithGameTime` and similar time-anchored assertions
 
-**Harness layer (Layer 2 active):** `AgentOrchestrator` dispatches plugins via `casehub-engine` CaseFile per tick. Layer-by-layer tutorial documentation in progress — Layer 1 (conceptual baseline) and Layer 2 (casehub-engine blackboard) are documented in `LAYER-LOG.md`. Layers 3–7 tracked in quarkmind#155–#159.
+**Harness layer:** `AgentOrchestrator` dispatches plugins via `casehub-engine` CaseFile per tick. Layers 1–6 complete. Architecture record is `ARC42STORIES.MD` in the quarkmind repo (LAYER-LOG.md retired in quarkmind#166). Layer 7 (quarkmind#159) pending: comparison vs L1 naive loop and ocraft/SC2 API.
 
 **IEM10 JSON validation (#150):** `IEM10CommandExtractor` enables `ReplayValidationHarness` runs across all 30 IEM10 games, providing statistical coverage of training patterns (queued, non-queued, cross-type) across PvT, PvZ, PvP matchups. Cross-validates calibration results from the scelight binary parser against the SC2EGSet JSON parser.
 

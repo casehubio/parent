@@ -25,9 +25,11 @@ Two related capabilities in one repo:
 | `inference-splade/` | `casehub-inference-splade` | JVM library | SPLADE sparse embeddings (`Map<Integer, Float>`); log-saturation + threshold |
 | `inference-inmem/` | `casehub-inference-inmem` | Test library | Deterministic `InferenceModel` stubs; no JNI; safe in all test contexts |
 | `inference-quarkus/` | `casehub-inference-quarkus` | Quarkus extension | CDI wiring, `@InferenceModel` qualifier, Dev Services, `@QuarkusTest` support |
-| `rag-api/` | `casehub-rag-api` | Pure Java, Mutiny provided | `CorpusStore` SPI, `CaseRetriever` SPI (blocking); `ReactiveCorpusStore`, `ReactiveCaseRetriever` (Mutiny `Uni<T>` variants — Mutiny `provided` scope per module-tier-structure protocol); `RetrievedChunk`, `CorpusRef` |
-| `rag/` | `casehub-rag` | Quarkus module | LangChain4j pipeline, Qdrant, hybrid RRF fusion, tenancy isolation; `BlockingToReactiveRagBridge @DefaultBean` wraps blocking adapters as reactive |
-| `rag-testing/` | `casehub-rag-testing` | Test library | In-memory `CorpusStore` + `CaseRetriever` + reactive stubs for `@QuarkusTest` |
+| `rag-api/` | `casehub-rag-api` | Pure Java, Mutiny provided | `CorpusStore` SPI, `CaseRetriever` SPI (blocking); `ReactiveCorpusStore`, `ReactiveCaseRetriever` (Mutiny `Uni<T>` variants — Mutiny `provided` scope per module-tier-structure protocol); `RetrievedChunk`, `CorpusRef`; `MetadataExtractor` SPI — extracts body + metadata from document content; `CursorStore` SPI — pluggable cursor persistence |
+| `rag/` | `casehub-rag` | Quarkus module | LangChain4j pipeline, Qdrant, hybrid RRF fusion, tenancy isolation; `BlockingToReactiveRagBridge @DefaultBean` wraps blocking adapters as reactive; `CorpusIngestionService` — `@Scheduled` polling bridge (`ChangeSource` → `CorpusReader` → `MetadataExtractor` → chunk → `EmbeddingIngestor`); `CorpusBindingProducer` — config-driven binding creation (design debt: extract to `corpus-quarkus/` when second consumer appears); `YamlFrontmatterExtractor @DefaultBean` `MetadataExtractor`; `FileCursorStore @DefaultBean` file-based cursor persistence. Dependency: `langchain4j` full artifact (replaces `langchain4j-core`) for `DocumentSplitters`; `quarkus-scheduler` for `@Scheduled` polling. |
+| `rag-testing/` | `casehub-rag-testing` | Test library | In-memory `CorpusStore` + `CaseRetriever` + reactive stubs for `@QuarkusTest`; `InMemoryCursorStore @Alternative @Priority(1)` test stub |
+| `examples/example-text-analysis` | — | Standalone Java demos | NLI, zero-shot classification, scoring, reranking, SPLADE demos (no Quarkus) |
+| `examples/example-rag-pipeline` | — | Quarkus demos | Corpus ingestion, hybrid search with RRF fusion, cross-encoder reranking. Maven profiles: `-Pexamples-smoke` (in-memory stubs), `-Pexamples` (real ONNX models + Testcontainers Qdrant) |
 
 ---
 
@@ -53,6 +55,23 @@ Two related capabilities in one repo:
 `CorpusStore` — ingest, delete, and list documents per tenant corpus. Tenancy-scoped; `CorpusRef` carries tenant ID + corpus name.
 
 `CaseRetriever` — retrieval entry point for case steps and the fact space. `retrieve(query, CorpusRef)` → `List<RetrievedChunk>`. Hybrid search: LangChain4j `OnnxEmbeddingModel` (dense) + `SparseEmbedder` (sparse) fused via RRF. Reranked by `CrossEncoderReranker` in precision mode. Reactive variant: `ReactiveCaseRetriever` — `retrieve()` → `Uni<List<RetrievedChunk>>`; `BlockingToReactiveRagBridge @DefaultBean` in `rag/` wraps blocking impl.
+
+### Corpus Ingestion Bridge (neural-text#19)
+
+Config-driven polling bridge that populates a RAG corpus from external sources. Ships in `rag/`.
+
+| Component | Purpose |
+|---|---|
+| `CorpusIngestionService` | Orchestrator — `@Scheduled` polling with reconciliation mode |
+| `CorpusIngestionBinding` | Per-corpus descriptor (name, corpusRef, changeSource, reader, extractor) |
+| `CorpusBindingProducer` | Config-driven binding creation (design debt: extract to `corpus-quarkus/` when second consumer appears) |
+| `MetadataExtractor` SPI | Extracts body + metadata from document content |
+| `CursorStore` SPI | Pluggable cursor persistence for incremental polling |
+| `YamlFrontmatterExtractor` | `@DefaultBean` `MetadataExtractor` |
+| `FileCursorStore` | `@DefaultBean` file-based cursor persistence |
+| `InMemoryCursorStore` | `@Alternative @Priority(1)` test stub in `rag-testing` |
+
+Also includes an `assertTenant` fix extending protocol PP-20260529-57cc3b to RAG adapters (neural-text#21).
 
 ---
 
@@ -94,8 +113,10 @@ The prototype is the first deliverable. Until confirmed, all `inference-*` modul
 | Repo / Library | Module | How |
 |---|---|---|
 | `casehub-platform-api` | `rag` | `CurrentPrincipal`, `TenancyConstants` — tenant isolation |
-| LangChain4j | `rag` | RAG pipeline, `OnnxEmbeddingModel`, Qdrant `EmbeddingStore` |
+| LangChain4j (full artifact) | `rag` | RAG pipeline, `OnnxEmbeddingModel`, Qdrant `EmbeddingStore`, `DocumentSplitters` |
 | `io.qdrant:client` | `rag` | Qdrant REST client for direct named-vector-space queries (sparse leg of hybrid RRF search — until langchain4j#4994 ships) |
+| `quarkus-scheduler` | `rag` | `@Scheduled` polling for `CorpusIngestionService` |
+| `casehub-corpus` | `rag` | `CorpusBindingProducer` only (design debt — extract when second consumer appears) |
 | ONNX Runtime JVM | `inference-runtime` | Model session management |
 | HuggingFace Tokenizers JNI | `inference-runtime` | Tokenization |
 

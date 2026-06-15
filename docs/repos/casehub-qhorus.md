@@ -210,6 +210,33 @@ See the full agent mesh framework spec: [`casehubio/claudony docs/superpowers/sp
 
 ---
 
+## A2A SSE Streaming (qhorus#147)
+
+- `GET /a2a/tasks/{id}/stream` — SSE endpoint returning `text/event-stream`
+- `A2AChannelBackend` has `Consumer<OutboundMessage>` registry with `registerStream()`, `deregisterStream()`, `streamCount()`
+- `A2ATaskState.TERMINAL_TYPES`, `fromMessageType(MessageType)` — used by SSE event serialisation
+- DECLINE maps to `"cancelled"` (not `"failed"`) across all three A2ATaskState paths
+- Known constraint: SSE subscriptions don't survive server restart (qhorus#278)
+- ADRs: 0013 (lazy registration), 0014 (Consumer registry pattern)
+
+## Type-Safe Channel API (qhorus#246, qhorus#247)
+
+- `ChannelCreateRequest.allowedTypes` / `deniedTypes` changed from `String` to `Set<MessageType>`
+- `MessageType.serializeTypes(Set<MessageType>)` — sorted canonical CSV
+- `ChannelService.setTypeConstraints(UUID, Set<MessageType>, Set<MessageType>)` — typed params
+- MCP tools parse at boundary; service layer is typed throughout
+- `AutoChannelSpec` (connector-backend) also changed to `Set<MessageType>`
+
+## Reactive ObligorTrustPolicy (qhorus#235)
+
+`ReactiveMessageService` trust gate now calls `obligorTrustPolicy.permits()` via `Infrastructure.getDefaultWorkerPool()` — custom policy beans honoured in both blocking and reactive paths. ADR: 0015 (worker-pool delegation).
+
+## CDI Fix (qhorus#276)
+
+`QhorusInboundCurrentPrincipal` changed from `@DefaultBean` to plain `@ApplicationScoped` — prevents CDI ambiguity in consumer apps that also include `casehub-platform` on the classpath.
+
+---
+
 ## Current State
 
 - 1035+ tests passing (runtime + testing + examples modules)
