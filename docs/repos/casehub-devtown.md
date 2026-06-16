@@ -22,7 +22,7 @@ LAYER-LOG.md in the project root is the authoritative layer-by-layer record with
 | 2 | casehub-work | No formal SLA for reviewer response; reviewer assignments not tracked | **in progress** — devtown#41 ✅ devtown#42 ✅; LAYER-LOG entry pending engine#326 |
 | 3 | casehub-qhorus | No formal obligation per specialist reviewer; DECLINE when outside expertise | ✅ complete — devtown#52 + devtown#64; LAYER-LOG entry complete. `QhorusPrReviewService` sets `allowedWriters=ORCHESTRATOR` on all three channels; `requireContract()` validates both `allowedTypes` and `allowedWriters`. DONE/DECLINE dispatches use ORCHESTRATOR sender (agents will use own identity in Layer 6). |
 | 4 | casehub-ledger | No tamper-evident review record; cannot trace production incident to missed finding | ✅ complete (devtown#5, devtown#73, devtown#74) — `MergeDecisionLedgerEntry`, `MergeDecisionObserver`, `CodeReviewComplianceResource`, `domainContentBytes()` override; V2003: index on `(repository, pr_number)` + dropped `tenancy_id` from join table; `ErasureReceiptLedgerEntry` (JOINED, V2004) + `GdprErasureService` + `GdprErasureResource` (`POST /api/actors/{actorId}/erasure`) |
-| 5 | casehub-engine | Fixed review pipeline; no adaptive routing on security flags or architecture changes | ✅ complete — PR review CasePlanModel (#10); 38 tests |
+| 5 | casehub-engine | Fixed review pipeline; no adaptive routing on security flags or architecture changes | ✅ complete — PR review CasePlanModel (#10); 38 tests. **Extension (devtown#56):** `DevtownActionRiskClassifier` oversight gate — `ActionRiskClassifier` SPI (engine#402), 8 action types, 4 classification categories, Preference-driven thresholds, `HumanOversight.GENERAL` catch-all group |
 | 6 | Trust routing | No trust model; experienced security reviewers not prioritised on sensitive PRs | ✅ complete — devtown#57; LAYER-LOG entry complete |
 | 7 | Comparison vs naive AI code review | — | pending |
 
@@ -39,6 +39,7 @@ LAYER-LOG.md in the project root is the authoritative layer-by-layer record with
 - Post-merge trust feedback — FLAGGED attestation when production incident traced to missed review
 - **`POST /api/actors/{actorId}/erasure`** (devtown#74) — GDPR Art.17 erasure: pseudonymises actor identity in ledger, cleans `CaseMemoryStore` (`contributor:` + `reviewer:` prefixes), persists tamper-evident `ErasureReceiptLedgerEntry` (V2004). SHA-256 hash fallback when no `ActorIdentity` mapping exists. Compliance report cross-reference via token-to-token matching.
 - **`POST /api/incident-feedback`** (devtown#5, devtown#73) — records FLAGGED attestations against agents whose PR reviews missed issues found in production incidents. `IncidentFeedbackService` + `IncidentFeedbackResource` with `@RolesAllowed("admin")`. Idempotent via `findAttestationsByAttestorIdAndCapabilityTag` (tokenisation-proof). New domain types: `IncidentSeverity` (severity→confidence mapping), `IncidentFeedback`, `IncidentFeedbackResult`, `FlaggedAgent`, `ReviewDomain.REVIEW_CAPABILITIES` validation set. V2003 migration: index on `(repository, pr_number)` for PR lookup; dropped `tenancy_id` column from `merge_decision_ledger_entry` join table (field shadowing removal per ledger#131).
+- **`DevtownActionRiskClassifier @RiskClassifier` (devtown#56):** Layer 5 extension; implements engine's `ActionRiskClassifier` SPI (engine#402). 8 `DevtownActionType` constants, 4 classification categories. `DevtownRiskClassifierProducer @RiskClassifier @ApplicationScoped` CDI adapter. PreferenceProvider-driven thresholds at scope `casehubio/devtown/risk/<actionType>`. `BooleanPreference` added to domain/preferences/. `HumanOversight.GENERAL` added as catch-all oversight group. Gate operates through engine's `ActionGateWorkItemHandler` lifecycle (classifier → PendingActionGate → WorkItem → human approval → resume) — no new REST endpoints.
 - GitHub integration — PR webhook receiver, CI status reader, merge executor worker
 - **CaseMemoryStore integration (devtown#43):** contributor history, reviewer agent context, and code-area history injected before PR review case starts; review outcomes written to memory at case close.
   - New domain types: `DevtownMemoryDomain`, `DevtownMemoryKeys`, `ReviewOutcome`, `ModulePathNormalizer` (devtown-domain)
@@ -68,7 +69,8 @@ casehub-devtown
   → casehub-work     (human review WorkItem, SLA, escalation)
   → casehub-qhorus   (COMMAND/RESPONSE per reviewer, commitment lifecycle)
   → casehub-connectors (Slack/Teams for review assignments and failures)
-  → casehub-platform-memory-inmem (in-memory CaseMemoryStore for @QuarkusTest isolation)
+  → casehub-platform-memory-inmem  (in-memory CaseMemoryStore for @QuarkusTest isolation)
+  → casehub-engine-work-adapter    (ActionRiskClassifier oversight gate — devtown#56)
 ```
 
 ## Key Epics
