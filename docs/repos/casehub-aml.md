@@ -37,7 +37,7 @@ Follows hexagonal architecture ([PP-20260512-9b8847](../protocols/casehub/hexago
 ## What It Owns
 
 - AML domain model: `SuspiciousTransaction`, `AmlInvestigationCase`, `SuspiciousActivityReport`
-- Capability tags: `entity-resolution`, `pattern-analysis`, `osint-screening`, `sar-drafting`, `compliance-review`, `senior-escalation`, `investigation-triage`
+- Capability tags: `entity-resolution`, `pattern-analysis`, `osint-screening`, `sar-drafting`, `compliance-review`, `senior-escalation`, `investigation-triage`, `entity-link-proposal`, `investigation-summary`
 - Trust dimensions: `investigation-accuracy`, `pep-clearance`, `scope-awareness`
 - Investigation `CasePlanModel` — adaptive paths based on entity type, risk score, PEP detection
 - Compliance officer WorkItem with 30-day FinCEN SLA and head-of-compliance escalation
