@@ -2,7 +2,7 @@
 
 **GitHub:** [casehubio/clinical](https://github.com/casehubio/clinical)
 **Tier:** Application
-**Status:** Active — Layers 1–6 complete; Layer 7 (trust routing) pending; Layer 8 complete (SUSAR oversight, GDPR withdrawal, EU AI Act ComplianceSupplement)
+**Status:** Active — Layers 1–8 complete; Layer 9 (comparison vs ClinicalAgent) pending
 
 ## What It Is
 
@@ -26,7 +26,7 @@ The tutorial structure emerges from the natural adoption sequence. Each layer ad
 | 4 | casehub-ledger | No FDA tamper-evident audit trail; no GDPR Art.17 consent withdrawal | complete (Epic 4, 2026-05-12) |
 | 5 | casehub-engine | Fixed trial pipeline; no adaptive paths for grade-based escalation or IRB gates | complete (Epic 6, 2026-05-23) |
 | 6 | trial-level blackboard aggregation — cross-site DSMB rollup | No cross-site pattern detection; no DSMB rollup when multiple sites have simultaneous Grade 4+ events | complete (Epic 3, 2026-05-25) |
-| 7 | Trust routing | No trust model; experienced safety agents not prioritised on complex CTCAE Grade 4+ events | pending |
+| 7 | Trust routing | No trust model; experienced safety agents not prioritised on complex CTCAE Grade 4+ events | ✅ complete (clinical#8, 2026-06-15) — `ClinicalTrustRoutingPolicyProvider @ApplicationScoped` displaces `DefaultTrustRoutingPolicyProvider @DefaultBean`; SAFETY_MONITORING threshold=0.75, 20-min observations, 0.70 quality floor; `SusarAgentAttestationWriter` writes `LedgerAttestation` anchored to `WorkerDecisionEntry`; TrustScoreJob ingests attestations into Bayesian Beta scores; `RegulatorySubmissionCaseService` + `ClinicalRegulatorySubmissionCaseHub` + `regulatory-submission.yaml` (Grade 5 + unexpected AE → IND expedited safety reporting case, 21 CFR 312.32(c)(1)(i)), concurrent with AE escalation; `AeEscalationCompletedEvent.unexpected` (7th field); new dep: casehub-engine-ledger; new Flyway location: `classpath:db/engine-ledger/migration` |
 | 8 | ActionRiskClassifier oversight gate | No risk classification gate for clinical actions; SUSAR criteria assessment not automated | complete — `ClinicalActionRiskClassifier` + `SusarCriteriaEvaluator` (clinical#47); SUSAR oversight case + gate handler (clinical#77, clinical#76); GDPR consent withdrawal (clinical#7); EU AI Act Art.12 ComplianceSupplement |
 | 9 | Comparison vs ClinicalAgent | — | pending |
 
@@ -67,6 +67,7 @@ The tutorial structure emerges from the natural adoption sequence. Each layer ad
 - **Layer 8 — SUSAR Oversight (clinical#77):** dedicated `ClinicalSusarOversightCaseHub` + `susar-oversight.yaml` (capability binding via `spec.capabilities` + programmatic `.function()` registration). Three-phase `SusarOversightCaseService` with idempotency guard. `SusarOversightStatus` enum (NONE/REQUESTED/COMPLETED/FAILED) mirrors `AeEscalationStatus`. `SusarGateDecisionListener` with DB-discriminated `@ConsumeEvent(blocking = true)` for all three gate outcomes (approved/rejected/expired). Writes `SusarDecisionLedgerEntry` (JOINED inheritance, qhorus datasource, V2021). Gate discrimination uses `AdverseEvent.findBySusarOversightCaseId` — avoids `CaseInstanceCache` race condition.
 - **Layer 8 — GDPR compliance (clinical#7):** `ConsentWithdrawalService` — GDPR Art.17: pseudonymizes `patientId`, calls `LedgerErasureService.erase()`, erases patient memories. Writes `ConsentWithdrawalLedgerEntry` (V2022). XA required. W3C PROV-DM export (`GET /audit/prov`) and Merkle inclusion proof (`GET /audit/entries/{id}/proof`) endpoints on `PatientResource`.
 - **Layer 8 — EU AI Act Art.12 (clinical#76):** `ClinicalComplianceSupplement` factory attaches a `ComplianceSupplement` to all six AI-agent decision ledger entry writers via `entry.attach(supplement)`.
+- **Layer 7 — Trust routing (clinical#8):** `ClinicalTrustRoutingPolicyProvider @ApplicationScoped` — displaces `DefaultTrustRoutingPolicyProvider @DefaultBean` (casehub-engine-ledger); SAFETY_MONITORING threshold=0.75, 20-min observations, 0.70 safety-accuracy quality floor. `SusarAgentAttestationWriter` — observes gate approved/rejected/expired; writes `LedgerAttestation` anchored to `WorkerDecisionEntry`; TrustScoreJob ingests attestations into Bayesian Beta scores. `RegulatorySubmissionCaseService` + `ClinicalRegulatorySubmissionCaseHub` + `regulatory-submission.yaml` — Grade 5 + unexpected AE triggers IND expedited safety reporting case (21 CFR 312.32(c)(1)(i)), concurrent with AE escalation. `AeEscalationCompletedEvent.unexpected` — 7th field, marks AE as unexpected per ICH E2A criteria.
 - 3-site showcase scenario vs ClinicalAgent
 
 ## The Compliance Gap It Closes
@@ -95,6 +96,7 @@ casehub-clinical
   → casehub-connectors-core         (sponsor notification delivery — clinical#13; safety officer AE notification — clinical#11 ✅)
   → casehub-platform-memory-jpa     (prod — JPA CaseMemoryStore; displaces NoOpCaseMemoryStore by classpath presence — clinical#33)
   → casehub-platform-memory-inmem   (test scope — @Alternative CaseMemoryStore for @QuarkusTest isolation — clinical#33)
+  → casehub-engine-ledger           (Layer 7: TrustWeightedAgentStrategy, WorkerDecisionEventCapture, TrustScoreCache, CaseLedgerEntryRepository — classpath-presence activation)
 ```
 
 ## Layer 5 Integration Notes (casehub-engine)
