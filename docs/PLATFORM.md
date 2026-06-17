@@ -217,6 +217,7 @@ casehub-parent              (BOM — publish first; all others import it)
 | `casehub-connectors-core` | `casehub-clinical` | `runtime` | sponsor + safety officer notification delivery |
 | `casehub-connectors-core` | `casehub-qhorus` | `connectors` | optional — `WatchdogAlertEvent → ConnectorService.send()` bridge; activates by classpath presence |
 | `casehub-connectors-core` | `casehub-qhorus` | `connector-backend` | optional — `InboundMessage → ConnectorChannelBackend` bridge; activates by classpath presence |
+| `casehub-connectors-slack-bot` | `casehub-qhorus` | `slack-channel` | optional — `SlackBotClient` used by `SlackChannelBackend`; activates by classpath presence; Refs qhorus#261 |
 | `casehub-platform-api` | `casehub-engine` | `actor-state` | `ActorStateContributor`, `ActorStateAccumulator` SPI interfaces |
 | `casehub-ledger` (runtime) | `casehub-engine` | `actor-state` | `TrustGateService` for global + capability scores |
 | `casehub-work` | `casehub-engine` | `actor-state` | `WorkItemStore` for active WorkItems |
