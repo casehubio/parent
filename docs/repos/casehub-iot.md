@@ -64,11 +64,12 @@ Immutable command record: `targetDeviceId`, `action`, `parameters`, `source`, `c
 
 | Module | Artifact | Contents |
 |--------|----------|----------|
-| `api` | `casehub-iot-api` | Core SPIs (`DeviceProvider`, `DeviceRegistry`), device class hierarchy, `StateChangeEvent`, `DeviceCommand`, `CommandResult`, enums (`DeviceClass`, `SensorType`, `ThermostatMode`, `ProviderStatus`), `CdiDeviceRegistry @ApplicationScoped`. Pure Java + Mutiny `provided` — no Quarkus runtime dependency. |
+| `api` | `casehub-iot-api` | Core SPIs (`DeviceProvider`, `DeviceRegistry`), device class hierarchy, `StateChangeEvent`, `DeviceCommand`, `CommandResult`, enums (`DeviceClass`, `SensorType`, `ThermostatMode`, `ProviderStatus`), `CdiDeviceRegistry @ApplicationScoped`. Pure Java + Mutiny `provided`. **Note:** Jackson annotations added for `DeviceTypeIdResolver` polymorphic serialization (iot#5) — `api` is no longer a zero-framework-dependency module. |
 | `homeassistant` | `casehub-iot-homeassistant` | `HomeAssistantProvider @ApplicationScoped` — REST API + WebSocket event stream. `HomeAssistantEntityMapper` maps HA states to device hierarchy. `HomeAssistantWebSocketClient` for real-time state subscriptions with exponential backoff reconnection. `HomeAssistantRestClient` for service calls (command dispatch). Supplement types: `HomeAssistantThermostat`, `HomeAssistantLight`, `HomeAssistantLock`. Config via `@ConfigMapping`: url, token, tenancyId, reconnect params. |
 | `openhab` | `casehub-iot-openhab` | `OpenHabProvider @ApplicationScoped` — REST API + SSE event stream. `OpenHabEntityMapper` maps Equipment Groups (semantic model) to device hierarchy. `OpenHabSseClient` for real-time state with Equipment-level coalescing (batches rapid item-level changes into a single Equipment-level event). `OpenHabRestClient` for item commands. Supplement types: `OpenHabThermostat`, `OpenHabLight`, `OpenHabRollershutter`. Auth: token or basic auth via `OpenHabAuthHeadersFactory` (`ClientHeadersFactory`). Config via `@ConfigMapping`: url, token, optional basicAuth, tenancyId, reconnect params, coalescing window. |
 | `testing` | `casehub-iot-testing` | `MockDeviceProvider`, `MockDeviceRegistry`, `Fixtures` (Java-built fixture devices), `DeviceFixtureLoader` (YAML fixture loading), `DeviceTypeHandler` SPI (16 handlers for all device types including vendor supplements), `StateChangeEventPublisher`. Test scope only — never a compile or runtime dependency for downstream consumers. Provider modules use `<optional>true</optional>` for `DeviceTypeHandler` SPI compilation. |
-| `bridge` | `casehub-iot-bridge` | Lightweight bridge runtime for cloud/hybrid deployment mode. No domain logic — pure event forwarding and command relay. |
+| `bridge` | `casehub-iot-bridge` | Local bridge agent — event relay with CDI filter chain, WebSocket client to bridge-server. Runs on-premises or at the edge; forwards `StateChangeEvent` to cloud consumers and relays commands back. |
+| `bridge-server` | `casehub-iot-bridge-server` | Cloud-side library: `BridgeDeviceProvider implements DeviceProvider` — remote (bridged) devices look local to cloud consumers via the `DeviceProvider` SPI. `DeviceTypeIdResolver` for compound type ID serialization. 6 deployment topologies: SaaS, hybrid, multi-site, constrained edge, dev, multiple consumers (iot#5). |
 
 ---
 
@@ -104,7 +105,7 @@ Test utility that fires `StateChangeEvent` instances via CDI `fireAsync()` and c
 
 ## Depends On
 
-Nothing in the casehubio ecosystem. Pure Java SPIs + Mutiny (`provided` scope) in `api`. Provider modules depend on Quarkus REST Client, Jackson, and WebSocket/SSE extensions.
+Nothing in the casehubio ecosystem. `api` module: Pure Java SPIs + Mutiny (`provided` scope) + Jackson annotations for `DeviceTypeIdResolver` (iot#5). Provider modules depend on Quarkus REST Client, Jackson, and WebSocket/SSE extensions.
 
 ## Depended On By
 
