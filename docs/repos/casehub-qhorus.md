@@ -23,6 +23,7 @@ Designed after research into A2A, AutoGen, LangGraph, OpenAI Swarm, Letta, and C
 | Message | Speech-act message with a typed intent (query, command, response, etc.) — see ADR-0005. |
 | Commitment | Obligation with a defined lifecycle from open through resolution states. |
 | CommitmentDeclinedEvent | CDI event record in `api/message/` alongside `CommitmentState`; fired by `CommitmentService.decline()` when a commitment transitions to DECLINED; carries `commitmentId`, `correlationId`, `channelId`, `obligor`, `requester`; consumers observe for scope-calibration signals (trust dimension tracking). Refs qhorus#251. |
+| CommitmentExpiredEvent | CDI event record in `api/message/`; fired by `CommitmentService.expireOverdue()` once per expired commitment; carries `commitmentId`, `correlationId`, `channelId`, `obligor` (nullable), `requester`, `expiresAt`; signals deadline-based rerouting and stall detection. Blocks engine#504 and devtown#14. Refs qhorus#281. |
 | Instance | Agent registry entry with capability tags and multiple addressing modes. |
 | SharedData + ArtefactClaim | Shared artefact store with claim/release lifecycle. |
 | Watchdog | Condition-based alert registration. |
@@ -134,7 +135,7 @@ See docs/DESIGN.md for SPI interfaces.
 | `runtime` | `MessageService`, `ChannelGateway`, `QhorusDashboardService`, `ProjectionService`, `ReactiveProjectionService`, ledger integration, MCP tools, A2A endpoint |
 | `connector-backend` | Optional — `ConnectorChannelBackend` implements `HumanParticipatingChannelBackend`; bridges `InboundMessage` CDI events (`@ObservesAsync`) from casehub-connectors into Qhorus channel dispatch; self-registers for channels with a `ChannelBackend` type of `CONNECTOR`. `ConnectorQhorusMeshBridge` implements `ConnectorMeshBridge`; posts a STATUS message to the configured delivery channel (`casehub.qhorus.connector-backend.delivery-channel`) after each successful MCP connector delivery; activates by classpath presence alongside `ConnectorChannelBackend`. Activates by classpath presence. |
 | `deployment` | Quarkus extension deployment descriptors |
-| `testing` | In-memory store implementations for `@QuarkusTest` |
+| `testing` | In-memory store implementations for `@QuarkusTest`. `MessageLedgerEntryTestFactory` is in `casehub-qhorus-testing` (package `io.casehub.qhorus.testing`) — promoted from `runtime/src/test/` to make it available to consumer test suites (qhorus#280). |
 
 ---
 
@@ -210,13 +211,16 @@ See the full agent mesh framework spec: [`casehubio/claudony docs/superpowers/sp
 
 ---
 
-## A2A SSE Streaming (qhorus#147)
+## A2A SSE Streaming (qhorus#147, qhorus#278)
 
 - `GET /a2a/tasks/{id}/stream` — SSE endpoint returning `text/event-stream`
-- `A2AChannelBackend` has `Consumer<OutboundMessage>` registry with `registerStream()`, `deregisterStream()`, `streamCount()`
-- `A2ATaskState.TERMINAL_TYPES`, `fromMessageType(MessageType)` — used by SSE event serialisation
+- `streamTask()` is `@RunOnVirtualThread` (not `@Transactional`) — active model: `LinkedBlockingQueue<OutboundMessage>` with `queue::offer`; all SSE writes from one virtual thread
+- Named keepalive events (`event: keepalive`) sent every `casehub.qhorus.a2a.sse.heartbeat-interval-seconds` (default 15s) — prevents proxy idle-timeout teardown. SSE comment lines not used (RESTEasy SseEventSource fires handlers for comment-only frames; named events are used instead).
+- Orphan detection: `sink.isClosed()` checked each iteration
+- Max-duration: `casehub.qhorus.a2a.sse.max-duration-seconds` (default 1800s)
+- `A2ATaskState.TERMINAL_TYPES` (Set<MessageType>) and `TERMINAL_STATES` (Set<String>) constants; `fromMessageType(MessageType)` — used by SSE event serialisation
 - DECLINE maps to `"cancelled"` (not `"failed"`) across all three A2ATaskState paths
-- Known constraint: SSE subscriptions don't survive server restart (qhorus#278)
+- Known constraint: SSE subscriptions don't survive server restart
 - ADRs: 0013 (lazy registration), 0014 (Consumer registry pattern)
 
 ## Type-Safe Channel API (qhorus#246, qhorus#247)
