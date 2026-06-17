@@ -493,16 +493,19 @@ Three systems make outbound HTTP calls to external services: **workers** (`caseh
 | Digest | HTTP digest auth | Challenge-response |
 | Named reference | Shared policy reuse | `use("salesforce-prod")` — resolves to a named policy definition |
 
-**Two tiers of outbound credentials:**
+**Three tiers of outbound credentials:**
 
 | Tier | Scope | Config mechanism | Example |
 |---|---|---|---|
-| **Static deploy-time** | Fixed per deployment, single-vendor | `@ConfigProperty` (MicroProfile Config) | Twilio account SID, Slack bot token |
-| **Named endpoint** | Multi-endpoint, per-capability, potentially per-tenant | `EndpointRegistry` SPI (platform#73) with `credentialRef` | Worker dispatching to customer APIs with different auth per tenant |
+| **1 — Static deploy-time** | Fixed per deployment, single-vendor | `@ConfigProperty` (MicroProfile Config) | Twilio account SID, global Slack bot token |
+| **1.5 — Per-binding config reference** | One credential per DB binding record, deploy-time config | Logical name stored in DB; resolved via `Config.getValue("casehub.<module>.credentials." + ref, String.class)` | Different Slack bot token per Qhorus channel / Slack workspace |
+| **2 — Named endpoint** | Multi-endpoint, per-capability, runtime-registered | `EndpointRegistry` SPI (platform#73) with `credentialRef` — **resolution not yet implemented** | Worker dispatching to customer APIs with different auth per tenant |
 
-Connectors currently use Tier 1 (static `@ConfigProperty`), which is correct for their use case — they connect to a single vendor per connector type. Workers and quarkus-flow use Tier 2 when available, falling back to Tier 1 via config properties when `EndpointRegistry` hasn't shipped.
+Connectors currently use Tier 1 (static `@ConfigProperty`), which is correct for their use case — they connect to a single vendor per connector type. Optional modules that bind one external account per channel or entity (e.g. one Slack workspace per Qhorus channel) use Tier 1.5. Workers and quarkus-flow target Tier 2 when the secrets resolver is implemented.
 
-**Secrets management:** Auth policies reference credentials by name (`credentialRef`), never inline in endpoint descriptors. Actual secret storage (Vault, k8s Secret, environment variable) is resolved by a secrets backend — out of scope for the auth vocabulary itself.
+**Secrets management:** Auth policies reference credentials by name, never inline in DB or endpoint descriptors. The actual token lives in the runtime environment (env var or `application.properties`), not the DB. Actual secret storage (Vault, k8s Secret, environment variable) at Tier 2 is resolved by a secrets backend — not yet implemented; `EndpointRegistry.credentialRef` is a forward-compatibility field only.
+
+**"credentialRef is deferred"** means the `EndpointRegistry` SPI's `EndpointDescriptor.credentialRef` field (shipped platform#73) exists but no runtime resolver reads it. Adding `credentialRef` to an endpoint descriptor has no effect today. Use Tier 1.5 for per-binding credentials until a secrets backend resolver is implemented. See `casehub/garden: docs/protocols/casehub/per-binding-credential-reference.md`.
 
 ### Role Name Convention (`@RolesAllowed`)
 
