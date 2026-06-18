@@ -39,6 +39,7 @@
     <module>../work</module>
     <module>../qhorus</module>
     <module>../engine</module>
+    <module>../workers</module>
     <module>../claudony</module>
   </modules>
 
