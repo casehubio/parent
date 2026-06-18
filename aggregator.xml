@@ -52,12 +52,21 @@
       </modules>
     </profile>
     <profile>
-      <!-- Activate with -Papps — include application repos (devtown, aml, clinical) -->
+      <!-- Activate with -Papps — include all non-core repos -->
       <id>apps</id>
       <modules>
+        <module>../iot</module>
+        <module>../neural-text</module>
+        <module>../desiredstate</module>
+        <module>../ras</module>
+        <module>../ops</module>
+        <module>../flow</module>
+        <module>../openclaw</module>
         <module>../devtown</module>
         <module>../aml</module>
         <module>../clinical</module>
+        <module>../life</module>
+        <module>../drafthouse/server</module>
       </modules>
     </profile>
   </profiles>
