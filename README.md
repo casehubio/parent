@@ -16,9 +16,20 @@ Org-level parent POM and BOM for the [casehubio](https://github.com/casehubio) e
 | [casehub-qhorus](https://github.com/casehubio/qhorus) | [![casehub-qhorus](https://github.com/casehubio/qhorus/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/qhorus/actions/workflows/publish.yml) |
 | [casehub-eidos](https://github.com/casehubio/eidos) | [![casehub-eidos](https://github.com/casehubio/eidos/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/eidos/actions/workflows/publish.yml) |
 | [casehub-neural-text](https://github.com/casehubio/neural-text) | [![casehub-neural-text](https://github.com/casehubio/neural-text/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/neural-text/actions/workflows/publish.yml) |
+| [casehub-iot](https://github.com/casehubio/iot) | [![casehub-iot](https://github.com/casehubio/iot/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/iot/actions/workflows/publish.yml) |
+| [casehub-desiredstate](https://github.com/casehubio/casehub-desiredstate) | [![casehub-desiredstate](https://github.com/casehubio/casehub-desiredstate/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/casehub-desiredstate/actions/workflows/publish.yml) |
+| [casehub-ras](https://github.com/casehubio/casehub-ras) | [![casehub-ras](https://github.com/casehubio/casehub-ras/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/casehub-ras/actions/workflows/publish.yml) |
+| [casehub-ops](https://github.com/casehubio/casehub-ops) | [![casehub-ops](https://github.com/casehubio/casehub-ops/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/casehub-ops/actions/workflows/publish.yml) |
 | [casehub-engine](https://github.com/casehubio/engine) | [![casehub-engine](https://github.com/casehubio/engine/actions/workflows/maven.yml/badge.svg?branch=main)](https://github.com/casehubio/engine/actions/workflows/maven.yml) |
+
+**Integration**
+
+| Repository | Status |
+|:-----------|:------:|
+| [casehub-workers](https://github.com/casehubio/workers) | [![casehub-workers](https://github.com/casehubio/workers/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/workers/actions/workflows/publish.yml) |
 | [casehub-claudony](https://github.com/casehubio/claudony) | [![casehub-claudony](https://github.com/casehubio/claudony/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/casehubio/claudony/actions/workflows/ci.yml) |
 | [casehub-openclaw](https://github.com/casehubio/openclaw) | [![casehub-openclaw](https://github.com/casehubio/openclaw/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/openclaw/actions/workflows/publish.yml) |
+| [casehub-scaffold](https://github.com/casehubio/scaffold) | [![casehub-scaffold](https://github.com/casehubio/scaffold/actions/workflows/maven.yml/badge.svg?branch=main)](https://github.com/casehubio/scaffold/actions/workflows/maven.yml) |
 
 **Applications**
 
@@ -29,6 +40,7 @@ Org-level parent POM and BOM for the [casehubio](https://github.com/casehubio) e
 | [casehub-clinical](https://github.com/casehubio/clinical) | [![casehub-clinical](https://github.com/casehubio/clinical/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/clinical/actions/workflows/publish.yml) |
 | [casehub-life](https://github.com/casehubio/life) | [![casehub-life](https://github.com/casehubio/life/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/life/actions/workflows/publish.yml) |
 | [casehub-drafthouse](https://github.com/casehubio/drafthouse) | [![casehub-drafthouse](https://github.com/casehubio/drafthouse/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/drafthouse/actions/workflows/publish.yml) |
+| [casehub-quarkmind](https://github.com/casehubio/quarkmind) | [![casehub-quarkmind](https://github.com/casehubio/quarkmind/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/casehubio/quarkmind/actions/workflows/ci.yml) |
 
 > Full detail: [Build Status Dashboard](https://github.com/casehubio/parent/actions/workflows/dashboard.yml) &nbsp;|&nbsp; [PR Dashboard](https://github.com/casehubio/parent/actions/workflows/pr-dashboard.yml) &nbsp;|&nbsp; [▶ Run Full Stack Build](https://github.com/casehubio/parent/actions/workflows/full-stack-build.yml)
 
@@ -110,25 +122,42 @@ Each project in the ecosystem has its own Maven parent (casehub projects use int
 
 ## Ecosystem projects
 
-| Repo | GroupId | Remote |
-|---|---|---|
-| `casehub-ledger` | `io.casehub` | `casehubio/ledger` |
-| `casehub-work` | `io.casehub` | `casehubio/work` |
-| `casehub-qhorus` | `io.casehub` | `casehubio/qhorus` |
-| `casehub-engine` | `io.casehub` | `casehubio/engine` |
-| `casehub-claudony` | `dev.claudony` | `casehubio/claudony` |
+**Foundation** — zero-dep or platform-only libraries
 
-Dependency order (each project may depend on those above it):
+| Repo | GroupId | Remote | Deps |
+|---|---|---|---|
+| `casehub-platform` | `io.casehub` | `casehubio/platform` | — |
+| `casehub-ledger` | `io.casehub` | `casehubio/ledger` | platform |
+| `casehub-eidos` | `io.casehub` | `casehubio/eidos` | ledger |
+| `casehub-connectors` | `io.casehub` | `casehubio/connectors` | platform |
+| `casehub-work` | `io.casehub` | `casehubio/work` | ledger, connectors |
+| `casehub-qhorus` | `io.casehub` | `casehubio/qhorus` | ledger, work |
+| `casehub-neural-text` | `io.casehub` | `casehubio/neural-text` | platform |
+| `casehub-iot` | `io.casehub` | `casehubio/iot` | platform |
+| `casehub-desiredstate` | `io.casehub` | `casehubio/casehub-desiredstate` | platform |
+| `casehub-ras` | `io.casehub` | `casehubio/casehub-ras` | platform |
+| `casehub-ops` | `io.casehub` | `casehubio/casehub-ops` | platform, desiredstate |
+| `casehub-engine` | `io.casehub` | `casehubio/engine` | ledger, work |
 
-```
-casehub-ledger
-    ↑
-casehub-work
-    ↑
-casehub-qhorus    casehub-engine
-    ↑                   ↑
-       casehub-claudony
-```
+**Integration** — wire foundation libraries into runtimes
+
+| Repo | GroupId | Remote | Deps |
+|---|---|---|---|
+| `casehub-workers` | `io.casehub` | `casehubio/workers` | platform, engine |
+| `casehub-claudony` | `dev.claudony` | `casehubio/claudony` | ledger, work, qhorus |
+| `casehub-openclaw` | `io.casehub` | `casehubio/openclaw` | platform, ledger, qhorus, engine |
+| `casehub-scaffold` | `io.casehub` | `casehubio/scaffold` | engine |
+
+**Applications** — end-user applications
+
+| Repo | GroupId | Remote | Deps |
+|---|---|---|---|
+| `casehub-devtown` | `io.casehub` | `casehubio/devtown` | ledger, work, qhorus, engine |
+| `casehub-aml` | `io.casehub` | `casehubio/aml` | ledger, work, qhorus, engine |
+| `casehub-clinical` | `io.casehub` | `casehubio/clinical` | ledger, work, qhorus, engine |
+| `casehub-life` | `io.casehub` | `casehubio/life` | ledger, work, qhorus, engine, openclaw |
+| `casehub-drafthouse` | `io.casehub` | `casehubio/drafthouse` | qhorus |
+| `casehub-quarkmind` | `io.casehub` | `casehubio/quarkmind` | — |
 
 ---
 
@@ -149,7 +178,8 @@ All repos are cloned into subdirectories of `casehub-parent/`. These directories
 ### Build options
 
 ```bash
-./build-all.sh                  # incremental build (default)
+./build-all.sh                  # incremental build (core repos)
+./build-all.sh --include-apps   # also build apps + subsystems (iot, desiredstate, ras, ops, etc.)
 ./build-all.sh --no-cache       # ignore cache, rebuild everything
 ./build-all.sh --skip-tests     # skip test-only phase for TEST-state modules
 ./build-all.sh -DskipTests      # pass-through to Maven: skip all tests
@@ -157,6 +187,10 @@ All repos are cloned into subdirectories of `casehub-parent/`. These directories
 ```
 
 All unrecognised flags are passed through to Maven.
+
+**Core repos** (always built): quarkus-langchain4j, platform, ledger, eidos, connectors, work, qhorus, engine, workers, claudony
+
+**`--include-apps` adds**: iot, neural-text, desiredstate, ras, ops, openclaw, devtown, aml, clinical, life, drafthouse
 
 ### Incremental build logic
 
@@ -170,30 +204,6 @@ Each module is classified into one of three states before building. The state is
 
 The rationale for the TEST state: if `casehub-ledger` changes but `casehub-work`'s own code does not, `casehub-work` doesn't need recompiling — its bytecode is the same. But its tests should run against the new `casehub-ledger` to catch integration regressions.
 
-The dependency graph used for propagation:
-
-```
-casehub-ledger      → (no casehub deps)
-casehub-work        → casehub-ledger
-casehub-qhorus      → casehub-ledger, casehub-work
-casehub-engine      → casehub-ledger, casehub-work
-casehub-claudony    → casehub-ledger, casehub-work, casehub-qhorus
-```
-
-Example output:
-
-```
-==> Incremental analysis...
-    casehub-ledger       BUILD   (own SHA changed)
-    casehub-work         TEST    (dep changed, rerun tests against new artifacts)
-    casehub-qhorus       TEST    (dep changed, rerun tests against new artifacts)
-    casehub-engine       TEST    (dep changed, rerun tests against new artifacts)
-    casehub-claudony     SKIP    (SHA and all deps unchanged)
-
-==> Installing: casehub-ledger
-==> Retesting against updated deps: casehub-work,casehub-qhorus,casehub-engine
-```
-
 ### SHA logs and the build cache
 
 Every `build-all.sh` run writes a timestamped SHA log to `build-logs/`:
@@ -205,21 +215,7 @@ build-logs/
   20260423T220034.shas
 ```
 
-Each log records the exact HEAD SHA of every repo at build time:
-
-```
-# casehubio full-stack build
-# timestamp: 20260424T143022
-# branch:    main
-
-casehub-ledger=a2636e132b43bc0faad66cf587ab5b30996ff3df
-casehub-work=e085d64c1f2a93b7d0f4e89a3c12d45e678f901a
-casehub-qhorus=ef89aaa3b7c1d20f4e5a67b89c0d12e3f456789a
-casehub-engine=fccb647d8e2f31a05b6c78d90e1f23a4b5678901
-casehub-claudony=3fbeac7e9f0a12b34c56d78e90f1a2b3c4567890
-```
-
-The most recent log is used as the cache manifest for the next build. Build logs are committed to this repository as a permanent record of what built together successfully.
+Each log records the exact HEAD SHA of every repo at build time. The most recent log is used as the cache manifest for the next build. Build logs are committed to this repository as a permanent record of what built together successfully.
 
 ### Replaying a build
 
@@ -237,9 +233,10 @@ To reproduce an exact prior build:
 `aggregator.xml` lists all ecosystem repos as Maven reactor modules. Maven reads each project's own `pom.xml` and resolves the build order from actual `<dependency>` declarations — the order in the aggregator file is advisory only.
 
 ```bash
-# Run directly if repos are already cloned and pinned
-mvn install -f aggregator.xml
-mvn install -f aggregator.xml -pl casehub-ledger,casehub-work   # partial build
+mvn install -f aggregator.xml                 # build core repos
+mvn install -f aggregator.xml -Papps          # include apps + subsystems
+mvn install -f aggregator.xml -Plangchain4j   # include quarkus-langchain4j fork
+mvn install -f aggregator.xml -pl ../workers  # partial build
 ```
 
 The aggregator is not published to Maven. It is a local build tool only.
@@ -248,56 +245,36 @@ The aggregator is not published to Maven. It is a local build tool only.
 
 ## CI/CD pipeline
 
-Each project in the ecosystem has its own GitHub Actions workflow (`.github/workflows/publish.yml`) that builds and publishes to GitHub Packages on every push to `main`. Projects are built and published independently — there is no cross-repo trigger chain.
+Each project has its own GitHub Actions workflow that builds and publishes to GitHub Packages on every push to `main`. Projects are connected via `repository_dispatch` events — when an upstream project publishes successfully, it triggers CI on all direct downstream consumers.
+
+### Trigger chain
+
+```
+platform → ledger, connectors, eidos
+ledger → work, qhorus, eidos, clinical, life
+connectors → work, devtown
+eidos → engine
+work → engine, clinical, life
+qhorus → engine, claudony, drafthouse, devtown, life
+engine → scaffold, openclaw, claudony, workers, aml, devtown, life
+iot → life
+openclaw → life
+```
 
 ### Per-project publish workflow
 
-Every ecosystem repo contains:
+Every ecosystem repo contains a `.github/workflows/publish.yml` (or equivalent) with:
 
-```yaml
-- name: Set up Java 21
-  uses: actions/setup-java@v4
-  with:
-    java-version: '21'
-    distribution: 'temurin'
-    server-id: github
-    server-username: GITHUB_ACTOR
-    server-password: GITHUB_TOKEN
+1. **Triggers**: `push` to main, `pull_request`, `repository_dispatch` (upstream-published), `workflow_dispatch`
+2. **Build**: `mvn --batch-mode verify`
+3. **Publish**: `mvn --batch-mode deploy -DskipTests` (skipped on PRs)
+4. **Downstream triggers**: `gh api repos/casehubio/$repo/dispatches` for each direct consumer
 
-- name: Build and publish
-  run: mvn --batch-mode deploy
-  env:
-    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-```
+Artifacts are published to `https://maven.pkg.github.com/casehubio/<repo>`. Consumers resolve them via the `github-casehubio` repository entry in their root pom.
 
-`mvn deploy` publishes artifacts to `https://maven.pkg.github.com/casehubio/<repo>`. Consumers resolve them via the `github-casehubio` repository entry in their root pom:
+### casehub-all submodule sync
 
-```xml
-<repositories>
-  <repository>
-    <id>github-casehubio</id>
-    <url>https://maven.pkg.github.com/casehubio/*</url>
-    <snapshots><enabled>true</enabled></snapshots>
-  </repository>
-</repositories>
-```
-
-### casehub-parent publish
-
-`casehub-parent` publishes its BOM on every push to `main`. This must be published before any other project can resolve `io.casehub:casehub-parent:0.2-SNAPSHOT` in CI.
-
-### Build order in CI
-
-Because each project publishes independently, upstream artifacts must be available in GitHub Packages before downstream CI can run. The natural order is:
-
-1. `casehub-parent` → publishes BOM
-2. `casehub-ledger` → depends on BOM
-3. `casehub-work` → depends on BOM + `casehub-ledger`
-4. `casehub-qhorus` → depends on BOM + `casehub-ledger` + `casehub-work`
-5. `casehub-engine` → depends on BOM + `casehub-ledger` + `casehub-work`
-6. `casehub-claudony` → depends on BOM + `casehub-qhorus`
-
-If `casehub-ledger` CI hasn't published yet when `casehub-work` CI runs, `casehub-work` will fail with `Could not resolve io.casehub:casehub-ledger:0.2-SNAPSHOT`. Re-running the failing job after the upstream publish completes resolves this.
+[casehub-all](https://github.com/casehubio/casehub-all) tracks all ecosystem repos as git submodules. Its `update-pointers.yml` workflow receives build SHAs via `repository_dispatch` and advances submodule pointers to the exact commits that built successfully together.
 
 ---
 
@@ -308,11 +285,13 @@ If `casehub-ledger` CI hasn't published yet when `casehub-work` CI runs, `casehu
 3. Add the `github-casehubio` repository entry to its root pom
 4. Add `<distributionManagement>` pointing to `https://maven.pkg.github.com/casehubio/<repo>`
 5. Create `.github/workflows/publish.yml` (copy from any existing ecosystem repo)
-6. Add the repo and its casehub dependencies to the `DEPS` map in `build-all.sh`
-7. Add the repo to the `REPOS` array in `build-all.sh` in dependency order
-8. Add the repo as a `<module>` in `aggregator.xml`
-9. Add the repo's publishable artifacts to `pom.xml` (the BOM) in this repo
-10. Add the cloned directory name to `.gitignore`
+6. Add upstream repo(s) to trigger this repo via `repository_dispatch` in their workflow
+7. Add the repo and its casehub dependencies to `REPO_DIR`, `REPO_GH`, `DEPS`, `MODULE_PATH` in `build-all.sh`
+8. Add the repo to the `REPOS` array in `build-all.sh` (core or `--include-apps`)
+9. Add the repo as a `<module>` in `aggregator.xml` (core or `-Papps` profile)
+10. Add the repo as a submodule in [casehub-all](https://github.com/casehubio/casehub-all) and add its SHA entry to `update-pointers.yml`
+11. Add the repo's publishable artifacts to `pom.xml` (the BOM) in this repo
+12. Add the cloned directory name to `.gitignore`
 
 ---
 
