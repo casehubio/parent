@@ -92,7 +92,9 @@ This module sits **below** LangChain4j for inference, and **above** LangChain4j 
 
 ## Shared with Hortora
 
-`inference-api`, `inference-runtime`, `inference-tasks`, `inference-splade`, `inference-inmem` have zero casehub/Quarkus/LangChain4j dependencies. Hortora depends on these directly and wires them into their own stack. The `rag-*` modules are casehub-specific — Hortora does not take them.
+`inference-api`, `inference-runtime`, `inference-tasks`, `inference-splade`, `inference-inmem` have zero casehub/Quarkus/LangChain4j dependencies. Hortora depends on these directly and wires them into their own stack.
+
+`rag-api`, `rag`, and `rag-testing` are now also consumed by Hortora (neural-text#35): Hortora's garden retrieval engine replaces its duplicated Qdrant/ingestion code with these modules. Tenancy enforcement is optional — active when `CurrentPrincipal` is on the classpath, no-ops when absent via `TenantGuard` (neural-text#36). Consumers without `casehub-platform-api` get `TenantGuard.noOp()` — retrieval proceeds without tenant scoping.
 
 ArchUnit enforced from day one: zero-domain-dep constraint on all `inference-*` modules.
 
