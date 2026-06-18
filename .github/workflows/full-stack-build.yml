@@ -1,6 +1,8 @@
 name: Full Stack Build
 
 on:
+  schedule:
+    - cron: '0 */4 * * *'
   workflow_dispatch:
     inputs:
       skip_tests:
@@ -479,3 +481,59 @@ jobs:
             echo "::error::$FAIL_COUNT module(s) failed in the full stack build."
             exit 1
           fi
+
+      - name: "Sync casehub-all to build SHAs"
+        if: success()
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+          INCLUDE_APPLICATIONS: ${{ inputs.include_applications }}
+          TRIGGER: ${{ github.event_name }}
+        run: |
+          cat > /tmp/dispatch_casehub_all.py << 'PYEOF'
+          import subprocess, json, os, sys
+
+          def sha(path):
+              try:
+                  return subprocess.check_output(
+                      ['git', '-C', path, 'rev-parse', 'HEAD']
+                  ).decode().strip()
+              except Exception:
+                  return ''
+
+          include_apps = os.environ.get('INCLUDE_APPLICATIONS', 'false') == 'true'
+          parent_sha = subprocess.check_output(
+              ['git', 'rev-parse', 'HEAD']
+          ).decode().strip()
+
+          payload = {
+              'event_type': 'ecosystem-build-succeeded',
+              'client_payload': {
+                  'trigger':          os.environ.get('TRIGGER', 'workflow_dispatch'),
+                  'sha_parent':       parent_sha,
+                  'sha_platform':     sha('casehub/platform'),
+                  'sha_ledger':       sha('casehub/ledger'),
+                  'sha_eidos':        sha('casehub/eidos'),
+                  'sha_neural_text':  sha('casehub/neural-text'),
+                  'sha_connectors':   sha('casehub/connectors'),
+                  'sha_work':         sha('casehub/work'),
+                  'sha_qhorus':       sha('casehub/qhorus'),
+                  'sha_engine':       sha('casehub/engine'),
+                  'sha_claudony':     sha('casehub/claudony'),
+                  'sha_openclaw':     sha('casehub/openclaw')   if include_apps else '',
+                  'sha_devtown':      sha('casehub/devtown')    if include_apps else '',
+                  'sha_aml':          sha('casehub/aml')        if include_apps else '',
+                  'sha_clinical':     sha('casehub/clinical')   if include_apps else '',
+                  'sha_life':         sha('casehub/life')       if include_apps else '',
+                  'sha_drafthouse':   sha('casehub/drafthouse') if include_apps else '',
+              }
+          }
+
+          result = subprocess.run(
+              ['gh', 'api', 'repos/casehubio/casehub-all/dispatches', '--input', '-'],
+              input=json.dumps(payload).encode(),
+              check=True,
+              env=os.environ.copy()
+          )
+          print('casehub-all dispatch sent — SHAs captured at build time.')
+          PYEOF
+          python3 /tmp/dispatch_casehub_all.py
