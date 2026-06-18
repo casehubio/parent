@@ -60,7 +60,6 @@
         <module>../desiredstate</module>
         <module>../ras</module>
         <module>../ops</module>
-        <module>../flow</module>
         <module>../openclaw</module>
         <module>../devtown</module>
         <module>../aml</module>

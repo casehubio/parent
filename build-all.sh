@@ -48,7 +48,6 @@ REPO_DIR[aml]="../aml"
 REPO_DIR[clinical]="../clinical"
 REPO_DIR[life]="../life"
 REPO_DIR[drafthouse]="../drafthouse/server"
-REPO_DIR[flow]="../flow"
 REPO_DIR[iot]="../iot"
 REPO_DIR[neural-text]="../neural-text"
 REPO_DIR[desiredstate]="../desiredstate"
@@ -73,7 +72,6 @@ REPO_GH[aml]="aml"
 REPO_GH[clinical]="clinical"
 REPO_GH[life]="life"
 REPO_GH[drafthouse]="drafthouse"
-REPO_GH[flow]="scaffold"
 REPO_GH[iot]="iot"
 REPO_GH[neural-text]="neural-text"
 REPO_GH[desiredstate]="casehub-desiredstate"
@@ -98,7 +96,6 @@ DEPS[aml]="ledger work qhorus engine"
 DEPS[clinical]="ledger work qhorus engine"
 DEPS[life]="ledger work qhorus engine openclaw"
 DEPS[drafthouse]="qhorus"
-DEPS[flow]="engine"
 DEPS[iot]="platform"
 DEPS[neural-text]="platform"
 DEPS[desiredstate]="platform"
@@ -126,7 +123,6 @@ MODULE_PATH[aml]="../aml"
 MODULE_PATH[clinical]="../clinical"
 MODULE_PATH[life]="../life"
 MODULE_PATH[drafthouse]="../drafthouse/server"
-MODULE_PATH[flow]="../flow"
 MODULE_PATH[iot]="../iot"
 MODULE_PATH[neural-text]="../neural-text"
 MODULE_PATH[desiredstate]="../desiredstate"
@@ -148,7 +144,7 @@ for arg in "$@"; do
 done
 
 if [ "$INCLUDE_APPS" = true ]; then
-  REPOS+=(iot neural-text desiredstate ras ops flow openclaw devtown aml clinical life drafthouse)
+  REPOS+=(iot neural-text desiredstate ras ops openclaw devtown aml clinical life drafthouse)
 fi
 
 mkdir -p "$LOG_DIR"
