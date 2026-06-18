@@ -53,6 +53,12 @@ The ledger provides services for: cryptographic verification and inclusion proof
 
 `ReactiveAgentIdentityVerificationService` is a `@DefaultBean @Unremovable` Mutiny bridge wrapping `AgentIdentityVerificationService` on the blocking worker pool. Always active regardless of `reactive.enabled`.
 
+**`ErasureReceiptLedgerEntry` (V1010, ledger PR #152):** GDPR Art.17 tamper-evident erasure receipt. Opt-in via `casehub.ledger.erasure-receipt.enabled=true` (default false). `subjectId=nameUUIDFromBytes(erasedActorId)`. `ErasureReason` enum: `GDPR_ART_17_REQUEST | RETENTION_EXPIRED | ACCOUNT_DELETION`. `ErasureResult` now carries `Optional<UUID> receiptEntryId`. Activate `JpaErasureReceiptRepository @Alternative` via `quarkus.arc.selected-alternatives`. Consumer migration tracked in casehub-devtown#82.
+
+**`LedgerSequenceAllocator` dialect detection:** now queries `INFORMATION_SCHEMA.SETTINGS` to detect `H2 MODE=PostgreSQL` (previously used `getMetaData().getURL()` which Agroal strips). Plain H2 (no `MODE=PostgreSQL`) gets the SQL-standard `MERGE` path; PostgreSQL and `H2+MODE=PostgreSQL` get `ON CONFLICT DO NOTHING`. Fixes `casehub-engine-ledger` and any downstream module using plain H2 tests.
+
+**`LedgerPrivacyProducer`:** now injects `Instance<EntityManager>` instead of `EntityManager` directly — datasource-free deployments (casehub-drafthouse, casehub-qhorus without ledger JPA) no longer fail CDI augmentation on `ActorIdentityProvider`.
+
 See `docs/DESIGN.md` for service class structure.
 
 ### SPIs (Consumer-Implemented or Built-In Alternatives)
@@ -92,8 +98,10 @@ Consumers must add this path to their `quarkus.flyway.locations` config.
 | V1005 | `agent_signature` + `agent_public_key` columns on `ledger_entry` |
 | V1006 | `agent_key_ref` column on `ledger_entry` |
 | V1007 | `key_rotation_entry` subclass table |
+| V1009 | `plain_ledger_entry` — `PlainLedgerEntry` for domain-agnostic event writes (`OutcomeRecorder`) |
+| V1010 | `erasure_receipt_entry` — `ErasureReceiptLedgerEntry` (opt-in via `casehub.ledger.erasure-receipt.enabled=true`) |
 
-**Consumers** own V1008+ for their own subclass join tables (V1004–V1007 are now ledger base).
+**Consumers** own V1011+ for their own subclass join tables (V1004–V1007, V1009–V1010 are ledger base).
 
 ---
 
