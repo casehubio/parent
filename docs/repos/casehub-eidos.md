@@ -82,6 +82,17 @@ SPI: `render(AgentDescriptor, AgentPromptContext)` → `RenderedPrompt`. `Render
 
 **`RenderFormat`** — 3 values: `MARKDOWN` (was `CLAUDE_MD`), `PROSE` (consolidates `OPENAI_SYSTEM` + `GEMINI` — structurally identical), `A2A_CARD`. `A2A_CARD` exposes `slot` (with vocabularyUri/vocabularyName), per-axis `disposition` objects with vocabulary context, and a `frameworks` array — deduplicated index of actively-instantiated vocabulary URIs enabling machine-to-machine capability negotiation. Separate `A2ASemanticEnrichmentStep` handles per-capability descriptions in `A2A_CARD` format (eidos#45). `A2A_CARD` capability objects include full routing signals: `qualityHint` (Double, 0–1), `latencyHintP50Ms` (Long), `costHint` (String), `epistemicDomains` (Map<String,Double>), `inputTypes`/`outputTypes` (String lists). PROSE and MARKDOWN suppress all numeric routing signals (PP-20260611-228599). `vocabUriForSlot()` on `AgentDescriptor` — `slotVocabulary → domainVocabulary` two-step fallback, alongside `vocabUriForAxis()`.
 
+### CapabilitySpecializationStore (eidos#55)
+
+SPI in `casehub-eidos-api` — cross-repo contract for pushing learned DECLINE/FAIL patterns from casehub-ledger's CBR subsystem into eidos. Enables proactive routing exclusion: when an agent's DECLINE patterns for a capability exceed a threshold, the agent is excluded from future routing for that capability context without requiring manual curation.
+
+- `recordDecline(agentId, capabilityTag, context)` — called by casehub-ledger CBR on each DECLINE attestation
+- `excludedAgents(capabilityTag, context)` → `Set<String>` — consulted by `AgentRoutingStrategy` before candidate selection
+- `EidosPreferenceKeys.EXCLUDE_THRESHOLD` — preference key controlling the DECLINE count threshold before exclusion activates; scope-aware (per capability, per agent context)
+- `InMemoryCapabilitySpecializationStore @Alternative @Priority(1)` in `casehub-eidos-memory` for test isolation
+
+Foundation for epic #258 (adaptive agent routing).
+
 ### AgentStateStore (Phase 3 — complete)
 
 SPI: `record(agentId, DegradationReason, expiresAt)`, `query(agentId)` → `Optional<AgentState>`. `NoOpAgentStateStore @DefaultBean` (no tracking). `InMemoryAgentStateStore @Alternative @Priority(1)` in `casehub-eidos-memory` — TTL-based ConcurrentHashMap, entries expire on `query()`. `DefaultCapabilityHealth` checks store first at probe time — degraded state takes precedence over Ready/EpistemicallyWeak. `DegradationReason` is a top-level type in `casehub-eidos-api`, not nested inside `CapabilityHealth`. JPA persistence deferred (eidos#7).
