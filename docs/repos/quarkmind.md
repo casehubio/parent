@@ -58,7 +58,7 @@ Architecture record: `ARC42STORIES.MD` in the quarkmind repo (LAYER-LOG.md retir
 | 4 | casehub-ledger | No audit trail for agent decisions | complete |
 | 5 | Adaptive plugin selection | Fixed plugin dispatch; no binding conditions | complete |
 | 6 | Trust routing | No plugin performance tracking; no routing based on outcome history | complete (quarkmind#158) — `StrategyTrustRouter` four-phase Bayesian Beta; `GameOutcomeRecorder`; known: SOUND recorded for all outcomes until win/loss detection (quarkmind#189) |
-| 7 | Comparison vs naive game AI — vs L1 naive loop and ocraft/SC2 API; no tutorial README | — | pending (quarkmind#159) |
+| 7 | Comparison vs naive game AI — vs L1 naive loop and ocraft/SC2 API; no tutorial README | — | ✅ complete (quarkmind#159, 2026-06-16) |
 
 ## Dependencies
 
@@ -96,7 +96,7 @@ quarkmind
   - Canvas sprites: `makeResourceMaterial()` factory — mineral patches (blue with cross) and geysers (teal with X) replacing solid-colour placeholders
   - Time-based tests: `window.__test.gameTimeSeconds()` + `tickForSeconds()` helper enabling `mineralIncomeScalesWithGameTime` and similar time-anchored assertions
 
-**Harness layer:** `AgentOrchestrator` dispatches plugins via `casehub-engine` CaseFile per tick. Layers 1–6 complete. Architecture record is `ARC42STORIES.MD` in the quarkmind repo (LAYER-LOG.md retired in quarkmind#166). Layer 7 (quarkmind#159) pending: comparison vs L1 naive loop and ocraft/SC2 API.
+**Harness layer:** `AgentOrchestrator` dispatches plugins via `casehub-engine` CaseFile per tick. Layers 1–7 complete. Architecture record is `ARC42STORIES.MD` in the quarkmind repo (LAYER-LOG.md retired in quarkmind#166).
 
 **IEM10 JSON validation (#150):** `IEM10CommandExtractor` enables `ReplayValidationHarness` runs across all 30 IEM10 games, providing statistical coverage of training patterns (queued, non-queued, cross-type) across PvT, PvZ, PvP matchups. Cross-validates calibration results from the scelight binary parser against the SC2EGSet JSON parser.
 
