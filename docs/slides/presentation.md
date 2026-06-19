@@ -3,7 +3,7 @@ theme: default
 title: CaseHub — AI Fusion Harness
 info: |
   CaseHub: compliance-first infrastructure for multi-agent AI systems.
-  Vision, architecture, and roadmap.
+  Vision, architecture, and capabilities.
 highlighter: shiki
 lineNumbers: false
 drawings:
@@ -16,7 +16,8 @@ mdc: true
 
 ## AI Fusion Harness for Multi-Agent Systems
 
-Compliance-first infrastructure for regulated, accountable, AI-driven applications.
+*Written by LLMs, for LLMs.*  
+*An accelerant for AI-Fusion driven digital transformations.*
 
 ---
 layout: center
@@ -67,19 +68,20 @@ layout: two-cols
 
 **The principle:** let each kind of intelligence do what it does best.
 
-<br/>
-
 **The guarantee:** every agent interaction is a formal, accountable act.
-
-<br/>
 
 **Built on Quarkus.** Production-grade. Native-image capable.
 
 <br/>
 
-✅ EU AI Act Art.12 — structurally enforced  
-✅ GDPR Art.17/22 — built into the audit layer  
-✅ GCP / FDA / FinCEN — proven across applications  
+EU AI Act Art.12 — structurally enforced  
+GDPR Art.17/22 — built into the audit layer  
+GCP / FDA / FinCEN — proven across applications
+
+<br/>
+
+*Written by LLMs, for LLMs.*  
+*An accelerant for AI-Fusion driven digital transformations.*
 
 ---
 
@@ -107,7 +109,7 @@ layout: two-cols
 
 # The Ecosystem
 
-| Module | Layer | What it does |
+| Module | Layer | What it delivers |
 |--------|-------|-------------|
 | `casehub-platform` | Foundation | Zero-dep SPIs: identity, preferences, memory, agents, streams |
 | `casehub-ledger` | Foundation | Tamper-evident audit ledger, trust scoring, GDPR erasure |
@@ -117,12 +119,12 @@ layout: two-cols
 | `casehub-eidos` | Orchestration | Agent identity, health probing, system prompt rendering |
 | `casehub-neural-text` | Orchestration | Local ONNX inference, RAG, CRAG |
 | `claudony` | Integration | Claude CLI sessions, agent mesh dashboard |
-| `casehub-openclaw` | Integration | OpenClaw agent bridge |
+| `casehub-openclaw` | Integration | OpenClaw agent bridge, 5,400+ skills |
 | `casehub-connectors` | Integration | Slack, Teams, email, SMS, webhooks |
 | `casehub-iot` | Integration | Matter-aligned device abstraction (HA, OpenHAB) |
-| `casehub-ras` | Integration 🔜 | Reactive case creation from event streams |
-| `casehub-desiredstate` | Integration 🔜 | Desired-state runtime |
-| `casehub-pages` | Foundation 🔜 | YAML-driven visualization, TypeScript |
+| `casehub-ras` | Integration | Reactive case creation from event streams |
+| `casehub-desiredstate` | Integration | Desired-state runtime — intent to execution |
+| `casehub-pages` | Foundation | YAML-driven visualization, TypeScript |
 | `devtown · aml · clinical` | Application | Showcase + tutorial applications |
 | `drafthouse · life · quarkmind` | Application | Specialist domains |
 
@@ -162,10 +164,10 @@ layout: section
 - `agent-claude/` — Claude Code CLI subprocess
 - `agent-claude-langchain4j/` — LangChain4j bridge
 
-**Streams** (platform#98)
+**Streams**
 - 5 classpath-activated stream modules: Kafka, AMQP, webhook, poll, Camel
 - CloudEvents envelope throughout
-- `StreamContext` propagation — P1.8 design
+- `StreamContext` — tenancy propagation in async stream processing
 
 ---
 
@@ -181,6 +183,7 @@ layout: section
 - W3C PROV-DM lineage export
 - GDPR Art.17 token-severing erasure
 - EU AI Act Art.12 — `ComplianceSupplement` on every AI decision
+- `ErasureReceiptLedgerEntry` — tamper-evident erasure record
 
 **Trust Scoring**
 - Bayesian Beta algorithm — updated from attestation events
@@ -191,7 +194,6 @@ layout: section
 **Privacy**
 - `ActorIdentity` — pseudonymisation mapping
 - `LedgerPrivacyProducer` — erasure without breaking audit chain
-- `ErasureReceiptLedgerEntry` — tamper-evident erasure record (opt-in)
 
 **Downstream users:** qhorus · engine · work · all applications  
 **Test coverage:** 449 tests. Native image validated.
@@ -230,12 +232,11 @@ OPEN → FULFILLED / FAILED / EXPIRED / DECLINED / HANDOFF / CANCELLED
 - `ChannelProjection<S>` — deterministic left-fold read models
 - `CommitmentExpiredEvent` — triggers deadline-based rerouting
 - A2A SSE streaming — `/a2a/tasks/{id}/stream`
-- Slack-native backend — thread-aware delivery (qhorus#261)
-- 1,000+ tests
+- Slack-native backend — thread-aware delivery
 
 <br/>
 
-**User flow example — PI authorisation (Clinical)**
+**User flow — PI authorisation (Clinical)**
 1. Case engine sends COMMAND to PI channel
 2. PI receives as `casehub-work` WorkItem (24h SLA)
 3. PI responds via Slack or web
@@ -277,7 +278,7 @@ CREATED → CLAIMED → IN_PROGRESS → COMPLETED
 
 <br/>
 
-**User flow example — SAR review (AML)**
+**User flow — SAR review (AML)**
 1. Case creates WorkItem for compliance officer
 2. 30-day FinCEN SLA starts
 3. Officer claims and reviews investigation
@@ -315,13 +316,13 @@ layout: two-cols
 **Routing intelligence**
 - `LeastLoadedAgentStrategy` — default
 - `TrustWeightedAgentStrategy` — Bayesian Beta outcomes
-- `SemanticAgentRoutingStrategy` — embedding-based (40% semantic / 36% trust / 24% load)
-- `CapabilitySpecializationStore` — DECLINE-pattern exclusion learning
+- `SemanticAgentRoutingStrategy` — embedding-based
+- `CapabilitySpecializationStore` — DECLINE-pattern exclusion
 
 **Oversight gate**
 - `ActionRiskClassifier` SPI — before every consequential action
 - Human gate via Qhorus oversight channel
-- ChainedReactive: most-restrictive-wins, fail-safe=GateRequired
+- ChainedReactive: most-restrictive-wins, fail-safe = GateRequired
 
 ::right::
 
@@ -330,7 +331,7 @@ layout: two-cols
 **Worker Outcomes (sealed)**
 - `Success` · `Failure(reason)` · `Expired(reason)` · `Declined`
 - `OutcomePolicy` per outcome type
-- DECLINE/FAILURE → failure cascade (not silent completion)
+- DECLINE/FAILURE → failure cascade, not silent completion
 
 **Bindings** (YAML DSL)
 - Target types: `capability` · `subCase` · `humanTask`
@@ -356,7 +357,7 @@ layout: two-cols
 - **Identity** — agentId, name, version, provider, modelFamily
 - **Slot** — open string, domain-defined (e.g. `"senior-reviewer"`)
 - **Capabilities** — qualityHint, epistemicDomains (per-domain confidence)
-- **Disposition** — Bayesian Beta social orientation, rule-following, risk appetite, autonomy, conflict mode (5 axes)
+- **Disposition** — social orientation, rule-following, risk appetite, autonomy, conflict mode (5 axes)
 
 **Capability Health Probing**
 - `Ready` · `Degraded` · `Unavailable` · `EpistemicallyWeak`
@@ -375,7 +376,7 @@ layout: two-cols
 **Vocabulary system**
 - Belbin · DISC · Thomas-Kilmann · SVO · CasehubSlot
 
-🔜 **Knowledge graph** — Wilson lower-bound reputation, task history, `TaskSemanticEnricher`
+**Knowledge graph** — Wilson lower-bound reputation, task history, `TaskSemanticEnricher`
 
 ---
 
@@ -401,13 +402,13 @@ layout: two-cols
 - `CorpusStore` + `CaseRetriever` SPIs
 - Corpus ingestion bridge — `@Scheduled` polling from external sources
 
-**CRAG** (Corrective RAG — neural-text#33)
+**CRAG** (Corrective RAG)
 - `@Decorator` on `CaseRetriever`
 - `RelevanceEvaluator` SPI — evaluates chunks, corrects low-relevance results
 - Classpath-activated
 
-🔜 Hallucination detection hook on engine output  
-🔜 `ScalarRegressor` → epistemic confidence in eidos routing  
+Hallucination detection hook on engine output  
+`ScalarRegressor` → epistemic confidence in eidos routing
 
 ---
 layout: section
@@ -428,7 +429,6 @@ layout: section
 - WebAuthn passkeys, fleet management, WebSocket streaming
 - MCP server for controller Claude instances
 - Implements all 4 casehub-engine worker provisioner SPIs
-- `ResearcherCase` — first production CaseHub case in Claudony
 
 **casehub-openclaw** — *OpenClaw agent bridge*
 - `WorkerProvisioner` SPI for OpenClaw agents
@@ -446,21 +446,23 @@ layout: section
 - 10 Matter-aligned device types
 - Real-time providers: Home Assistant (WebSocket) + OpenHAB (SSE)
 - Bridge: `iot-bridge` (edge) + `iot-bridge-server` (cloud DeviceProvider SPI)
-- 5,400+ OpenClaw skills accessible via openclaw integration
+- 5,400+ OpenClaw skills accessible
 
 ---
 layout: section
 ---
 
-# Coming — Platform Expansion
+# Reactive & Desired-State
+
+*The platform watches. Cases happen automatically.*
 
 ---
 
 # casehub-ras
 
-## Reticular Activating System 🔜
+## Reticular Activating System
 
-**"The platform watches. Cases happen automatically."**
+**Situational awareness. Reactive case creation.**
 
 <br/>
 
@@ -477,12 +479,11 @@ SensoryEvent (IoT / Kafka / Qhorus / webhook)
 - `JavaSwitchGanglion` — deterministic, zero deps
 - `DroolsCepGanglion` — sliding windows, temporal patterns
 - `BayesianGanglion` — weighted multi-signal accumulation
-- `LlmGanglion` — narrative / ambiguous signal detection (slow path)
+- `LlmGanglion` — narrative / ambiguous signal detection
 
 **Composite event chains**
 - AND · OR · THRESHOLD · SEQUENCE · COUNT
-- Configurable time windows
-- Declared in YAML `SituationDefinition`
+- Configurable time windows. Declared in YAML `SituationDefinition`.
 
 **Use cases**
 - Patient deterioration → escalation case
@@ -494,7 +495,7 @@ SensoryEvent (IoT / Kafka / Qhorus / webhook)
 layout: two-cols
 ---
 
-# casehub-desiredstate 🔜
+# casehub-desiredstate
 
 **Declare intent. The platform reconciles.**
 
@@ -522,7 +523,7 @@ Continuously reconciles actual vs. desired.
 
 <br/>
 
-## casehub-ops 🔜
+## casehub-ops
 
 **CaseHub domain layer over desiredstate.**
 
@@ -548,7 +549,7 @@ layout: section
 
 ---
 
-# Classical AI — Where It Lives Today
+# Classical AI — Where It Lives
 
 <br/>
 
@@ -556,80 +557,72 @@ layout: section
 |----------|------|-----|
 | casehub-ledger | Bayesian Beta trust scoring | Updated from attestation events per actor/capability/dimension |
 | casehub-ledger | EigenTrust peer verdicts | Propagated from SOUND/FLAGGED attestations |
-| casehub-engine | `TrustWeightedAgentStrategy` @Priority(1) | Trust scores → agent selection |
-| casehub-engine | `SemanticAgentRoutingStrategy` @Priority(2) | Embedding similarity (40% semantic / 36% trust / 24% load) |
+| casehub-engine | `TrustWeightedAgentStrategy` | Trust scores → agent selection |
+| casehub-engine | `SemanticAgentRoutingStrategy` | Embedding similarity (40% semantic / 36% trust / 24% load) |
 | casehub-engine | `ActionRiskClassifier` SPI | Action risk → gate or pass |
 | casehub-eidos | `EpistemicallyWeak` health probe | Domain confidence below threshold → demote candidate |
 | casehub-eidos | Vocab system | Belbin/DISC/Thomas-Kilmann axes → structured disposition matching |
 | casehub-neural-text | `NliClassifier` | Hallucination: LLM output faithfulness against source facts |
-| casehub-neural-text | `TextClassifier` | Action risk classification (action type → gate decision) |
+| casehub-neural-text | `TextClassifier` | Action risk classification |
 | casehub-neural-text | `ScalarRegressor` | Epistemic domain confidence estimation |
 | casehub-neural-text | `SparseEmbedder` | SPLADE sparse embeddings for precision retrieval |
-| casehub-neural-text | `CrossEncoderReranker` | Top-N precision reranking of retrieval candidates |
+| casehub-neural-text | `CrossEncoderReranker` | Top-N precision reranking |
 | casehub-neural-text | CRAG `RelevanceEvaluator` | Evaluates retrieved chunks, corrects low-relevance results |
 | quarkmind | `StrategyTrustRouter` | Bayesian Beta routing among competing strategy plugins |
-| casehub-ras 🔜 | `DroolsCepGanglion` | CEP sliding windows for event stream pattern detection |
-| casehub-ras 🔜 | `BayesianGanglion` | Weighted multi-signal accumulation |
+| casehub-ras | `DroolsCepGanglion` | CEP sliding windows for event stream pattern detection |
+| casehub-ras | `BayesianGanglion` | Weighted multi-signal accumulation |
 
 ---
 
-# LLM — Where It Lives Today
+# LLM — Where It Lives
 
 <br/>
 
 | Location | What | How |
 |----------|------|-----|
-| casehub-platform | `ClaudeAgentProvider` | Claude Code CLI subprocess — one-shot or multi-turn sessions |
-| casehub-platform | `agent-claude-langchain4j` | LangChain4j ChatModel/StreamingChatModel bridge over AgentSession |
-| casehub-platform (memory) | `memory-mem0` | Vector + BM25 semantic search (Mem0 OSS) |
-| casehub-platform (memory) | `memory-graphiti` | Temporal knowledge graph — LLM entity extraction (Neo4j/FalkorDB) |
-| casehub-eidos | System prompt rendering | Optional semantic enrichment: identity, role, capability, disposition, goal narratives |
-| casehub-eidos | Eval harness | Multi-judge evaluation (Claude, Ollama, Jlama NEON, TornadoVM GPU) |
-| casehub-neural-text | `CorpusIngestionService` | LangChain4j `OnnxEmbeddingModel` — dense embeddings for RAG |
-| casehub-neural-text | `QdrantCaseRetriever` | Hybrid RRF retrieval — dense + sparse, LLM reranking optional |
-| casehub-drafthouse | Multi-LLM debate | Structured agent-to-agent critique, Qhorus-grounded review loop |
+| casehub-platform | `ClaudeAgentProvider` | Claude Code CLI — one-shot or multi-turn sessions |
+| casehub-platform | `agent-claude-langchain4j` | LangChain4j ChatModel/StreamingChatModel bridge |
+| casehub-platform | `memory-mem0` | Vector + BM25 semantic search |
+| casehub-platform | `memory-graphiti` | Temporal knowledge graph — LLM entity extraction |
+| casehub-eidos | System prompt rendering | Semantic enrichment: identity, role, capability, disposition, goal narratives |
+| casehub-eidos | Knowledge graph | Wilson lower-bound reputation, task history |
+| casehub-neural-text | `CorpusIngestionService` | LangChain4j dense embeddings for RAG |
+| casehub-neural-text | `QdrantCaseRetriever` | Hybrid RRF retrieval — dense + sparse |
+| casehub-drafthouse | Multi-LLM debate | Structured agent-to-agent critique, Qhorus-grounded |
 | claudony | `ClaudeAgentProvider` | Claude Code CLI sessions as CaseHub workers |
 | casehub-openclaw | OpenClaw agents | 5,400+ pre-built skills as workers |
-| casehub-desiredstate 🔜 | AI_REVIEW fault node | `AgentProvider` SPI for LLM diagnosis of faults |
-| casehub-ras 🔜 | `LlmGanglion` | Narrative/ambiguous event signal detection |
+| casehub-desiredstate | AI_REVIEW fault node | `AgentProvider` SPI for LLM fault diagnosis |
+| casehub-ras | `LlmGanglion` | Narrative/ambiguous event signal detection |
 
 ---
 
-# AI Infusion — What's Coming
+# AI Infusion — The Complete Picture
 
 <br/>
 
 **LLM Supervisor Mode** (clinical, aml)
-- LLM supervises the case plan itself — not just individual steps
-- Adapts investigation path based on emerging findings
-- Routing decisions become dialogic, not just rule-based
+- LLM supervises the case plan — adapts investigation path based on findings
+- Routing decisions become dialogic, not rule-based
 
 **LLM Triaging** (casehub-ras)
 - `LlmGanglion` detects situations from unstructured streams
-- Classifies ambiguous events into case types
 - Bridges sensor noise → structured accountability
 
 **Hybrid Typed Fact Space** (engine + drools)
 - Every fact: paradigm tag · confidence score · derivation chain
 - Drools natively consumes LLM conclusions
 - LLM sees hard constraints vs. uncertain inferences
-- `casehub-drools` module — Drools-as-Worker integration
 
-**CBR: The Complete Vision** (ledger + neural-text + engine)
-- **Retain** ✅ ledger records outcome as retrievable case
-- **Retrieve** 🔜 `CaseRetriever` SPI — similarity across analogous problems
-- **Reuse** ✅ implementation routing selects based on retrieved context
-- **Revise** 🔜 adaptive plan templates from top-k retrieved cases
+**CBR — Case-Based Reasoning**
+- **Retain** — ledger records every outcome as a retrievable case
+- **Retrieve** — `CaseRetriever` SPI — similarity across analogous problems
+- **Reuse** — implementation routing selects based on retrieved context
+- **Revise** — adaptive plan templates from top-k retrieved cases
 
-**CapabilitySpecializationStore** ✅ (eidos#55)
-- Agents learn what they can't do
+**Adaptive Routing** (eidos + engine)
+- `CapabilitySpecializationStore` — agents learn what they can't do
 - DECLINE patterns → proactive routing exclusion
-- Foundation for full adaptive routing epic (#258)
-
-**Content Routing** (eidos + engine)
-- A2A_CARD routing signals: `qualityHint`, `latencyHintP50Ms`, `costHint`
-- Machine-to-machine capability negotiation
-- Route not by name, but by fitness and cost
+- Content routing via A2A_CARD: `qualityHint`, `latencyHintP50Ms`, `costHint`
 
 ---
 layout: section
@@ -645,19 +638,19 @@ layout: section
 
 <br/>
 
-| Application | Domain | Market fit | Tutorial layers | AI infusion |
-|-------------|--------|-----------|-----------------|-------------|
-| casehub-aml | Anti-money laundering | 44/50 | 9 (Layer 7 pending) | Trust routing, SUSAR-style risk gate |
-| casehub-clinical | Clinical trials | 24/25 market | 9 (complete) | Trust routing, risk gate, LLM protocol advisor |
-| casehub-devtown | Software dev (PR review) | — | 6 complete | Trust-weighted reviewer routing |
-| casehub-drafthouse | Document review | — | Active | Multi-LLM debate, MCP-driven |
-| casehub-life | Personal automation | — | 2 complete | OpenClaw skill execution layer |
-| quarkmind | StarCraft II game AI | — | 7 (complete) | Trust-weighted strategy routing |
+| Application | Domain | Market fit | Layers | AI infusion |
+|-------------|--------|-----------|--------|-------------|
+| casehub-aml | Anti-money laundering | 44/50 | 9 | Trust routing, risk gate, LLM supervisor |
+| casehub-clinical | Clinical trials | 24/25 | 9 | Trust routing, risk gate, LLM protocol advisor |
+| casehub-devtown | Software dev (PR review) | — | 7 | Trust-weighted reviewer routing |
+| casehub-drafthouse | Document review | — | — | Multi-LLM debate, MCP-driven |
+| casehub-life | Personal automation | — | 9 | OpenClaw skills, IoT, LLM concierge |
+| quarkmind | StarCraft II game AI | — | 7 | Trust-weighted strategy routing |
 
 <br/>
 
-**Baseline comparison in every app:** each begins with naive Java.  
-Every layer closes a gap that a naive implementation structurally cannot close.
+**Every application starts with a naive Java baseline.**  
+Each layer closes a gap that naive implementation structurally cannot close.
 
 ---
 layout: two-cols
@@ -668,16 +661,16 @@ layout: two-cols
 **FinCEN-compliant AML investigation.**  
 *Tutorial + showcase. Java developers in financial services.*
 
-**Layers complete**
-- ✅ L1 Naive Java baseline
-- ✅ L2 casehub-work — 30-day FinCEN SLA
-- ✅ L3 casehub-qhorus — formal obligation per specialist agent
-- ✅ L4 casehub-ledger — tamper-evident audit, GDPR Art.17
-- ✅ L5 casehub-engine — adaptive investigation paths
-- ✅ L6 Trust routing — experienced agents on complex cases
-- 🔜 L7 IBM AMLSim comparison
-- ✅ L8 casehub-platform memory — prior entity context
-- ✅ L9 Human oversight gate — SAR filing, entity links
+**Layers**
+- L1 Naive Java baseline
+- L2 casehub-work — 30-day FinCEN SLA
+- L3 casehub-qhorus — formal obligation per specialist agent
+- L4 casehub-ledger — tamper-evident audit, GDPR Art.17
+- L5 casehub-engine — adaptive investigation paths
+- L6 Trust routing — experienced agents on complex cases
+- L7 IBM AMLSim comparison
+- L8 casehub-platform memory — prior entity context
+- L9 Human oversight gate — SAR filing, entity links
 
 ::right::
 
@@ -685,21 +678,21 @@ layout: two-cols
 
 **AI infusion**
 - Trust-weighted routing (Bayesian Beta from SAR outcomes)
-- `AmlActionRiskClassifier` — PEP/high-risk-score actions → human gate
+- `AmlActionRiskClassifier` — PEP/high-risk → human gate
 - Entity-resolution memory context before each investigation
-- 🔜 LLM supervisor mode — adaptive routing based on findings
+- LLM supervisor mode — adaptive routing based on findings
 
 **User flow**
 1. SAR trigger arrives
 2. Adaptive case opens (entity type, risk score)
-3. Entity-resolution, pattern-analysis, OSINT agents route in parallel
+3. Entity-resolution, pattern-analysis, OSINT agents — parallel
 4. PEP detection → oversight gate → compliance officer
 5. SAR filing decision → trust attestation written
 6. Future cases: higher-trust agents assigned
 
-**Compliance gaps closed vs. IBM AMLSim**
-- FinCEN audit chain · GDPR Art.17 · formal agent obligations
-- Trust-weighted routing · adaptive paths
+**Compliance gaps closed vs. IBM AMLSim**  
+FinCEN audit chain · GDPR Art.17 · formal obligations  
+Trust-weighted routing · adaptive paths
 
 ---
 layout: two-cols
@@ -710,13 +703,13 @@ layout: two-cols
 **GCP/FDA-compliant clinical trial coordination.**  
 *Tutorial + showcase. Highest market fit: 24/25.*
 
-**Layers complete** (all 9)
-- ✅ L1–L4 Baseline → ledger (GCP + GDPR)
-- ✅ L5 Adaptive protocol paths (IRB gates, grade escalation)
-- ✅ L6 Cross-site DSMB rollup
-- ✅ L7 Trust routing — safety agents (threshold 0.75)
-- ✅ L8 SUSAR oversight + GDPR Art.17 + EU AI Act Art.12
-- ✅ L9 Eligibility screening + ClinicalAgent comparison
+**Layers**
+- L1–L4 Baseline → ledger (GCP + GDPR)
+- L5 Adaptive protocol paths (IRB gates, grade escalation)
+- L6 Cross-site DSMB rollup
+- L7 Trust routing — safety agents (threshold 0.75)
+- L8 SUSAR oversight + GDPR Art.17 + EU AI Act Art.12
+- L9 Eligibility screening + ClinicalAgent comparison
 
 ::right::
 
@@ -726,7 +719,7 @@ layout: two-cols
 - `ClinicalTrustRoutingPolicyProvider` — SAFETY_MONITORING: 0.75 threshold
 - `ClinicalActionRiskClassifier` + `SusarCriteriaEvaluator`
 - SUSAR attestation writer → Bayesian Beta trust update
-- `ProtocolAmendmentAdvisor` SPI 🔜 LLM implementation pending
+- `ProtocolAmendmentAdvisor` SPI — LLM implementation
 
 **User flow**
 1. Grade 4+ AE reported → escalation case
@@ -737,7 +730,8 @@ layout: two-cols
 6. Trust attestation updates for next routing
 
 **10-row compliance gap table vs. ClinicalAgent (arXiv 2404.14777)**  
-SLA enforcement · PI authorization · GDPR erasure · multi-site · tamper-evident audit · trust routing · adaptive protocol paths
+SLA enforcement · PI authorization · GDPR erasure  
+Multi-site · tamper-evident audit · trust routing · adaptive paths
 
 ---
 layout: two-cols
@@ -748,14 +742,14 @@ layout: two-cols
 **AI-assisted software development.**  
 *PR review, merge queues, trust-weighted reviewer routing.*
 
-**Layers complete (1–6)**
-- ✅ L1 Naive Java baseline
-- ✅ L2 casehub-work — reviewer SLA
-- ✅ L3 casehub-qhorus — reviewer obligations (DECLINE when outside expertise)
-- ✅ L4 casehub-ledger — tamper-evident review record
-- ✅ L5 casehub-engine — adaptive routing on security flags
-- ✅ L6 Trust routing — senior reviewers on sensitive PRs
-- 🔜 L7 Comparison vs. naive AI code review
+**Layers**
+- L1 Naive Java baseline
+- L2 casehub-work — reviewer SLA
+- L3 casehub-qhorus — reviewer obligations
+- L4 casehub-ledger — tamper-evident review record
+- L5 casehub-engine — adaptive routing on code content
+- L6 Trust routing — senior reviewers on sensitive PRs
+- L7 Comparison vs. naive AI code review
 
 ::right::
 
@@ -763,10 +757,9 @@ layout: two-cols
 
 **AI infusion**
 - `DevtownActionRiskClassifier` — 8 action types, 4 categories
-- Trust-weighted reviewer selection (review-thoroughness, false-positive-rate, scope-calibration dimensions)
-- `HumanOversight.GENERAL` — catch-all oversight group
+- Trust-weighted reviewer selection
 - Memory: contributor history, reviewer context, code-area history
-- 🔜 LLM reviewer for security patterns
+- LLM reviewer for security patterns
 
 **User flow**
 1. PR webhook received
@@ -774,7 +767,7 @@ layout: two-cols
 3. Parallel specialist reviewers (trust-weighted)
 4. Human gate if security flag
 5. M-of-N approvals → merge decision
-6. Production incident? → FLAGGED attestation → reviewer trust drops
+6. Production incident → FLAGGED attestation → reviewer trust drops
 
 **Compliance:** GDPR Art.17 actor erasure · tamper-evident review chain
 
@@ -788,11 +781,12 @@ layout: two-cols
 
 <br/>
 
-**Live MCP tools**
+**MCP tools**
 - `start_review` — opens review session
 - `update_selection` — grounds discussion to document region
 - `query_review` — query review state
 - `end_review` — closes with summary
+- Document comparison and version-tracked revision tools
 
 **Architecture**
 - Structured agent-to-agent debate loop
@@ -808,7 +802,7 @@ layout: two-cols
 - Multiple LLM agents critique the same document
 - Debate loop — each agent responds to other's critique
 - Review grounded in document diffs, not memory
-- `casehub-pages` embeds review dashboards (planned)
+- `casehub-pages` embeds review dashboards
 
 **User flow**
 1. Document submitted for review
@@ -817,10 +811,6 @@ layout: two-cols
 4. Human reviewer sees structured debate manifest
 5. Revision cycle — new version re-enters loop
 6. Review complete → decision recorded in ledger
-
-🔜 Document comparison MCP tools  
-🔜 Version-tracked revision history  
-🔜 `casehub-pages` review dashboard embedding
 
 ---
 layout: two-cols
@@ -831,32 +821,33 @@ layout: two-cols
 **Household, health, finance, elder care, legal coordination.**  
 *Tutorial: OpenClaw as the execution layer.*
 
-**Current status — Layer 2 (casehub-work)**
-- ✅ L1 Naive Java baseline
-- ✅ L2 SLA-enforced household tasks
-- 🔜 L3 casehub-qhorus — formal obligations
-- 🔜 L4 casehub-ledger — tamper-evident record
-- 🔜 L5 Adaptive coordination paths
-- 🔜 L6 Trust routing
-- 🔜 L7 OpenClaw integration — 5,400+ pre-built skills
-- 🔜 Layer 9 casehub-iot — Home Assistant + OpenHAB
+**Layers**
+- L1 Naive Java baseline
+- L2 SLA-enforced household tasks
+- L3 casehub-qhorus — formal obligations
+- L4 casehub-ledger — tamper-evident record
+- L5 Adaptive coordination paths
+- L6 Trust routing
+- L7 OpenClaw integration — 5,400+ pre-built skills
+- L8 casehub-platform memory
+- L9 casehub-iot — Home Assistant + OpenHAB
 
 ::right::
 
 <br/>
 
-**Vision**
-- Same platform that coordinates clinical trials manages your medical appointments
-- Same accountability primitives that close FinCEN SAR tracks your financial obligations
-- IoT integration: device-driven case types (thermostat anomaly → comfort case)
+**The vision**  
+The same platform that coordinates clinical trials manages your medical appointments. The same accountability primitives that close FinCEN SARs track your financial obligations.
 
-**AI infusion (planned)**
+**AI infusion**
 - OpenClaw agents as household task workers
 - IoT device state changes → RAS case creation
-- LLM concierge via casehub-drafthouse debate loop
+- LLM concierge via debate loop
 - Trust-weighted skill routing for home automation
 
-**Community marketplace** — automation recipes shared as `CasePlanModel` YAML
+**Community marketplace**  
+Automation recipes shared as `CasePlanModel` YAML.  
+5,400+ OpenClaw skills, immediately available.
 
 ---
 
@@ -867,25 +858,26 @@ layout: two-cols
 <br/>
 
 **Why it matters**  
-Clinical trials operate over days. QuarkMind operates at millisecond tick granularity.  
+Clinical trials operate over days.  
+QuarkMind operates at millisecond tick granularity.  
 The same harness. The same SPIs. Completely different timing.
 
-**7 layers complete**
-- ✅ L1–L5 Blackboard coordination, typed inter-plugin messaging, audit, adaptive selection
-- ✅ L6 Trust routing — Bayesian Beta strategy routing among competing implementations
-- ✅ L7 Comparison vs. L1 naive loop + ocraft/SC2 API
+**7 architectural layers**
+- L1–L5 Blackboard coordination, typed inter-plugin messaging, audit, adaptive selection
+- L6 Trust routing — Bayesian Beta strategy routing among competing implementations
+- L7 Comparison vs. L1 naive loop + ocraft/SC2 API
 
 **Validation**  
-30 IEM10 replays — `ReplayValidationHarness`. Statistical coverage across PvT / PvZ / PvP.
+30 IEM10 replays — `ReplayValidationHarness`.  
+Statistical coverage across PvT / PvZ / PvP.
 
 **AI infusion**
-- `StrategyTrustRouter` — four-phase Bayesian Beta maturity model
-  - BOOTSTRAP → QUALIFIED → BORDERLINE → EXCLUDED
-- `GameOutcomeRecorder` — writes trust attestations on game end
+- `StrategyTrustRouter` — four-phase Bayesian Beta: BOOTSTRAP → QUALIFIED → BORDERLINE → EXCLUDED
+- `GameOutcomeRecorder` — trust attestations on game end
 - `EnemyBehavior` + `ReactiveStrategy` — counter-picks dominant player every 50 frames
 - Three.js 3D visualiser — 65+ unit sprites, fog of war, replay scrub
 
-**What it proves:** harness generality. The pattern isn't domain-specific. It's infrastructure.
+**What it proves:** the harness isn't domain-specific. It's infrastructure.
 
 ---
 layout: section
@@ -900,7 +892,7 @@ layout: section
 # casehub-pages
 
 **Pure TypeScript dashboard rendering runtime.**  
-*Renamed from melviz. Moving to `casehubio/casehub-pages`.*
+*100% TypeScript. Near DashBuilder feature parity.*
 
 <br/>
 
@@ -921,67 +913,85 @@ loadSite(yaml, document.getElementById('dashboard'))
 
 **DashBuilder compatibility** — 28/31 sample dashboards render without modification.
 
-**Status:** 602 data tests · 148 component tests · 100 runtime tests
-
 **Consumers:** claudony · drafthouse · devtown · aml · life
 
-🔜 Forms support (`pages-llm-prompter` component already exists)  
-🔜 View state persistence  
-🔜 Case status dashboards — trust scores, actor state, commitment views
+Forms support (`pages-llm-prompter` component)  
+View state persistence  
+Case status dashboards — trust scores, actor state, commitment views
 
 ---
 layout: section
 ---
 
-# The Road Ahead
+# The Platform Vision
 
 ---
 layout: two-cols
 ---
 
-# Platform Roadmap
+# The Complete Platform
 
-**Near term**
+**Foundation**
+- Platform — identity, memory, agents, streams
+- Ledger — trust, audit, GDPR
+- Qhorus — agent mesh, commitments
+- Work — human tasks, SLA
 
-🔜 `StreamContext` propagation — P1.8  
-🔜 Auth retrofit — OIDC across all harnesses  
-🔜 casehub-ras — reactive case creation  
-🔜 casehub-desiredstate — full test suite  
-🔜 casehub-pages → `casehubio/casehub-pages`  
-🔜 CBR Retrieve — `CaseRetriever` similarity layer  
-🔜 CBR Revise — adaptive plan templates  
-🔜 Hybrid Typed Fact Space (`casehub-drools`)  
-🔜 Hallucination detection hook on engine output  
-🔜 LLM Supervisor Mode (aml, clinical)  
-🔜 LLM triaging via `LlmGanglion` (casehub-ras)  
+**Orchestration**
+- Engine — Blackboard+CMMN coordination
+- Eidos — agent identity, routing intelligence
+- Neural-text — local inference, RAG, CRAG
+
+**Reactive**
+- casehub-ras — situational awareness layer
+- casehub-desiredstate — intent-driven infrastructure
+- casehub-ops — compliance and deployment posture
 
 ::right::
 
 <br/>
 
-**Architecture vision**
+**Integration**
+- claudony — agent mesh reference implementation
+- openclaw — 5,400+ skills as workers
+- connectors — Slack, Teams, email, SMS
+- iot — 10 Matter-aligned device types
+
+**Visualization**
+- casehub-pages — YAML-driven dashboards
+
+**Applications**
+- aml · clinical · devtown · drafthouse · life · quarkmind
+
+**AI Fusion**
+- Classical AI: trust, routing, inference, CEP
+- LLM: agents, memory, triaging, supervision, debate
+- CBR: retain → retrieve → reuse → revise
+
+---
+layout: center
+class: text-center
+---
+
+# The Flywheel
+
+<br/>
 
 ```
-Sensory layer (ras)
-  → Situational awareness
-    → Case creation (automatic)
-      → Coordination (engine)
-        → Classical AI (rules, Bayesian)
-        → LLM reasoning (agents)
-        → Human gates (qhorus + work)
-          → Audit (ledger)
-            → Trust update
-              → Better routing next time
+Better outcomes
+    ↓
+Better trust scores
+    ↓
+Better routing
+    ↓
+Better outcomes
 ```
 
 <br/>
 
-**The flywheel:**  
-Better outcomes → better trust scores  
-→ better routing → better outcomes.
-
-CBR closes the loop:  
-Past cases teach future cases.
+**CBR closes the loop.**  
+Past cases teach future cases.  
+The platform gets smarter with every interaction.
 
 ---
 layout: center
@@ -992,15 +1002,12 @@ class: text-center
 
 <br/>
 
-**Foundation** — platform · ledger · qhorus · work  
-**Orchestration** — engine · eidos · neural-text  
-**Integration** — claudony · openclaw · connectors · iot  
-**Visualization** — casehub-pages  
-**Reactive** — casehub-ras · casehub-desiredstate  
+**Bring your domain. Use the platform. Modify nothing below.**
 
 <br/>
 
-**Bring your domain. Use the platform. Modify nothing below.**
+*Written by LLMs, for LLMs.*  
+*An accelerant for AI-Fusion driven digital transformations.*
 
 <br/>
 
