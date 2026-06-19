@@ -2,7 +2,7 @@
 
 **GitHub:** [casehubio/clinical](https://github.com/casehubio/clinical)
 **Tier:** Application
-**Status:** Active — Layers 1–8 complete; Layer 9 (comparison vs ClinicalAgent) pending
+**Status:** Active — Layers 1–9 complete
 
 ## What It Is
 
@@ -28,7 +28,7 @@ The tutorial structure emerges from the natural adoption sequence. Each layer ad
 | 6 | trial-level blackboard aggregation — cross-site DSMB rollup | No cross-site pattern detection; no DSMB rollup when multiple sites have simultaneous Grade 4+ events | complete (Epic 3, 2026-05-25) |
 | 7 | Trust routing | No trust model; experienced safety agents not prioritised on complex CTCAE Grade 4+ events | ✅ complete (clinical#8, 2026-06-15) — `ClinicalTrustRoutingPolicyProvider @ApplicationScoped` displaces `DefaultTrustRoutingPolicyProvider @DefaultBean`; SAFETY_MONITORING threshold=0.75, 20-min observations, 0.70 quality floor; `SusarAgentAttestationWriter` writes `LedgerAttestation` anchored to `WorkerDecisionEntry`; TrustScoreJob ingests attestations into Bayesian Beta scores; `RegulatorySubmissionCaseService` + `ClinicalRegulatorySubmissionCaseHub` + `regulatory-submission.yaml` (Grade 3/4/5 + unexpected AE → IND expedited safety reporting case: Grade 3 → 15-day §(c)(1)(ii); Grade 4/5 → 7-day §(c)(1)(i)), concurrent with AE escalation; `AeEscalationCompletedEvent.unexpected` (7th field); new dep: casehub-engine-ledger; new Flyway location: `classpath:db/engine-ledger/migration` |
 | 8 | ActionRiskClassifier oversight gate | No risk classification gate for clinical actions; SUSAR criteria assessment not automated | complete — `ClinicalActionRiskClassifier` + `SusarCriteriaEvaluator` (clinical#47); SUSAR oversight case + gate handler (clinical#77, clinical#76); GDPR consent withdrawal (clinical#7); EU AI Act Art.12 ComplianceSupplement |
-| 9 | Comparison vs ClinicalAgent | — | pending |
+| 9 | Showcase — eligibility screening, protocol amendment, ClinicalAgent comparison | No showcase of eligibility screening or protocol amendment; no peer-reviewed comparison | ✅ complete (clinical#10, 2026-06-18) — `EligibilityScreeningService` + `eligibility-screening.yaml` + IRB gate via engine; `ProtocolAmendmentAdvisor` SPI in `api/spi/` with `DefaultProtocolAmendmentAdvisor @DefaultBean` (always PROCEED; real LLM impl pending engine#101, clinical#86); `ProtocolAmendmentCaseHub` + `protocol-amendment.yaml`; REST: `POST /trials/{t}/amendments`, `GET /trials/{t}/amendments/{id}`, `POST /trials/{t}/sites/{s}/patients/{e}/screen`; `docs/comparison/clinicalagent.md` — 10-row GCP/FDA gap table vs ClinicalAgent (arXiv 2404.14777) |
 
 ## What It Owns
 
@@ -68,6 +68,7 @@ The tutorial structure emerges from the natural adoption sequence. Each layer ad
 - **Layer 8 — GDPR compliance (clinical#7):** `ConsentWithdrawalService` — GDPR Art.17: pseudonymizes `patientId`, calls `LedgerErasureService.erase()`, erases patient memories. Writes `ConsentWithdrawalLedgerEntry` (V2022). XA required. W3C PROV-DM export (`GET /audit/prov`) and Merkle inclusion proof (`GET /audit/entries/{id}/proof`) endpoints on `PatientResource`.
 - **Layer 8 — EU AI Act Art.12 (clinical#76):** `ClinicalComplianceSupplement` factory attaches a `ComplianceSupplement` to all six AI-agent decision ledger entry writers via `entry.attach(supplement)`.
 - **Layer 7 — Trust routing (clinical#8):** `ClinicalTrustRoutingPolicyProvider @ApplicationScoped` — displaces `DefaultTrustRoutingPolicyProvider @DefaultBean` (casehub-engine-ledger); SAFETY_MONITORING threshold=0.75, 20-min observations, 0.70 safety-accuracy quality floor. `SusarAgentAttestationWriter` — observes gate approved/rejected/expired; writes `LedgerAttestation` anchored to `WorkerDecisionEntry`; TrustScoreJob ingests attestations into Bayesian Beta scores. `RegulatorySubmissionCaseService` + `ClinicalRegulatorySubmissionCaseHub` + `regulatory-submission.yaml` — Grade 3/4/5 + unexpected AE triggers IND expedited safety reporting case: Grade 3 → 15-day §(c)(1)(ii); Grade 4/5 → 7-day §(c)(1)(i), concurrent with AE escalation. `AeEscalationCompletedEvent.unexpected` — 7th field, marks AE as unexpected per ICH E2A criteria.
+- **Layer 9 — Showcase (clinical#10):** `EligibilityScreeningService` + `eligibility-screening.yaml` — eligibility screening case via engine IRB gate. `ProtocolAmendmentAdvisor` SPI in `api/spi/` — `@DefaultBean` stub always returns PROCEED; real LLM implementation pending engine#101 (tracked clinical#86). `ProtocolAmendmentCaseHub` + `protocol-amendment.yaml`. REST: `POST /trials/{t}/amendments` (propose amendment), `GET /trials/{t}/amendments/{id}`, `POST /trials/{t}/sites/{s}/patients/{e}/screen` (screen patient against eligibility criteria). `docs/comparison/clinicalagent.md` — 10-row GCP/FDA compliance gap table vs ClinicalAgent (arXiv 2404.14777).
 - 3-site showcase scenario vs ClinicalAgent
 
 ## The Compliance Gap It Closes
