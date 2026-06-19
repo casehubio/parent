@@ -1,0 +1,13 @@
+{
+  "name": "casehub-presentation",
+  "private": true,
+  "scripts": {
+    "dev": "slidev presentation.md --open",
+    "build": "slidev build presentation.md",
+    "export": "slidev export presentation.md"
+  },
+  "dependencies": {
+    "@slidev/cli": "^0.50.0",
+    "@slidev/theme-default": "latest"
+  }
+}
