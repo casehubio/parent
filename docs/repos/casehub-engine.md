@@ -44,7 +44,9 @@ Cases are defined declaratively: namespace, name, version, capabilities, workers
 **Binding target types** (mutually exclusive per binding):
 - `capability` — routes to a worker by capability match
 - `subCase` — spawns a child case
-- `humanTask` — creates a WorkItem in casehub-work (inline or template mode). Supports `scope` (hierarchical path for SLA preference resolution), `inputMapping`/`outputMapping` (JQ), `candidateGroups`, `candidateUsers`, `expiresIn`.
+- `humanTask` — creates a WorkItem in casehub-work (inline or template mode). Supports `scope` (hierarchical path for SLA preference resolution), `inputMapping`/`outputMapping` (JQ), `candidateGroups`, `candidateUsers`, `expiresIn`, `outcomes` (named outcome labels for YAML-driven branching on WorkItem result).
+
+**Binding fields (engine#531):** `inputSchemaOverride` — overrides the capability's default input schema for this binding only. `contextWrite` — JQ expression whose result is merged into case context after the worker completes (enables inline result projection without a separate binding).
 
 **Trigger types:** `contextChange` (with optional `filter` and binding-level `when` guard), `schedule`/`timer`.
 
@@ -80,6 +82,10 @@ Eight operational SPIs (4 blocking + 4 reactive mirrors):
 All eight ship with `@DefaultBean @ApplicationScoped` no-op defaults that yield automatically to consumer-provided implementations.
 
 **`WorkerProvisioner.provision()` returns `ProvisionResult(UUID causedByEntryId)`** (blocking) / `Uni<ProvisionResult>` (reactive). The `causedByEntryId` carries the ledger entry ID of the Qhorus COMMAND that triggered provisioning, for causal audit linkage. Implementations that cannot resolve a causal entry return `ProvisionResult.empty()`. See `casehub/garden: docs/protocols/casehub/provisioner-spi-provision-result.md`. Claudony wiring tracked in claudony#140.
+
+**`ProvisionContext`** carries `tenancyId` (engine#530) — implementations resolve tenant-specific endpoints and credentials without injecting `CurrentPrincipal`. `tryProvision()` no longer gates on `getCapabilities()` — capability pre-filtering was moved out of the provision path to avoid blocking on descriptor resolution at dispatch time.
+
+**`ConflictResolver`** utility (engine#508) — `DEEP_MERGE` strategy merges two `Map<String,Object>` context payloads recursively; used by the orchestration path when multiple concurrent bindings write to overlapping context keys.
 
 **`WorkerExecutionManager.getActiveCaseIds(String workerId): List<UUID>`** — `default` method returning Quartz job case UUIDs currently scheduled for the given worker. Added in engine#56 for the actor state view; consumers that implement `WorkerExecutionManager` inherit the default unless they override it.
 
@@ -139,7 +145,15 @@ Three external signal entry points that reach a running case:
 
 ### Qhorus Message Signal Bridge
 
-`QhorusMessageSignalBridge` — CDI `@ObservesAsync` observer for `MessageReceivedEvent`; bridges commitment-resolving Qhorus messages (RESPONSE, DONE, DECLINE, FAILURE) on `case-{caseId}/{purpose}` channels to `CaseHubRuntime.signal()`. Enables human channel messages to unblock WAITING cases. Protocol: `PP-20260526-case-channel-message-signal`.
+`QhorusMessageSignalBridge` — CDI `@ObservesAsync` observer for `MessageReceivedEvent`; bridges commitment-resolving Qhorus messages (RESPONSE, DONE, DECLINE, FAILURE) on `case-{caseId}/{purpose}` channels to `CaseHubRuntime.signal()`. Enables human channel messages to unblock WAITING cases. **DECLINE and FAILURE now trigger the worker failure cascade** (engine#509) — translated to `WorkerOutcome.failure()` before signalling, feeding `OutcomePolicy.onFailure` rather than silently completing. Protocol: `PP-20260526-case-channel-message-signal`.
+
+### Worker Outcome Handling
+
+`WorkerOutcome` is a sealed interface with variants: `Success`, `Failure(reason)`, `Expired(reason)` (engine#513). `WorkResult` carries the outcome; `WorkStatus.EXPIRED` distinguishes timeout from failure at the SPI boundary.
+
+- **`WorkerOutcome.Expired`** — `DefaultWorkerExecutor` converts `TimeoutException` to `WorkerResult.expired()`. `handleSemanticFailure` routes EXPIRED through `OutcomePolicy.onExpired` (not `onFailure`) — preserves the distinction between timeout and functional failure for retry and escalation policy decisions.
+- **`CaseHubEventType.WORKER_OUTCOME_EXPIRED`** — CDI event fired on expiry; observers can trigger alternative routing, alerts, or audit writes.
+- **`OutcomePolicy.onExpired`** — consumer-defined handler; `DefaultOutcomePolicy` re-queues for retry up to `maxRetries`, then escalates.
 
 ### Tenancy Enforcement (persistence-hibernate)
 
