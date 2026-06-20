@@ -69,6 +69,8 @@ layout: two-cols
 
 ::right::
 
+<br/>
+
 **The principle:** let each kind of intelligence do what it does best.
 
 **The guarantee:** every agent interaction is a formal, accountable act.
