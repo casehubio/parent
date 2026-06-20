@@ -29,8 +29,8 @@ GAP_TOL       = 65      # px — max deviation from median gap
 GAP_MAX       = 400     # px — gaps above this = intentionally centered layout (skip)
 # Slides to skip for column-alignment check (parser offset causes wrong metadata)
 # Re-evaluate if slide count changes significantly
-SKIP_COL_CHECK = {40}        # casehub-devtown User Flow — single col, falsely tagged as grid
-SKIP_GAP_CHECK = {47, 48}   # The Flywheel + Build on Platform — center layout, large gap intentional
+SKIP_COL_CHECK = {41}        # casehub-devtown User Flow — single col, falsely tagged as grid
+SKIP_GAP_CHECK = {48, 49}   # The Flywheel + Build on Platform — center layout, large gap intentional
 SLIDE_H       = 1104
 SLIDE_W       = 1960
 MID_X         = SLIDE_W // 2

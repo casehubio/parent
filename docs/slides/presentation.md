@@ -193,7 +193,7 @@ class: text-sm
 
 **Privacy**
 - `ActorIdentity` — pseudonymisation mapping
-- GDPR erasure without breaking audit chain
+- `LedgerPrivacyProducer` — token-severing erasure; `ErasureReceiptLedgerEntry` preserves the tamper-evident erasure record
 
 449 tests. Native image validated.
 
@@ -222,7 +222,7 @@ class: text-sm
 <div>
 
 **Commitment lifecycle**  
-OPEN → FULFILLED / FAILED / EXPIRED / DECLINED / HANDOFF
+OPEN → FULFILLED / FAILED / EXPIRED / DECLINED / HANDOFF / CANCELLED
 
 **Key features**
 - `MessageDispatch` — single enforcement gate; no bypass path
@@ -315,8 +315,10 @@ class: text-sm
 - `SemanticAgentRoutingStrategy` — embedding-based
 - `CapabilitySpecializationStore` — DECLINE-pattern exclusion
 - `ActionRiskClassifier` SPI — human gate for consequential actions
+- `ChainedReactive` oversight: most-restrictive-wins, fail-safe = GateRequired
 
 **Worker Outcomes:** `Success` · `Failure(reason)` · `Expired(reason)` · `Declined`  
+**Outcome handling:** `OutcomePolicy` per type — DECLINE/FAILURE → failure cascade, not silent completion  
 **Bindings:** `capability` · `subCase` · `humanTask` · `inputSchemaOverride` · `contextWrite`
 
 ---
@@ -362,6 +364,8 @@ class: text-sm
 - Optional LLM semantic enrichment stage
 - Multi-judge eval harness (Claude, Ollama, Jlama, GPU Llama3)
 
+**Vocabulary system** — Belbin · DISC · Thomas-Kilmann · SVO · CasehubSlot — standard behavioural frameworks for agent role assignment
+
 **Knowledge graph** — Wilson lower-bound reputation, task history, `TaskSemanticEnricher`
 
 
@@ -386,7 +390,8 @@ class: text-sm
 **RAG pipeline** (casehub-specific)
 - Qdrant — tenancy-isolated corpus storage
 - Hybrid search — dense + sparse, RRF fusion
-- `CorpusStore` + `CaseRetriever` SPIs · corpus ingestion bridge · CRAG `RelevanceEvaluator`
+- `CorpusStore` + `CaseRetriever` SPIs · corpus ingestion bridge
+- CRAG — `@Decorator` on `CaseRetriever`; `RelevanceEvaluator` SPI corrects low-relevance chunks; classpath-activated
 
 Hallucination detection hook on engine output  
 `ScalarRegressor` → epistemic confidence in eidos routing
@@ -409,7 +414,7 @@ class: text-sm
 **claudony** — *Agent mesh reference implementation*
 - Remote Claude Code CLI sessions via tmux
 - WebAuthn passkeys, fleet management, WebSocket streaming
-- MCP server for controller Claude instances
+- MCP server for controller Claude instances; `OversightGateService` — human-in-the-loop before consequential AI actions
 - Implements all 4 casehub-engine worker provisioner SPIs
 
 **casehub-openclaw** — *OpenClaw agent bridge*
@@ -421,8 +426,26 @@ class: text-sm
 **casehub-connectors** — *Messaging*
 - Outbound: Slack, Teams, SMS, WhatsApp, email
 - Inbound: email IMAP, Slack webhooks
+- Pure `java.net.http` — no Camel SDKs
 
-**casehub-iot** — 10 Matter-aligned types · HA + OpenHAB · edge/cloud bridge
+---
+
+# casehub-iot
+
+**Typed device abstraction. Real-time IoT → case triggers.**
+
+**10 Matter-aligned device types**  
+Thermostat · Lock · Switch · Sensor · Camera · Valve · Fan · Blind · Light · Speaker
+
+**Real-time providers**
+- Home Assistant — WebSocket event stream
+- OpenHAB — SSE event bus
+
+**Bridge architecture**
+- `iot-bridge` (edge) — runs on-device; buffers when cloud is unreachable
+- `iot-bridge-server` (cloud) — `DeviceProvider` SPI; tenancy-isolated
+
+**5,400+ OpenClaw skills** accessible via IoT triggers — any device event can start an agent workflow
 
 ---
 layout: section
@@ -481,6 +504,11 @@ Continuously reconciles actual vs. desired.
 - `ActualStateAdapter` — observe current state
 - `NodeProvisioner` — add/remove nodes
 - `FaultPolicy` — auto-retry → AI review → human WorkItem
+
+**Examples**
+- Nefarious Dungeons — dungeon entity management
+- Data Pipeline — medallion architecture (Bronze → Silver → Gold)
+- Agent topology management (casehub-ops)
 
 **OTel tracing** — `desiredstate.*` span attributes
 
