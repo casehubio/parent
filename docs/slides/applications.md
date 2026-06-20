@@ -168,16 +168,16 @@ A Phase III trial might span 20+ sites, hundreds of patients, and dozens of inve
 
 # Clinical Trials: What CaseHub Delivers Differently
 
-**GCP and FDA compliance structurally guaranteed — not audited for after the fact.**
+**GCP (Good Clinical Practice) and FDA compliance structurally guaranteed — not audited for after the fact.**
 
 **24-hour SLA enforcement**  
 Serious adverse events trigger a WorkItem for the safety monitor with a hard 24-hour GCP deadline. Miss it — automatic escalation. Every step is a formal commitment with a ledger entry.
 
 **Adaptive protocol paths**  
-CTCAE Grade 4 events route to senior monitors and DSMB in parallel. Grade 3 with unexpected pattern routes to IND expedited reporting. The routing is declared in the case plan — not hardcoded in imperative logic.
+CTCAE (Common Terminology Criteria for Adverse Events) Grade 4 — life-threatening — events route to senior monitors and DSMB in parallel. Grade 3 with unexpected pattern routes to IND (Investigational New Drug) expedited safety reporting. The routing is declared in the case plan — not hardcoded in imperative logic.
 
 **Multi-site DSMB (Data Safety Monitoring Board) rollup**  
-When multiple sites hit Grade 4+ events simultaneously, a trial-level case aggregates the signals and triggers the DSMB review automatically.
+When multiple sites hit Grade 4+ events simultaneously, a trial-level case aggregates the signals and triggers an independent safety review board automatically.
 
 ---
 
