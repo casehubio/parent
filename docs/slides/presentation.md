@@ -69,7 +69,7 @@ layout: two-cols
 
 ::right::
 
-<br/>
+<br/><br/>
 
 **The principle:** let each kind of intelligence do what it does best.
 
