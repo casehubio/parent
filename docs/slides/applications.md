@@ -110,6 +110,10 @@ Agents don't just "work on" cases. They *commit* to outcomes with deadlines. COM
 **Trust-weighted routing**  
 Bayesian Beta trust scores, built from SAR outcomes, route complex cases (PEP detection, high-risk entities) to the agents with the strongest track records. The system gets smarter with every investigation.
 
+---
+
+# AML: Oversight and Adaptive Routing
+
 **Human oversight gates**  
 Consequential actions — SAR filing, entity link creation — require human approval before proceeding. The gate is a formal WorkItem with a 30-day FinCEN SLA. Missed deadlines trigger escalation automatically.
 
@@ -172,8 +176,12 @@ Serious adverse events trigger a WorkItem for the safety monitor with a hard 24-
 **Adaptive protocol paths**  
 CTCAE Grade 4 events route to senior monitors and DSMB in parallel. Grade 3 with unexpected pattern routes to IND expedited reporting. The routing is declared in the case plan — not hardcoded in imperative logic.
 
-**Multi-site DSMB rollup**  
-When multiple sites hit Grade 4+ events simultaneously, a trial-level case aggregates the signals and triggers the Data Safety Monitoring Board review automatically.
+**Multi-site DSMB (Data Safety Monitoring Board) rollup**  
+When multiple sites hit Grade 4+ events simultaneously, a trial-level case aggregates the signals and triggers the DSMB review automatically.
+
+---
+
+# Clinical Trials: Audit, Trust and Evidence
 
 **Cryptographic audit trail**  
 Every AI-agent decision carries an EU AI Act Art.12 `ComplianceSupplement`. The complete audit chain — from adverse event report to PI authorisation to DSMB decision — is a Merkle-verifiable record.
@@ -268,6 +276,10 @@ Review is grounded in document diffs and specific sections, not in the reviewer'
 
 **Structured debate manifest**  
 The complete review — every critique, every response, every resolution — is a deterministic `ChannelProjection<ReviewState>`. Human reviewers see a structured record, not a transcript.
+
+---
+
+# Document Review: Tools and Audit
 
 **MCP tool surface**  
 `start_review`, `update_selection`, `query_review`, `end_review` — LLM agents participate via MCP tools. Any MCP-capable agent can join the review.
