@@ -205,14 +205,13 @@ class: text-sm
 449 tests. Native image validated.
 
 ---
-layout: two-cols
----
 
 # casehub-qhorus
 
-**The agent communication mesh.**
+**The agent communication mesh.** Every agent interaction is a formal speech act.
 
-Every agent interaction is a formal speech act.
+<div class="grid grid-cols-2 gap-8 mt-4">
+<div>
 
 **9 Message Types**
 
@@ -226,7 +225,8 @@ Every agent interaction is a formal speech act.
 | FAILURE | Terminal failure |
 | EVENT | Telemetry, no obligation |
 
-::right::
+</div>
+<div>
 
 **Commitment lifecycle**  
 OPEN → FULFILLED / FAILED / EXPIRED / DECLINED / HANDOFF
@@ -236,6 +236,9 @@ OPEN → FULFILLED / FAILED / EXPIRED / DECLINED / HANDOFF
 - `ChannelProjection<S>` — deterministic left-fold read models
 - `CommitmentExpiredEvent` — deadline-based rerouting
 - A2A SSE streaming · Slack-native backend
+
+</div>
+</div>
 
 ---
 
@@ -250,14 +253,13 @@ OPEN → FULFILLED / FAILED / EXPIRED / DECLINED / HANDOFF
 5. Ledger records causal chain
 
 ---
-layout: two-cols
----
 
 # casehub-work
 
 **Human task lifecycle. Formal obligations for humans.**
 
-<br/>
+<div class="grid grid-cols-2 gap-8 mt-4">
+<div>
 
 **10 WorkItem statuses**
 
@@ -276,13 +278,10 @@ CREATED → CLAIMED → IN_PROGRESS → COMPLETED
 - WorkItem templates
 - Semantic worker selection (`casehub-work-ai`)
 
-::right::
-
-<br/><br/>
+</div>
+<div>
 
 **1,019+ tests**
-
-<br/>
 
 **User flow — SAR review (AML)**
 1. Case creates WorkItem for compliance officer
@@ -292,10 +291,10 @@ CREATED → CLAIMED → IN_PROGRESS → COMPLETED
 5. Trust attestation written to ledger
 6. Next SAR routes to higher-trust officers
 
-<br/>
+**Downstream users:** engine · all applications
 
-**Downstream users**  
-engine · all applications
+</div>
+</div>
 
 ---
 layout: section
