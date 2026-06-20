@@ -39,6 +39,7 @@ REPO_DIR[eidos]="../eidos"
 REPO_DIR[connectors]="../connectors"
 REPO_DIR[work]="../work"
 REPO_DIR[qhorus]="../qhorus"
+REPO_DIR[pages]="../pages"
 REPO_DIR[engine]="../engine"
 REPO_DIR[workers]="../workers"
 REPO_DIR[claudony]="../claudony"
@@ -63,6 +64,7 @@ REPO_GH[eidos]="eidos"
 REPO_GH[connectors]="connectors"
 REPO_GH[work]="work"
 REPO_GH[qhorus]="qhorus"
+REPO_GH[pages]="casehub-pages"
 REPO_GH[engine]="engine"
 REPO_GH[workers]="workers"
 REPO_GH[claudony]="claudony"
@@ -87,6 +89,7 @@ DEPS[eidos]="ledger"
 DEPS[connectors]="platform"
 DEPS[work]="ledger connectors"
 DEPS[qhorus]="ledger work"
+DEPS[pages]=""
 DEPS[engine]="quarkus-langchain4j ledger work"
 DEPS[workers]="platform engine"
 DEPS[claudony]="ledger work qhorus"
@@ -103,7 +106,7 @@ DEPS[ras]="platform"
 DEPS[ops]="platform desiredstate"
 
 # Core build order (topological) — apps added below if --include-apps
-REPOS=(quarkus-langchain4j platform ledger eidos connectors work qhorus engine workers claudony)
+REPOS=(quarkus-langchain4j platform ledger eidos connectors work qhorus pages engine workers claudony)
 
 # Aggregator module paths (match aggregator.xml <module> entries)
 declare -A MODULE_PATH
@@ -114,6 +117,7 @@ MODULE_PATH[eidos]="../eidos"
 MODULE_PATH[connectors]="../connectors"
 MODULE_PATH[work]="../work"
 MODULE_PATH[qhorus]="../qhorus"
+MODULE_PATH[pages]="../pages"
 MODULE_PATH[engine]="../engine"
 MODULE_PATH[workers]="../workers"
 MODULE_PATH[claudony]="../claudony"
@@ -215,8 +219,16 @@ for repo in "${REPOS[@]}"; do
 done
 
 # Step 5: Build
+# Handle yarn-only repos (pages) separately — not in aggregator.xml
+if [ "${STATE[pages]:-}" = "build" ]; then
+  echo ""; echo "==> Building pages (yarn)"
+  (cd "${REPO_DIR[pages]}" && yarn install && yarn build)
+fi
+
 BUILD_LIST=""
 for repo in "${REPOS[@]}"; do
+  # Skip yarn-only repos (they've been built above)
+  [ "$repo" = "pages" ] && continue
   [ "${STATE[$repo]}" = "build" ] && BUILD_LIST="${BUILD_LIST:+$BUILD_LIST,}${MODULE_PATH[$repo]}"
 done
 echo ""

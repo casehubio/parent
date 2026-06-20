@@ -67,6 +67,7 @@ jobs:
           git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/connectors.git" casehub/connectors
           git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/work.git" casehub/work
           git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/qhorus.git" casehub/qhorus
+          git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/casehub-pages.git" casehub/pages
           git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/engine.git" casehub/engine
           git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/claudony.git" casehub/claudony
           if [ "$INCLUDE_APPLICATIONS" = "true" ]; then
@@ -91,6 +92,7 @@ jobs:
           C=$(git -C casehub/connectors rev-parse HEAD)
           W=$(git -C casehub/work rev-parse HEAD)
           Q=$(git -C casehub/qhorus rev-parse HEAD)
+          PG=$(git -C casehub/pages rev-parse HEAD)
           E=$(git -C casehub/engine rev-parse HEAD)
           D=$(git -C casehub/claudony rev-parse HEAD)
 
@@ -102,6 +104,7 @@ jobs:
           echo "sha_connectors=$C"    >> $GITHUB_OUTPUT
           echo "sha_work=$W"       >> $GITHUB_OUTPUT
           echo "sha_qhorus=$Q"     >> $GITHUB_OUTPUT
+          echo "sha_pages=$PG"     >> $GITHUB_OUTPUT
           echo "sha_engine=$E"     >> $GITHUB_OUTPUT
           echo "sha_claudony=$D"   >> $GITHUB_OUTPUT
 
@@ -133,6 +136,7 @@ jobs:
           echo "connectors:   $C"
           echo "work:       $W"
           echo "qhorus:     $Q"
+          echo "pages:      $PG"
           echo "engine:     $E"
           echo "claudony:   $D"
           [ "${{ inputs.include_applications }}" = "true" ] && { echo "openclaw:   $OC"; echo "devtown:    $DT"; echo "aml:        $AM"; echo "clinical:   $CL"; echo "life:       $LF"; echo "drafthouse: $DH"; echo "quarkmind:  $QM"; echo "flow:       $FL"; }
@@ -154,7 +158,7 @@ jobs:
         env:
           FORCE_REBUILD: ${{ inputs.force_rebuild }}
         run: |
-          MODULES=(parent platform ledger eidos neural-text connectors work qhorus engine claudony)
+          MODULES=(parent platform ledger eidos neural-text connectors work qhorus pages engine claudony)
           [ "${{ inputs.include_applications }}" = "true" ] && MODULES+=(openclaw devtown aml clinical life drafthouse quarkmind flow)
           if [ "$FORCE_REBUILD" = "true" ] || [ ! -f .incremental-state/shas.txt ]; then
             for m in "${MODULES[@]}"; do echo "sha_${m}=none" >> $GITHUB_OUTPUT; done
@@ -176,7 +180,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.m2/repository/io/casehub
-          key: m2-casehub-${{ steps.shas.outputs.sha_parent }}-${{ steps.shas.outputs.sha_platform }}-${{ steps.shas.outputs.sha_ledger }}-${{ steps.shas.outputs.sha_eidos }}-${{ steps.shas.outputs.sha_connectors }}-${{ steps.shas.outputs.sha_work }}-${{ steps.shas.outputs.sha_qhorus }}-${{ steps.shas.outputs.sha_engine }}-${{ steps.shas.outputs.sha_claudony }}
+          key: m2-casehub-${{ steps.shas.outputs.sha_parent }}-${{ steps.shas.outputs.sha_platform }}-${{ steps.shas.outputs.sha_ledger }}-${{ steps.shas.outputs.sha_eidos }}-${{ steps.shas.outputs.sha_connectors }}-${{ steps.shas.outputs.sha_work }}-${{ steps.shas.outputs.sha_qhorus }}-${{ steps.shas.outputs.sha_pages }}-${{ steps.shas.outputs.sha_engine }}-${{ steps.shas.outputs.sha_claudony }}
           restore-keys: |
             m2-casehub-
 
@@ -434,6 +438,26 @@ jobs:
               cd casehub/qhorus && mvn install --batch-mode $F $MAVEN_EXTRA ;;
           esac
           echo $((SECONDS - START)) > .build-times/qhorus
+
+      - name: "Build: pages"
+        id: pages
+        continue-on-error: true
+        env:
+          CUR: ${{ steps.shas.outputs.sha_pages }}
+          PRV: ${{ steps.prev.outputs.sha_pages }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          D=$(./scripts/incremental-build-decision.sh \
+            --module pages --current-sha "$CUR" --previous-sha "${PRV:-none}")
+          echo "decision=$D" >> $GITHUB_OUTPUT
+          START=$SECONDS
+          case "$D" in
+            SKIP) echo "⏭️  pages: SKIP" ;;
+            TEST) echo "⏭️  pages: SKIP (yarn-only, no separate test phase)" ;;
+            BUILD)
+              cd casehub/pages && yarn install && yarn build ;;
+          esac
+          echo $((SECONDS - START)) > .build-times/pages
 
       - name: "Build: engine"
         id: engine
@@ -917,6 +941,7 @@ jobs:
           OUTCOME_CONNECTORS: ${{ steps.connectors.outcome }}
           OUTCOME_WORK: ${{ steps.work.outcome }}
           OUTCOME_QHORUS: ${{ steps.qhorus.outcome }}
+          OUTCOME_PAGES: ${{ steps.pages.outcome }}
           OUTCOME_ENGINE: ${{ steps.engine.outcome }}
           OUTCOME_CLAUDONY: ${{ steps.claudony.outcome }}
           OUTCOME_DEVTOWN: ${{ steps.devtown.outcome }}
@@ -945,6 +970,7 @@ jobs:
             record connectors  "$SHA_CONNECTORS"   "${PREV_CONNECTORS:-none}"   "$OUTCOME_CONNECTORS"
             record work       "$SHA_WORK"       "${PREV_WORK:-none}"       "$OUTCOME_WORK"
             record qhorus     "$SHA_QHORUS"     "${PREV_QHORUS:-none}"     "$OUTCOME_QHORUS"
+            record pages      "$SHA_PAGES"      "${PREV_PAGES:-none}"      "$OUTCOME_PAGES"
             record engine     "$SHA_ENGINE"     "${PREV_ENGINE:-none}"     "$OUTCOME_ENGINE"
             record claudony   "$SHA_CLAUDONY"   "${PREV_CLAUDONY:-none}"   "$OUTCOME_CLAUDONY"
             if [ "$INCLUDE_APPLICATIONS" = "true" ]; then
@@ -999,6 +1025,7 @@ jobs:
           OUTCOME_CONNECTORS: ${{ steps.connectors.outcome }}
           OUTCOME_WORK: ${{ steps.work.outcome }}
           OUTCOME_QHORUS: ${{ steps.qhorus.outcome }}
+          OUTCOME_PAGES: ${{ steps.pages.outcome }}
           OUTCOME_ENGINE: ${{ steps.engine.outcome }}
           OUTCOME_CLAUDONY: ${{ steps.claudony.outcome }}
           OUTCOME_DEVTOWN: ${{ steps.devtown.outcome }}
@@ -1044,6 +1071,7 @@ jobs:
             [connectors]="$OUTCOME_CONNECTORS"
             [work]="$OUTCOME_WORK"
             [qhorus]="$OUTCOME_QHORUS"
+            [pages]="$OUTCOME_PAGES"
             [engine]="$OUTCOME_ENGINE"
             [claudony]="$OUTCOME_CLAUDONY"
             [devtown]="$OUTCOME_DEVTOWN"

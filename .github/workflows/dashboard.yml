@@ -33,6 +33,7 @@ jobs:
             casehubio/connectors \
             casehubio/work \
             casehubio/qhorus \
+            casehubio/casehub-pages \
             casehubio/engine \
             casehubio/claudony \
             casehubio/openclaw \

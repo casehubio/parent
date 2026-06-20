@@ -38,6 +38,7 @@
     <module>../connectors</module>
     <module>../work</module>
     <module>../qhorus</module>
+    <!-- pages: yarn-only, not a Maven module -->
     <module>../engine</module>
     <module>../workers</module>
     <module>../claudony</module>

@@ -14,6 +14,7 @@ Org-level parent POM and BOM for the [casehubio](https://github.com/casehubio) e
 | [casehub-connectors](https://github.com/casehubio/connectors) | [![casehub-connectors](https://github.com/casehubio/connectors/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/connectors/actions/workflows/publish.yml) |
 | [casehub-work](https://github.com/casehubio/work) | [![casehub-work](https://github.com/casehubio/work/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/work/actions/workflows/publish.yml) |
 | [casehub-qhorus](https://github.com/casehubio/qhorus) | [![casehub-qhorus](https://github.com/casehubio/qhorus/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/qhorus/actions/workflows/publish.yml) |
+| [casehub-pages](https://github.com/casehubio/casehub-pages) | [![casehub-pages](https://github.com/casehubio/casehub-pages/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/casehubio/casehub-pages/actions/workflows/ci.yml) |
 | [casehub-eidos](https://github.com/casehubio/eidos) | [![casehub-eidos](https://github.com/casehubio/eidos/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/eidos/actions/workflows/publish.yml) |
 | [casehub-neural-text](https://github.com/casehubio/neural-text) | [![casehub-neural-text](https://github.com/casehubio/neural-text/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/neural-text/actions/workflows/publish.yml) |
 | [casehub-iot](https://github.com/casehubio/iot) | [![casehub-iot](https://github.com/casehubio/iot/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/iot/actions/workflows/publish.yml) |
@@ -132,6 +133,7 @@ Each project in the ecosystem has its own Maven parent (casehub projects use int
 | `casehub-connectors` | `io.casehub` | `casehubio/connectors` | platform |
 | `casehub-work` | `io.casehub` | `casehubio/work` | ledger, connectors |
 | `casehub-qhorus` | `io.casehub` | `casehubio/qhorus` | ledger, work |
+| `casehub-pages` | TypeScript/Yarn | `casehubio/casehub-pages` | — (runtime iframe embedding) |
 | `casehub-neural-text` | `io.casehub` | `casehubio/neural-text` | platform |
 | `casehub-iot` | `io.casehub` | `casehubio/iot` | platform |
 | `casehub-desiredstate` | `io.casehub` | `casehubio/casehub-desiredstate` | platform |

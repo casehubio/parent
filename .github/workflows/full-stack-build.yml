@@ -69,6 +69,7 @@ jobs:
           git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/connectors.git" casehub/connectors
           git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/work.git" casehub/work
           git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/qhorus.git" casehub/qhorus
+          git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/casehub-pages.git" casehub/pages
           git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/engine.git" casehub/engine
           git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/claudony.git" casehub/claudony
           if [ "$INCLUDE_APPLICATIONS" = "true" ]; then
@@ -195,6 +196,16 @@ jobs:
           START=$SECONDS
           cd casehub/qhorus && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
           echo $((SECONDS - START)) > ../../.build-times/qhorus
+
+      - name: "Build: pages"
+        id: pages
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          START=$SECONDS
+          cd casehub/pages && yarn install && yarn build
+          echo $((SECONDS - START)) > ../../.build-times/pages
 
       - name: "Build: engine"
         id: engine
@@ -377,6 +388,7 @@ jobs:
           OUTCOME_CONNECTORS: ${{ steps.connectors.outcome }}
           OUTCOME_WORK: ${{ steps.work.outcome }}
           OUTCOME_QHORUS: ${{ steps.qhorus.outcome }}
+          OUTCOME_PAGES: ${{ steps.pages.outcome }}
           OUTCOME_ENGINE: ${{ steps.engine.outcome }}
           OUTCOME_CLAUDONY: ${{ steps.claudony.outcome }}
           OUTCOME_OPENCLAW: ${{ steps.openclaw.outcome }}
@@ -396,7 +408,7 @@ jobs:
             TEST_MODE="full test suite"
           fi
 
-          MODULES=(platform ledger eidos connectors work qhorus engine claudony)
+          MODULES=(platform ledger eidos connectors work qhorus pages engine claudony)
           [ "$INCLUDE_APPLICATIONS" = "true" ] && MODULES+=(openclaw devtown aml clinical life drafthouse quarkmind flow)
           declare -A OUTCOMES=(
             [platform]="$OUTCOME_PLATFORM"
@@ -405,6 +417,7 @@ jobs:
             [connectors]="$OUTCOME_CONNECTORS"
             [work]="$OUTCOME_WORK"
             [qhorus]="$OUTCOME_QHORUS"
+            [pages]="$OUTCOME_PAGES"
             [engine]="$OUTCOME_ENGINE"
             [claudony]="$OUTCOME_CLAUDONY"
             [openclaw]="$OUTCOME_OPENCLAW"
@@ -423,6 +436,7 @@ jobs:
             [connectors]="casehubio/connectors"
             [work]="casehubio/work"
             [qhorus]="casehubio/qhorus"
+            [pages]="casehubio/casehub-pages"
             [engine]="casehubio/engine"
             [claudony]="casehubio/claudony"
             [openclaw]="casehubio/openclaw"
@@ -517,6 +531,7 @@ jobs:
                   'sha_connectors':   sha('casehub/connectors'),
                   'sha_work':         sha('casehub/work'),
                   'sha_qhorus':       sha('casehub/qhorus'),
+                  'sha_pages':        sha('casehub/pages'),
                   'sha_engine':       sha('casehub/engine'),
                   'sha_claudony':     sha('casehub/claudony'),
                   'sha_openclaw':     sha('casehub/openclaw')   if include_apps else '',
