@@ -10,11 +10,17 @@ drawings:
   persist: false
 transition: slide-left
 mdc: true
+controls: false
+hideNavigation: true
 ---
 
 # CaseHub
 
 ## AI Fusion Harness for Multi-Agent Systems
+
+Compliance-first infrastructure for regulated, accountable, AI-driven applications.
+
+<br/>
 
 *Written by LLMs, for LLMs.*  
 *An accelerant for AI-Fusion driven digital transformations.*
@@ -106,6 +112,8 @@ GCP / FDA / FinCEN — proven across applications
 **The rule:** bring your domain, use the platform, modify nothing below.
 
 ---
+class: text-sm
+---
 
 # The Ecosystem
 
@@ -136,6 +144,8 @@ layout: section
 
 *The shared layer every application builds on.*
 
+---
+class: text-sm
 ---
 
 # casehub-platform
@@ -346,6 +356,8 @@ layout: two-cols
 5. All bindings resolve → merge decision
 
 ---
+class: text-sm
+---
 
 # casehub-eidos
 
@@ -418,6 +430,8 @@ layout: section
 
 *Bridges the platform to agents, devices, and people.*
 
+---
+class: text-sm
 ---
 
 # Integration Layer
@@ -543,10 +557,52 @@ Continuously reconciles actual vs. desired.
 layout: section
 ---
 
+# casehub-pages
+
+*YAML-driven visualization. TypeScript. Zero Java at runtime.*
+
+---
+
+# casehub-pages
+
+**Pure TypeScript dashboard rendering runtime.**  
+*100% TypeScript. Near DashBuilder feature parity.*
+
+<br/>
+
+**Stack**  
+TypeScript · React · Web Components · Apache ECharts · js-yaml · JSONata · Webpack
+
+**Core packages**
+- `@casehub/pages-data` — DataSet model, filter/group/sort, external data (REST, CSV, Prometheus, JSONata)
+- `@casehub/pages-ui` — YAML parser, layout model, DashBuilder compatibility
+- `@casehub/pages-viz` — Web Component chart wrappers (bar, line, pie, timeseries, table, metric, map)
+- `@casehub/pages-component` — CSS grid layout, tabs, pills, sidebar, carousel, accordion
+- `@casehub/pages-runtime` — `loadSite(yaml, container)` API
+
+**One API call, YAML config:**
+```typescript
+loadSite(yaml, document.getElementById('dashboard'))
+```
+
+**DashBuilder compatibility** — 28/31 sample dashboards render without modification.
+
+**Consumers:** claudony · drafthouse · devtown · aml · life
+
+Forms support (`pages-llm-prompter` component)  
+View state persistence  
+Case status dashboards — trust scores, actor state, commitment views
+
+---
+layout: section
+---
+
 # AI Infusion
 
 *Every place classical and generative AI enters the system.*
 
+---
+class: text-xs
 ---
 
 # Classical AI — Where It Lives
@@ -573,6 +629,8 @@ layout: section
 | casehub-ras | `BayesianGanglion` | Weighted multi-signal accumulation |
 
 ---
+class: text-xs
+---
 
 # LLM — Where It Lives
 
@@ -594,6 +652,8 @@ layout: section
 | casehub-desiredstate | AI_REVIEW fault node | `AgentProvider` SPI for LLM fault diagnosis |
 | casehub-ras | `LlmGanglion` | Narrative/ambiguous event signal detection |
 
+---
+class: text-sm
 ---
 
 # AI Infusion — The Complete Picture
@@ -850,74 +910,29 @@ Automation recipes shared as `CasePlanModel` YAML.
 5,400+ OpenClaw skills, immediately available.
 
 ---
+layout: two-cols
+---
 
 # quarkmind — The Living Lab
 
-**StarCraft II game AI. Proof that the harness holds everywhere.**
+**Proof that the harness holds everywhere.**
 
-<br/>
-
-**Why it matters**  
 Clinical trials operate over days.  
 QuarkMind operates at millisecond tick granularity.  
-The same harness. The same SPIs. Completely different timing.
+Same harness. Same SPIs. Different timing.
 
 **7 architectural layers**
 - L1–L5 Blackboard coordination, typed inter-plugin messaging, audit, adaptive selection
-- L6 Trust routing — Bayesian Beta strategy routing among competing implementations
+- L6 Trust routing — Bayesian Beta strategy routing
 - L7 Comparison vs. L1 naive loop + ocraft/SC2 API
 
 **Validation**  
-30 IEM10 replays — `ReplayValidationHarness`.  
-Statistical coverage across PvT / PvZ / PvP.
+30 IEM10 replays across PvT / PvZ / PvP.
 
-**AI infusion**
-- `StrategyTrustRouter` — four-phase Bayesian Beta: BOOTSTRAP → QUALIFIED → BORDERLINE → EXCLUDED
-- `GameOutcomeRecorder` — trust attestations on game end
-- `EnemyBehavior` + `ReactiveStrategy` — counter-picks dominant player every 50 frames
-- Three.js 3D visualiser — 65+ unit sprites, fog of war, replay scrub
+::right::
 
-**What it proves:** the harness isn't domain-specific. It's infrastructure.
+<br/><br/>
 
----
-layout: section
----
-
-# casehub-pages
-
-*YAML-driven visualization. TypeScript. Zero Java at runtime.*
-
----
-
-# casehub-pages
-
-**Pure TypeScript dashboard rendering runtime.**  
-*100% TypeScript. Near DashBuilder feature parity.*
-
-<br/>
-
-**Stack**  
-TypeScript · React · Web Components · Apache ECharts · js-yaml · JSONata · Webpack
-
-**Core packages**
-- `@casehub/pages-data` — DataSet model, filter/group/sort, external data (REST, CSV, Prometheus, JSONata)
-- `@casehub/pages-ui` — YAML parser, layout model, DashBuilder compatibility
-- `@casehub/pages-viz` — Web Component chart wrappers (bar, line, pie, timeseries, table, metric, map)
-- `@casehub/pages-component` — CSS grid layout, tabs, pills, sidebar, carousel, accordion
-- `@casehub/pages-runtime` — `loadSite(yaml, container)` API
-
-**One API call, YAML config:**
-```typescript
-loadSite(yaml, document.getElementById('dashboard'))
-```
-
-**DashBuilder compatibility** — 28/31 sample dashboards render without modification.
-
-**Consumers:** claudony · drafthouse · devtown · aml · life
-
-Forms support (`pages-llm-prompter` component)  
-View state persistence  
-Case status dashboards — trust scores, actor state, commitment views
 
 ---
 layout: section
@@ -1012,3 +1027,10 @@ class: text-center
 <br/>
 
 [casehubio.github.io](https://casehubio.github.io) · [github.com/casehubio](https://github.com/casehubio)
+
+<style>
+table { line-height: 1.3; }
+td, th { padding: 0.2rem 0.5rem !important; }
+.text-xs table { font-size: 0.72rem; }
+.text-sm table { font-size: 0.8rem; }
+</style>
