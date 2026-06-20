@@ -89,19 +89,12 @@ GCP / FDA / FinCEN — proven across applications
 
 # Architecture — Four Tiers
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│  APPLICATION      devtown · aml · clinical · drafthouse · life  │
-│                   quarkmind (living lab)                         │
-├─────────────────────────────────────────────────────────────────┤
-│  INTEGRATION      claudony · openclaw · connectors · iot         │
-│                   casehub-ras · casehub-desiredstate             │
-├─────────────────────────────────────────────────────────────────┤
-│  ORCHESTRATION    engine · eidos · neural-text                   │
-├─────────────────────────────────────────────────────────────────┤
-│  FOUNDATION       platform · ledger · qhorus · work             │
-└─────────────────────────────────────────────────────────────────┘
-```
+| Tier | Modules |
+|------|---------|
+| APPLICATION | devtown · aml · clinical · drafthouse · life · quarkmind |
+| INTEGRATION | claudony · openclaw · connectors · iot · casehub-ras · casehub-desiredstate |
+| ORCHESTRATION | engine · eidos · neural-text |
+| FOUNDATION | platform · ledger · qhorus · work |
 
 <br/>
 
@@ -310,7 +303,7 @@ class: text-sm
 
 # casehub-engine
 
-**Hybrid Blackboard + CMMN orchestration.**
+**Blackboard Architecture (Hayes-Roth, 1985) reimagined for multi-agent AI — not a stock implementation.**
 
 **Two execution paths**
 - **Choreography** — evaluates bindings on context change
