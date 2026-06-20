@@ -82,7 +82,6 @@ Every major bank runs some variant of this:
 
 **Custom-built systems**
 - High cost, high maintenance
-- Re-solve the same accountability problems every time
 - FinCEN compliance requires constant audit work
 - GDPR erasure destroys audit records — or isn't implemented
 
@@ -91,7 +90,7 @@ Every major bank runs some variant of this:
 - No commitment lifecycle, no trust routing
 - No human oversight gates for high-risk decisions
 
-CaseHub closes all of these gaps **structurally** — not as features bolted on, but as invariants guaranteed by the foundation.
+CaseHub closes all of these gaps **structurally** — invariants guaranteed by the foundation, not features bolted on.
 
 </div>
 </div>
@@ -286,23 +285,29 @@ layout: section
 
 ---
 
-# Life Automation: The Problem and Vision
+# Life Automation: The Problem
 
 **The same coordination problems that plague enterprises also exist at home.**
 
 Household management, elder care, health tracking, financial obligations, legal compliance — these are coordination problems. Tasks need SLAs. Commitments need tracking. Escalation needs to happen when something is missed.
 
-**Today:** notes apps, calendar reminders, text messages. None of these enforce anything. None have formal accountability. A carer misses a medication window — there is no audit trail.
+**Today:** notes apps, calendar reminders, text messages. None of these enforce anything. None have formal accountability. A carer misses a medication window — there is no audit trail. A financial obligation is missed — no escalation fires. An elder care task expires — nobody knows.
 
-**The CaseHub vision:** the same foundation that coordinates clinical trial investigators and AML analysts — applied to household coordination.
+The gap between "I meant to do this" and "this was done, by whom, by when, with what outcome" is exactly the gap CaseHub was built to close.
 
-- Household tasks have WorkItems with SLAs and escalation
+---
+
+# Life Automation: The Vision
+
+**The same foundation that coordinates clinical trial investigators and AML analysts — applied to household coordination.**
+
+- Household tasks have WorkItems with SLAs and formal escalation chains
 - OpenClaw agents (5,400+ pre-built skills) execute tasks as workers
 - IoT devices (Home Assistant, OpenHAB) trigger case creation when something goes wrong
 - Trust-weighted routing assigns experienced agents to complex tasks
 - The same accountability primitives that close FinCEN SARs track your financial obligations
 
-**Why it matters:** CaseHub proves that the harness is domain-agnostic. It coordinates millisecond-precision game AI (quarkmind), FDA-regulated clinical trials, and household chores — with the same foundation. That is the argument for adopting it in *your* domain.
+**Why it matters:** CaseHub proves the harness is domain-agnostic. Game AI at millisecond granularity. FDA-regulated clinical trials. Household chores. Same foundation. That is the argument for adopting it in *your* domain.
 
 ---
 layout: section
@@ -333,28 +338,3 @@ StarCraft II is a real-time strategy game. The game loop runs every 22 milliseco
 
 That is the proof. The platform is not domain-specific. It is infrastructure.
 
----
-layout: center
-class: text-center
----
-
-# The Argument
-
-<br/>
-
-**If you accept that AML investigators need formal accountability — you accept the platform.**
-
-**If you accept that clinical trial coordination needs GCP compliance — you accept the platform.**
-
-**If you accept that code review needs a tamper-evident audit chain — you accept the platform.**
-
-**If you accept that coordination problems are universal — you accept the platform.**
-
-<br/>
-
-*Written by LLMs, for LLMs.*  
-*An accelerant for AI-Fusion driven digital transformations.*
-
-<br/>
-
-[casehubio.github.io](https://casehubio.github.io) · [github.com/casehubio](https://github.com/casehubio)
