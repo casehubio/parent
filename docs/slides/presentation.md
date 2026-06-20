@@ -303,7 +303,7 @@ class: text-sm
 
 # casehub-engine
 
-**Blackboard Architecture (Hayes-Roth, 1985) reimagined for multi-agent AI — not a stock implementation.**
+**Hybrid Blackboard Architecture (Hayes-Roth, 1985) reimagined for multi-agent AI — not a stock implementation.**
 
 **Two execution paths**
 - **Choreography** — evaluates bindings on context change

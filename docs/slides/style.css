@@ -16,6 +16,12 @@
   padding-top: 2rem !important;
 }
 
+/* Allow text selection */
+.slidev-page, .slidev-page * {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}
+
 /* Tighten table density globally */
 table {
   line-height: 1.3;
