@@ -3,6 +3,19 @@
   top: -200vh !important;
 }
 
+/* Rule 1: Two-cols columns always top-aligned */
+.slidev-layout.two-cols {
+  align-items: start !important;
+}
+
+/* Rule 2: Title fixed height — same position on every slide */
+.slidev-layout h1 {
+  margin-top: 0 !important;
+}
+.slidev-layout {
+  padding-top: 2rem !important;
+}
+
 /* Tighten table density globally */
 table {
   line-height: 1.3;
