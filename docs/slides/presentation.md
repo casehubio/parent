@@ -54,12 +54,11 @@ layout: two-cols
 
 **AI Fusion Harness** — blends two kinds of intelligence.
 
-<br/>
-
 **Classical AI**
 - Rules engines (Drools, CEP)
 - Bayesian trust scoring
 - Blackboard architecture
+- Speech act theory — 9-type taxonomy, commitment lifecycle
 - Deterministic, provable, auditable
 
 **LLM-based AI**
@@ -70,8 +69,6 @@ layout: two-cols
 
 ::right::
 
-<br/><br/><br/>
-
 **The principle:** let each kind of intelligence do what it does best.
 
 **The guarantee:** every agent interaction is a formal, accountable act.
@@ -80,6 +77,7 @@ layout: two-cols
 
 <br/>
 
+**Compliance by design:**  
 EU AI Act Art.12 — structurally enforced  
 GDPR Art.17/22 — built into the audit layer  
 GCP / FDA / FinCEN — proven across applications

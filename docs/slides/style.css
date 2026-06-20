@@ -1,6 +1,6 @@
-/* Hide the goto/nav panel that appears in the top-right */
-.fixed.right-5 {
-  display: none !important;
+/* Push the goto panel fully off-screen when closed (-top-20 = -80px, not enough for 666px panel) */
+.fixed.right-5.-top-20 {
+  top: -200vh !important;
 }
 
 /* Tighten table density globally */
