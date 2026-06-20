@@ -1,0 +1,12 @@
+/* Hide the goto/nav panel that appears in the top-right */
+.fixed.right-5 {
+  display: none !important;
+}
+
+/* Tighten table density globally */
+table {
+  line-height: 1.3;
+}
+td, th {
+  padding: 0.2rem 0.5rem !important;
+}

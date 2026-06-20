@@ -199,14 +199,12 @@ class: text-sm
 - Bayesian Beta algorithm — updated from attestation events
 - EigenTrust peer verdict aggregation
 - Capability-scoped + dimension-scoped scores
-- Three retrieval strategies: materialized · TTL-cached · on-demand
 
 **Privacy**
 - `ActorIdentity` — pseudonymisation mapping
-- `LedgerPrivacyProducer` — erasure without breaking audit chain
+- GDPR erasure without breaking audit chain
 
-**Downstream users:** qhorus · engine · work · all applications  
-**Test coverage:** 449 tests. Native image validated.
+449 tests. Native image validated.
 
 ---
 layout: two-cols
@@ -230,28 +228,23 @@ Every agent interaction is a formal speech act.
 | FAILURE | Terminal failure |
 | EVENT | Telemetry, no obligation |
 
-**7-State Commitment lifecycle**  
-OPEN → FULFILLED / FAILED / EXPIRED / DECLINED / HANDOFF / CANCELLED
-
 ::right::
 
-<br/><br/>
+<br/>
+
+**Commitment lifecycle**  
+OPEN → FULFILLED / FAILED / EXPIRED / DECLINED / HANDOFF
 
 **Key features**
 - `MessageDispatch` — single enforcement gate; no bypass path
 - `ChannelProjection<S>` — deterministic left-fold read models
-- `CommitmentExpiredEvent` — triggers deadline-based rerouting
-- A2A SSE streaming — `/a2a/tasks/{id}/stream`
-- Slack-native backend — thread-aware delivery
-
-<br/>
+- `CommitmentExpiredEvent` — deadline-based rerouting
+- A2A SSE streaming · Slack-native backend
 
 **User flow — PI authorisation (Clinical)**
 1. Case engine sends COMMAND to PI channel
 2. PI receives as `casehub-work` WorkItem (24h SLA)
-3. PI responds via Slack or web
-4. RESPONSE closes commitment
-5. Ledger records causal chain
+3. PI responds; RESPONSE closes commitment; ledger records chain
 
 ---
 layout: two-cols
@@ -328,11 +321,7 @@ layout: two-cols
 - `TrustWeightedAgentStrategy` — Bayesian Beta outcomes
 - `SemanticAgentRoutingStrategy` — embedding-based
 - `CapabilitySpecializationStore` — DECLINE-pattern exclusion
-
-**Oversight gate**
-- `ActionRiskClassifier` SPI — before every consequential action
-- Human gate via Qhorus oversight channel
-- ChainedReactive: most-restrictive-wins, fail-safe = GateRequired
+- `ActionRiskClassifier` SPI — human gate for consequential actions
 
 ::right::
 
@@ -341,7 +330,7 @@ layout: two-cols
 **Worker Outcomes (sealed)**
 - `Success` · `Failure(reason)` · `Expired(reason)` · `Declined`
 - `OutcomePolicy` per outcome type
-- DECLINE/FAILURE → failure cascade, not silent completion
+- DECLINE/FAILURE → failure cascade
 
 **Bindings** (YAML DSL)
 - Target types: `capability` · `subCase` · `humanTask`
@@ -349,11 +338,9 @@ layout: two-cols
 - Triggers: `contextChange` · `schedule`/`timer`
 
 **User flow — PR review (DevTown)**
-1. PR arrives → case opens
-2. Parallel: security, architecture, test-coverage bindings fire
-3. Trust-weighted selection picks reviewers
-4. Human gate if security flag
-5. All bindings resolve → merge decision
+1. PR arrives → case opens; parallel bindings fire
+2. Trust-weighted selection picks reviewers; human gate if security flag
+3. All bindings resolve → merge decision
 
 ---
 class: text-sm
@@ -383,12 +370,8 @@ class: text-sm
 **System Prompt Rendering**
 - MARKDOWN · PROSE · A2A_CARD formats
 - Optional LLM semantic enrichment stage
-- Eval harness: multi-judge (Claude, Ollama, Jlama NEON, GPU Llama3)
 
-**Vocabulary system**
-- Belbin · DISC · Thomas-Kilmann · SVO · CasehubSlot
-
-**Knowledge graph** — Wilson lower-bound reputation, task history, `TaskSemanticEnricher`
+**Knowledge graph** — Wilson lower-bound reputation, task history
 
 ---
 
@@ -446,21 +429,17 @@ class: text-sm
 
 **casehub-openclaw** — *OpenClaw agent bridge*
 - `WorkerProvisioner` SPI for OpenClaw agents
-- Oversight gate (OversightGateService)
-- Layer 0: 9 MCP tools + 3 resources for OpenClaw → CaseHub
+- 9 MCP tools + 3 resources for OpenClaw → CaseHub
 - TypeScript Plugin SDK (npm) + Python client (PyPI)
-- Dual mode: heartbeat (OpenClaw → CaseHub) + direct call (CaseHub → OpenClaw)
+- Dual mode: heartbeat + direct call
 
 **casehub-connectors** — *Messaging*
 - Outbound: Slack, Teams, SMS, WhatsApp, email
 - Inbound: email IMAP, Slack webhooks
-- Pure `java.net.http` — no Camel SDKs
 
 **casehub-iot** — *Typed device abstraction*
-- 10 Matter-aligned device types
-- Real-time providers: Home Assistant (WebSocket) + OpenHAB (SSE)
-- Bridge: `iot-bridge` (edge) + `iot-bridge-server` (cloud DeviceProvider SPI)
-- 5,400+ OpenClaw skills accessible
+- 10 Matter-aligned device types (Home Assistant, OpenHAB)
+- Bridge: edge agent + cloud DeviceProvider SPI
 
 ---
 layout: section
@@ -495,15 +474,9 @@ SensoryEvent (IoT / Kafka / Qhorus / webhook)
 - `BayesianGanglion` — weighted multi-signal accumulation
 - `LlmGanglion` — narrative / ambiguous signal detection
 
-**Composite event chains**
-- AND · OR · THRESHOLD · SEQUENCE · COUNT
-- Configurable time windows. Declared in YAML `SituationDefinition`.
+**Composite chains:** AND · OR · THRESHOLD · SEQUENCE · COUNT
 
-**Use cases**
-- Patient deterioration → escalation case
-- IoT anomaly cluster → investigation case
-- Code commit pattern → PR review case
-- Market signal → compliance review case
+**Use cases:** patient deterioration · IoT anomaly · code commit pattern · market signal
 
 ---
 layout: two-cols
@@ -528,10 +501,7 @@ Continuously reconciles actual vs. desired.
 
 **OTel tracing** — `desiredstate.*` span attributes
 
-**Examples**
-- Nefarious Dungeons — dungeon entity management
-- Data Pipeline — medallion architecture (Bronze→Silver→Gold)
-- Agent topology management (casehub-ops)
+**Examples:** Nefarious Dungeons · Data Pipeline (medallion) · Agent topology
 
 ::right::
 
@@ -580,18 +550,13 @@ TypeScript · React · Web Components · Apache ECharts · js-yaml · JSONata ·
 - `@casehub/pages-component` — CSS grid layout, tabs, pills, sidebar, carousel, accordion
 - `@casehub/pages-runtime` — `loadSite(yaml, container)` API
 
-**One API call, YAML config:**
-```typescript
-loadSite(yaml, document.getElementById('dashboard'))
-```
+**One API call** — `loadSite(yaml, container)`
 
 **DashBuilder compatibility** — 28/31 sample dashboards render without modification.
 
 **Consumers:** claudony · drafthouse · devtown · aml · life
 
-Forms support (`pages-llm-prompter` component)  
-View state persistence  
-Case status dashboards — trust scores, actor state, commitment views
+Forms · view state persistence · case status dashboards
 
 ---
 layout: section
@@ -675,14 +640,9 @@ class: text-sm
 
 **CBR — Case-Based Reasoning**
 - **Retain** — ledger records every outcome as a retrievable case
-- **Retrieve** — `CaseRetriever` SPI — similarity across analogous problems
-- **Reuse** — implementation routing selects based on retrieved context
-- **Revise** — adaptive plan templates from top-k retrieved cases
+- **Retrieve** → **Reuse** → **Revise** — similarity, routing, adaptive plan templates
 
-**Adaptive Routing** (eidos + engine)
-- `CapabilitySpecializationStore` — agents learn what they can't do
-- DECLINE patterns → proactive routing exclusion
-- Content routing via A2A_CARD: `qualityHint`, `latencyHintP50Ms`, `costHint`
+**Adaptive Routing** — `CapabilitySpecializationStore` learns DECLINE patterns; content routing via A2A_CARD signals
 
 ---
 layout: section
@@ -722,10 +682,7 @@ layout: two-cols
 *Tutorial + showcase. Java developers in financial services.*
 
 **Layers**
-- L1 Naive Java baseline
-- L2 casehub-work — 30-day FinCEN SLA
-- L3 casehub-qhorus — formal obligation per specialist agent
-- L4 casehub-ledger — tamper-evident audit, GDPR Art.17
+- L1–L4 Foundation stack — SLA, obligations, Merkle audit
 - L5 casehub-engine — adaptive investigation paths
 - L6 Trust routing — experienced agents on complex cases
 - L7 IBM AMLSim comparison
@@ -743,16 +700,9 @@ layout: two-cols
 - LLM supervisor mode — adaptive routing based on findings
 
 **User flow**
-1. SAR trigger arrives
-2. Adaptive case opens (entity type, risk score)
-3. Entity-resolution, pattern-analysis, OSINT agents — parallel
-4. PEP detection → oversight gate → compliance officer
-5. SAR filing decision → trust attestation written
-6. Future cases: higher-trust agents assigned
-
-**Compliance gaps closed vs. IBM AMLSim**  
-FinCEN audit chain · GDPR Art.17 · formal obligations  
-Trust-weighted routing · adaptive paths
+1. SAR trigger → adaptive case opens
+2. Entity-resolution, pattern-analysis, OSINT agents — parallel
+3. PEP detection → gate → officer → SAR filing → trust attestation
 
 ---
 layout: two-cols
@@ -782,16 +732,9 @@ layout: two-cols
 - `ProtocolAmendmentAdvisor` SPI — LLM implementation
 
 **User flow**
-1. Grade 4+ AE reported → escalation case
-2. Safety monitor assigned (trust-weighted)
-3. CTCAE grading → senior monitor + DSMB in parallel
-4. Unexpected AE → IND expedited safety reporting (7-day or 15-day)
-5. Multi-site Grade 4+ pattern → DSMB rollup
-6. Trust attestation updates for next routing
-
-**10-row compliance gap table vs. ClinicalAgent (arXiv 2404.14777)**  
-SLA enforcement · PI authorization · GDPR erasure  
-Multi-site · tamper-evident audit · trust routing · adaptive paths
+1. Grade 4+ AE reported → trust-weighted escalation case
+2. CTCAE grading → senior monitor + DSMB in parallel
+3. Unexpected AE → IND expedited reporting; trust attestation updates routing
 
 ---
 layout: two-cols
@@ -822,14 +765,9 @@ layout: two-cols
 - LLM reviewer for security patterns
 
 **User flow**
-1. PR webhook received
-2. Code analysis → content-driven routing (security flag? architecture change?)
-3. Parallel specialist reviewers (trust-weighted)
-4. Human gate if security flag
-5. M-of-N approvals → merge decision
-6. Production incident → FLAGGED attestation → reviewer trust drops
-
-**Compliance:** GDPR Art.17 actor erasure · tamper-evident review chain
+1. PR webhook → code analysis → content-driven routing
+2. Parallel specialist reviewers (trust-weighted); human gate if security flag
+3. M-of-N approvals → merge; incidents → FLAGGED attestation → trust drops
 
 ---
 layout: two-cols
@@ -846,13 +784,9 @@ layout: two-cols
 - `update_selection` — grounds discussion to document region
 - `query_review` — query review state
 - `end_review` — closes with summary
-- Document comparison and version-tracked revision tools
+- Document comparison + version-tracked revision tools
 
-**Architecture**
-- Structured agent-to-agent debate loop
-- `ChannelProjection<ReviewState>` — deterministic review manifest
-- Qhorus speech acts ground every critique
-- LangChain4j + Claude Agent SDK provider pattern
+Structured agent-to-agent debate loop. `ChannelProjection<ReviewState>`. Qhorus speech acts ground every critique.
 
 ::right::
 
@@ -910,29 +844,22 @@ Automation recipes shared as `CasePlanModel` YAML.
 5,400+ OpenClaw skills, immediately available.
 
 ---
-layout: two-cols
+class: text-sm
 ---
 
 # quarkmind — The Living Lab
 
-**Proof that the harness holds everywhere.**
+*Same harness. Clinical trials over days. QuarkMind at millisecond tick granularity.*
 
-Clinical trials operate over days.  
-QuarkMind operates at millisecond tick granularity.  
-Same harness. Same SPIs. Different timing.
+**7 layers** — L1–L5 Blackboard, typed inter-plugin messaging, audit, adaptive selection · L6 Trust routing (Bayesian Beta) · L7 vs. L1 naive loop + ocraft/SC2 API · Validated across 30 IEM10 replays (PvT / PvZ / PvP)
 
-**7 architectural layers**
-- L1–L5 Blackboard coordination, typed inter-plugin messaging, audit, adaptive selection
-- L6 Trust routing — Bayesian Beta strategy routing
-- L7 Comparison vs. L1 naive loop + ocraft/SC2 API
+**AI infusion**
+- `StrategyTrustRouter` — BOOTSTRAP → QUALIFIED → BORDERLINE → EXCLUDED
+- `GameOutcomeRecorder` — trust attestations on game end
+- `EnemyBehavior` + `ReactiveStrategy` — counter-picks dominant player every 50 frames
+- Three.js 3D visualiser — 65+ sprites, fog of war, replay scrub
 
-**Validation**  
-30 IEM10 replays across PvT / PvZ / PvP.
-
-::right::
-
-<br/><br/>
-
+**What it proves:** the harness isn't domain-specific. It's infrastructure.
 
 ---
 layout: section
@@ -979,9 +906,8 @@ layout: two-cols
 - aml · clinical · devtown · drafthouse · life · quarkmind
 
 **AI Fusion**
-- Classical AI: trust, routing, inference, CEP
-- LLM: agents, memory, triaging, supervision, debate
-- CBR: retain → retrieve → reuse → revise
+- Classical: trust, routing, inference, CEP
+- LLM: agents, memory, triaging, supervision · CBR: retain → retrieve → reuse → revise
 
 ---
 layout: center
@@ -1033,4 +959,6 @@ table { line-height: 1.3; }
 td, th { padding: 0.2rem 0.5rem !important; }
 .text-xs table { font-size: 0.72rem; }
 .text-sm table { font-size: 0.8rem; }
+/* Hide goto/nav panel that peeks in from top-right */
+:global(.fixed.right-5) { display: none !important; }
 </style>
