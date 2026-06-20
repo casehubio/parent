@@ -47,12 +47,13 @@ layout: center
 - Compliance cannot be delegated to LLM behaviour
 
 ---
-layout: two-cols
----
 
 # What CaseHub Is
 
 **AI Fusion Harness** — blends two kinds of intelligence.
+
+<div class="grid grid-cols-2 gap-8 mt-4">
+<div>
 
 **Classical AI**
 - Rules engines (Drools, CEP)
@@ -67,9 +68,8 @@ layout: two-cols
 - Generative content and routing
 - Contextual, adaptive, conversational
 
-::right::
-
-<br/><br/>
+</div>
+<div>
 
 **The principle:** let each kind of intelligence do what it does best.
 
@@ -77,12 +77,13 @@ layout: two-cols
 
 **Built on Quarkus.** Production-grade. Native-image capable.
 
-<br/>
-
 **Compliance by design:**  
 EU AI Act Art.12 — structurally enforced  
 GDPR Art.17/22 — built into the audit layer  
 GCP / FDA / FinCEN — proven across applications
+
+</div>
+</div>
 
 ---
 
