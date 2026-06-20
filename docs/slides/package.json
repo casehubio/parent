@@ -3,8 +3,11 @@
   "private": true,
   "scripts": {
     "dev": "slidev presentation.md --open",
+    "dev:apps": "slidev applications.md --open --port 3031",
     "build": "slidev build presentation.md",
-    "export": "slidev export presentation.md"
+    "build:apps": "slidev build applications.md",
+    "export": "slidev export presentation.md",
+    "export:apps": "slidev export applications.md"
   },
   "dependencies": {
     "@slidev/cli": "^0.50.0",

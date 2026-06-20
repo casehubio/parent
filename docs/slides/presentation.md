@@ -511,9 +511,9 @@ layout: section
 # casehub-pages
 
 **Pure TypeScript dashboard rendering runtime.**  
-*100% TypeScript. Near DashBuilder feature parity.*
+*Maximum enforced type safety — strict mode throughout, no implicit any.*
 
-**Stack** — TypeScript · React · Web Components · Apache ECharts · js-yaml · JSONata
+**Stack** — TypeScript (strict) · React · Web Components · Apache ECharts · js-yaml · JSONata
 
 **Core packages**
 - `@casehub/pages-data` — DataSet model, filter/group/sort, external data
