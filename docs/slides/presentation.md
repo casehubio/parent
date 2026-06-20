@@ -751,14 +751,13 @@ class: text-sm
 6. Production incident → FLAGGED attestation → reviewer trust drops
 
 ---
-layout: two-cols
----
 
 # casehub-drafthouse
 
 **MCP-driven document review with multi-LLM debate.**
 
-<br/>
+<div class="grid grid-cols-2 gap-8 mt-4">
+<div>
 
 **MCP tools**
 - `start_review` — opens review session
@@ -769,15 +768,17 @@ layout: two-cols
 
 Structured agent-to-agent debate loop. `ChannelProjection<ReviewState>`. Qhorus speech acts ground every critique.
 
-::right::
-
-<br/>
+</div>
+<div>
 
 **AI infusion**
 - Multiple LLM agents critique the same document
 - Debate loop — each agent responds to other's critique
 - Review grounded in document diffs, not memory
 - `casehub-pages` embeds review dashboards
+
+</div>
+</div>
 
 **User flow**
 1. Document submitted for review
@@ -788,13 +789,14 @@ Structured agent-to-agent debate loop. `ChannelProjection<ReviewState>`. Qhorus 
 6. Review complete → decision recorded in ledger
 
 ---
-layout: two-cols
----
 
 # casehub-life
 
 **Household, health, finance, elder care, legal coordination.**  
 *Tutorial: OpenClaw as the execution layer.*
+
+<div class="grid grid-cols-2 gap-8 mt-4">
+<div>
 
 **Layers**
 - L1 Naive Java baseline
@@ -807,9 +809,8 @@ layout: two-cols
 - L8 casehub-platform memory
 - L9 casehub-iot — Home Assistant + OpenHAB
 
-::right::
-
-<br/>
+</div>
+<div>
 
 **The vision**  
 The same platform that coordinates clinical trials manages your medical appointments. The same accountability primitives that close FinCEN SARs track your financial obligations.
@@ -820,9 +821,10 @@ The same platform that coordinates clinical trials manages your medical appointm
 - LLM concierge via debate loop
 - Trust-weighted skill routing for home automation
 
-**Community marketplace**  
-Automation recipes shared as `CasePlanModel` YAML.  
-5,400+ OpenClaw skills, immediately available.
+**Community marketplace** — automation recipes as `CasePlanModel` YAML · 5,400+ OpenClaw skills
+
+</div>
+</div>
 
 ---
 class: text-sm
