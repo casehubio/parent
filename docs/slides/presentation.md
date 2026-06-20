@@ -84,11 +84,6 @@ EU AI Act Art.12 — structurally enforced
 GDPR Art.17/22 — built into the audit layer  
 GCP / FDA / FinCEN — proven across applications
 
-<br/>
-
-*Written by LLMs, for LLMs.*  
-*An accelerant for AI-Fusion driven digital transformations.*
-
 ---
 
 # Architecture — Four Tiers
@@ -152,8 +147,6 @@ class: text-sm
 
 **Zero-dependency SPIs shared by every module.**
 
-<br/>
-
 **Identity & Access**
 - `CurrentPrincipal` SPI — actorId, groups, tenancyId, crossTenantAdmin
 - `GroupMembershipProvider` SPI — inverse membership query
@@ -169,15 +162,7 @@ class: text-sm
 - Tenancy-isolated. GDPR erasure built in.
 - Graphiti backend: temporal knowledge graph (Neo4j/FalkorDB/Kuzu)
 
-**Agents**
-- `AgentProvider` SPI — `run()` (one-shot) + `openSession()` (multi-turn)
-- `agent-claude/` — Claude Code CLI subprocess
-- `agent-claude-langchain4j/` — LangChain4j bridge
-
-**Streams**
-- 5 classpath-activated stream modules: Kafka, AMQP, webhook, poll, Camel
-- CloudEvents envelope throughout
-- `StreamContext` — tenancy propagation in async stream processing
+**Agents** — `AgentProvider` SPI · `agent-claude/` (Claude CLI) · `agent-claude-langchain4j/` (LangChain4j) · Kafka · AMQP · webhook · poll · Camel streams
 
 ---
 
@@ -243,8 +228,7 @@ OPEN → FULFILLED / FAILED / EXPIRED / DECLINED / HANDOFF
 
 **User flow — PI authorisation (Clinical)**
 1. Case engine sends COMMAND to PI channel
-2. PI receives as `casehub-work` WorkItem (24h SLA)
-3. PI responds; RESPONSE closes commitment; ledger records chain
+2. PI responds · commitment closed · recorded
 
 ---
 layout: two-cols
@@ -332,10 +316,7 @@ layout: two-cols
 - `OutcomePolicy` per outcome type
 - DECLINE/FAILURE → failure cascade
 
-**Bindings** (YAML DSL)
-- Target types: `capability` · `subCase` · `humanTask`
-- Fields: `inputSchemaOverride` · `contextWrite` · `outcomes`
-- Triggers: `contextChange` · `schedule`/`timer`
+**Bindings** (YAML DSL) — `capability` · `subCase` · `humanTask`; fields: `inputSchemaOverride` · `contextWrite` · `outcomes`; triggers: `contextChange` · `schedule`
 
 **User flow — PR review (DevTown)**
 1. PR arrives → case opens; parallel bindings fire
@@ -367,11 +348,6 @@ class: text-sm
 - A2A_CARD format: qualityHint, latencyHintP50Ms, costHint, epistemicDomains
 - `CapabilitySpecializationStore` — learns DECLINE patterns per domain
 
-**System Prompt Rendering**
-- MARKDOWN · PROSE · A2A_CARD formats
-- Optional LLM semantic enrichment stage
-
-**Knowledge graph** — Wilson lower-bound reputation, task history
 
 ---
 
@@ -394,13 +370,7 @@ class: text-sm
 **RAG pipeline** (casehub-specific)
 - Qdrant — tenancy-isolated corpus storage
 - Hybrid search — dense + sparse, RRF fusion
-- `CorpusStore` + `CaseRetriever` SPIs
-- Corpus ingestion bridge — `@Scheduled` polling from external sources
-
-**CRAG** (Corrective RAG)
-- `@Decorator` on `CaseRetriever`
-- `RelevanceEvaluator` SPI — evaluates chunks, corrects low-relevance results
-- Classpath-activated
+- `CorpusStore` + `CaseRetriever` SPIs · corpus ingestion bridge · CRAG `RelevanceEvaluator`
 
 Hallucination detection hook on engine output  
 `ScalarRegressor` → epistemic confidence in eidos routing
@@ -419,8 +389,6 @@ class: text-sm
 
 # Integration Layer
 
-<br/>
-
 **claudony** — *Agent mesh reference implementation*
 - Remote Claude Code CLI sessions via tmux
 - WebAuthn passkeys, fleet management, WebSocket streaming
@@ -437,9 +405,7 @@ class: text-sm
 - Outbound: Slack, Teams, SMS, WhatsApp, email
 - Inbound: email IMAP, Slack webhooks
 
-**casehub-iot** — *Typed device abstraction*
-- 10 Matter-aligned device types (Home Assistant, OpenHAB)
-- Bridge: edge agent + cloud DeviceProvider SPI
+**casehub-iot** — 10 Matter-aligned types · HA + OpenHAB · edge/cloud bridge
 
 ---
 layout: section
@@ -457,8 +423,6 @@ layout: section
 
 **Situational awareness. Reactive case creation.**
 
-<br/>
-
 **Architecture**
 ```
 SensoryEvent (IoT / Kafka / Qhorus / webhook)
@@ -474,9 +438,7 @@ SensoryEvent (IoT / Kafka / Qhorus / webhook)
 - `BayesianGanglion` — weighted multi-signal accumulation
 - `LlmGanglion` — narrative / ambiguous signal detection
 
-**Composite chains:** AND · OR · THRESHOLD · SEQUENCE · COUNT
-
-**Use cases:** patient deterioration · IoT anomaly · code commit pattern · market signal
+**Chains:** AND·OR·THRESHOLD·SEQUENCE·COUNT · patient deterioration · IoT · code commit
 
 ---
 layout: two-cols
@@ -501,8 +463,6 @@ Continuously reconciles actual vs. desired.
 
 **OTel tracing** — `desiredstate.*` span attributes
 
-**Examples:** Nefarious Dungeons · Data Pipeline (medallion) · Agent topology
-
 ::right::
 
 <br/>
@@ -521,7 +481,7 @@ Continuously reconciles actual vs. desired.
 
 <br/>
 
-**The vision:** declare your agent topology in YAML. The platform deploys it, monitors it, and self-heals it.
+**The vision:** YAML → deploy · monitor · self-heal.
 
 ---
 layout: section
@@ -550,13 +510,7 @@ TypeScript · React · Web Components · Apache ECharts · js-yaml · JSONata ·
 - `@casehub/pages-component` — CSS grid layout, tabs, pills, sidebar, carousel, accordion
 - `@casehub/pages-runtime` — `loadSite(yaml, container)` API
 
-**One API call** — `loadSite(yaml, container)`
-
-**DashBuilder compatibility** — 28/31 sample dashboards render without modification.
-
-**Consumers:** claudony · drafthouse · devtown · aml · life
-
-Forms · view state persistence · case status dashboards
+**One API call** — `loadSite(yaml, container)` · 28/31 DashBuilder dashboards render · claudony · drafthouse · devtown · aml · life
 
 ---
 layout: section
@@ -638,11 +592,7 @@ class: text-sm
 - Drools natively consumes LLM conclusions
 - LLM sees hard constraints vs. uncertain inferences
 
-**CBR — Case-Based Reasoning**
-- **Retain** — ledger records every outcome as a retrievable case
-- **Retrieve** → **Reuse** → **Revise** — similarity, routing, adaptive plan templates
-
-**Adaptive Routing** — `CapabilitySpecializationStore` learns DECLINE patterns; content routing via A2A_CARD signals
+**CBR** — Retain (ledger) → Retrieve (similarity) → Reuse (routing) → Revise (adaptive templates) · `CapabilitySpecializationStore` learns DECLINE patterns · A2A_CARD content routing
 
 ---
 layout: section
@@ -702,7 +652,7 @@ layout: two-cols
 **User flow**
 1. SAR trigger → adaptive case opens
 2. Entity-resolution, pattern-analysis, OSINT agents — parallel
-3. PEP detection → gate → officer → SAR filing → trust attestation
+3. PEP → gate → officer → filing → trust attestation
 
 ---
 layout: two-cols
@@ -732,9 +682,8 @@ layout: two-cols
 - `ProtocolAmendmentAdvisor` SPI — LLM implementation
 
 **User flow**
-1. Grade 4+ AE reported → trust-weighted escalation case
-2. CTCAE grading → senior monitor + DSMB in parallel
-3. Unexpected AE → IND expedited reporting; trust attestation updates routing
+1. Grade 4+ AE → trust-weighted escalation case
+2. CTCAE grading → senior monitor + DSMB · Unexpected AE → IND reporting · trust attestation updates routing
 
 ---
 layout: two-cols
@@ -906,8 +855,7 @@ layout: two-cols
 - aml · clinical · devtown · drafthouse · life · quarkmind
 
 **AI Fusion**
-- Classical: trust, routing, inference, CEP
-- LLM: agents, memory, triaging, supervision · CBR: retain → retrieve → reuse → revise
+- Classical + LLM + CBR — trust, routing, inference, agents, memory, triaging, reasoning
 
 ---
 layout: center
