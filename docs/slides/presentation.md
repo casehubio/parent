@@ -536,22 +536,47 @@ layout: section
 
 ---
 
-# casehub-pages
+# casehub-pages — Architecture
 
 **Pure TypeScript dashboard rendering runtime.**  
-*Maximum enforced type safety — strict mode throughout, no implicit any.*
+*Strict mode throughout — no implicit any, no escape hatches.*
 
 **Stack** — TypeScript (strict) · React · Web Components · Apache ECharts · js-yaml · JSONata
 
 **Core packages**
-- `@casehub/pages-data` — DataSet model, filter/group/sort, external data
-- `@casehub/pages-ui` — YAML parser, layout model, DashBuilder compatibility
+- `@casehub/pages-data` — DataSet model, filter/group/sort, REST/CSV/Prometheus/JSONata adapters
+- `@casehub/pages-ui` — YAML parser, layout model, DashBuilder compatibility layer
 - `@casehub/pages-viz` — chart wrappers (bar, line, pie, timeseries, table, metric, map)
-- `@casehub/pages-component` — CSS grid layout, tabs, sidebar, accordion
-- `@casehub/pages-runtime` — `loadSite(yaml, container)` API
+- `@casehub/pages-component` — CSS grid, tabs, pills, sidebar, carousel, accordion
+- `@casehub/pages-runtime` — `loadSite(yaml, container)` one-call API
 
 28/31 DashBuilder dashboards render without modification.  
 **Consumers:** claudony · drafthouse · devtown · aml · life
+
+---
+
+# casehub-pages — Design Philosophy
+
+**Describe your site as data. Dynamic bindings alter the display.**
+
+```typescript
+loadSite(yaml, document.getElementById('dashboard'))
+```
+
+**Data-structure-first**  
+A site is a data structure, not a program. YAML declares pages, charts, forms, and layout. No rendering logic leaks into configuration.
+
+**Recursive composition**  
+Pages within pages. Charts within forms. Forms within pages. Every component is composable at any nesting depth — the model is regular all the way down.
+
+**Scoped cascading data chains**  
+Data flows down through the component tree. Each scope filters, transforms, and passes context to children — like CSS cascade, but for data. Components bind to the nearest matching scope.
+
+**Adaptive display**  
+Dynamic bindings completely alter layout and display from the same data structure — different views, same source.
+
+**Extended beyond dashboards**  
+Forms support (`pages-llm-prompter`) · View state persistence · Case status dashboards (trust scores, actor state, commitment views)
 
 ---
 layout: section
@@ -613,27 +638,98 @@ class: text-xs
 | casehub-ras | `LlmGanglion` | Narrative/ambiguous event signal detection |
 
 ---
-class: text-sm
+
+# AI Infusion — LLM Supervisor Mode
+
+**The LLM doesn't just answer questions. It supervises the case.**
+
+Used in: casehub-aml · casehub-clinical
+
+The case plan declares what needs doing. The LLM supervisor reads incoming findings and decides what to do next — adapt the path, escalate, request more evidence, close.
+
+**Routing becomes dialogic, not rule-based:**
+- New evidence arrives → supervisor re-evaluates open bindings
+- Unexpected finding → supervisor requests specialist agent via COMMAND
+- Contradictory signals → supervisor initiates debate or escalates to human
+
+The supervisor is a worker in the case. It holds commitments. It can DECLINE when out of depth. Its decisions are ledger entries — auditable, tamper-evident.
+
 ---
 
-# AI Infusion — The Complete Picture
+# AI Infusion — LLM Triaging
 
-<br/>
+**Unstructured signals become structured accountability.**
 
-**LLM Supervisor Mode** (clinical, aml)
-- LLM supervises the case plan — adapts investigation path based on findings
-- Routing decisions become dialogic, not rule-based
+Used in: casehub-ras · `LlmGanglion`
 
-**LLM Triaging** (casehub-ras)
-- `LlmGanglion` detects situations from unstructured streams
-- Bridges sensor noise → structured accountability
+Sensor streams, log events, and narrative alerts are inherently ambiguous. Rules cannot parse them. The `LlmGanglion` reads the stream and decides whether a situation exists.
 
-**Hybrid Typed Fact Space** (engine + drools)
-- Every fact: paradigm tag · confidence score · derivation chain
-- Drools natively consumes LLM conclusions
-- LLM sees hard constraints vs. uncertain inferences
+**The chain:**
+```
+Unstructured stream → LlmGanglion → SituationDefinition matched → startCase()
+```
 
-**CBR** — Retain (ledger) → Retrieve (similarity) → Reuse (routing) → Revise (adaptive templates) · `CapabilitySpecializationStore` learns DECLINE patterns · A2A_CARD content routing
+When a situation is declared, a formal case opens. From that point — the commitment lifecycle, SLA enforcement, trust-weighted routing, and audit trail all apply. The LLM's interpretation becomes accountable.
+
+---
+
+# AI Infusion — Hybrid Typed Fact Space
+
+**Classical AI and LLMs share the same blackboard. Neither is blind to the other.**
+
+Used in: casehub-engine + Drools
+
+Every fact written to the blackboard carries three tags:
+- **Paradigm** — which inference system produced it (LLM / rule / sensor / human)
+- **Confidence** — probabilistic weight (0.0–1.0)
+- **Derivation chain** — what facts it was derived from
+
+**What this enables:**
+- Drools rules can consume LLM conclusions directly, with confidence-weighted thresholds
+- LLM agents see which facts are hard constraints (rule-derived, confidence 1.0) vs. uncertain inferences (LLM-derived, confidence 0.7)
+- Contradiction detection: when LLM and rule engine produce opposing facts, the conflict is visible — not silently resolved
+
+---
+
+# AI Infusion — Case-Based Reasoning
+
+**The platform learns from its own history.**
+
+Every case outcome writes a retrievable record to the ledger. Future cases query it.
+
+**The 4R loop:**
+1. **Retain** — ledger records outcome as a structured case (agent, route, result, context)
+2. **Retrieve** — `CaseRetriever` SPI finds analogous past cases by similarity
+3. **Reuse** — routing selects implementation based on retrieved context, not static rules
+4. **Revise** — adaptive plan templates generated from top-k retrieved cases
+
+**`CapabilitySpecializationStore`**  
+Learns DECLINE patterns per agent per capability. When an agent repeatedly declines a domain, it is proactively excluded from future routing before it can fail again.
+
+The flywheel: better outcomes → more retrievable cases → better future routing.
+
+---
+
+# AI Infusion — Adaptive Routing
+
+**Content-driven agent selection. The system routes on what it knows, not what it guesses.**
+
+Used in: casehub-eidos · casehub-engine
+
+Every agent publishes an `A2A_CARD` — a structured capability declaration with three routing signals:
+
+| Signal | What it declares |
+|--------|-----------------|
+| `qualityHint` | Expected output quality for this capability |
+| `latencyHintP50Ms` | Median response time at load |
+| `costHint` | Relative compute/token cost |
+
+**`SemanticAgentRoutingStrategy`** combines:
+- 40% semantic similarity (embedding-based capability match)
+- 36% trust score (Bayesian Beta from past outcomes)
+- 24% load (least-loaded preference)
+
+**Proactive exclusion:** DECLINE patterns from CBR feed back into routing. Agents that repeatedly decline a domain are removed from the candidate set before selection — not after failure.
 
 ---
 layout: section
@@ -875,6 +971,8 @@ layout: section
 
 # The Complete Platform
 
+<br/>
+
 **Foundation**
 - Platform — identity, memory, agents, streams
 - Ledger — trust, audit, GDPR
@@ -907,7 +1005,7 @@ layout: section
 
 **AI Fusion**
 - Classical: trust, routing, inference, CEP
-- LLM: agents, memory, triaging, supervision
+- LLM: agents, memory, triaging, supervision, debate
 - CBR: retain → retrieve → reuse → revise
 
 ---
