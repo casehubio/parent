@@ -52,7 +52,7 @@ layout: center
 
 **AI Fusion Harness** — blends two kinds of intelligence.
 
-<div class="grid grid-cols-2 gap-8 mt-4">
+<div class="grid grid-cols-2 gap-8 mt-2">
 <div>
 
 **Classical AI**
@@ -210,7 +210,7 @@ class: text-sm
 
 **The agent communication mesh.** Every agent interaction is a formal speech act.
 
-<div class="grid grid-cols-2 gap-8 mt-4">
+<div class="grid grid-cols-2 gap-8 mt-2">
 <div>
 
 **9 Message Types**
@@ -258,7 +258,7 @@ OPEN → FULFILLED / FAILED / EXPIRED / DECLINED / HANDOFF
 
 **Human task lifecycle. Formal obligations for humans.**
 
-<div class="grid grid-cols-2 gap-8 mt-4">
+<div class="grid grid-cols-2 gap-8 mt-2">
 <div>
 
 **10 WorkItem statuses**
@@ -373,12 +373,12 @@ class: text-sm
 
 
 ---
+class: text-sm
+---
 
 # casehub-neural-text
 
 **Local AI inference. No cloud dependency.**
-
-<br/>
 
 **Inference modules** (zero casehub/Quarkus deps — shared with Hortora)
 
@@ -397,6 +397,7 @@ class: text-sm
 
 Hallucination detection hook on engine output  
 `ScalarRegressor` → epistemic confidence in eidos routing
+
 
 ---
 layout: section
@@ -755,7 +756,7 @@ class: text-sm
 
 **MCP-driven document review with multi-LLM debate.**
 
-<div class="grid grid-cols-2 gap-8 mt-4">
+<div class="grid grid-cols-2 gap-8 mt-2">
 <div>
 
 **MCP tools**
@@ -794,7 +795,7 @@ Structured agent-to-agent debate loop. `ChannelProjection<ReviewState>`. Qhorus 
 **Household, health, finance, elder care, legal coordination.**  
 *Tutorial: OpenClaw as the execution layer.*
 
-<div class="grid grid-cols-2 gap-8 mt-4">
+<div class="grid grid-cols-2 gap-8 mt-2">
 <div>
 
 **Layers**
