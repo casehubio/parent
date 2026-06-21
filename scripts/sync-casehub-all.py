@@ -40,15 +40,17 @@ include_apps = os.environ.get('INCLUDE_APPLICATIONS', 'false') == 'true'
 core = load_csv(ROOT / 'build' / 'modules-core.csv')
 apps = load_csv(ROOT / 'build' / 'modules-applications.csv') if include_apps else []
 
-shas = {'sha_parent': sha('parent')}
+shas = {'parent': sha('parent')}
 for name in core + apps:
-    shas['sha_' + name.replace('-', '_')] = sha(name)
+    shas[name.replace('-', '_')] = sha(name)
 
+# GitHub repository dispatch limits client_payload to 10 top-level properties.
+# Nest all SHAs under a single 'shas' key to stay within the limit.
 payload = {
     'event_type': 'ecosystem-build-succeeded',
     'client_payload': {
         'trigger': os.environ.get('TRIGGER', 'workflow_dispatch'),
-        **shas,
+        'shas': shas,
     }
 }
 
