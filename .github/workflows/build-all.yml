@@ -1,4 +1,4 @@
-name: Incremental Full Stack Build
+name: Build All
 
 # Standalone orchestrator — always starts from root, evaluates the entire
 # module graph. Complements the per-repo dispatch chain (which is reactive
@@ -35,7 +35,7 @@ on:
 
 jobs:
   build:
-    name: Incremental Full Stack Build
+    name: Build All
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -1047,7 +1047,7 @@ jobs:
           [ "$INCLUDE_APPLICATIONS" = "true" ] && read_csv_names build/modules-applications.csv
 
           {
-            echo "# Incremental Full Stack Build"
+            echo "# Build All"
             echo ""
             echo "_Triggered by @${ACTOR} &nbsp;|&nbsp; $(date -u '+%Y-%m-%d %H:%M UTC') &nbsp;|&nbsp; ${TEST_MODE}_"
             echo ""
@@ -1083,6 +1083,6 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
           if [ "$FAIL_COUNT" -gt 0 ]; then
-            echo "::error::$FAIL_COUNT module(s) failed in the incremental full stack build."
+            echo "::error::$FAIL_COUNT module(s) failed in the build-all."
             exit 1
           fi
