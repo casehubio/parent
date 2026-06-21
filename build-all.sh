@@ -1,137 +1,67 @@
 #!/usr/bin/env bash
 # build-all.sh — Full-stack casehubio incremental build
 #
-# Determines what to do for each module based on SHA changes since the last
-# successful build:
+# Module list, dependency graph, and build order are read from:
+#   build/modules-core.csv       — core CI+local modules
+#   build/modules-applications.csv — application modules (opt-in)
+#   build/modules-local.csv      — local-only modules (not built in CI)
 #
-#   BUILD — own SHA changed → full compile + test + install
-#   TEST  — own SHA unchanged but a transitive dep changed → test only (no recompile)
-#   SKIP  — own SHA and all deps unchanged → skip entirely (artifact in .m2 is current)
-#
-# Directory layout:
-#   ~/claude/casehub/parent/   ← this script lives here
-#   ~/claude/casehub/ledger/   ← sibling repos one level up inside casehub/
-#   ~/claude/casehub/work/
-#   ~/claude/quarkus-langchain4j/  ← outside casehub/
+# Each CSV row: name,dep1,dep2,...  (row order = build order)
 #
 # Usage:
 #   ./build-all.sh                  # incremental build
 #   ./build-all.sh --no-cache       # force full rebuild
 #   ./build-all.sh --skip-tests
-#   ./build-all.sh -DskipTests
-#   ./build-all.sh -T 1C
-#   ./build-all.sh --include-apps   # also build devtown, aml, clinical
+#   ./build-all.sh --include-apps   # also build application modules
+#   ./build-all.sh -T 1C            # extra Maven args
 
 set -euo pipefail
 
-ORG="casehubio"
-BRANCH="main"
-LOG_DIR="build-logs"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LOG_DIR="$SCRIPT_DIR/build-logs"
 TIMESTAMP=$(date +%Y%m%dT%H%M%S)
 LOG_FILE="$LOG_DIR/$TIMESTAMP.shas"
 
-# Repo name → local directory (relative to this script)
-declare -A REPO_DIR
-REPO_DIR[quarkus-langchain4j]="../../quarkus-langchain4j"
-REPO_DIR[platform]="../platform"
-REPO_DIR[ledger]="../ledger"
-REPO_DIR[eidos]="../eidos"
-REPO_DIR[connectors]="../connectors"
-REPO_DIR[work]="../work"
-REPO_DIR[qhorus]="../qhorus"
-REPO_DIR[pages]="../pages"
-REPO_DIR[engine]="../engine"
-REPO_DIR[workers]="../workers"
-REPO_DIR[claudony]="../claudony"
-REPO_DIR[openclaw]="../openclaw"
-REPO_DIR[devtown]="../devtown"
-REPO_DIR[aml]="../aml"
-REPO_DIR[clinical]="../clinical"
-REPO_DIR[life]="../life"
-REPO_DIR[drafthouse]="../drafthouse/server"
-REPO_DIR[iot]="../iot"
-REPO_DIR[neural-text]="../neural-text"
-REPO_DIR[desiredstate]="../desiredstate"
-REPO_DIR[ras]="../ras"
-REPO_DIR[ops]="../ops"
+# ── Exception maps (deviations from convention) ───────────────────────────────
+# Default: local path = ../<name>, GitHub repo = casehubio/<name>
 
-# Repo name → GitHub repo name (for cloning)
-declare -A REPO_GH
-REPO_GH[quarkus-langchain4j]="quarkus-langchain4j"
-REPO_GH[platform]="platform"
-REPO_GH[ledger]="ledger"
-REPO_GH[eidos]="eidos"
-REPO_GH[connectors]="connectors"
-REPO_GH[work]="work"
-REPO_GH[qhorus]="qhorus"
-REPO_GH[pages]="casehub-pages"
-REPO_GH[engine]="engine"
-REPO_GH[workers]="workers"
-REPO_GH[claudony]="claudony"
-REPO_GH[openclaw]="openclaw"
-REPO_GH[devtown]="devtown"
-REPO_GH[aml]="aml"
-REPO_GH[clinical]="clinical"
-REPO_GH[life]="life"
-REPO_GH[drafthouse]="drafthouse"
-REPO_GH[iot]="iot"
-REPO_GH[neural-text]="neural-text"
-REPO_GH[desiredstate]="casehub-desiredstate"
-REPO_GH[ras]="casehub-ras"
-REPO_GH[ops]="casehub-ops"
+declare -A PATH_OVERRIDE=(
+  [quarkus-langchain4j]="../../quarkus-langchain4j"
+  [drafthouse]="../drafthouse/server"
+)
+declare -A REPO_OVERRIDE=(
+  [pages]="casehub-pages"
+  [desiredstate]="casehub-desiredstate"
+  [ras]="casehub-ras"
+  [ops]="casehub-ops"
+)
+# quarkus-langchain4j is under a different GitHub org
+declare -A ORG_OVERRIDE=(
+  [quarkus-langchain4j]="quarkusio"
+)
 
-# Dependency graph
-declare -A DEPS
-DEPS[quarkus-langchain4j]=""
-DEPS[platform]=""
-DEPS[ledger]="platform"
-DEPS[eidos]="ledger"
-DEPS[connectors]="platform"
-DEPS[work]="ledger connectors"
-DEPS[qhorus]="ledger work"
-DEPS[pages]=""
-DEPS[engine]="quarkus-langchain4j ledger work"
-DEPS[workers]="platform engine"
-DEPS[claudony]="ledger work qhorus"
-DEPS[openclaw]="platform ledger qhorus engine"
-DEPS[devtown]="ledger work qhorus engine"
-DEPS[aml]="ledger work qhorus engine"
-DEPS[clinical]="ledger work qhorus engine"
-DEPS[life]="ledger work qhorus engine openclaw"
-DEPS[drafthouse]="qhorus"
-DEPS[iot]="platform"
-DEPS[neural-text]="platform"
-DEPS[desiredstate]="platform"
-DEPS[ras]="platform"
-DEPS[ops]="platform desiredstate"
+# ── Load modules from CSV ─────────────────────────────────────────────────────
 
-# Core build order (topological) — apps added below if --include-apps
-REPOS=(quarkus-langchain4j platform ledger eidos connectors work qhorus pages engine workers claudony)
+declare -a REPOS=()
+declare -A DEPS=()
 
-# Aggregator module paths (match aggregator.xml <module> entries)
-declare -A MODULE_PATH
-MODULE_PATH[quarkus-langchain4j]="../../quarkus-langchain4j"
-MODULE_PATH[platform]="../platform"
-MODULE_PATH[ledger]="../ledger"
-MODULE_PATH[eidos]="../eidos"
-MODULE_PATH[connectors]="../connectors"
-MODULE_PATH[work]="../work"
-MODULE_PATH[qhorus]="../qhorus"
-MODULE_PATH[pages]="../pages"
-MODULE_PATH[engine]="../engine"
-MODULE_PATH[workers]="../workers"
-MODULE_PATH[claudony]="../claudony"
-MODULE_PATH[openclaw]="../openclaw"
-MODULE_PATH[devtown]="../devtown"
-MODULE_PATH[aml]="../aml"
-MODULE_PATH[clinical]="../clinical"
-MODULE_PATH[life]="../life"
-MODULE_PATH[drafthouse]="../drafthouse/server"
-MODULE_PATH[iot]="../iot"
-MODULE_PATH[neural-text]="../neural-text"
-MODULE_PATH[desiredstate]="../desiredstate"
-MODULE_PATH[ras]="../ras"
-MODULE_PATH[ops]="../ops"
+load_csv() {
+  local csv=$1
+  while IFS=',' read -r name rest; do
+    [[ "$name" =~ ^#|^[[:space:]]*$ ]] && continue
+    # Trim inline comments from rest (everything after #)
+    rest="${rest%%#*}"
+    REPOS+=("$name")
+    # Trim whitespace from deps
+    IFS=',' read -ra dep_arr <<< "$rest"
+    local deps_clean=()
+    for d in "${dep_arr[@]}"; do
+      d="${d// /}"  # strip spaces
+      [[ -n "$d" ]] && deps_clean+=("$d")
+    done
+    DEPS[$name]="${deps_clean[*]:-}"
+  done < "$csv"
+}
 
 # Parse flags
 NO_CACHE=false
@@ -147,9 +77,27 @@ for arg in "$@"; do
   esac
 done
 
+load_csv "$SCRIPT_DIR/build/modules-local.csv"
+load_csv "$SCRIPT_DIR/build/modules-core.csv"
 if [ "$INCLUDE_APPS" = true ]; then
-  REPOS+=(iot neural-text desiredstate ras ops openclaw devtown aml clinical life drafthouse)
+  load_csv "$SCRIPT_DIR/build/modules-applications.csv"
 fi
+
+# ── Helpers ──────────────────────────────────────────────────────────────────
+
+local_path() {
+  local name=$1
+  echo "${PATH_OVERRIDE[$name]:-../$name}"
+}
+
+gh_repo() {
+  local name=$1
+  local org="${ORG_OVERRIDE[$name]:-casehubio}"
+  local repo="${REPO_OVERRIDE[$name]:-$name}"
+  echo "$org/$repo"
+}
+
+# ── Setup ────────────────────────────────────────────────────────────────────
 
 mkdir -p "$LOG_DIR"
 { echo "# casehubio full-stack build"; echo "# timestamp: $TIMESTAMP"; echo ""; } > "$LOG_FILE"
@@ -160,93 +108,94 @@ LAST_LOG=$(ls -1t "$LOG_DIR"/*.shas 2>/dev/null | grep -v "$LOG_FILE" | head -1 
 if [ -n "$LAST_LOG" ] && [ "$NO_CACHE" = false ]; then
   echo "==> Cache: $LAST_LOG"
   while IFS='=' read -r repo sha; do
-    [[ "$repo" =~ ^#.*$ || -z "$repo" ]] && continue
+    [[ "$repo" =~ ^#|^[[:space:]]*$ ]] && continue
     PREV_SHA[$repo]=$sha
   done < "$LAST_LOG"
 else
   echo "==> Cache: none (full rebuild)"
 fi
 
-# Step 1: Clone or update
+# ── Step 1: Clone or update ──────────────────────────────────────────────────
 echo ""; echo "==> Fetching repos..."
 for repo in "${REPOS[@]}"; do
-  dir="${REPO_DIR[$repo]}"; gh_repo="${REPO_GH[$repo]}"
+  dir="$(local_path "$repo")"
   if [ -d "$dir/.git" ]; then
-    printf "    %-22s updating\n" "$repo"
-    git -C "$dir" fetch --quiet origin "$BRANCH"
-    git -C "$dir" reset --quiet --hard "origin/$BRANCH"
+    printf "    %-30s updating\n" "$repo"
+    git -C "$dir" fetch --quiet origin main
+    git -C "$dir" reset --quiet --hard origin/main
   else
-    printf "    %-22s cloning into %s\n" "$repo" "$dir"
+    gh_url="https://github.com/$(gh_repo "$repo").git"
+    printf "    %-30s cloning into %s\n" "$repo" "$dir"
     mkdir -p "$(dirname "$dir")"
-    git clone --quiet "https://github.com/$ORG/$gh_repo.git" "$dir"
+    git clone --quiet "$gh_url" "$dir"
   fi
 done
 
-# Step 2: Record SHAs
+# ── Step 2: Record SHAs ──────────────────────────────────────────────────────
 echo ""; echo "==> Recording SHAs..."
 declare -A CURR_SHA
 for repo in "${REPOS[@]}"; do
-  sha=$(git -C "${REPO_DIR[$repo]}" rev-parse HEAD)
+  sha=$(git -C "$(local_path "$repo")" rev-parse HEAD)
   CURR_SHA[$repo]=$sha
   echo "$repo=$sha" >> "$LOG_FILE"
-  printf "    %-22s %s\n" "$repo" "$sha"
+  printf "    %-30s %s\n" "$repo" "$sha"
 done
 
-# Step 3: Pin to SHAs
+# ── Step 3: Pin to SHAs ──────────────────────────────────────────────────────
 for repo in "${REPOS[@]}"; do
-  git -C "${REPO_DIR[$repo]}" checkout --quiet --detach "${CURR_SHA[$repo]}"
+  git -C "$(local_path "$repo")" checkout --quiet --detach "${CURR_SHA[$repo]}"
 done
 
-# Step 4: Classify
+# ── Step 4: Classify ─────────────────────────────────────────────────────────
 echo ""; echo "==> Incremental analysis..."
 declare -A STATE
 for repo in "${REPOS[@]}"; do
   curr="${CURR_SHA[$repo]}"; prev="${PREV_SHA[$repo]:-}"
   if [ "$curr" != "$prev" ] || [ "$NO_CACHE" = true ]; then
     STATE[$repo]=build
-    printf "    %-22s BUILD\n" "$repo"
+    printf "    %-30s BUILD\n" "$repo"
     continue
   fi
   dep_built=false
-  for dep in ${DEPS[$repo]}; do
+  for dep in ${DEPS[$repo]:-}; do
     [ "${STATE[$dep]:-skip}" != "skip" ] && dep_built=true && break
   done
   if [ "$dep_built" = true ]; then
-    STATE[$repo]=test; printf "    %-22s TEST\n" "$repo"
+    STATE[$repo]=test; printf "    %-30s TEST\n" "$repo"
   else
-    STATE[$repo]=skip; printf "    %-22s SKIP\n" "$repo"
+    STATE[$repo]=skip; printf "    %-30s SKIP\n" "$repo"
   fi
 done
 
-# Step 5: Build
-# Handle yarn-only repos (pages) separately — not in aggregator.xml
-if [ "${STATE[pages]:-}" = "build" ]; then
+# ── Step 5: Build ────────────────────────────────────────────────────────────
+# pages is yarn-only — not in aggregator.xml
+if [ "${STATE[pages]:-skip}" = "build" ]; then
   echo ""; echo "==> Building pages (yarn)"
-  (cd "${REPO_DIR[pages]}" && yarn install && yarn build)
+  (cd "$(local_path pages)" && yarn install && yarn build)
 fi
 
 BUILD_LIST=""
 for repo in "${REPOS[@]}"; do
-  # Skip yarn-only repos (they've been built above)
   [ "$repo" = "pages" ] && continue
-  [ "${STATE[$repo]}" = "build" ] && BUILD_LIST="${BUILD_LIST:+$BUILD_LIST,}${MODULE_PATH[$repo]}"
+  [ "${STATE[$repo]:-skip}" = "build" ] && BUILD_LIST="${BUILD_LIST:+$BUILD_LIST,}$(local_path "$repo")"
 done
 echo ""
 if [ -n "$BUILD_LIST" ]; then
   echo "==> Installing: $BUILD_LIST"
-  mvn install -f aggregator.xml -pl "$BUILD_LIST" "${MVN_ARGS[@]}"
+  mvn install -f "$SCRIPT_DIR/aggregator.xml" -pl "$BUILD_LIST" "${MVN_ARGS[@]}"
 else
   echo "==> Nothing to build."
 fi
 
-# Step 6: Test
+# ── Step 6: Test ─────────────────────────────────────────────────────────────
 TEST_LIST=""
 for repo in "${REPOS[@]}"; do
-  [ "${STATE[$repo]}" = "test" ] && TEST_LIST="${TEST_LIST:+$TEST_LIST,}${MODULE_PATH[$repo]}"
+  [ "$repo" = "pages" ] && continue
+  [ "${STATE[$repo]:-skip}" = "test" ] && TEST_LIST="${TEST_LIST:+$TEST_LIST,}$(local_path "$repo")"
 done
 if [ -n "$TEST_LIST" ] && [ "$SKIP_TESTS" = false ]; then
   echo ""; echo "==> Retesting: $TEST_LIST"
-  mvn test -f aggregator.xml -pl "$TEST_LIST" "${MVN_ARGS[@]}"
+  mvn test -f "$SCRIPT_DIR/aggregator.xml" -pl "$TEST_LIST" "${MVN_ARGS[@]}"
 fi
 
 echo ""
