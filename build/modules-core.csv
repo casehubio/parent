@@ -1,0 +1,11 @@
+# name,dep1,dep2,...  (order = build order)
+platform,parent
+ledger,parent
+eidos,ledger
+neural-text,platform
+connectors,parent
+work,parent,ledger,connectors
+qhorus,parent,ledger,work
+pages
+engine,parent,ledger,work
+claudony,parent,ledger,work,qhorus

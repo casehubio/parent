@@ -62,28 +62,24 @@ jobs:
           INCLUDE_APPLICATIONS: ${{ inputs.include_applications }}
         run: |
           mkdir -p .build-times casehub
-          git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/platform.git" casehub/platform
-          git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/ledger.git" casehub/ledger
-          git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/eidos.git" casehub/eidos
-          git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/neural-text.git" casehub/neural-text
-          git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/connectors.git" casehub/connectors
-          git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/work.git" casehub/work
-          git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/qhorus.git" casehub/qhorus
-          git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/casehub-pages.git" casehub/pages
-          git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/engine.git" casehub/engine
-          git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/claudony.git" casehub/claudony
-          if [ "$INCLUDE_APPLICATIONS" = "true" ]; then
-            git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/openclaw.git" casehub/openclaw
-            git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/devtown.git"  casehub/devtown
-            git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/aml.git"     casehub/aml
-            git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/clinical.git" casehub/clinical
-            git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/life.git"    casehub/life
-            git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/drafthouse.git" casehub/drafthouse
-            git clone --quiet "https://x-access-token:${GH_TOKEN}@github.com/mdproctor/quarkmind.git"   casehub/quarkmind
-            git clone --quiet "https://x-access-token:${GH_TOKEN}@github.com/mdproctor/flow.git"        casehub/flow
-          fi
+          # Special-case repo mappings (name differs from casehubio/<name> convention)
+          declare -A REPO_OVERRIDE=([pages]="casehubio/casehub-pages")
+          declare -A TOKEN_OVERRIDE=([quarkmind]="$GH_TOKEN" [flow]="$GH_TOKEN")
+          clone_csv() {
+            local csv=$1
+            while IFS=',' read -r name _rest; do
+              [[ "$name" =~ ^#|^$ ]] && continue
+              local token="${TOKEN_OVERRIDE[$name]:-$GITHUB_TOKEN}"
+              local repo="${REPO_OVERRIDE[$name]:-casehubio/$name}"
+              git clone --quiet "https://x-access-token:${token}@github.com/${repo}.git" "casehub/$name"
+            done < "$csv"
+          }
+          clone_csv build/modules-core.csv
+          [ "$INCLUDE_APPLICATIONS" = "true" ] && clone_csv build/modules-applications.csv
 
       # continue-on-error: true ensures all steps run and we get per-module outcomes
+
+      # -- BEGIN GENERATED
 
       - name: "Build: platform"
         id: platform
@@ -94,11 +90,16 @@ jobs:
           MAVEN_EXTRA: ${{ inputs.maven_args }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          mkdir -p .build-outcomes
           FLAGS=""
           [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
           [ "$SKIP_ITS" = "true" ] && FLAGS="$FLAGS -DskipITs"
           START=$SECONDS
-          cd casehub/platform && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
+          if cd casehub/platform && mvn install --batch-mode $FLAGS $MAVEN_EXTRA; then
+            echo "success" > ../../.build-outcomes/platform
+          else
+            echo "failure" > ../../.build-outcomes/platform
+          fi
           echo $((SECONDS - START)) > ../../.build-times/platform
 
       - name: "Build: ledger"
@@ -110,11 +111,16 @@ jobs:
           MAVEN_EXTRA: ${{ inputs.maven_args }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          mkdir -p .build-outcomes
           FLAGS=""
           [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
           [ "$SKIP_ITS" = "true" ] && FLAGS="$FLAGS -DskipITs"
           START=$SECONDS
-          cd casehub/ledger && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
+          if cd casehub/ledger && mvn install --batch-mode $FLAGS $MAVEN_EXTRA; then
+            echo "success" > ../../.build-outcomes/ledger
+          else
+            echo "failure" > ../../.build-outcomes/ledger
+          fi
           echo $((SECONDS - START)) > ../../.build-times/ledger
 
       - name: "Build: eidos"
@@ -126,11 +132,16 @@ jobs:
           MAVEN_EXTRA: ${{ inputs.maven_args }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          mkdir -p .build-outcomes
           FLAGS=""
           [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
           [ "$SKIP_ITS" = "true" ] && FLAGS="$FLAGS -DskipITs"
           START=$SECONDS
-          cd casehub/eidos && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
+          if cd casehub/eidos && mvn install --batch-mode $FLAGS $MAVEN_EXTRA; then
+            echo "success" > ../../.build-outcomes/eidos
+          else
+            echo "failure" > ../../.build-outcomes/eidos
+          fi
           echo $((SECONDS - START)) > ../../.build-times/eidos
 
       - name: "Build: neural-text"
@@ -142,11 +153,16 @@ jobs:
           MAVEN_EXTRA: ${{ inputs.maven_args }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          mkdir -p .build-outcomes
           FLAGS=""
           [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
           [ "$SKIP_ITS" = "true" ] && FLAGS="$FLAGS -DskipITs"
           START=$SECONDS
-          cd casehub/neural-text && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
+          if cd casehub/neural-text && mvn install --batch-mode $FLAGS $MAVEN_EXTRA; then
+            echo "success" > ../../.build-outcomes/neural-text
+          else
+            echo "failure" > ../../.build-outcomes/neural-text
+          fi
           echo $((SECONDS - START)) > ../../.build-times/neural-text
 
       - name: "Build: connectors"
@@ -158,11 +174,16 @@ jobs:
           MAVEN_EXTRA: ${{ inputs.maven_args }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          mkdir -p .build-outcomes
           FLAGS=""
           [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
           [ "$SKIP_ITS" = "true" ] && FLAGS="$FLAGS -DskipITs"
           START=$SECONDS
-          cd casehub/connectors && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
+          if cd casehub/connectors && mvn install --batch-mode $FLAGS $MAVEN_EXTRA; then
+            echo "success" > ../../.build-outcomes/connectors
+          else
+            echo "failure" > ../../.build-outcomes/connectors
+          fi
           echo $((SECONDS - START)) > ../../.build-times/connectors
 
       - name: "Build: work"
@@ -174,11 +195,16 @@ jobs:
           MAVEN_EXTRA: ${{ inputs.maven_args }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          mkdir -p .build-outcomes
           FLAGS=""
           [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
           [ "$SKIP_ITS" = "true" ] && FLAGS="$FLAGS -DskipITs"
           START=$SECONDS
-          cd casehub/work && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
+          if cd casehub/work && mvn install --batch-mode $FLAGS $MAVEN_EXTRA; then
+            echo "success" > ../../.build-outcomes/work
+          else
+            echo "failure" > ../../.build-outcomes/work
+          fi
           echo $((SECONDS - START)) > ../../.build-times/work
 
       - name: "Build: qhorus"
@@ -190,11 +216,16 @@ jobs:
           MAVEN_EXTRA: ${{ inputs.maven_args }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          mkdir -p .build-outcomes
           FLAGS=""
           [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
           [ "$SKIP_ITS" = "true" ] && FLAGS="$FLAGS -DskipITs"
           START=$SECONDS
-          cd casehub/qhorus && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
+          if cd casehub/qhorus && mvn install --batch-mode $FLAGS $MAVEN_EXTRA; then
+            echo "success" > ../../.build-outcomes/qhorus
+          else
+            echo "failure" > ../../.build-outcomes/qhorus
+          fi
           echo $((SECONDS - START)) > ../../.build-times/qhorus
 
       - name: "Build: pages"
@@ -203,8 +234,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          mkdir -p .build-outcomes
           START=$SECONDS
-          cd casehub/pages && yarn install && yarn build
+          if cd casehub/pages && yarn install && yarn build; then
+            echo "success" > ../../.build-outcomes/pages
+          else
+            echo "failure" > ../../.build-outcomes/pages
+          fi
           echo $((SECONDS - START)) > ../../.build-times/pages
 
       - name: "Build: engine"
@@ -216,11 +252,16 @@ jobs:
           MAVEN_EXTRA: ${{ inputs.maven_args }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          mkdir -p .build-outcomes
           FLAGS=""
           [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
           [ "$SKIP_ITS" = "true" ] && FLAGS="$FLAGS -DskipITs"
           START=$SECONDS
-          cd casehub/engine && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
+          if cd casehub/engine && mvn install --batch-mode $FLAGS $MAVEN_EXTRA; then
+            echo "success" > ../../.build-outcomes/engine
+          else
+            echo "failure" > ../../.build-outcomes/engine
+          fi
           echo $((SECONDS - START)) > ../../.build-times/engine
 
       - name: "Build: claudony"
@@ -232,16 +273,21 @@ jobs:
           MAVEN_EXTRA: ${{ inputs.maven_args }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          mkdir -p .build-outcomes
           FLAGS=""
           [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
           [ "$SKIP_ITS" = "true" ] && FLAGS="$FLAGS -DskipITs"
           START=$SECONDS
-          cd casehub/claudony && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
+          if cd casehub/claudony && mvn install --batch-mode $FLAGS $MAVEN_EXTRA; then
+            echo "success" > ../../.build-outcomes/claudony
+          else
+            echo "failure" > ../../.build-outcomes/claudony
+          fi
           echo $((SECONDS - START)) > ../../.build-times/claudony
 
       - name: "Build: openclaw"
-        id: openclaw
         if: inputs.include_applications
+        id: openclaw
         continue-on-error: true
         env:
           SKIP_TESTS: ${{ inputs.skip_tests }}
@@ -249,16 +295,21 @@ jobs:
           MAVEN_EXTRA: ${{ inputs.maven_args }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          mkdir -p .build-outcomes
           FLAGS=""
           [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
           [ "$SKIP_ITS" = "true" ] && FLAGS="$FLAGS -DskipITs"
           START=$SECONDS
-          cd casehub/openclaw && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
+          if cd casehub/openclaw && mvn install --batch-mode $FLAGS $MAVEN_EXTRA; then
+            echo "success" > ../../.build-outcomes/openclaw
+          else
+            echo "failure" > ../../.build-outcomes/openclaw
+          fi
           echo $((SECONDS - START)) > ../../.build-times/openclaw
 
       - name: "Build: devtown"
-        id: devtown
         if: inputs.include_applications
+        id: devtown
         continue-on-error: true
         env:
           SKIP_TESTS: ${{ inputs.skip_tests }}
@@ -266,16 +317,21 @@ jobs:
           MAVEN_EXTRA: ${{ inputs.maven_args }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          mkdir -p .build-outcomes
           FLAGS=""
           [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
           [ "$SKIP_ITS" = "true" ] && FLAGS="$FLAGS -DskipITs"
           START=$SECONDS
-          cd casehub/devtown && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
+          if cd casehub/devtown && mvn install --batch-mode $FLAGS $MAVEN_EXTRA; then
+            echo "success" > ../../.build-outcomes/devtown
+          else
+            echo "failure" > ../../.build-outcomes/devtown
+          fi
           echo $((SECONDS - START)) > ../../.build-times/devtown
 
       - name: "Build: aml"
-        id: aml
         if: inputs.include_applications
+        id: aml
         continue-on-error: true
         env:
           SKIP_TESTS: ${{ inputs.skip_tests }}
@@ -283,16 +339,21 @@ jobs:
           MAVEN_EXTRA: ${{ inputs.maven_args }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          mkdir -p .build-outcomes
           FLAGS=""
           [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
           [ "$SKIP_ITS" = "true" ] && FLAGS="$FLAGS -DskipITs"
           START=$SECONDS
-          cd casehub/aml && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
+          if cd casehub/aml && mvn install --batch-mode $FLAGS $MAVEN_EXTRA; then
+            echo "success" > ../../.build-outcomes/aml
+          else
+            echo "failure" > ../../.build-outcomes/aml
+          fi
           echo $((SECONDS - START)) > ../../.build-times/aml
 
       - name: "Build: clinical"
-        id: clinical
         if: inputs.include_applications
+        id: clinical
         continue-on-error: true
         env:
           SKIP_TESTS: ${{ inputs.skip_tests }}
@@ -300,16 +361,21 @@ jobs:
           MAVEN_EXTRA: ${{ inputs.maven_args }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          mkdir -p .build-outcomes
           FLAGS=""
           [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
           [ "$SKIP_ITS" = "true" ] && FLAGS="$FLAGS -DskipITs"
           START=$SECONDS
-          cd casehub/clinical && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
+          if cd casehub/clinical && mvn install --batch-mode $FLAGS $MAVEN_EXTRA; then
+            echo "success" > ../../.build-outcomes/clinical
+          else
+            echo "failure" > ../../.build-outcomes/clinical
+          fi
           echo $((SECONDS - START)) > ../../.build-times/clinical
 
       - name: "Build: life"
-        id: life
         if: inputs.include_applications
+        id: life
         continue-on-error: true
         env:
           SKIP_TESTS: ${{ inputs.skip_tests }}
@@ -317,16 +383,21 @@ jobs:
           MAVEN_EXTRA: ${{ inputs.maven_args }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          mkdir -p .build-outcomes
           FLAGS=""
           [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
           [ "$SKIP_ITS" = "true" ] && FLAGS="$FLAGS -DskipITs"
           START=$SECONDS
-          cd casehub/life && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
+          if cd casehub/life && mvn install --batch-mode $FLAGS $MAVEN_EXTRA; then
+            echo "success" > ../../.build-outcomes/life
+          else
+            echo "failure" > ../../.build-outcomes/life
+          fi
           echo $((SECONDS - START)) > ../../.build-times/life
 
       - name: "Build: drafthouse"
-        id: drafthouse
         if: inputs.include_applications
+        id: drafthouse
         continue-on-error: true
         env:
           SKIP_TESTS: ${{ inputs.skip_tests }}
@@ -334,46 +405,65 @@ jobs:
           MAVEN_EXTRA: ${{ inputs.maven_args }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          mkdir -p .build-outcomes
           FLAGS=""
           [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
           [ "$SKIP_ITS" = "true" ] && FLAGS="$FLAGS -DskipITs"
           START=$SECONDS
-          cd casehub/drafthouse/server && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
+          if cd casehub/drafthouse/server && mvn install --batch-mode $FLAGS $MAVEN_EXTRA; then
+            echo "success" > ../../../.build-outcomes/drafthouse
+          else
+            echo "failure" > ../../../.build-outcomes/drafthouse
+          fi
           echo $((SECONDS - START)) > ../../../.build-times/drafthouse
 
-      - name: "Build: flow"
-        id: flow
-        if: inputs.include_applications
-        continue-on-error: true
-        env:
-          SKIP_TESTS: ${{ inputs.skip_tests }}
-          SKIP_ITS: ${{ inputs.skip_integration_tests }}
-          MAVEN_EXTRA: ${{ inputs.maven_args }}
-          GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: |
-          FLAGS=""
-          [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
-          [ "$SKIP_ITS" = "true" ] && FLAGS="$FLAGS -DskipITs"
-          START=$SECONDS
-          cd casehub/flow && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
-          echo $((SECONDS - START)) > ../../.build-times/flow
-
       - name: "Build: quarkmind"
-        id: quarkmind
         if: inputs.include_applications
+        id: quarkmind
         continue-on-error: true
         env:
           SKIP_TESTS: ${{ inputs.skip_tests }}
           SKIP_ITS: ${{ inputs.skip_integration_tests }}
           MAVEN_EXTRA: ${{ inputs.maven_args }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
+          mkdir -p .build-outcomes
           FLAGS=""
           [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
           [ "$SKIP_ITS" = "true" ] && FLAGS="$FLAGS -DskipITs"
           START=$SECONDS
-          cd casehub/quarkmind && mvn install --batch-mode $FLAGS $MAVEN_EXTRA
+          if cd casehub/quarkmind && mvn install --batch-mode $FLAGS $MAVEN_EXTRA; then
+            echo "success" > ../../.build-outcomes/quarkmind
+          else
+            echo "failure" > ../../.build-outcomes/quarkmind
+          fi
           echo $((SECONDS - START)) > ../../.build-times/quarkmind
+
+      - name: "Build: flow"
+        if: inputs.include_applications
+        id: flow
+        continue-on-error: true
+        env:
+          SKIP_TESTS: ${{ inputs.skip_tests }}
+          SKIP_ITS: ${{ inputs.skip_integration_tests }}
+          MAVEN_EXTRA: ${{ inputs.maven_args }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          mkdir -p .build-outcomes
+          FLAGS=""
+          [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"
+          [ "$SKIP_ITS" = "true" ] && FLAGS="$FLAGS -DskipITs"
+          START=$SECONDS
+          if cd casehub/flow && mvn install --batch-mode $FLAGS $MAVEN_EXTRA; then
+            echo "success" > ../../.build-outcomes/flow
+          else
+            echo "failure" > ../../.build-outcomes/flow
+          fi
+          echo $((SECONDS - START)) > ../../.build-times/flow
+      # -- END GENERATED
+
 
       - name: Build summary
         if: always()
@@ -382,23 +472,6 @@ jobs:
           SKIP_TESTS: ${{ inputs.skip_tests }}
           SKIP_ITS: ${{ inputs.skip_integration_tests }}
           INCLUDE_APPLICATIONS: ${{ inputs.include_applications }}
-          OUTCOME_PLATFORM: ${{ steps.platform.outcome }}
-          OUTCOME_LEDGER: ${{ steps.ledger.outcome }}
-          OUTCOME_EIDOS: ${{ steps.eidos.outcome }}
-          OUTCOME_CONNECTORS: ${{ steps.connectors.outcome }}
-          OUTCOME_WORK: ${{ steps.work.outcome }}
-          OUTCOME_QHORUS: ${{ steps.qhorus.outcome }}
-          OUTCOME_PAGES: ${{ steps.pages.outcome }}
-          OUTCOME_ENGINE: ${{ steps.engine.outcome }}
-          OUTCOME_CLAUDONY: ${{ steps.claudony.outcome }}
-          OUTCOME_OPENCLAW: ${{ steps.openclaw.outcome }}
-          OUTCOME_DEVTOWN: ${{ steps.devtown.outcome }}
-          OUTCOME_AML: ${{ steps.aml.outcome }}
-          OUTCOME_CLINICAL: ${{ steps.clinical.outcome }}
-          OUTCOME_LIFE: ${{ steps.life.outcome }}
-          OUTCOME_DRAFTHOUSE: ${{ steps.drafthouse.outcome }}
-          OUTCOME_QUARKMIND: ${{ steps.quarkmind.outcome }}
-          OUTCOME_FLOW: ${{ steps.flow.outcome }}
         run: |
           if [ "$SKIP_TESTS" = "true" ]; then
             TEST_MODE="compile check only (all tests skipped)"
@@ -408,46 +481,19 @@ jobs:
             TEST_MODE="full test suite"
           fi
 
-          MODULES=(platform ledger eidos connectors work qhorus pages engine claudony)
-          [ "$INCLUDE_APPLICATIONS" = "true" ] && MODULES+=(openclaw devtown aml clinical life drafthouse quarkmind flow)
-          declare -A OUTCOMES=(
-            [platform]="$OUTCOME_PLATFORM"
-            [ledger]="$OUTCOME_LEDGER"
-            [eidos]="$OUTCOME_EIDOS"
-            [connectors]="$OUTCOME_CONNECTORS"
-            [work]="$OUTCOME_WORK"
-            [qhorus]="$OUTCOME_QHORUS"
-            [pages]="$OUTCOME_PAGES"
-            [engine]="$OUTCOME_ENGINE"
-            [claudony]="$OUTCOME_CLAUDONY"
-            [openclaw]="$OUTCOME_OPENCLAW"
-            [devtown]="$OUTCOME_DEVTOWN"
-            [aml]="$OUTCOME_AML"
-            [clinical]="$OUTCOME_CLINICAL"
-            [life]="$OUTCOME_LIFE"
-            [drafthouse]="$OUTCOME_DRAFTHOUSE"
-            [quarkmind]="$OUTCOME_QUARKMIND"
-            [flow]="$OUTCOME_FLOW"
-          )
-          declare -A GH_REPO=(
-            [platform]="casehubio/platform"
-            [ledger]="casehubio/ledger"
-            [eidos]="casehubio/eidos"
-            [connectors]="casehubio/connectors"
-            [work]="casehubio/work"
-            [qhorus]="casehubio/qhorus"
-            [pages]="casehubio/casehub-pages"
-            [engine]="casehubio/engine"
-            [claudony]="casehubio/claudony"
-            [openclaw]="casehubio/openclaw"
-            [devtown]="casehubio/devtown"
-            [aml]="casehubio/aml"
-            [clinical]="casehubio/clinical"
-            [life]="casehubio/life"
-            [drafthouse]="casehubio/drafthouse"
-            [quarkmind]="mdproctor/quarkmind"
-            [flow]="mdproctor/flow"
-          )
+          declare -A REPO_OVERRIDE=([pages]="casehubio/casehub-pages")
+          declare -A ORG_OVERRIDE=([quarkmind]="mdproctor" [flow]="mdproctor")
+
+          # Module list and outcomes both driven from CSV + .build-outcomes/ files
+          MODULES=()
+          read_csv_names() {
+            while IFS=',' read -r name _rest; do
+              [[ "$name" =~ ^#|^$ ]] && continue
+              MODULES+=("$name")
+            done < "$1"
+          }
+          read_csv_names build/modules-core.csv
+          [ "$INCLUDE_APPLICATIONS" = "true" ] && read_csv_names build/modules-applications.csv
 
           {
             echo "# Full Stack Build"
@@ -460,22 +506,15 @@ jobs:
 
           FAIL_COUNT=0
           for module in "${MODULES[@]}"; do
-            outcome="${OUTCOMES[$module]}"
-            repo_name="${GH_REPO[$module]}"
+            outcome=$(cat ".build-outcomes/$module" 2>/dev/null || echo "skipped")
+            repo_name="${REPO_OVERRIDE[$module]:-${ORG_OVERRIDE[$module]:-casehubio}/$module}"
             duration=$(cat ".build-times/$module" 2>/dev/null || true)
             [ -n "$duration" ] && duration="${duration}s" || duration="—"
 
             case "$outcome" in
               success)  icon="✅" ;;
               failure)  icon="❌"; FAIL_COUNT=$((FAIL_COUNT + 1)) ;;
-              skipped)
-                if { [ "$module" = "openclaw" ] || [ "$module" = "devtown" ] || [ "$module" = "aml" ] || [ "$module" = "clinical" ] || [ "$module" = "life" ] || [ "$module" = "drafthouse" ] || [ "$module" = "quarkmind" ] || [ "$module" = "flow" ]; } && [ "$INCLUDE_APPLICATIONS" != "true" ]; then
-                  icon="⏭️ excluded"
-                else
-                  icon="⏭️ skipped"; FAIL_COUNT=$((FAIL_COUNT + 1))
-                fi
-                ;;
-              *)        icon="⚠️"; FAIL_COUNT=$((FAIL_COUNT + 1)) ;;
+              *)        icon="⏭️"; FAIL_COUNT=$((FAIL_COUNT + 1)) ;;
             esac
 
             echo "| [$module](https://github.com/$repo_name) | $icon $outcome | $duration |" \
@@ -515,31 +554,32 @@ jobs:
                   return ''
 
           include_apps = os.environ.get('INCLUDE_APPLICATIONS', 'false') == 'true'
-          parent_sha = subprocess.check_output(
-              ['git', 'rev-parse', 'HEAD']
-          ).decode().strip()
+          parent_sha = subprocess.check_output(['git', 'rev-parse', 'HEAD']).decode().strip()
+
+          def load_csv(path):
+              modules = []
+              with open(path) as f:
+                  for line in f:
+                      line = line.strip()
+                      if not line or line.startswith('#'):
+                          continue
+                      modules.append(line.split(',')[0])
+              return modules
+
+          core_modules = load_csv('build/modules-core.csv')
+          app_modules  = load_csv('build/modules-applications.csv')
+          active = core_modules + (app_modules if include_apps else [])
+
+          shas = {'sha_parent': parent_sha}
+          for name in active:
+              key = 'sha_' + name.replace('-', '_')
+              shas[key] = sha(f'casehub/{name}')
 
           payload = {
               'event_type': 'ecosystem-build-succeeded',
               'client_payload': {
-                  'trigger':          os.environ.get('TRIGGER', 'workflow_dispatch'),
-                  'sha_parent':       parent_sha,
-                  'sha_platform':     sha('casehub/platform'),
-                  'sha_ledger':       sha('casehub/ledger'),
-                  'sha_eidos':        sha('casehub/eidos'),
-                  'sha_neural_text':  sha('casehub/neural-text'),
-                  'sha_connectors':   sha('casehub/connectors'),
-                  'sha_work':         sha('casehub/work'),
-                  'sha_qhorus':       sha('casehub/qhorus'),
-                  'sha_pages':        sha('casehub/pages'),
-                  'sha_engine':       sha('casehub/engine'),
-                  'sha_claudony':     sha('casehub/claudony'),
-                  'sha_openclaw':     sha('casehub/openclaw')   if include_apps else '',
-                  'sha_devtown':      sha('casehub/devtown')    if include_apps else '',
-                  'sha_aml':          sha('casehub/aml')        if include_apps else '',
-                  'sha_clinical':     sha('casehub/clinical')   if include_apps else '',
-                  'sha_life':         sha('casehub/life')       if include_apps else '',
-                  'sha_drafthouse':   sha('casehub/drafthouse') if include_apps else '',
+                  'trigger': os.environ.get('TRIGGER', 'workflow_dispatch'),
+                  **shas,
               }
           }
 

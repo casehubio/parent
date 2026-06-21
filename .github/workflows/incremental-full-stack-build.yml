@@ -60,86 +60,51 @@ jobs:
           INCLUDE_APPLICATIONS: ${{ inputs.include_applications }}
         run: |
           mkdir -p .build-times casehub
-          git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/platform.git" casehub/platform
-          git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/ledger.git" casehub/ledger
-          git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/eidos.git" casehub/eidos
-          git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/neural-text.git" casehub/neural-text
-          git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/connectors.git" casehub/connectors
-          git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/work.git" casehub/work
-          git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/qhorus.git" casehub/qhorus
-          git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/casehub-pages.git" casehub/pages
-          git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/engine.git" casehub/engine
-          git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/claudony.git" casehub/claudony
-          if [ "$INCLUDE_APPLICATIONS" = "true" ]; then
-            git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/openclaw.git" casehub/openclaw
-            git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/devtown.git"  casehub/devtown
-            git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/aml.git"     casehub/aml
-            git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/clinical.git" casehub/clinical
-            git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/life.git"    casehub/life
-            git clone --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/casehubio/drafthouse.git" casehub/drafthouse
-            git clone --quiet "https://x-access-token:${GH_TOKEN}@github.com/mdproctor/quarkmind.git"   casehub/quarkmind
-            git clone --quiet "https://x-access-token:${GH_TOKEN}@github.com/mdproctor/flow.git"        casehub/flow
-          fi
+          declare -A REPO_OVERRIDE=([pages]="casehubio/casehub-pages")
+          declare -A TOKEN_OVERRIDE=([quarkmind]="$GH_TOKEN" [flow]="$GH_TOKEN")
+          clone_csv() {
+            local csv=$1
+            while IFS=',' read -r name _rest; do
+              [[ "$name" =~ ^#|^$ ]] && continue
+              local token="${TOKEN_OVERRIDE[$name]:-$GITHUB_TOKEN}"
+              local repo="${REPO_OVERRIDE[$name]:-casehubio/$name}"
+              git clone --quiet "https://x-access-token:${token}@github.com/${repo}.git" "casehub/$name"
+            done < "$csv"
+          }
+          clone_csv build/modules-core.csv
+          [ "$INCLUDE_APPLICATIONS" = "true" ] && clone_csv build/modules-applications.csv
 
       - name: Collect SHAs
         id: shas
+        env:
+          INCLUDE_APPLICATIONS: ${{ inputs.include_applications }}
         run: |
+          emit_sha() {
+            local name=$1 dir=${2:-$1}
+            local sha=$(git -C "casehub/$dir" rev-parse HEAD)
+            local key="sha_$(echo "$name" | tr '-' '_')"
+            echo "${key}=${sha}" >> $GITHUB_OUTPUT
+            echo "${name}  ${sha}"
+          }
+
           P=$(git rev-parse HEAD)
-          PL=$(git -C casehub/platform rev-parse HEAD)
-          L=$(git -C casehub/ledger rev-parse HEAD)
-          EI=$(git -C casehub/eidos rev-parse HEAD)
-          NT=$(git -C casehub/neural-text rev-parse HEAD)
-          C=$(git -C casehub/connectors rev-parse HEAD)
-          W=$(git -C casehub/work rev-parse HEAD)
-          Q=$(git -C casehub/qhorus rev-parse HEAD)
-          PG=$(git -C casehub/pages rev-parse HEAD)
-          E=$(git -C casehub/engine rev-parse HEAD)
-          D=$(git -C casehub/claudony rev-parse HEAD)
-
-          echo "sha_parent=$P"     >> $GITHUB_OUTPUT
-          echo "sha_platform=$PL" >> $GITHUB_OUTPUT
-          echo "sha_ledger=$L"     >> $GITHUB_OUTPUT
-          echo "sha_eidos=$EI"        >> $GITHUB_OUTPUT
-          echo "sha_neural_text=$NT"  >> $GITHUB_OUTPUT
-          echo "sha_connectors=$C"    >> $GITHUB_OUTPUT
-          echo "sha_work=$W"       >> $GITHUB_OUTPUT
-          echo "sha_qhorus=$Q"     >> $GITHUB_OUTPUT
-          echo "sha_pages=$PG"     >> $GITHUB_OUTPUT
-          echo "sha_engine=$E"     >> $GITHUB_OUTPUT
-          echo "sha_claudony=$D"   >> $GITHUB_OUTPUT
-
-          if [ "${{ inputs.include_applications }}" = "true" ]; then
-            OC=$(git -C casehub/openclaw   rev-parse HEAD)
-            DT=$(git -C casehub/devtown    rev-parse HEAD)
-            AM=$(git -C casehub/aml        rev-parse HEAD)
-            CL=$(git -C casehub/clinical   rev-parse HEAD)
-            LF=$(git -C casehub/life       rev-parse HEAD)
-            DH=$(git -C casehub/drafthouse rev-parse HEAD)
-            QM=$(git -C casehub/quarkmind  rev-parse HEAD)
-            FL=$(git -C casehub/flow       rev-parse HEAD)
-            echo "sha_openclaw=$OC"   >> $GITHUB_OUTPUT
-            echo "sha_devtown=$DT"    >> $GITHUB_OUTPUT
-            echo "sha_aml=$AM"        >> $GITHUB_OUTPUT
-            echo "sha_clinical=$CL"   >> $GITHUB_OUTPUT
-            echo "sha_life=$LF"       >> $GITHUB_OUTPUT
-            echo "sha_drafthouse=$DH" >> $GITHUB_OUTPUT
-            echo "sha_quarkmind=$QM"  >> $GITHUB_OUTPUT
-            echo "sha_flow=$FL"       >> $GITHUB_OUTPUT
-          fi
+          echo "sha_parent=$P" >> $GITHUB_OUTPUT
 
           echo "::group::SHA manifest (pin these to reproduce this build)"
-          echo "parent:     $P"
-          echo "platform:   $PL"
-          echo "ledger:     $L"
-          echo "eidos:        $EI"
-          echo "neural-text:  $NT"
-          echo "connectors:   $C"
-          echo "work:       $W"
-          echo "qhorus:     $Q"
-          echo "pages:      $PG"
-          echo "engine:     $E"
-          echo "claudony:   $D"
-          [ "${{ inputs.include_applications }}" = "true" ] && { echo "openclaw:   $OC"; echo "devtown:    $DT"; echo "aml:        $AM"; echo "clinical:   $CL"; echo "life:       $LF"; echo "drafthouse: $DH"; echo "quarkmind:  $QM"; echo "flow:       $FL"; }
+          echo "parent  $P"
+
+          while IFS=',' read -r name _rest; do
+            [[ "$name" =~ ^#|^$ ]] && continue
+            emit_sha "$name"
+          done < build/modules-core.csv
+
+          if [ "$INCLUDE_APPLICATIONS" = "true" ]; then
+            while IFS=',' read -r name _rest; do
+              [[ "$name" =~ ^#|^$ ]] && continue
+              emit_sha "$name"
+            done < build/modules-applications.csv
+          fi
+
           echo "::endgroup::"
 
       # Restore state from last run on this branch.
@@ -157,16 +122,26 @@ jobs:
         id: prev
         env:
           FORCE_REBUILD: ${{ inputs.force_rebuild }}
+          INCLUDE_APPLICATIONS: ${{ inputs.include_applications }}
         run: |
-          MODULES=(parent platform ledger eidos neural-text connectors work qhorus pages engine claudony)
-          [ "${{ inputs.include_applications }}" = "true" ] && MODULES+=(openclaw devtown aml clinical life drafthouse quarkmind flow)
+          MODULES=(parent)
+          while IFS=',' read -r name _rest; do
+            [[ "$name" =~ ^#|^$ ]] && continue
+            MODULES+=("$name")
+          done < build/modules-core.csv
+          if [ "$INCLUDE_APPLICATIONS" = "true" ]; then
+            while IFS=',' read -r name _rest; do
+              [[ "$name" =~ ^#|^$ ]] && continue
+              MODULES+=("$name")
+            done < build/modules-applications.csv
+          fi
+
           if [ "$FORCE_REBUILD" = "true" ] || [ ! -f .incremental-state/shas.txt ]; then
             for m in "${MODULES[@]}"; do echo "sha_${m}=none" >> $GITHUB_OUTPUT; done
           else
             while IFS='=' read -r key value; do
               echo "sha_${key}=${value}" >> $GITHUB_OUTPUT
             done < .incremental-state/shas.txt
-            # Ensure any module missing from state file defaults to "none"
             for m in "${MODULES[@]}"; do
               grep -q "^${m}=" .incremental-state/shas.txt || echo "sha_${m}=none" >> $GITHUB_OUTPUT
             done
@@ -204,30 +179,44 @@ jobs:
       #
       # continue-on-error: true so all modules run and we get a complete summary.
 
+      # -- BEGIN GENERATED
+
       - name: "Build: platform"
         id: platform
         continue-on-error: true
         env:
           CUR: ${{ steps.shas.outputs.sha_platform }}
           PRV: ${{ steps.prev.outputs.sha_platform }}
-          CUR_P: ${{ steps.shas.outputs.sha_parent }}
-          PRV_P: ${{ steps.prev.outputs.sha_parent }}
+          CUR_PARENT: ${{ steps.shas.outputs.sha_parent }}
+          PRV_PARENT: ${{ steps.prev.outputs.sha_parent }}
           SKIP_TESTS: ${{ inputs.skip_tests }}
           SKIP_ITS: ${{ inputs.skip_integration_tests }}
           MAVEN_EXTRA: ${{ inputs.maven_args }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          mkdir -p .build-outcomes .build-decisions
           D=$(./scripts/incremental-build-decision.sh \
             --module platform --current-sha "$CUR" --previous-sha "${PRV:-none}" \
-            --dep "parent:${CUR_P}:${PRV_P:-none}")
+            --dep "parent:${CUR_PARENT}:${PRV_PARENT:-none}")
           echo "decision=$D" >> $GITHUB_OUTPUT
+          echo "$D" > .build-decisions/platform
           START=$SECONDS
-          if [ "$D" = "SKIP" ]; then
-            echo "⏭ Skipping platform (no changes)"
-          else
-            cd casehub/platform && mvn install --batch-mode ${SKIP_TESTS:+-DskipTests} $MAVEN_EXTRA
-          fi
-          echo $((SECONDS - START)) > ../../.build-times/platform
+          RC=0
+          case "$D" in
+            SKIP) echo "⏭️  platform: SKIP" ;;
+            TEST)
+              if [ "$SKIP_TESTS" = "true" ]; then echo "⏭️  platform: SKIP (TEST — tests disabled)"
+              else
+                ITS=""; [ "$SKIP_ITS" = "true" ] && ITS="-DskipITs"
+                cd casehub/platform && mvn test --batch-mode $ITS $MAVEN_EXTRA || RC=$?
+              fi ;;
+            BUILD)
+              F=""; [ "$SKIP_TESTS" = "true" ] && F="-DskipTests"
+              [ "$SKIP_ITS" = "true" ] && F="$F -DskipITs"
+              cd casehub/platform && mvn install --batch-mode $F $MAVEN_EXTRA || RC=$? ;;
+          esac
+          [ $RC -eq 0 ] && echo "success" > .build-outcomes/platform || echo "failure" > .build-outcomes/platform
+          echo $((SECONDS - START)) > .build-times/platform
 
       - name: "Build: ledger"
         id: ledger
@@ -235,31 +224,35 @@ jobs:
         env:
           CUR: ${{ steps.shas.outputs.sha_ledger }}
           PRV: ${{ steps.prev.outputs.sha_ledger }}
-          CUR_P: ${{ steps.shas.outputs.sha_parent }}
-          PRV_P: ${{ steps.prev.outputs.sha_parent }}
+          CUR_PARENT: ${{ steps.shas.outputs.sha_parent }}
+          PRV_PARENT: ${{ steps.prev.outputs.sha_parent }}
           SKIP_TESTS: ${{ inputs.skip_tests }}
           SKIP_ITS: ${{ inputs.skip_integration_tests }}
           MAVEN_EXTRA: ${{ inputs.maven_args }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          mkdir -p .build-outcomes .build-decisions
           D=$(./scripts/incremental-build-decision.sh \
             --module ledger --current-sha "$CUR" --previous-sha "${PRV:-none}" \
-            --dep "parent:${CUR_P}:${PRV_P:-none}")
+            --dep "parent:${CUR_PARENT}:${PRV_PARENT:-none}")
           echo "decision=$D" >> $GITHUB_OUTPUT
+          echo "$D" > .build-decisions/ledger
           START=$SECONDS
+          RC=0
           case "$D" in
             SKIP) echo "⏭️  ledger: SKIP" ;;
             TEST)
               if [ "$SKIP_TESTS" = "true" ]; then echo "⏭️  ledger: SKIP (TEST — tests disabled)"
               else
                 ITS=""; [ "$SKIP_ITS" = "true" ] && ITS="-DskipITs"
-                cd casehub/ledger && mvn test --batch-mode $ITS $MAVEN_EXTRA
+                cd casehub/ledger && mvn test --batch-mode $ITS $MAVEN_EXTRA || RC=$?
               fi ;;
             BUILD)
               F=""; [ "$SKIP_TESTS" = "true" ] && F="-DskipTests"
               [ "$SKIP_ITS" = "true" ] && F="$F -DskipITs"
-              cd casehub/ledger && mvn install --batch-mode $F $MAVEN_EXTRA ;;
+              cd casehub/ledger && mvn install --batch-mode $F $MAVEN_EXTRA || RC=$? ;;
           esac
+          [ $RC -eq 0 ] && echo "success" > .build-outcomes/ledger || echo "failure" > .build-outcomes/ledger
           echo $((SECONDS - START)) > .build-times/ledger
 
       - name: "Build: eidos"
@@ -268,31 +261,35 @@ jobs:
         env:
           CUR: ${{ steps.shas.outputs.sha_eidos }}
           PRV: ${{ steps.prev.outputs.sha_eidos }}
-          CUR_L: ${{ steps.shas.outputs.sha_ledger }}
-          PRV_L: ${{ steps.prev.outputs.sha_ledger }}
+          CUR_LEDGER: ${{ steps.shas.outputs.sha_ledger }}
+          PRV_LEDGER: ${{ steps.prev.outputs.sha_ledger }}
           SKIP_TESTS: ${{ inputs.skip_tests }}
           SKIP_ITS: ${{ inputs.skip_integration_tests }}
           MAVEN_EXTRA: ${{ inputs.maven_args }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          mkdir -p .build-outcomes .build-decisions
           D=$(./scripts/incremental-build-decision.sh \
             --module eidos --current-sha "$CUR" --previous-sha "${PRV:-none}" \
-            --dep "ledger:${CUR_L}:${PRV_L:-none}")
+            --dep "ledger:${CUR_LEDGER}:${PRV_LEDGER:-none}")
           echo "decision=$D" >> $GITHUB_OUTPUT
+          echo "$D" > .build-decisions/eidos
           START=$SECONDS
+          RC=0
           case "$D" in
             SKIP) echo "⏭️  eidos: SKIP" ;;
             TEST)
               if [ "$SKIP_TESTS" = "true" ]; then echo "⏭️  eidos: SKIP (TEST — tests disabled)"
               else
                 ITS=""; [ "$SKIP_ITS" = "true" ] && ITS="-DskipITs"
-                cd casehub/eidos && mvn test --batch-mode $ITS $MAVEN_EXTRA
+                cd casehub/eidos && mvn test --batch-mode $ITS $MAVEN_EXTRA || RC=$?
               fi ;;
             BUILD)
               F=""; [ "$SKIP_TESTS" = "true" ] && F="-DskipTests"
               [ "$SKIP_ITS" = "true" ] && F="$F -DskipITs"
-              cd casehub/eidos && mvn install --batch-mode $F $MAVEN_EXTRA ;;
+              cd casehub/eidos && mvn install --batch-mode $F $MAVEN_EXTRA || RC=$? ;;
           esac
+          [ $RC -eq 0 ] && echo "success" > .build-outcomes/eidos || echo "failure" > .build-outcomes/eidos
           echo $((SECONDS - START)) > .build-times/eidos
 
       - name: "Build: neural-text"
@@ -301,31 +298,35 @@ jobs:
         env:
           CUR: ${{ steps.shas.outputs.sha_neural_text }}
           PRV: ${{ steps.prev.outputs.sha_neural_text }}
-          CUR_PL: ${{ steps.shas.outputs.sha_platform }}
-          PRV_PL: ${{ steps.prev.outputs.sha_platform }}
+          CUR_PLATFORM: ${{ steps.shas.outputs.sha_platform }}
+          PRV_PLATFORM: ${{ steps.prev.outputs.sha_platform }}
           SKIP_TESTS: ${{ inputs.skip_tests }}
           SKIP_ITS: ${{ inputs.skip_integration_tests }}
           MAVEN_EXTRA: ${{ inputs.maven_args }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          mkdir -p .build-outcomes .build-decisions
           D=$(./scripts/incremental-build-decision.sh \
             --module neural-text --current-sha "$CUR" --previous-sha "${PRV:-none}" \
-            --dep "platform:${CUR_PL}:${PRV_PL:-none}")
+            --dep "platform:${CUR_PLATFORM}:${PRV_PLATFORM:-none}")
           echo "decision=$D" >> $GITHUB_OUTPUT
+          echo "$D" > .build-decisions/neural-text
           START=$SECONDS
+          RC=0
           case "$D" in
             SKIP) echo "⏭️  neural-text: SKIP" ;;
             TEST)
               if [ "$SKIP_TESTS" = "true" ]; then echo "⏭️  neural-text: SKIP (TEST — tests disabled)"
               else
                 ITS=""; [ "$SKIP_ITS" = "true" ] && ITS="-DskipITs"
-                cd casehub/neural-text && mvn test --batch-mode $ITS $MAVEN_EXTRA
+                cd casehub/neural-text && mvn test --batch-mode $ITS $MAVEN_EXTRA || RC=$?
               fi ;;
             BUILD)
               F=""; [ "$SKIP_TESTS" = "true" ] && F="-DskipTests"
               [ "$SKIP_ITS" = "true" ] && F="$F -DskipITs"
-              cd casehub/neural-text && mvn install --batch-mode $F $MAVEN_EXTRA ;;
+              cd casehub/neural-text && mvn install --batch-mode $F $MAVEN_EXTRA || RC=$? ;;
           esac
+          [ $RC -eq 0 ] && echo "success" > .build-outcomes/neural-text || echo "failure" > .build-outcomes/neural-text
           echo $((SECONDS - START)) > .build-times/neural-text
 
       - name: "Build: connectors"
@@ -334,31 +335,35 @@ jobs:
         env:
           CUR: ${{ steps.shas.outputs.sha_connectors }}
           PRV: ${{ steps.prev.outputs.sha_connectors }}
-          CUR_P: ${{ steps.shas.outputs.sha_parent }}
-          PRV_P: ${{ steps.prev.outputs.sha_parent }}
+          CUR_PARENT: ${{ steps.shas.outputs.sha_parent }}
+          PRV_PARENT: ${{ steps.prev.outputs.sha_parent }}
           SKIP_TESTS: ${{ inputs.skip_tests }}
           SKIP_ITS: ${{ inputs.skip_integration_tests }}
           MAVEN_EXTRA: ${{ inputs.maven_args }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          mkdir -p .build-outcomes .build-decisions
           D=$(./scripts/incremental-build-decision.sh \
             --module connectors --current-sha "$CUR" --previous-sha "${PRV:-none}" \
-            --dep "parent:${CUR_P}:${PRV_P:-none}")
+            --dep "parent:${CUR_PARENT}:${PRV_PARENT:-none}")
           echo "decision=$D" >> $GITHUB_OUTPUT
+          echo "$D" > .build-decisions/connectors
           START=$SECONDS
+          RC=0
           case "$D" in
             SKIP) echo "⏭️  connectors: SKIP" ;;
             TEST)
               if [ "$SKIP_TESTS" = "true" ]; then echo "⏭️  connectors: SKIP (TEST — tests disabled)"
               else
                 ITS=""; [ "$SKIP_ITS" = "true" ] && ITS="-DskipITs"
-                cd casehub/connectors && mvn test --batch-mode $ITS $MAVEN_EXTRA
+                cd casehub/connectors && mvn test --batch-mode $ITS $MAVEN_EXTRA || RC=$?
               fi ;;
             BUILD)
               F=""; [ "$SKIP_TESTS" = "true" ] && F="-DskipTests"
               [ "$SKIP_ITS" = "true" ] && F="$F -DskipITs"
-              cd casehub/connectors && mvn install --batch-mode $F $MAVEN_EXTRA ;;
+              cd casehub/connectors && mvn install --batch-mode $F $MAVEN_EXTRA || RC=$? ;;
           esac
+          [ $RC -eq 0 ] && echo "success" > .build-outcomes/connectors || echo "failure" > .build-outcomes/connectors
           echo $((SECONDS - START)) > .build-times/connectors
 
       - name: "Build: work"
@@ -367,37 +372,41 @@ jobs:
         env:
           CUR: ${{ steps.shas.outputs.sha_work }}
           PRV: ${{ steps.prev.outputs.sha_work }}
-          CUR_P: ${{ steps.shas.outputs.sha_parent }}
-          PRV_P: ${{ steps.prev.outputs.sha_parent }}
-          CUR_L: ${{ steps.shas.outputs.sha_ledger }}
-          PRV_L: ${{ steps.prev.outputs.sha_ledger }}
-          CUR_C: ${{ steps.shas.outputs.sha_connectors }}
-          PRV_C: ${{ steps.prev.outputs.sha_connectors }}
+          CUR_PARENT: ${{ steps.shas.outputs.sha_parent }}
+          PRV_PARENT: ${{ steps.prev.outputs.sha_parent }}
+          CUR_LEDGER: ${{ steps.shas.outputs.sha_ledger }}
+          PRV_LEDGER: ${{ steps.prev.outputs.sha_ledger }}
+          CUR_CONNECTORS: ${{ steps.shas.outputs.sha_connectors }}
+          PRV_CONNECTORS: ${{ steps.prev.outputs.sha_connectors }}
           SKIP_TESTS: ${{ inputs.skip_tests }}
           SKIP_ITS: ${{ inputs.skip_integration_tests }}
           MAVEN_EXTRA: ${{ inputs.maven_args }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          mkdir -p .build-outcomes .build-decisions
           D=$(./scripts/incremental-build-decision.sh \
             --module work --current-sha "$CUR" --previous-sha "${PRV:-none}" \
-            --dep "parent:${CUR_P}:${PRV_P:-none}" \
-            --dep "ledger:${CUR_L}:${PRV_L:-none}" \
-            --dep "connectors:${CUR_C}:${PRV_C:-none}")
+            --dep "parent:${CUR_PARENT}:${PRV_PARENT:-none}" \
+            --dep "ledger:${CUR_LEDGER}:${PRV_LEDGER:-none}" \
+            --dep "connectors:${CUR_CONNECTORS}:${PRV_CONNECTORS:-none}")
           echo "decision=$D" >> $GITHUB_OUTPUT
+          echo "$D" > .build-decisions/work
           START=$SECONDS
+          RC=0
           case "$D" in
             SKIP) echo "⏭️  work: SKIP" ;;
             TEST)
               if [ "$SKIP_TESTS" = "true" ]; then echo "⏭️  work: SKIP (TEST — tests disabled)"
               else
                 ITS=""; [ "$SKIP_ITS" = "true" ] && ITS="-DskipITs"
-                cd casehub/work && mvn test --batch-mode $ITS $MAVEN_EXTRA
+                cd casehub/work && mvn test --batch-mode $ITS $MAVEN_EXTRA || RC=$?
               fi ;;
             BUILD)
               F=""; [ "$SKIP_TESTS" = "true" ] && F="-DskipTests"
               [ "$SKIP_ITS" = "true" ] && F="$F -DskipITs"
-              cd casehub/work && mvn install --batch-mode $F $MAVEN_EXTRA ;;
+              cd casehub/work && mvn install --batch-mode $F $MAVEN_EXTRA || RC=$? ;;
           esac
+          [ $RC -eq 0 ] && echo "success" > .build-outcomes/work || echo "failure" > .build-outcomes/work
           echo $((SECONDS - START)) > .build-times/work
 
       - name: "Build: qhorus"
@@ -406,37 +415,41 @@ jobs:
         env:
           CUR: ${{ steps.shas.outputs.sha_qhorus }}
           PRV: ${{ steps.prev.outputs.sha_qhorus }}
-          CUR_P: ${{ steps.shas.outputs.sha_parent }}
-          PRV_P: ${{ steps.prev.outputs.sha_parent }}
-          CUR_L: ${{ steps.shas.outputs.sha_ledger }}
-          PRV_L: ${{ steps.prev.outputs.sha_ledger }}
-          CUR_W: ${{ steps.shas.outputs.sha_work }}
-          PRV_W: ${{ steps.prev.outputs.sha_work }}
+          CUR_PARENT: ${{ steps.shas.outputs.sha_parent }}
+          PRV_PARENT: ${{ steps.prev.outputs.sha_parent }}
+          CUR_LEDGER: ${{ steps.shas.outputs.sha_ledger }}
+          PRV_LEDGER: ${{ steps.prev.outputs.sha_ledger }}
+          CUR_WORK: ${{ steps.shas.outputs.sha_work }}
+          PRV_WORK: ${{ steps.prev.outputs.sha_work }}
           SKIP_TESTS: ${{ inputs.skip_tests }}
           SKIP_ITS: ${{ inputs.skip_integration_tests }}
           MAVEN_EXTRA: ${{ inputs.maven_args }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          mkdir -p .build-outcomes .build-decisions
           D=$(./scripts/incremental-build-decision.sh \
             --module qhorus --current-sha "$CUR" --previous-sha "${PRV:-none}" \
-            --dep "parent:${CUR_P}:${PRV_P:-none}" \
-            --dep "ledger:${CUR_L}:${PRV_L:-none}" \
-            --dep "work:${CUR_W}:${PRV_W:-none}")
+            --dep "parent:${CUR_PARENT}:${PRV_PARENT:-none}" \
+            --dep "ledger:${CUR_LEDGER}:${PRV_LEDGER:-none}" \
+            --dep "work:${CUR_WORK}:${PRV_WORK:-none}")
           echo "decision=$D" >> $GITHUB_OUTPUT
+          echo "$D" > .build-decisions/qhorus
           START=$SECONDS
+          RC=0
           case "$D" in
             SKIP) echo "⏭️  qhorus: SKIP" ;;
             TEST)
               if [ "$SKIP_TESTS" = "true" ]; then echo "⏭️  qhorus: SKIP (TEST — tests disabled)"
               else
                 ITS=""; [ "$SKIP_ITS" = "true" ] && ITS="-DskipITs"
-                cd casehub/qhorus && mvn test --batch-mode $ITS $MAVEN_EXTRA
+                cd casehub/qhorus && mvn test --batch-mode $ITS $MAVEN_EXTRA || RC=$?
               fi ;;
             BUILD)
               F=""; [ "$SKIP_TESTS" = "true" ] && F="-DskipTests"
               [ "$SKIP_ITS" = "true" ] && F="$F -DskipITs"
-              cd casehub/qhorus && mvn install --batch-mode $F $MAVEN_EXTRA ;;
+              cd casehub/qhorus && mvn install --batch-mode $F $MAVEN_EXTRA || RC=$? ;;
           esac
+          [ $RC -eq 0 ] && echo "success" > .build-outcomes/qhorus || echo "failure" > .build-outcomes/qhorus
           echo $((SECONDS - START)) > .build-times/qhorus
 
       - name: "Build: pages"
@@ -447,16 +460,19 @@ jobs:
           PRV: ${{ steps.prev.outputs.sha_pages }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          mkdir -p .build-outcomes .build-decisions
           D=$(./scripts/incremental-build-decision.sh \
             --module pages --current-sha "$CUR" --previous-sha "${PRV:-none}")
           echo "decision=$D" >> $GITHUB_OUTPUT
+          echo "$D" > .build-decisions/pages
           START=$SECONDS
+          RC=0
           case "$D" in
             SKIP) echo "⏭️  pages: SKIP" ;;
             TEST) echo "⏭️  pages: SKIP (yarn-only, no separate test phase)" ;;
-            BUILD)
-              cd casehub/pages && yarn install && yarn build ;;
+            BUILD) cd casehub/pages && yarn install && yarn build || RC=$? ;;
           esac
+          [ $RC -eq 0 ] && echo "success" > .build-outcomes/pages || echo "failure" > .build-outcomes/pages
           echo $((SECONDS - START)) > .build-times/pages
 
       - name: "Build: engine"
@@ -465,37 +481,41 @@ jobs:
         env:
           CUR: ${{ steps.shas.outputs.sha_engine }}
           PRV: ${{ steps.prev.outputs.sha_engine }}
-          CUR_P: ${{ steps.shas.outputs.sha_parent }}
-          PRV_P: ${{ steps.prev.outputs.sha_parent }}
-          CUR_L: ${{ steps.shas.outputs.sha_ledger }}
-          PRV_L: ${{ steps.prev.outputs.sha_ledger }}
-          CUR_W: ${{ steps.shas.outputs.sha_work }}
-          PRV_W: ${{ steps.prev.outputs.sha_work }}
+          CUR_PARENT: ${{ steps.shas.outputs.sha_parent }}
+          PRV_PARENT: ${{ steps.prev.outputs.sha_parent }}
+          CUR_LEDGER: ${{ steps.shas.outputs.sha_ledger }}
+          PRV_LEDGER: ${{ steps.prev.outputs.sha_ledger }}
+          CUR_WORK: ${{ steps.shas.outputs.sha_work }}
+          PRV_WORK: ${{ steps.prev.outputs.sha_work }}
           SKIP_TESTS: ${{ inputs.skip_tests }}
           SKIP_ITS: ${{ inputs.skip_integration_tests }}
           MAVEN_EXTRA: ${{ inputs.maven_args }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          mkdir -p .build-outcomes .build-decisions
           D=$(./scripts/incremental-build-decision.sh \
             --module engine --current-sha "$CUR" --previous-sha "${PRV:-none}" \
-            --dep "parent:${CUR_P}:${PRV_P:-none}" \
-            --dep "ledger:${CUR_L}:${PRV_L:-none}" \
-            --dep "work:${CUR_W}:${PRV_W:-none}")
+            --dep "parent:${CUR_PARENT}:${PRV_PARENT:-none}" \
+            --dep "ledger:${CUR_LEDGER}:${PRV_LEDGER:-none}" \
+            --dep "work:${CUR_WORK}:${PRV_WORK:-none}")
           echo "decision=$D" >> $GITHUB_OUTPUT
+          echo "$D" > .build-decisions/engine
           START=$SECONDS
+          RC=0
           case "$D" in
             SKIP) echo "⏭️  engine: SKIP" ;;
             TEST)
               if [ "$SKIP_TESTS" = "true" ]; then echo "⏭️  engine: SKIP (TEST — tests disabled)"
               else
                 ITS=""; [ "$SKIP_ITS" = "true" ] && ITS="-DskipITs"
-                cd casehub/engine && mvn test --batch-mode $ITS $MAVEN_EXTRA
+                cd casehub/engine && mvn test --batch-mode $ITS $MAVEN_EXTRA || RC=$?
               fi ;;
             BUILD)
               F=""; [ "$SKIP_TESTS" = "true" ] && F="-DskipTests"
               [ "$SKIP_ITS" = "true" ] && F="$F -DskipITs"
-              cd casehub/engine && mvn install --batch-mode $F $MAVEN_EXTRA ;;
+              cd casehub/engine && mvn install --batch-mode $F $MAVEN_EXTRA || RC=$? ;;
           esac
+          [ $RC -eq 0 ] && echo "success" > .build-outcomes/engine || echo "failure" > .build-outcomes/engine
           echo $((SECONDS - START)) > .build-times/engine
 
       - name: "Build: claudony"
@@ -504,393 +524,433 @@ jobs:
         env:
           CUR: ${{ steps.shas.outputs.sha_claudony }}
           PRV: ${{ steps.prev.outputs.sha_claudony }}
-          CUR_P: ${{ steps.shas.outputs.sha_parent }}
-          PRV_P: ${{ steps.prev.outputs.sha_parent }}
-          CUR_L: ${{ steps.shas.outputs.sha_ledger }}
-          PRV_L: ${{ steps.prev.outputs.sha_ledger }}
-          CUR_W: ${{ steps.shas.outputs.sha_work }}
-          PRV_W: ${{ steps.prev.outputs.sha_work }}
-          CUR_Q: ${{ steps.shas.outputs.sha_qhorus }}
-          PRV_Q: ${{ steps.prev.outputs.sha_qhorus }}
+          CUR_PARENT: ${{ steps.shas.outputs.sha_parent }}
+          PRV_PARENT: ${{ steps.prev.outputs.sha_parent }}
+          CUR_LEDGER: ${{ steps.shas.outputs.sha_ledger }}
+          PRV_LEDGER: ${{ steps.prev.outputs.sha_ledger }}
+          CUR_WORK: ${{ steps.shas.outputs.sha_work }}
+          PRV_WORK: ${{ steps.prev.outputs.sha_work }}
+          CUR_QHORUS: ${{ steps.shas.outputs.sha_qhorus }}
+          PRV_QHORUS: ${{ steps.prev.outputs.sha_qhorus }}
           SKIP_TESTS: ${{ inputs.skip_tests }}
           SKIP_ITS: ${{ inputs.skip_integration_tests }}
           MAVEN_EXTRA: ${{ inputs.maven_args }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          mkdir -p .build-outcomes .build-decisions
           D=$(./scripts/incremental-build-decision.sh \
             --module claudony --current-sha "$CUR" --previous-sha "${PRV:-none}" \
-            --dep "parent:${CUR_P}:${PRV_P:-none}" \
-            --dep "ledger:${CUR_L}:${PRV_L:-none}" \
-            --dep "work:${CUR_W}:${PRV_W:-none}" \
-            --dep "qhorus:${CUR_Q}:${PRV_Q:-none}")
+            --dep "parent:${CUR_PARENT}:${PRV_PARENT:-none}" \
+            --dep "ledger:${CUR_LEDGER}:${PRV_LEDGER:-none}" \
+            --dep "work:${CUR_WORK}:${PRV_WORK:-none}" \
+            --dep "qhorus:${CUR_QHORUS}:${PRV_QHORUS:-none}")
           echo "decision=$D" >> $GITHUB_OUTPUT
+          echo "$D" > .build-decisions/claudony
           START=$SECONDS
+          RC=0
           case "$D" in
             SKIP) echo "⏭️  claudony: SKIP" ;;
             TEST)
               if [ "$SKIP_TESTS" = "true" ]; then echo "⏭️  claudony: SKIP (TEST — tests disabled)"
               else
                 ITS=""; [ "$SKIP_ITS" = "true" ] && ITS="-DskipITs"
-                cd casehub/claudony && mvn test --batch-mode $ITS $MAVEN_EXTRA
+                cd casehub/claudony && mvn test --batch-mode $ITS $MAVEN_EXTRA || RC=$?
               fi ;;
             BUILD)
               F=""; [ "$SKIP_TESTS" = "true" ] && F="-DskipTests"
               [ "$SKIP_ITS" = "true" ] && F="$F -DskipITs"
-              cd casehub/claudony && mvn install --batch-mode $F $MAVEN_EXTRA ;;
+              cd casehub/claudony && mvn install --batch-mode $F $MAVEN_EXTRA || RC=$? ;;
           esac
+          [ $RC -eq 0 ] && echo "success" > .build-outcomes/claudony || echo "failure" > .build-outcomes/claudony
           echo $((SECONDS - START)) > .build-times/claudony
 
       - name: "Build: openclaw"
-        id: openclaw
         if: inputs.include_applications
+        id: openclaw
         continue-on-error: true
         env:
           CUR: ${{ steps.shas.outputs.sha_openclaw }}
           PRV: ${{ steps.prev.outputs.sha_openclaw }}
-          CUR_P: ${{ steps.shas.outputs.sha_parent }}
-          PRV_P: ${{ steps.prev.outputs.sha_parent }}
-          CUR_PL: ${{ steps.shas.outputs.sha_platform }}
-          PRV_PL: ${{ steps.prev.outputs.sha_platform }}
-          CUR_L: ${{ steps.shas.outputs.sha_ledger }}
-          PRV_L: ${{ steps.prev.outputs.sha_ledger }}
-          CUR_Q: ${{ steps.shas.outputs.sha_qhorus }}
-          PRV_Q: ${{ steps.prev.outputs.sha_qhorus }}
-          CUR_E: ${{ steps.shas.outputs.sha_engine }}
-          PRV_E: ${{ steps.prev.outputs.sha_engine }}
+          CUR_PARENT: ${{ steps.shas.outputs.sha_parent }}
+          PRV_PARENT: ${{ steps.prev.outputs.sha_parent }}
+          CUR_PLATFORM: ${{ steps.shas.outputs.sha_platform }}
+          PRV_PLATFORM: ${{ steps.prev.outputs.sha_platform }}
+          CUR_LEDGER: ${{ steps.shas.outputs.sha_ledger }}
+          PRV_LEDGER: ${{ steps.prev.outputs.sha_ledger }}
+          CUR_QHORUS: ${{ steps.shas.outputs.sha_qhorus }}
+          PRV_QHORUS: ${{ steps.prev.outputs.sha_qhorus }}
+          CUR_ENGINE: ${{ steps.shas.outputs.sha_engine }}
+          PRV_ENGINE: ${{ steps.prev.outputs.sha_engine }}
           SKIP_TESTS: ${{ inputs.skip_tests }}
           SKIP_ITS: ${{ inputs.skip_integration_tests }}
           MAVEN_EXTRA: ${{ inputs.maven_args }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          mkdir -p .build-outcomes .build-decisions
           D=$(./scripts/incremental-build-decision.sh \
             --module openclaw --current-sha "$CUR" --previous-sha "${PRV:-none}" \
-            --dep "parent:${CUR_P}:${PRV_P:-none}" \
-            --dep "platform:${CUR_PL}:${PRV_PL:-none}" \
-            --dep "ledger:${CUR_L}:${PRV_L:-none}" \
-            --dep "qhorus:${CUR_Q}:${PRV_Q:-none}" \
-            --dep "engine:${CUR_E}:${PRV_E:-none}")
+            --dep "parent:${CUR_PARENT}:${PRV_PARENT:-none}" \
+            --dep "platform:${CUR_PLATFORM}:${PRV_PLATFORM:-none}" \
+            --dep "ledger:${CUR_LEDGER}:${PRV_LEDGER:-none}" \
+            --dep "qhorus:${CUR_QHORUS}:${PRV_QHORUS:-none}" \
+            --dep "engine:${CUR_ENGINE}:${PRV_ENGINE:-none}")
           echo "decision=$D" >> $GITHUB_OUTPUT
+          echo "$D" > .build-decisions/openclaw
           START=$SECONDS
+          RC=0
           case "$D" in
             SKIP) echo "⏭️  openclaw: SKIP" ;;
             TEST)
               if [ "$SKIP_TESTS" = "true" ]; then echo "⏭️  openclaw: SKIP (TEST — tests disabled)"
               else
                 ITS=""; [ "$SKIP_ITS" = "true" ] && ITS="-DskipITs"
-                cd casehub/openclaw && mvn test --batch-mode $ITS $MAVEN_EXTRA
+                cd casehub/openclaw && mvn test --batch-mode $ITS $MAVEN_EXTRA || RC=$?
               fi ;;
             BUILD)
               F=""; [ "$SKIP_TESTS" = "true" ] && F="-DskipTests"
               [ "$SKIP_ITS" = "true" ] && F="$F -DskipITs"
-              cd casehub/openclaw && mvn install --batch-mode $F $MAVEN_EXTRA ;;
+              cd casehub/openclaw && mvn install --batch-mode $F $MAVEN_EXTRA || RC=$? ;;
           esac
+          [ $RC -eq 0 ] && echo "success" > .build-outcomes/openclaw || echo "failure" > .build-outcomes/openclaw
           echo $((SECONDS - START)) > .build-times/openclaw
 
       - name: "Build: devtown"
-        id: devtown
         if: inputs.include_applications
+        id: devtown
         continue-on-error: true
         env:
           CUR: ${{ steps.shas.outputs.sha_devtown }}
           PRV: ${{ steps.prev.outputs.sha_devtown }}
-          CUR_P: ${{ steps.shas.outputs.sha_parent }}
-          PRV_P: ${{ steps.prev.outputs.sha_parent }}
-          CUR_L: ${{ steps.shas.outputs.sha_ledger }}
-          PRV_L: ${{ steps.prev.outputs.sha_ledger }}
-          CUR_W: ${{ steps.shas.outputs.sha_work }}
-          PRV_W: ${{ steps.prev.outputs.sha_work }}
-          CUR_Q: ${{ steps.shas.outputs.sha_qhorus }}
-          PRV_Q: ${{ steps.prev.outputs.sha_qhorus }}
-          CUR_E: ${{ steps.shas.outputs.sha_engine }}
-          PRV_E: ${{ steps.prev.outputs.sha_engine }}
+          CUR_PARENT: ${{ steps.shas.outputs.sha_parent }}
+          PRV_PARENT: ${{ steps.prev.outputs.sha_parent }}
+          CUR_LEDGER: ${{ steps.shas.outputs.sha_ledger }}
+          PRV_LEDGER: ${{ steps.prev.outputs.sha_ledger }}
+          CUR_WORK: ${{ steps.shas.outputs.sha_work }}
+          PRV_WORK: ${{ steps.prev.outputs.sha_work }}
+          CUR_QHORUS: ${{ steps.shas.outputs.sha_qhorus }}
+          PRV_QHORUS: ${{ steps.prev.outputs.sha_qhorus }}
+          CUR_ENGINE: ${{ steps.shas.outputs.sha_engine }}
+          PRV_ENGINE: ${{ steps.prev.outputs.sha_engine }}
           SKIP_TESTS: ${{ inputs.skip_tests }}
           SKIP_ITS: ${{ inputs.skip_integration_tests }}
           MAVEN_EXTRA: ${{ inputs.maven_args }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          mkdir -p .build-outcomes .build-decisions
           D=$(./scripts/incremental-build-decision.sh \
             --module devtown --current-sha "$CUR" --previous-sha "${PRV:-none}" \
-            --dep "parent:${CUR_P}:${PRV_P:-none}" \
-            --dep "ledger:${CUR_L}:${PRV_L:-none}" \
-            --dep "work:${CUR_W}:${PRV_W:-none}" \
-            --dep "qhorus:${CUR_Q}:${PRV_Q:-none}" \
-            --dep "engine:${CUR_E}:${PRV_E:-none}")
+            --dep "parent:${CUR_PARENT}:${PRV_PARENT:-none}" \
+            --dep "ledger:${CUR_LEDGER}:${PRV_LEDGER:-none}" \
+            --dep "work:${CUR_WORK}:${PRV_WORK:-none}" \
+            --dep "qhorus:${CUR_QHORUS}:${PRV_QHORUS:-none}" \
+            --dep "engine:${CUR_ENGINE}:${PRV_ENGINE:-none}")
           echo "decision=$D" >> $GITHUB_OUTPUT
+          echo "$D" > .build-decisions/devtown
           START=$SECONDS
+          RC=0
           case "$D" in
             SKIP) echo "⏭️  devtown: SKIP" ;;
             TEST)
               if [ "$SKIP_TESTS" = "true" ]; then echo "⏭️  devtown: SKIP (TEST — tests disabled)"
               else
                 ITS=""; [ "$SKIP_ITS" = "true" ] && ITS="-DskipITs"
-                cd casehub/devtown && mvn test --batch-mode $ITS $MAVEN_EXTRA
+                cd casehub/devtown && mvn test --batch-mode $ITS $MAVEN_EXTRA || RC=$?
               fi ;;
             BUILD)
               F=""; [ "$SKIP_TESTS" = "true" ] && F="-DskipTests"
               [ "$SKIP_ITS" = "true" ] && F="$F -DskipITs"
-              cd casehub/devtown && mvn install --batch-mode $F $MAVEN_EXTRA ;;
+              cd casehub/devtown && mvn install --batch-mode $F $MAVEN_EXTRA || RC=$? ;;
           esac
+          [ $RC -eq 0 ] && echo "success" > .build-outcomes/devtown || echo "failure" > .build-outcomes/devtown
           echo $((SECONDS - START)) > .build-times/devtown
 
       - name: "Build: aml"
-        id: aml
         if: inputs.include_applications
+        id: aml
         continue-on-error: true
         env:
           CUR: ${{ steps.shas.outputs.sha_aml }}
           PRV: ${{ steps.prev.outputs.sha_aml }}
-          CUR_P: ${{ steps.shas.outputs.sha_parent }}
-          PRV_P: ${{ steps.prev.outputs.sha_parent }}
-          CUR_L: ${{ steps.shas.outputs.sha_ledger }}
-          PRV_L: ${{ steps.prev.outputs.sha_ledger }}
-          CUR_W: ${{ steps.shas.outputs.sha_work }}
-          PRV_W: ${{ steps.prev.outputs.sha_work }}
-          CUR_Q: ${{ steps.shas.outputs.sha_qhorus }}
-          PRV_Q: ${{ steps.prev.outputs.sha_qhorus }}
-          CUR_E: ${{ steps.shas.outputs.sha_engine }}
-          PRV_E: ${{ steps.prev.outputs.sha_engine }}
+          CUR_PARENT: ${{ steps.shas.outputs.sha_parent }}
+          PRV_PARENT: ${{ steps.prev.outputs.sha_parent }}
+          CUR_LEDGER: ${{ steps.shas.outputs.sha_ledger }}
+          PRV_LEDGER: ${{ steps.prev.outputs.sha_ledger }}
+          CUR_WORK: ${{ steps.shas.outputs.sha_work }}
+          PRV_WORK: ${{ steps.prev.outputs.sha_work }}
+          CUR_QHORUS: ${{ steps.shas.outputs.sha_qhorus }}
+          PRV_QHORUS: ${{ steps.prev.outputs.sha_qhorus }}
+          CUR_ENGINE: ${{ steps.shas.outputs.sha_engine }}
+          PRV_ENGINE: ${{ steps.prev.outputs.sha_engine }}
           SKIP_TESTS: ${{ inputs.skip_tests }}
           SKIP_ITS: ${{ inputs.skip_integration_tests }}
           MAVEN_EXTRA: ${{ inputs.maven_args }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          mkdir -p .build-outcomes .build-decisions
           D=$(./scripts/incremental-build-decision.sh \
             --module aml --current-sha "$CUR" --previous-sha "${PRV:-none}" \
-            --dep "parent:${CUR_P}:${PRV_P:-none}" \
-            --dep "ledger:${CUR_L}:${PRV_L:-none}" \
-            --dep "work:${CUR_W}:${PRV_W:-none}" \
-            --dep "qhorus:${CUR_Q}:${PRV_Q:-none}" \
-            --dep "engine:${CUR_E}:${PRV_E:-none}")
+            --dep "parent:${CUR_PARENT}:${PRV_PARENT:-none}" \
+            --dep "ledger:${CUR_LEDGER}:${PRV_LEDGER:-none}" \
+            --dep "work:${CUR_WORK}:${PRV_WORK:-none}" \
+            --dep "qhorus:${CUR_QHORUS}:${PRV_QHORUS:-none}" \
+            --dep "engine:${CUR_ENGINE}:${PRV_ENGINE:-none}")
           echo "decision=$D" >> $GITHUB_OUTPUT
+          echo "$D" > .build-decisions/aml
           START=$SECONDS
+          RC=0
           case "$D" in
             SKIP) echo "⏭️  aml: SKIP" ;;
             TEST)
               if [ "$SKIP_TESTS" = "true" ]; then echo "⏭️  aml: SKIP (TEST — tests disabled)"
               else
                 ITS=""; [ "$SKIP_ITS" = "true" ] && ITS="-DskipITs"
-                cd casehub/aml && mvn test --batch-mode $ITS $MAVEN_EXTRA
+                cd casehub/aml && mvn test --batch-mode $ITS $MAVEN_EXTRA || RC=$?
               fi ;;
             BUILD)
               F=""; [ "$SKIP_TESTS" = "true" ] && F="-DskipTests"
               [ "$SKIP_ITS" = "true" ] && F="$F -DskipITs"
-              cd casehub/aml && mvn install --batch-mode $F $MAVEN_EXTRA ;;
+              cd casehub/aml && mvn install --batch-mode $F $MAVEN_EXTRA || RC=$? ;;
           esac
+          [ $RC -eq 0 ] && echo "success" > .build-outcomes/aml || echo "failure" > .build-outcomes/aml
           echo $((SECONDS - START)) > .build-times/aml
 
-      - name: "Build: quarkmind"
-        id: quarkmind
-        if: inputs.include_applications
-        continue-on-error: true
-        env:
-          CUR: ${{ steps.shas.outputs.sha_quarkmind }}
-          PRV: ${{ steps.prev.outputs.sha_quarkmind }}
-          CUR_P: ${{ steps.shas.outputs.sha_parent }}
-          PRV_P: ${{ steps.prev.outputs.sha_parent }}
-          CUR_L: ${{ steps.shas.outputs.sha_ledger }}
-          PRV_L: ${{ steps.prev.outputs.sha_ledger }}
-          CUR_W: ${{ steps.shas.outputs.sha_work }}
-          PRV_W: ${{ steps.prev.outputs.sha_work }}
-          CUR_Q: ${{ steps.shas.outputs.sha_qhorus }}
-          PRV_Q: ${{ steps.prev.outputs.sha_qhorus }}
-          CUR_E: ${{ steps.shas.outputs.sha_engine }}
-          PRV_E: ${{ steps.prev.outputs.sha_engine }}
-          SKIP_TESTS: ${{ inputs.skip_tests }}
-          SKIP_ITS: ${{ inputs.skip_integration_tests }}
-          MAVEN_EXTRA: ${{ inputs.maven_args }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          D=$(./scripts/incremental-build-decision.sh \
-            --module quarkmind --current-sha "$CUR" --previous-sha "${PRV:-none}" \
-            --dep "parent:${CUR_P}:${PRV_P:-none}" \
-            --dep "ledger:${CUR_L}:${PRV_L:-none}" \
-            --dep "work:${CUR_W}:${PRV_W:-none}" \
-            --dep "qhorus:${CUR_Q}:${PRV_Q:-none}" \
-            --dep "engine:${CUR_E}:${PRV_E:-none}")
-          echo "decision=$D" >> $GITHUB_OUTPUT
-          START=$SECONDS
-          case "$D" in
-            SKIP) echo "⏭️  quarkmind: SKIP" ;;
-            TEST)
-              if [ "$SKIP_TESTS" = "true" ]; then echo "⏭️  quarkmind: SKIP (TEST — tests disabled)"
-              else
-                ITS=""; [ "$SKIP_ITS" = "true" ] && ITS="-DskipITs"
-                cd casehub/quarkmind && mvn test --batch-mode $ITS $MAVEN_EXTRA
-              fi ;;
-            BUILD)
-              F=""; [ "$SKIP_TESTS" = "true" ] && F="-DskipTests"
-              [ "$SKIP_ITS" = "true" ] && F="$F -DskipITs"
-              cd casehub/quarkmind && mvn install --batch-mode $F $MAVEN_EXTRA ;;
-          esac
-          echo $((SECONDS - START)) > .build-times/quarkmind
-
-      - name: "Build: flow"
-        id: flow
-        if: inputs.include_applications
-        continue-on-error: true
-        env:
-          CUR: ${{ steps.shas.outputs.sha_flow }}
-          PRV: ${{ steps.prev.outputs.sha_flow }}
-          CUR_P: ${{ steps.shas.outputs.sha_parent }}
-          PRV_P: ${{ steps.prev.outputs.sha_parent }}
-          CUR_E: ${{ steps.shas.outputs.sha_engine }}
-          PRV_E: ${{ steps.prev.outputs.sha_engine }}
-          SKIP_TESTS: ${{ inputs.skip_tests }}
-          SKIP_ITS: ${{ inputs.skip_integration_tests }}
-          MAVEN_EXTRA: ${{ inputs.maven_args }}
-          GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: |
-          D=$(./scripts/incremental-build-decision.sh \
-            --module flow --current-sha "$CUR" --previous-sha "${PRV:-none}" \
-            --dep "parent:${CUR_P}:${PRV_P:-none}" \
-            --dep "engine:${CUR_E}:${PRV_E:-none}")
-          echo "decision=$D" >> $GITHUB_OUTPUT
-          START=$SECONDS
-          case "$D" in
-            SKIP) echo "⏭️  flow: SKIP" ;;
-            TEST)
-              if [ "$SKIP_TESTS" = "true" ]; then echo "⏭️  flow: SKIP (TEST — tests disabled)"
-              else
-                ITS=""; [ "$SKIP_ITS" = "true" ] && ITS="-DskipITs"
-                cd casehub/flow && mvn test --batch-mode $ITS $MAVEN_EXTRA
-              fi ;;
-            BUILD)
-              F=""; [ "$SKIP_TESTS" = "true" ] && F="-DskipTests"
-              [ "$SKIP_ITS" = "true" ] && F="$F -DskipITs"
-              cd casehub/flow && mvn install --batch-mode $F $MAVEN_EXTRA ;;
-          esac
-          echo $((SECONDS - START)) > .build-times/flow
-
       - name: "Build: clinical"
-        id: clinical
         if: inputs.include_applications
+        id: clinical
         continue-on-error: true
         env:
           CUR: ${{ steps.shas.outputs.sha_clinical }}
           PRV: ${{ steps.prev.outputs.sha_clinical }}
-          CUR_P: ${{ steps.shas.outputs.sha_parent }}
-          PRV_P: ${{ steps.prev.outputs.sha_parent }}
-          CUR_L: ${{ steps.shas.outputs.sha_ledger }}
-          PRV_L: ${{ steps.prev.outputs.sha_ledger }}
-          CUR_W: ${{ steps.shas.outputs.sha_work }}
-          PRV_W: ${{ steps.prev.outputs.sha_work }}
-          CUR_Q: ${{ steps.shas.outputs.sha_qhorus }}
-          PRV_Q: ${{ steps.prev.outputs.sha_qhorus }}
-          CUR_E: ${{ steps.shas.outputs.sha_engine }}
-          PRV_E: ${{ steps.prev.outputs.sha_engine }}
+          CUR_PARENT: ${{ steps.shas.outputs.sha_parent }}
+          PRV_PARENT: ${{ steps.prev.outputs.sha_parent }}
+          CUR_LEDGER: ${{ steps.shas.outputs.sha_ledger }}
+          PRV_LEDGER: ${{ steps.prev.outputs.sha_ledger }}
+          CUR_WORK: ${{ steps.shas.outputs.sha_work }}
+          PRV_WORK: ${{ steps.prev.outputs.sha_work }}
+          CUR_QHORUS: ${{ steps.shas.outputs.sha_qhorus }}
+          PRV_QHORUS: ${{ steps.prev.outputs.sha_qhorus }}
+          CUR_ENGINE: ${{ steps.shas.outputs.sha_engine }}
+          PRV_ENGINE: ${{ steps.prev.outputs.sha_engine }}
           SKIP_TESTS: ${{ inputs.skip_tests }}
           SKIP_ITS: ${{ inputs.skip_integration_tests }}
           MAVEN_EXTRA: ${{ inputs.maven_args }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          mkdir -p .build-outcomes .build-decisions
           D=$(./scripts/incremental-build-decision.sh \
             --module clinical --current-sha "$CUR" --previous-sha "${PRV:-none}" \
-            --dep "parent:${CUR_P}:${PRV_P:-none}" \
-            --dep "ledger:${CUR_L}:${PRV_L:-none}" \
-            --dep "work:${CUR_W}:${PRV_W:-none}" \
-            --dep "qhorus:${CUR_Q}:${PRV_Q:-none}" \
-            --dep "engine:${CUR_E}:${PRV_E:-none}")
+            --dep "parent:${CUR_PARENT}:${PRV_PARENT:-none}" \
+            --dep "ledger:${CUR_LEDGER}:${PRV_LEDGER:-none}" \
+            --dep "work:${CUR_WORK}:${PRV_WORK:-none}" \
+            --dep "qhorus:${CUR_QHORUS}:${PRV_QHORUS:-none}" \
+            --dep "engine:${CUR_ENGINE}:${PRV_ENGINE:-none}")
           echo "decision=$D" >> $GITHUB_OUTPUT
+          echo "$D" > .build-decisions/clinical
           START=$SECONDS
+          RC=0
           case "$D" in
             SKIP) echo "⏭️  clinical: SKIP" ;;
             TEST)
               if [ "$SKIP_TESTS" = "true" ]; then echo "⏭️  clinical: SKIP (TEST — tests disabled)"
               else
                 ITS=""; [ "$SKIP_ITS" = "true" ] && ITS="-DskipITs"
-                cd casehub/clinical && mvn test --batch-mode $ITS $MAVEN_EXTRA
+                cd casehub/clinical && mvn test --batch-mode $ITS $MAVEN_EXTRA || RC=$?
               fi ;;
             BUILD)
               F=""; [ "$SKIP_TESTS" = "true" ] && F="-DskipTests"
               [ "$SKIP_ITS" = "true" ] && F="$F -DskipITs"
-              cd casehub/clinical && mvn install --batch-mode $F $MAVEN_EXTRA ;;
+              cd casehub/clinical && mvn install --batch-mode $F $MAVEN_EXTRA || RC=$? ;;
           esac
+          [ $RC -eq 0 ] && echo "success" > .build-outcomes/clinical || echo "failure" > .build-outcomes/clinical
           echo $((SECONDS - START)) > .build-times/clinical
 
       - name: "Build: life"
-        id: life
         if: inputs.include_applications
+        id: life
         continue-on-error: true
         env:
           CUR: ${{ steps.shas.outputs.sha_life }}
           PRV: ${{ steps.prev.outputs.sha_life }}
-          CUR_P: ${{ steps.shas.outputs.sha_parent }}
-          PRV_P: ${{ steps.prev.outputs.sha_parent }}
-          CUR_L: ${{ steps.shas.outputs.sha_ledger }}
-          PRV_L: ${{ steps.prev.outputs.sha_ledger }}
-          CUR_W: ${{ steps.shas.outputs.sha_work }}
-          PRV_W: ${{ steps.prev.outputs.sha_work }}
-          CUR_Q: ${{ steps.shas.outputs.sha_qhorus }}
-          PRV_Q: ${{ steps.prev.outputs.sha_qhorus }}
-          CUR_E: ${{ steps.shas.outputs.sha_engine }}
-          PRV_E: ${{ steps.prev.outputs.sha_engine }}
-          CUR_OC: ${{ steps.shas.outputs.sha_openclaw }}
-          PRV_OC: ${{ steps.prev.outputs.sha_openclaw }}
+          CUR_PARENT: ${{ steps.shas.outputs.sha_parent }}
+          PRV_PARENT: ${{ steps.prev.outputs.sha_parent }}
+          CUR_LEDGER: ${{ steps.shas.outputs.sha_ledger }}
+          PRV_LEDGER: ${{ steps.prev.outputs.sha_ledger }}
+          CUR_WORK: ${{ steps.shas.outputs.sha_work }}
+          PRV_WORK: ${{ steps.prev.outputs.sha_work }}
+          CUR_QHORUS: ${{ steps.shas.outputs.sha_qhorus }}
+          PRV_QHORUS: ${{ steps.prev.outputs.sha_qhorus }}
+          CUR_ENGINE: ${{ steps.shas.outputs.sha_engine }}
+          PRV_ENGINE: ${{ steps.prev.outputs.sha_engine }}
+          CUR_OPENCLAW: ${{ steps.shas.outputs.sha_openclaw }}
+          PRV_OPENCLAW: ${{ steps.prev.outputs.sha_openclaw }}
           SKIP_TESTS: ${{ inputs.skip_tests }}
           SKIP_ITS: ${{ inputs.skip_integration_tests }}
           MAVEN_EXTRA: ${{ inputs.maven_args }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          mkdir -p .build-outcomes .build-decisions
           D=$(./scripts/incremental-build-decision.sh \
             --module life --current-sha "$CUR" --previous-sha "${PRV:-none}" \
-            --dep "parent:${CUR_P}:${PRV_P:-none}" \
-            --dep "ledger:${CUR_L}:${PRV_L:-none}" \
-            --dep "work:${CUR_W}:${PRV_W:-none}" \
-            --dep "qhorus:${CUR_Q}:${PRV_Q:-none}" \
-            --dep "engine:${CUR_E}:${PRV_E:-none}" \
-            --dep "openclaw:${CUR_OC}:${PRV_OC:-none}")
+            --dep "parent:${CUR_PARENT}:${PRV_PARENT:-none}" \
+            --dep "ledger:${CUR_LEDGER}:${PRV_LEDGER:-none}" \
+            --dep "work:${CUR_WORK}:${PRV_WORK:-none}" \
+            --dep "qhorus:${CUR_QHORUS}:${PRV_QHORUS:-none}" \
+            --dep "engine:${CUR_ENGINE}:${PRV_ENGINE:-none}" \
+            --dep "openclaw:${CUR_OPENCLAW}:${PRV_OPENCLAW:-none}")
           echo "decision=$D" >> $GITHUB_OUTPUT
+          echo "$D" > .build-decisions/life
           START=$SECONDS
+          RC=0
           case "$D" in
             SKIP) echo "⏭️  life: SKIP" ;;
             TEST)
               if [ "$SKIP_TESTS" = "true" ]; then echo "⏭️  life: SKIP (TEST — tests disabled)"
               else
                 ITS=""; [ "$SKIP_ITS" = "true" ] && ITS="-DskipITs"
-                cd casehub/life && mvn test --batch-mode $ITS $MAVEN_EXTRA
+                cd casehub/life && mvn test --batch-mode $ITS $MAVEN_EXTRA || RC=$?
               fi ;;
             BUILD)
               F=""; [ "$SKIP_TESTS" = "true" ] && F="-DskipTests"
               [ "$SKIP_ITS" = "true" ] && F="$F -DskipITs"
-              cd casehub/life && mvn install --batch-mode $F $MAVEN_EXTRA ;;
+              cd casehub/life && mvn install --batch-mode $F $MAVEN_EXTRA || RC=$? ;;
           esac
+          [ $RC -eq 0 ] && echo "success" > .build-outcomes/life || echo "failure" > .build-outcomes/life
           echo $((SECONDS - START)) > .build-times/life
 
       - name: "Build: drafthouse"
-        id: drafthouse
         if: inputs.include_applications
+        id: drafthouse
         continue-on-error: true
         env:
           CUR: ${{ steps.shas.outputs.sha_drafthouse }}
           PRV: ${{ steps.prev.outputs.sha_drafthouse }}
-          CUR_P: ${{ steps.shas.outputs.sha_parent }}
-          PRV_P: ${{ steps.prev.outputs.sha_parent }}
-          CUR_Q: ${{ steps.shas.outputs.sha_qhorus }}
-          PRV_Q: ${{ steps.prev.outputs.sha_qhorus }}
+          CUR_PARENT: ${{ steps.shas.outputs.sha_parent }}
+          PRV_PARENT: ${{ steps.prev.outputs.sha_parent }}
+          CUR_QHORUS: ${{ steps.shas.outputs.sha_qhorus }}
+          PRV_QHORUS: ${{ steps.prev.outputs.sha_qhorus }}
           SKIP_TESTS: ${{ inputs.skip_tests }}
           SKIP_ITS: ${{ inputs.skip_integration_tests }}
           MAVEN_EXTRA: ${{ inputs.maven_args }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          START=$SECONDS
+          mkdir -p .build-outcomes .build-decisions
           D=$(./scripts/incremental-build-decision.sh \
             --module drafthouse --current-sha "$CUR" --previous-sha "${PRV:-none}" \
-            --dep "parent:${{ steps.shas.outputs.sha_parent }}:${{ steps.prev.outputs.sha_parent || 'none' }}" \
-            --dep "qhorus:${{ steps.shas.outputs.sha_qhorus }}:${{ steps.prev.outputs.sha_qhorus || 'none' }}")
+            --dep "parent:${CUR_PARENT}:${PRV_PARENT:-none}" \
+            --dep "qhorus:${CUR_QHORUS}:${PRV_QHORUS:-none}")
+          echo "decision=$D" >> $GITHUB_OUTPUT
+          echo "$D" > .build-decisions/drafthouse
+          START=$SECONDS
+          RC=0
           case "$D" in
             SKIP) echo "⏭️  drafthouse: SKIP" ;;
             TEST)
               if [ "$SKIP_TESTS" = "true" ]; then echo "⏭️  drafthouse: SKIP (TEST — tests disabled)"
               else
                 ITS=""; [ "$SKIP_ITS" = "true" ] && ITS="-DskipITs"
-                cd casehub/drafthouse/server && mvn test --batch-mode $ITS $MAVEN_EXTRA
+                cd casehub/drafthouse/server && mvn test --batch-mode $ITS $MAVEN_EXTRA || RC=$?
               fi ;;
-            *)
+            BUILD)
               F=""; [ "$SKIP_TESTS" = "true" ] && F="-DskipTests"
               [ "$SKIP_ITS" = "true" ] && F="$F -DskipITs"
-              cd casehub/drafthouse/server && mvn install --batch-mode $F $MAVEN_EXTRA ;;
+              cd casehub/drafthouse/server && mvn install --batch-mode $F $MAVEN_EXTRA || RC=$? ;;
           esac
+          [ $RC -eq 0 ] && echo "success" > .build-outcomes/drafthouse || echo "failure" > .build-outcomes/drafthouse
           echo $((SECONDS - START)) > .build-times/drafthouse
+
+      - name: "Build: quarkmind"
+        if: inputs.include_applications
+        id: quarkmind
+        continue-on-error: true
+        env:
+          CUR: ${{ steps.shas.outputs.sha_quarkmind }}
+          PRV: ${{ steps.prev.outputs.sha_quarkmind }}
+          CUR_PARENT: ${{ steps.shas.outputs.sha_parent }}
+          PRV_PARENT: ${{ steps.prev.outputs.sha_parent }}
+          CUR_LEDGER: ${{ steps.shas.outputs.sha_ledger }}
+          PRV_LEDGER: ${{ steps.prev.outputs.sha_ledger }}
+          CUR_WORK: ${{ steps.shas.outputs.sha_work }}
+          PRV_WORK: ${{ steps.prev.outputs.sha_work }}
+          CUR_QHORUS: ${{ steps.shas.outputs.sha_qhorus }}
+          PRV_QHORUS: ${{ steps.prev.outputs.sha_qhorus }}
+          CUR_ENGINE: ${{ steps.shas.outputs.sha_engine }}
+          PRV_ENGINE: ${{ steps.prev.outputs.sha_engine }}
+          SKIP_TESTS: ${{ inputs.skip_tests }}
+          SKIP_ITS: ${{ inputs.skip_integration_tests }}
+          MAVEN_EXTRA: ${{ inputs.maven_args }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          mkdir -p .build-outcomes .build-decisions
+          D=$(./scripts/incremental-build-decision.sh \
+            --module quarkmind --current-sha "$CUR" --previous-sha "${PRV:-none}" \
+            --dep "parent:${CUR_PARENT}:${PRV_PARENT:-none}" \
+            --dep "ledger:${CUR_LEDGER}:${PRV_LEDGER:-none}" \
+            --dep "work:${CUR_WORK}:${PRV_WORK:-none}" \
+            --dep "qhorus:${CUR_QHORUS}:${PRV_QHORUS:-none}" \
+            --dep "engine:${CUR_ENGINE}:${PRV_ENGINE:-none}")
+          echo "decision=$D" >> $GITHUB_OUTPUT
+          echo "$D" > .build-decisions/quarkmind
+          START=$SECONDS
+          RC=0
+          case "$D" in
+            SKIP) echo "⏭️  quarkmind: SKIP" ;;
+            TEST)
+              if [ "$SKIP_TESTS" = "true" ]; then echo "⏭️  quarkmind: SKIP (TEST — tests disabled)"
+              else
+                ITS=""; [ "$SKIP_ITS" = "true" ] && ITS="-DskipITs"
+                cd casehub/quarkmind && mvn test --batch-mode $ITS $MAVEN_EXTRA || RC=$?
+              fi ;;
+            BUILD)
+              F=""; [ "$SKIP_TESTS" = "true" ] && F="-DskipTests"
+              [ "$SKIP_ITS" = "true" ] && F="$F -DskipITs"
+              cd casehub/quarkmind && mvn install --batch-mode $F $MAVEN_EXTRA || RC=$? ;;
+          esac
+          [ $RC -eq 0 ] && echo "success" > .build-outcomes/quarkmind || echo "failure" > .build-outcomes/quarkmind
+          echo $((SECONDS - START)) > .build-times/quarkmind
+
+      - name: "Build: flow"
+        if: inputs.include_applications
+        id: flow
+        continue-on-error: true
+        env:
+          CUR: ${{ steps.shas.outputs.sha_flow }}
+          PRV: ${{ steps.prev.outputs.sha_flow }}
+          CUR_PARENT: ${{ steps.shas.outputs.sha_parent }}
+          PRV_PARENT: ${{ steps.prev.outputs.sha_parent }}
+          CUR_ENGINE: ${{ steps.shas.outputs.sha_engine }}
+          PRV_ENGINE: ${{ steps.prev.outputs.sha_engine }}
+          SKIP_TESTS: ${{ inputs.skip_tests }}
+          SKIP_ITS: ${{ inputs.skip_integration_tests }}
+          MAVEN_EXTRA: ${{ inputs.maven_args }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          mkdir -p .build-outcomes .build-decisions
+          D=$(./scripts/incremental-build-decision.sh \
+            --module flow --current-sha "$CUR" --previous-sha "${PRV:-none}" \
+            --dep "parent:${CUR_PARENT}:${PRV_PARENT:-none}" \
+            --dep "engine:${CUR_ENGINE}:${PRV_ENGINE:-none}")
+          echo "decision=$D" >> $GITHUB_OUTPUT
+          echo "$D" > .build-decisions/flow
+          START=$SECONDS
+          RC=0
+          case "$D" in
+            SKIP) echo "⏭️  flow: SKIP" ;;
+            TEST)
+              if [ "$SKIP_TESTS" = "true" ]; then echo "⏭️  flow: SKIP (TEST — tests disabled)"
+              else
+                ITS=""; [ "$SKIP_ITS" = "true" ] && ITS="-DskipITs"
+                cd casehub/flow && mvn test --batch-mode $ITS $MAVEN_EXTRA || RC=$?
+              fi ;;
+            BUILD)
+              F=""; [ "$SKIP_TESTS" = "true" ] && F="-DskipTests"
+              [ "$SKIP_ITS" = "true" ] && F="$F -DskipITs"
+              cd casehub/flow && mvn install --batch-mode $F $MAVEN_EXTRA || RC=$? ;;
+          esac
+          [ $RC -eq 0 ] && echo "success" > .build-outcomes/flow || echo "failure" > .build-outcomes/flow
+          echo $((SECONDS - START)) > .build-times/flow
+      # -- END GENERATED
 
       # ── State persistence ─────────────────────────────────────────────────
       #
@@ -1002,38 +1062,7 @@ jobs:
           SKIP_TESTS: ${{ inputs.skip_tests }}
           SKIP_ITS: ${{ inputs.skip_integration_tests }}
           FORCE_REBUILD: ${{ inputs.force_rebuild }}
-          DECISION_PLATFORM: ${{ steps.platform.outputs.decision }}
-          DECISION_LEDGER: ${{ steps.ledger.outputs.decision }}
-          DECISION_EIDOS: ${{ steps.eidos.outputs.decision }}
-          DECISION_NEURAL_TEXT: ${{ steps.neural-text.outputs.decision }}
-          DECISION_CONNECTORS: ${{ steps.connectors.outputs.decision }}
-          DECISION_WORK: ${{ steps.work.outputs.decision }}
-          DECISION_QHORUS: ${{ steps.qhorus.outputs.decision }}
-          DECISION_ENGINE: ${{ steps.engine.outputs.decision }}
-          DECISION_CLAUDONY: ${{ steps.claudony.outputs.decision }}
-          DECISION_DEVTOWN: ${{ steps.devtown.outputs.decision }}
-          DECISION_AML: ${{ steps.aml.outputs.decision }}
-          DECISION_CLINICAL: ${{ steps.clinical.outputs.decision }}
-          DECISION_DRAFTHOUSE: ${{ steps.drafthouse.outputs.decision }}
-          DECISION_QUARKMIND: ${{ steps.quarkmind.outputs.decision }}
-          DECISION_FLOW: ${{ steps.flow.outputs.decision }}
           INCLUDE_APPLICATIONS: ${{ inputs.include_applications }}
-          OUTCOME_PLATFORM: ${{ steps.platform.outcome }}
-          OUTCOME_LEDGER: ${{ steps.ledger.outcome }}
-          OUTCOME_EIDOS: ${{ steps.eidos.outcome }}
-          OUTCOME_NEURAL_TEXT: ${{ steps.neural-text.outcome }}
-          OUTCOME_CONNECTORS: ${{ steps.connectors.outcome }}
-          OUTCOME_WORK: ${{ steps.work.outcome }}
-          OUTCOME_QHORUS: ${{ steps.qhorus.outcome }}
-          OUTCOME_PAGES: ${{ steps.pages.outcome }}
-          OUTCOME_ENGINE: ${{ steps.engine.outcome }}
-          OUTCOME_CLAUDONY: ${{ steps.claudony.outcome }}
-          OUTCOME_DEVTOWN: ${{ steps.devtown.outcome }}
-          OUTCOME_AML: ${{ steps.aml.outcome }}
-          OUTCOME_CLINICAL: ${{ steps.clinical.outcome }}
-          OUTCOME_DRAFTHOUSE: ${{ steps.drafthouse.outcome }}
-          OUTCOME_QUARKMIND: ${{ steps.quarkmind.outcome }}
-          OUTCOME_FLOW: ${{ steps.flow.outcome }}
         run: |
           if [ "$SKIP_TESTS" = "true" ]; then
             TEST_MODE="compile check only"
@@ -1044,43 +1073,18 @@ jobs:
           fi
           [ "$FORCE_REBUILD" = "true" ] && TEST_MODE="$TEST_MODE — forced rebuild"
 
-          MODULES=(platform ledger eidos neural-text connectors work qhorus engine claudony)
-          [ "$INCLUDE_APPLICATIONS" = "true" ] && MODULES+=(devtown aml clinical drafthouse quarkmind flow)
-          declare -A DECISIONS=(
-            [platform]="$DECISION_PLATFORM"
-            [ledger]="$DECISION_LEDGER"
-            [eidos]="$DECISION_EIDOS"
-            [neural-text]="$DECISION_NEURAL_TEXT"
-            [connectors]="$DECISION_CONNECTORS"
-            [work]="$DECISION_WORK"
-            [qhorus]="$DECISION_QHORUS"
-            [engine]="$DECISION_ENGINE"
-            [claudony]="$DECISION_CLAUDONY"
-            [devtown]="$DECISION_DEVTOWN"
-            [aml]="$DECISION_AML"
-            [clinical]="$DECISION_CLINICAL"
-            [drafthouse]="$DECISION_DRAFTHOUSE"
-            [quarkmind]="$DECISION_QUARKMIND"
-            [flow]="$DECISION_FLOW"
-          )
-          declare -A OUTCOMES=(
-            [platform]="$OUTCOME_PLATFORM"
-            [ledger]="$OUTCOME_LEDGER"
-            [eidos]="$OUTCOME_EIDOS"
-            [neural-text]="$OUTCOME_NEURAL_TEXT"
-            [connectors]="$OUTCOME_CONNECTORS"
-            [work]="$OUTCOME_WORK"
-            [qhorus]="$OUTCOME_QHORUS"
-            [pages]="$OUTCOME_PAGES"
-            [engine]="$OUTCOME_ENGINE"
-            [claudony]="$OUTCOME_CLAUDONY"
-            [devtown]="$OUTCOME_DEVTOWN"
-            [aml]="$OUTCOME_AML"
-            [clinical]="$OUTCOME_CLINICAL"
-            [drafthouse]="$OUTCOME_DRAFTHOUSE"
-            [quarkmind]="$OUTCOME_QUARKMIND"
-            [flow]="$OUTCOME_FLOW"
-          )
+          declare -A ORG_OVERRIDE=([quarkmind]="mdproctor" [flow]="mdproctor")
+
+          # Module list, outcomes, and decisions all driven from CSV + files written by each step
+          MODULES=()
+          read_csv_names() {
+            while IFS=',' read -r name _rest; do
+              [[ "$name" =~ ^#|^$ ]] && continue
+              MODULES+=("$name")
+            done < "$1"
+          }
+          read_csv_names build/modules-core.csv
+          [ "$INCLUDE_APPLICATIONS" = "true" ] && read_csv_names build/modules-applications.csv
 
           {
             echo "# Incremental Full Stack Build"
@@ -1093,20 +1097,18 @@ jobs:
 
           FAIL_COUNT=0
           for module in "${MODULES[@]}"; do
-            decision="${DECISIONS[$module]:-—}"
-            outcome="${OUTCOMES[$module]}"
+            decision=$(cat ".build-decisions/$module" 2>/dev/null || echo "—")
+            outcome=$(cat ".build-outcomes/$module" 2>/dev/null || echo "skipped")
             duration=$(cat ".build-times/$module" 2>/dev/null || true)
             [ -n "$duration" ] && duration="${duration}s" || duration="—"
 
             case "$outcome" in
               success)  icon="✅" ;;
               failure)  icon="❌"; FAIL_COUNT=$((FAIL_COUNT + 1)) ;;
-              skipped)  icon="⚠️ skipped"; FAIL_COUNT=$((FAIL_COUNT + 1)) ;;
-              *)        icon="—" ;;
+              *)        icon="⏭️" ;;
             esac
 
-            repo_org="casehubio"
-            { [ "$module" = "quarkmind" ] || [ "$module" = "flow" ]; } && repo_org="mdproctor"
+            repo_org="${ORG_OVERRIDE[$module]:-casehubio}"
             echo "| [$module](https://github.com/$repo_org/$module) | $decision | $icon | $duration |" \
               >> "$GITHUB_STEP_SUMMARY"
           done
