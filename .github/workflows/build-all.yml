@@ -72,7 +72,7 @@ jobs:
             done < "$csv"
           }
           clone_csv build/modules-core.csv
-          [ "$INCLUDE_APPLICATIONS" = "true" ] && clone_csv build/modules-applications.csv
+          if [ "$INCLUDE_APPLICATIONS" = "true" ]; then clone_csv build/modules-applications.csv; fi
 
       - name: Collect SHAs
         id: shas
@@ -1044,7 +1044,7 @@ jobs:
             done < "$1"
           }
           read_csv_names build/modules-core.csv
-          [ "$INCLUDE_APPLICATIONS" = "true" ] && read_csv_names build/modules-applications.csv
+          if [ "$INCLUDE_APPLICATIONS" = "true" ]; then read_csv_names build/modules-applications.csv; fi
 
           {
             echo "# Build All"
