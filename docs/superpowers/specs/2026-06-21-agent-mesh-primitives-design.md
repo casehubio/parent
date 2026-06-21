@@ -70,7 +70,14 @@ Both are platform concepts — any mesh agent may want either variant.
 // package io.casehub.api.spi.mesh
 public interface MeshParticipationStrategy {
 
-    MeshParticipation strategyFor(String workerId, WorkerContext context);
+    /**
+     * Signature fix: was strategyFor(String workerId, WorkerContext context).
+     * The old signature was a design lie — context was always null at the call site
+     * (DESIGN.md line 540: "Outstanding: currently receives null for context").
+     * caseId is directly available in buildContext() and is all per-case dispatch needs.
+     * This fix is compliant with spi-case-id-parameter.md: direct UUID, not buried in a nullable wrapper.
+     */
+    MeshParticipation strategyFor(String workerId, UUID caseId);
 
     /**
      * NEW factory method — does not exist prior to this extraction.
@@ -97,13 +104,13 @@ public interface MeshParticipationStrategy {
 }
 ```
 
-**`ActiveParticipationStrategy`** — always returns `ACTIVE`. Pure logic, zero deps beyond interface.  
-**`ReactiveParticipationStrategy`** — always returns `REACTIVE`. Pure logic, zero deps beyond interface.  
-**`SilentParticipationStrategy`** — always returns `SILENT`. Pure logic, zero deps beyond interface.
+**`ActiveParticipationStrategy`** — always returns `ACTIVE`. Pure logic, zero deps beyond interface. No longer imports `WorkerContext`.  
+**`ReactiveParticipationStrategy`** — always returns `REACTIVE`. Pure logic. No longer imports `WorkerContext`.  
+**`SilentParticipationStrategy`** — always returns `SILENT`. Pure logic. No longer imports `WorkerContext`.
 
 All three verified: zero claudony-specific dependencies.
 
-Note on per-case dispatch: `strategyFor(String workerId, WorkerContext context)` already carries `caseId` via `context.caseId()`. A future `PerCaseDynamicStrategy` can extract it without any interface change.
+Note on per-case dispatch: `strategyFor(String workerId, UUID caseId)` passes caseId directly per `spi-case-id-parameter.md`. A future `PerCaseDynamicStrategy` dispatches per-case without any interface change.
 
 ---
 
@@ -120,8 +127,8 @@ Rationale: engine-api already uses sub-packages (`io.casehub.api.spi.routing`). 
 `casehub-engine-api` already depends on `casehub-qhorus-api`.  
 `MessageType` and `ChannelSemantic` are already available — **zero new dependencies**.
 
-`WorkerContext` is in `io.casehub.api.model` — already in engine-api.  
-`CaseDefinition` is in `io.casehub.api.model` — already in engine-api.
+`CaseDefinition` is in `io.casehub.api.model` — already in engine-api.  
+`WorkerContext` is no longer referenced by `MeshParticipationStrategy` — the signature fix removes that import from the interface and all three implementations.
 
 Both claudony and openclaw already depend on `casehub-engine-api` — **zero new dependencies** in either consumer.
 
@@ -141,10 +148,13 @@ Both claudony and openclaw already depend on `casehub-engine-api` — **zero new
 - `SilentParticipationStrategy`
 
 **Add tests** in api test sources:
-- `CaseChannelLayoutContractTest` — SPI contract: non-null return, no duplicate purposes, APPEND semantic invariant, no purpose/caseId/definition assumption
-- `NormativeChannelLayoutTest` — moved and extended from claudony; verifies 3 channels, exact allowedTypes/deniedTypes per protocol
+- `CaseChannelLayoutContractTest` — SPI contract: non-null return, no duplicate purposes, APPEND semantic invariant, no purpose/caseId/definition assumption; **plus** factory tests:
+  - `named("normative")` returns instance producing 3 channels (work, observe, oversight)
+  - `named("simple")` returns instance producing 2 channels (work, observe, no oversight)
+  - `named("unknown")` throws `IllegalArgumentException`
+- `NormativeChannelLayoutTest` — moved from claudony; verifies 3 channels, exact allowedTypes/deniedTypes per protocol. No extension — the `named()` factory tests above cover `NormativeChannelLayout` indirectly.
 - `SimpleLayoutTest` — moved from claudony; verifies 2 channels, no oversight
-- `MeshParticipationStrategyTest` — moved **and extended** from claudony; existing tests cover enum size and consistency; **must add**:
+- `MeshParticipationStrategyTest` — moved **and extended** from claudony; existing tests cover enum size and consistency; tests updated from `strategyFor("w", null)` → `strategyFor("w", someUUID)`; **must add**:
   - `named("active")` returns `ActiveParticipationStrategy` instance
   - `named("reactive")` returns `ReactiveParticipationStrategy` instance
   - `named("silent")` returns `SilentParticipationStrategy` instance
@@ -177,12 +187,14 @@ Both claudony and openclaw already depend on `casehub-engine-api` — **zero new
 **Update — `ClaudonyReactiveWorkerContextProvider`:**
 - **Delete** `selectStrategy(String name)` private static method (lines 170–180)
 - **Replace** its call at line 56 and 84 with `MeshParticipationStrategy.named(config.meshParticipation())`
-- Import update for `MeshParticipationStrategy` and `MeshParticipation`
-- This is a behaviour-preserving refactor: logic moves from claudony to engine-api, call sites simplify
+- **Fix call site at line 109**: `strategy.strategyFor(workerId, null)` → `strategy.strategyFor(workerId, caseId)`. `caseId` is the parameter of `buildContext(String workerId, UUID caseId, WorkRequest task)` at line 108 — directly available, no structural change needed.
+- **Remove DESIGN.md line 540 Outstanding note**: "MeshParticipationStrategy.strategyFor() currently receives null for context (context not yet built at call time)" — this is resolved by the signature fix.
+- Import updates: `MeshParticipationStrategy` and `MeshParticipation` now from `io.casehub.api.spi.mesh`
 
 **Update tests** (import change only):
-- `MeshSystemPromptTemplateTest`
-- `ClaudonyReactiveCaseChannelProvider` tests
+- `MeshSystemPromptTemplateTest` — `MeshParticipation` import update
+- `ClaudonyReactiveCaseChannelProvider` tests — `CaseChannelLayout`, `ChannelSpec` import update
+- `ClaudonyReactiveWorkerContextProviderTest` — `ActiveParticipationStrategy`, `NormativeChannelLayout` import updates (used at lines 111, 186, 218, 234); `strategyFor` call-site updates in strategy tests if any are inlined here
 
 **No changes** to pom.xml — already depends on engine-api.
 
@@ -273,7 +285,7 @@ This eliminates the second map lookup and is architecturally cleaner than the cu
 
 ### `casehub/garden` — protocols
 
-**Update `casehub/docs/protocols/casehub/spi-case-id-parameter.md`** — protocol table at lines 81–82:
+**Update `casehub/garden/docs/protocols/casehub/spi-case-id-parameter.md`** — protocol table at lines 81–82:
 
 Before:
 ```
@@ -284,7 +296,7 @@ Before:
 After:
 ```
 | engine-api | `CaseChannelLayout`         | ✅ `channelsFor(UUID caseId, ...)` |
-| engine-api | `MeshParticipationStrategy` | ✅ `WorkerContext` carries `UUID caseId` via `context.caseId()` |
+| engine-api | `MeshParticipationStrategy` | ✅ `strategyFor(String workerId, UUID caseId)` — direct parameter |
 ```
 
 This is a 2-line change. It is in scope, not a follow-up.
@@ -316,9 +328,9 @@ Within engine-api: TDD order — write contract test, add `CaseChannelLayout` + 
 |----------|-----------|
 | `module-tier-structure.md` | ✅ engine-api is Tier 1; all new types are pure Java, zero JPA/Quarkus |
 | `library-jars-require-jandex.md` | ✅ engine-api already has jandex-maven-plugin configured |
-| `qhorus-human-governance-channel-types.md` | ✅ oversight uses `deniedTypes={EVENT}` per PP-20260508 |
-| `channel-type-policy-invariant.md` | ✅ COMMAND/QUERY hard-enforced via allowedTypes on observe; oversight uses advisory deniedTypes per PP-20260604 |
-| `spi-case-id-parameter.md` | ✅ `channelsFor(UUID caseId, ...)` passes caseId; `strategyFor(workerId, WorkerContext)` carries caseId via `context.caseId()`; protocol table updated from claudony → engine-api |
+| `qhorus-human-governance-channel-types.md` | ✅ oversight uses `deniedTypes={EVENT}` per PP-20260604-a7ad99 (PP-20260508 is superseded) |
+| `channel-type-policy-invariant.md` | ✅ COMMAND/QUERY hard-enforced via allowedTypes on observe; oversight uses advisory deniedTypes per PP-20260604-a7ad99 |
+| `spi-case-id-parameter.md` | ✅ `channelsFor(UUID caseId, ...)` passes caseId directly; `strategyFor(String workerId, UUID caseId)` passes caseId directly (signature fix from WorkerContext); protocol table rows updated from claudony → engine-api |
 | `spi-default-method-contract-test.md` | ✅ `CaseChannelLayoutContractTest` covers SPI invariants |
 | `ci-dispatch-covers-direct-consumers.md` | ✅ engine already dispatches to claudony and openclaw; no new dispatch paths needed |
 
@@ -339,4 +351,5 @@ Within engine-api: TDD order — write contract test, add `CaseChannelLayout` + 
 
 - **parent#NNN** — formalise `MeshParticipationStrategy` in CHANNELS.md taxonomy (currently undocumented as a channel primitive)
 - **engine#NNN** — consider whether engine should expose `CaseChannelLayout` as a discoverable SPI (currently invisible to engine; `CaseChannelProvider` is the boundary)
-- **engine#NNN** — per-case dynamic participation: `PerCaseDynamicStrategy` implementing `MeshParticipationStrategy` can use `context.caseId()` for per-case dispatch without any interface change (note: belongs on engine repo now that the SPI lives there)
+- **engine#NNN** — per-case dynamic participation: `PerCaseDynamicStrategy` implementing `MeshParticipationStrategy` receives `caseId` directly via `strategyFor(workerId, caseId)`; no interface change needed (belongs on engine repo now that the SPI lives there)
+- **openclaw#NNN** — make channel layout config-driven: align openclaw providers with claudony's `channelLayout` config property and `CaseChannelLayout.named()` pattern; currently hardcodes `NormativeChannelLayout`
