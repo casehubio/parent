@@ -79,16 +79,20 @@ jobs:
         env:
           INCLUDE_APPLICATIONS: ${{ inputs.include_applications }}
         run: |
+          mkdir -p .build-shas
+
           emit_sha() {
-            local name=$1 dir=${2:-$1}
-            local sha=$(git -C "casehub/$dir" rev-parse HEAD)
+            local name=$1
+            local sha=$(git -C "casehub/$name" rev-parse HEAD)
             local key="sha_$(echo "$name" | tr '-' '_')"
             echo "${key}=${sha}" >> $GITHUB_OUTPUT
+            echo "${sha}" > ".build-shas/${name}"
             echo "${name}  ${sha}"
           }
 
           P=$(git rev-parse HEAD)
           echo "sha_parent=$P" >> $GITHUB_OUTPUT
+          echo "$P" > .build-shas/parent
 
           echo "::group::SHA manifest (pin these to reproduce this build)"
           echo "parent  $P"
@@ -136,14 +140,23 @@ jobs:
             done < build/modules-applications.csv
           fi
 
+          mkdir -p .build-shas-prev
+
           if [ "$FORCE_REBUILD" = "true" ] || [ ! -f .incremental-state/shas.txt ]; then
-            for m in "${MODULES[@]}"; do echo "sha_${m}=none" >> $GITHUB_OUTPUT; done
+            for m in "${MODULES[@]}"; do
+              echo "sha_${m}=none" >> $GITHUB_OUTPUT
+              echo "none" > ".build-shas-prev/${m}"
+            done
           else
             while IFS='=' read -r key value; do
               echo "sha_${key}=${value}" >> $GITHUB_OUTPUT
+              echo "${value}" > ".build-shas-prev/${key}"
             done < .incremental-state/shas.txt
             for m in "${MODULES[@]}"; do
-              grep -q "^${m}=" .incremental-state/shas.txt || echo "sha_${m}=none" >> $GITHUB_OUTPUT
+              if ! grep -q "^${m}=" .incremental-state/shas.txt; then
+                echo "sha_${m}=none" >> $GITHUB_OUTPUT
+                echo "none" > ".build-shas-prev/${m}"
+              fi
             done
           fi
 
@@ -961,85 +974,32 @@ jobs:
       - name: Save build state
         if: always()
         env:
-          SHA_PARENT: ${{ steps.shas.outputs.sha_parent }}
-          SHA_PLATFORM: ${{ steps.shas.outputs.sha_platform }}
-          SHA_LEDGER: ${{ steps.shas.outputs.sha_ledger }}
-          SHA_EIDOS: ${{ steps.shas.outputs.sha_eidos }}
-          SHA_NEURAL_TEXT: ${{ steps.shas.outputs.sha_neural_text }}
-          SHA_CONNECTORS: ${{ steps.shas.outputs.sha_connectors }}
-          SHA_WORK: ${{ steps.shas.outputs.sha_work }}
-          SHA_QHORUS: ${{ steps.shas.outputs.sha_qhorus }}
-          SHA_ENGINE: ${{ steps.shas.outputs.sha_engine }}
-          SHA_CLAUDONY: ${{ steps.shas.outputs.sha_claudony }}
-          SHA_DEVTOWN: ${{ steps.shas.outputs.sha_devtown }}
-          SHA_AML: ${{ steps.shas.outputs.sha_aml }}
-          SHA_CLINICAL: ${{ steps.shas.outputs.sha_clinical }}
-          SHA_DRAFTHOUSE: ${{ steps.shas.outputs.sha_drafthouse }}
-          SHA_QUARKMIND: ${{ steps.shas.outputs.sha_quarkmind }}
-          SHA_FLOW: ${{ steps.shas.outputs.sha_flow }}
-          PREV_PARENT: ${{ steps.prev.outputs.sha_parent }}
-          PREV_PLATFORM: ${{ steps.prev.outputs.sha_platform }}
-          PREV_LEDGER: ${{ steps.prev.outputs.sha_ledger }}
-          PREV_EIDOS: ${{ steps.prev.outputs.sha_eidos }}
-          PREV_NEURAL_TEXT: ${{ steps.prev.outputs.sha_neural_text }}
-          PREV_CONNECTORS: ${{ steps.prev.outputs.sha_connectors }}
-          PREV_WORK: ${{ steps.prev.outputs.sha_work }}
-          PREV_QHORUS: ${{ steps.prev.outputs.sha_qhorus }}
-          PREV_ENGINE: ${{ steps.prev.outputs.sha_engine }}
-          PREV_CLAUDONY: ${{ steps.prev.outputs.sha_claudony }}
-          PREV_DEVTOWN: ${{ steps.prev.outputs.sha_devtown }}
-          PREV_AML: ${{ steps.prev.outputs.sha_aml }}
-          PREV_CLINICAL: ${{ steps.prev.outputs.sha_clinical }}
-          PREV_DRAFTHOUSE: ${{ steps.prev.outputs.sha_drafthouse }}
-          PREV_QUARKMIND: ${{ steps.prev.outputs.sha_quarkmind }}
-          PREV_FLOW: ${{ steps.prev.outputs.sha_flow }}
           INCLUDE_APPLICATIONS: ${{ inputs.include_applications }}
-          OUTCOME_PLATFORM: ${{ steps.platform.outcome }}
-          OUTCOME_LEDGER: ${{ steps.ledger.outcome }}
-          OUTCOME_EIDOS: ${{ steps.eidos.outcome }}
-          OUTCOME_NEURAL_TEXT: ${{ steps.neural-text.outcome }}
-          OUTCOME_CONNECTORS: ${{ steps.connectors.outcome }}
-          OUTCOME_WORK: ${{ steps.work.outcome }}
-          OUTCOME_QHORUS: ${{ steps.qhorus.outcome }}
-          OUTCOME_PAGES: ${{ steps.pages.outcome }}
-          OUTCOME_ENGINE: ${{ steps.engine.outcome }}
-          OUTCOME_CLAUDONY: ${{ steps.claudony.outcome }}
-          OUTCOME_DEVTOWN: ${{ steps.devtown.outcome }}
-          OUTCOME_AML: ${{ steps.aml.outcome }}
-          OUTCOME_CLINICAL: ${{ steps.clinical.outcome }}
-          OUTCOME_QUARKMIND: ${{ steps.quarkmind.outcome }}
-          OUTCOME_FLOW: ${{ steps.flow.outcome }}
         run: |
           mkdir -p .incremental-state
 
-          # Helper: on success record current SHA; on failure keep previous SHA
-          # so the next run retries. Parent always uses current SHA (no outcome to check).
+          # On success record current SHA; on failure keep previous SHA so next run retries.
           record() {
-            local name=$1 cur=$2 prev=$3 outcome=$4
+            local name=$1
+            local cur=$(cat ".build-shas/${name}" 2>/dev/null || echo "none")
+            local prev=$(cat ".build-shas-prev/${name}" 2>/dev/null || echo "none")
+            local outcome=$(cat ".build-outcomes/${name}" 2>/dev/null || echo "skipped")
             if [ "$outcome" = "success" ]; then echo "${name}=${cur}"
-            else echo "${name}=${prev:-none}"
+            else echo "${name}=${prev}"
             fi
           }
 
           {
-            echo "parent=${SHA_PARENT}"
-            record platform   "$SHA_PLATFORM"   "${PREV_PLATFORM:-none}"   "$OUTCOME_PLATFORM"
-            record ledger     "$SHA_LEDGER"     "${PREV_LEDGER:-none}"     "$OUTCOME_LEDGER"
-            record eidos       "$SHA_EIDOS"        "${PREV_EIDOS:-none}"        "$OUTCOME_EIDOS"
-            record neural-text "$SHA_NEURAL_TEXT"  "${PREV_NEURAL_TEXT:-none}"  "$OUTCOME_NEURAL_TEXT"
-            record connectors  "$SHA_CONNECTORS"   "${PREV_CONNECTORS:-none}"   "$OUTCOME_CONNECTORS"
-            record work       "$SHA_WORK"       "${PREV_WORK:-none}"       "$OUTCOME_WORK"
-            record qhorus     "$SHA_QHORUS"     "${PREV_QHORUS:-none}"     "$OUTCOME_QHORUS"
-            record pages      "$SHA_PAGES"      "${PREV_PAGES:-none}"      "$OUTCOME_PAGES"
-            record engine     "$SHA_ENGINE"     "${PREV_ENGINE:-none}"     "$OUTCOME_ENGINE"
-            record claudony   "$SHA_CLAUDONY"   "${PREV_CLAUDONY:-none}"   "$OUTCOME_CLAUDONY"
+            echo "parent=$(cat .build-shas/parent 2>/dev/null || echo none)"
+            while IFS=',' read -r name _rest; do
+              [[ "$name" =~ ^#|^$ ]] && continue
+              record "$name"
+            done < build/modules-core.csv
             if [ "$INCLUDE_APPLICATIONS" = "true" ]; then
-              record devtown    "$SHA_DEVTOWN"    "${PREV_DEVTOWN:-none}"    "$OUTCOME_DEVTOWN"
-              record aml        "$SHA_AML"        "${PREV_AML:-none}"        "$OUTCOME_AML"
-              record clinical   "$SHA_CLINICAL"   "${PREV_CLINICAL:-none}"   "$OUTCOME_CLINICAL"
-              record drafthouse "$SHA_DRAFTHOUSE" "${PREV_DRAFTHOUSE:-none}" "$OUTCOME_DRAFTHOUSE"
-              record quarkmind  "$SHA_QUARKMIND"  "${PREV_QUARKMIND:-none}"  "$OUTCOME_QUARKMIND"
-              record flow       "$SHA_FLOW"       "${PREV_FLOW:-none}"       "$OUTCOME_FLOW"
+              while IFS=',' read -r name _rest; do
+                [[ "$name" =~ ^#|^$ ]] && continue
+                record "$name"
+              done < build/modules-applications.csv
             fi
           } > .incremental-state/shas.txt
 
