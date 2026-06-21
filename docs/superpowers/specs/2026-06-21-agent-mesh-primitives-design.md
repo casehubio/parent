@@ -154,7 +154,11 @@ Both claudony and openclaw already depend on `casehub-engine-api` — **zero new
   - `named("unknown")` throws `IllegalArgumentException`
 - `NormativeChannelLayoutTest` — moved from claudony; verifies 3 channels, exact allowedTypes/deniedTypes per protocol. No extension — the `named()` factory tests above cover `NormativeChannelLayout` indirectly.
 - `SimpleLayoutTest` — moved from claudony; verifies 2 channels, no oversight
-- `MeshParticipationStrategyTest` — moved **and extended** from claudony; existing tests cover enum size and consistency; tests updated from `strategyFor("w", null)` → `strategyFor("w", someUUID)`; **must add** (behavioral, not structural):
+- `MeshParticipationStrategyTest` — moved **and extended** from claudony; existing tests updated with the following distinction:
+  - **Behavioral tests** (verify return value): `active_returnsActive`, `reactive_returnsReactive`, `silent_returnsSilent`, `threeDistinctValues`, `allStrategiesIgnoreWorkerId`, `resultsAreConsistentAcrossRepeatedCalls` — change second arg from `null` → `UUID.randomUUID()`. These test what the strategy returns; they should use a real caseId.
+  - **Null-safety test** `allStrategiesAcceptNullContext` → rename to `allStrategiesAcceptNullCaseId`; keep `null` as the caseId arg. A null caseId is semantically valid — the strategy is called before a case exists. All three implementations ignore caseId, null must remain accepted.
+  - `allStrategiesAcceptNullWorkerId`, `allStrategiesAcceptEmptyWorkerId`, enum tests — no arg changes needed.
+  - **Must add** (behavioral, not structural):
   - `named("active").strategyFor("w", someUUID)` returns `MeshParticipation.ACTIVE`
   - `named("reactive").strategyFor("w", someUUID)` returns `MeshParticipation.REACTIVE`
   - `named("silent").strategyFor("w", someUUID)` returns `MeshParticipation.SILENT`
@@ -188,12 +192,15 @@ Both claudony and openclaw already depend on `casehub-engine-api` — **zero new
 - **Delete** `selectStrategy(String name)` private static method (lines 170–180)
 - **Replace** its call at line 56 and 84 with `MeshParticipationStrategy.named(config.meshParticipation())`
 - **Fix call site at line 109**: `strategy.strategyFor(workerId, null)` → `strategy.strategyFor(workerId, caseId)`. `caseId` is the parameter of `buildContext(String workerId, UUID caseId, WorkRequest task)` at line 108 — directly available, no structural change needed.
-- **Partial edit to DESIGN.md line 540 Outstanding note**: remove only the first clause: *"MeshParticipationStrategy.strategyFor() currently receives null for context (context not yet built at call time);"*. Preserve the second clause: *"shared-data keys from prior workers not yet included in the prompt (requires additional Qhorus integration, tracked as future work under epic #86)."*
 - **New explicit imports** (all previously same-package, no import needed; after migration to `io.casehub.api.spi.mesh` all require explicit import):
   - `io.casehub.api.spi.mesh.CaseChannelLayout`
   - `io.casehub.api.spi.mesh.MeshParticipationStrategy`
   - `io.casehub.api.spi.mesh.NormativeChannelLayout`
   - `io.casehub.api.spi.mesh.ActiveParticipationStrategy`
+
+**Update — `docs/DESIGN.md`** (both changes to the same file, consolidated here):
+- **Line 540 Outstanding note**: remove only the first clause: *"MeshParticipationStrategy.strategyFor() currently receives null for context (context not yet built at call time);"*. Preserve the second clause: *"shared-data keys from prior workers not yet included in the prompt (requires additional Qhorus integration, tracked as future work under epic #86)."*
+- **Architecture section**: note that `CaseChannelLayout`, `NormativeChannelLayout`, `SimpleLayout`, `MeshParticipationStrategy` and its three standard implementations have moved to `io.casehub.api.spi.mesh` in engine-api; claudony retains `SimpleLayout` usage but the type definition is no longer local.
 
 **Update tests** (import change only):
 - `MeshSystemPromptTemplateTest` — `MeshParticipation` import update
@@ -211,7 +218,10 @@ Both claudony and openclaw already depend on `casehub-engine-api` — **zero new
 **Delete**:
 - `io.casehub.openclaw.casehub.OpenClawNormativeLayout`
 - `OpenClawNormativeLayoutTest`
-- `docs/protocols/casehub/normative-layout-single-source.md` (PP-20260615-11b9d2) — this protocol mandates `OpenClawNormativeLayout` as the source of truth; after migration that mandate transfers to `NormativeChannelLayoutTest` in engine-api. Delete the protocol file; the guard is now in engine-api.
+- `docs/protocols/casehub/normative-layout-single-source.md` (PP-20260615-11b9d2) — **update, do not delete**. The rule survives; only the implementation pointer changes. Update:
+  - **Title**: "All changes to the normative channel layout must go through `NormativeChannelLayout` in `casehub-engine-api`"
+  - **Body**: "`NormativeChannelLayout` in `io.casehub.api.spi.mesh` (engine-api) is the single source of truth. Use `CaseChannelLayout.named("normative")` or construct `new NormativeChannelLayout()` directly. Do not define private `ChannelSpec` records or `LAYOUT` maps inside provider classes — this bypasses `NormativeChannelLayoutTest` value assertions in engine-api and re-introduces the duplication this extraction was designed to eliminate."
+  - **violation_hint**: update from `OpenClawNormativeLayout`/`OpenClawNormativeLayoutTest` references to `NormativeChannelLayout`/`NormativeChannelLayoutTest` in `io.casehub.api.spi.mesh`
 
 **Update — `OpenClawCaseChannelProvider` (sync):**
 
@@ -274,7 +284,7 @@ This eliminates the second map lookup and is architecturally cleaner than the cu
 
 **Update tests:**
 - `OpenClawCaseChannelProviderTest` — no structural change needed; `OpenClawNormativeLayout` was never imported by the test; existing assertions on `allowedTypes`/`deniedTypes` values continue to hold since `NormativeChannelLayout` produces identical constraints. Add one test: `openChannel_unknownPurpose_throws` verifying `IllegalArgumentException` is thrown (bonus fix made this testable where previously it silently succeeded).
-- `ReactiveOpenClawCaseChannelProviderTest` — update for refactored `openOrCreate(caseId, ChannelSpec)` signature
+- `ReactiveOpenClawCaseChannelProviderTest` — verify tests pass without structural change. `openOrCreate` is private and never called directly by the test; assertions on channel count and type constraints hold unchanged since `NormativeChannelLayout` produces identical constraints.
 
 **No changes** to pom.xml — already depends on engine-api.
 
@@ -316,7 +326,7 @@ This is a 2-line change. It is in scope, not a follow-up.
 
 **engine** — update deep-dive doc: note `io.casehub.api.spi.mesh` package; add `CaseChannelLayout` and `MeshParticipationStrategy` to API surface; update ARC42STORIES.MD for integration SPIs section
 
-**claudony** — update `docs/DESIGN.md`: note types migrated to engine-api; claudony implements `SimpleLayout` and standard participation strategies; update ARC42STORIES.MD
+**claudony** — update ARC42STORIES.MD (DESIGN.md changes are detailed in the claudony source section above)
 
 **openclaw** — update docs: note `OpenClawNormativeLayout` removed; update ARC42STORIES.MD
 
