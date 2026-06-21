@@ -68,7 +68,7 @@ jobs:
               [[ "$name" =~ ^#|^$ ]] && continue
               local token="${TOKEN_OVERRIDE[$name]:-$GITHUB_TOKEN}"
               local repo="${REPO_OVERRIDE[$name]:-casehubio/$name}"
-              git clone --quiet "https://x-access-token:${token}@github.com/${repo}.git" "casehub/$name"
+              git clone "https://x-access-token:${token}@github.com/${repo}.git" "casehub/$name"
             done < "$csv"
           }
           clone_csv build/modules-core.csv
