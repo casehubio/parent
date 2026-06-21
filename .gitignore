@@ -12,3 +12,7 @@ claudony/
 # Maven
 target/
 wksp
+
+# Claude Code system files — session state, not project config
+.claude/scheduled_tasks.lock
+.claude/settings.local.json

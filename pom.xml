@@ -32,6 +32,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <surefire-plugin.version>3.2.5</surefire-plugin.version>
     <compiler-plugin.version>3.13.0</compiler-plugin.version>
+    <cloudevents.version>4.0.1</cloudevents.version>
   </properties>
 
   <dependencyManagement>
@@ -46,6 +47,26 @@
         <version>${quarkus.platform.version}</version>
         <type>pom</type>
         <scope>import</scope>
+      </dependency>
+
+      <!-- ================================================================ -->
+      <!-- Third-party library version pins                                -->
+      <!-- ================================================================ -->
+      <!-- CloudEvents SDK — overrides Quarkus BOM's cloudevents-api:3.0.0 -->
+      <dependency>
+        <groupId>io.cloudevents</groupId>
+        <artifactId>cloudevents-api</artifactId>
+        <version>${cloudevents.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.cloudevents</groupId>
+        <artifactId>cloudevents-core</artifactId>
+        <version>${cloudevents.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.cloudevents</groupId>
+        <artifactId>cloudevents-json-jackson</artifactId>
+        <version>${cloudevents.version}</version>
       </dependency>
 
       <!-- ================================================================ -->
