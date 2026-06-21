@@ -97,8 +97,8 @@ mvn --batch-mode deploy -DskipTests
 | Workflow | Trigger | Purpose |
 |---|---|---|
 | `publish.yml` | push/main, dispatch, manual | Publish parent POM; dispatch to ledger + connectors |
-| `full-stack-build.yml` | manual only | Full sequential rebuild of all repos — always rebuilds everything |
-| `incremental-full-stack-build.yml` | manual only | SHA-keyed incremental build — BUILD/TEST/SKIP per module based on what changed |
+| `build-all.yml` | manual only | Deleted — use build-all.yml with force_rebuild=true |
+| `incremental-build-all.yml` | manual only | SHA-keyed incremental build — BUILD/TEST/SKIP per module based on what changed |
 | `clear-snapshot-packages.yml` | manual only | Delete SNAPSHOT artifacts from GitHub Packages |
 
 **Key rule:** Cross-repo `repository_dispatch` requires `GH_TOKEN: ${{ secrets.GH_PAT }}` (classic PAT). `GITHUB_TOKEN` is repo-scoped only and returns 403 on cross-repo calls.
@@ -111,9 +111,9 @@ Conventions shared across all modules live in the **casehub garden** (`../garden
 
 ## Scripts
 
-`scripts/incremental-build-decision.sh` — pure bash decision function for the incremental build. Given a module's current SHA, previous SHA, and dep SHAs, outputs `BUILD`, `TEST`, or `SKIP`. No side effects.
+`scripts/build-all-decision.sh` — pure bash decision function for the incremental build. Given a module's current SHA, previous SHA, and dep SHAs, outputs `BUILD`, `TEST`, or `SKIP`. No side effects.
 
-`scripts/tests/incremental-build-decision.bats` — bats test suite (49 tests) covering all BUILD/TEST/SKIP scenarios. Run with: `bats scripts/tests/incremental-build-decision.bats`
+`scripts/tests/build-all-decision.bats` — bats test suite (49 tests) covering all BUILD/TEST/SKIP scenarios. Run with: `bats scripts/tests/build-all-decision.bats`
 
 Prereq: `brew install bats-core`
 

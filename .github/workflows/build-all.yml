@@ -208,7 +208,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mkdir -p .build-outcomes .build-decisions
-          D=$(./scripts/incremental-build-decision.sh \
+          D=$(./scripts/build-all-decision.sh \
             --module platform --current-sha "$CUR" --previous-sha "${PRV:-none}" \
             --dep "parent:${CUR_PARENT}:${PRV_PARENT:-none}")
           echo "decision=$D" >> $GITHUB_OUTPUT
@@ -245,7 +245,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mkdir -p .build-outcomes .build-decisions
-          D=$(./scripts/incremental-build-decision.sh \
+          D=$(./scripts/build-all-decision.sh \
             --module ledger --current-sha "$CUR" --previous-sha "${PRV:-none}" \
             --dep "parent:${CUR_PARENT}:${PRV_PARENT:-none}")
           echo "decision=$D" >> $GITHUB_OUTPUT
@@ -282,7 +282,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mkdir -p .build-outcomes .build-decisions
-          D=$(./scripts/incremental-build-decision.sh \
+          D=$(./scripts/build-all-decision.sh \
             --module eidos --current-sha "$CUR" --previous-sha "${PRV:-none}" \
             --dep "ledger:${CUR_LEDGER}:${PRV_LEDGER:-none}")
           echo "decision=$D" >> $GITHUB_OUTPUT
@@ -319,7 +319,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mkdir -p .build-outcomes .build-decisions
-          D=$(./scripts/incremental-build-decision.sh \
+          D=$(./scripts/build-all-decision.sh \
             --module neural-text --current-sha "$CUR" --previous-sha "${PRV:-none}" \
             --dep "platform:${CUR_PLATFORM}:${PRV_PLATFORM:-none}")
           echo "decision=$D" >> $GITHUB_OUTPUT
@@ -356,7 +356,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mkdir -p .build-outcomes .build-decisions
-          D=$(./scripts/incremental-build-decision.sh \
+          D=$(./scripts/build-all-decision.sh \
             --module connectors --current-sha "$CUR" --previous-sha "${PRV:-none}" \
             --dep "parent:${CUR_PARENT}:${PRV_PARENT:-none}")
           echo "decision=$D" >> $GITHUB_OUTPUT
@@ -397,7 +397,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mkdir -p .build-outcomes .build-decisions
-          D=$(./scripts/incremental-build-decision.sh \
+          D=$(./scripts/build-all-decision.sh \
             --module work --current-sha "$CUR" --previous-sha "${PRV:-none}" \
             --dep "parent:${CUR_PARENT}:${PRV_PARENT:-none}" \
             --dep "ledger:${CUR_LEDGER}:${PRV_LEDGER:-none}" \
@@ -440,7 +440,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mkdir -p .build-outcomes .build-decisions
-          D=$(./scripts/incremental-build-decision.sh \
+          D=$(./scripts/build-all-decision.sh \
             --module qhorus --current-sha "$CUR" --previous-sha "${PRV:-none}" \
             --dep "parent:${CUR_PARENT}:${PRV_PARENT:-none}" \
             --dep "ledger:${CUR_LEDGER}:${PRV_LEDGER:-none}" \
@@ -474,7 +474,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mkdir -p .build-outcomes .build-decisions
-          D=$(./scripts/incremental-build-decision.sh \
+          D=$(./scripts/build-all-decision.sh \
             --module pages --current-sha "$CUR" --previous-sha "${PRV:-none}")
           echo "decision=$D" >> $GITHUB_OUTPUT
           echo "$D" > .build-decisions/pages
@@ -506,7 +506,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mkdir -p .build-outcomes .build-decisions
-          D=$(./scripts/incremental-build-decision.sh \
+          D=$(./scripts/build-all-decision.sh \
             --module engine --current-sha "$CUR" --previous-sha "${PRV:-none}" \
             --dep "parent:${CUR_PARENT}:${PRV_PARENT:-none}" \
             --dep "ledger:${CUR_LEDGER}:${PRV_LEDGER:-none}" \
@@ -551,7 +551,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mkdir -p .build-outcomes .build-decisions
-          D=$(./scripts/incremental-build-decision.sh \
+          D=$(./scripts/build-all-decision.sh \
             --module claudony --current-sha "$CUR" --previous-sha "${PRV:-none}" \
             --dep "parent:${CUR_PARENT}:${PRV_PARENT:-none}" \
             --dep "ledger:${CUR_LEDGER}:${PRV_LEDGER:-none}" \
@@ -600,7 +600,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mkdir -p .build-outcomes .build-decisions
-          D=$(./scripts/incremental-build-decision.sh \
+          D=$(./scripts/build-all-decision.sh \
             --module openclaw --current-sha "$CUR" --previous-sha "${PRV:-none}" \
             --dep "parent:${CUR_PARENT}:${PRV_PARENT:-none}" \
             --dep "platform:${CUR_PLATFORM}:${PRV_PLATFORM:-none}" \
@@ -650,7 +650,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mkdir -p .build-outcomes .build-decisions
-          D=$(./scripts/incremental-build-decision.sh \
+          D=$(./scripts/build-all-decision.sh \
             --module devtown --current-sha "$CUR" --previous-sha "${PRV:-none}" \
             --dep "parent:${CUR_PARENT}:${PRV_PARENT:-none}" \
             --dep "ledger:${CUR_LEDGER}:${PRV_LEDGER:-none}" \
@@ -700,7 +700,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mkdir -p .build-outcomes .build-decisions
-          D=$(./scripts/incremental-build-decision.sh \
+          D=$(./scripts/build-all-decision.sh \
             --module aml --current-sha "$CUR" --previous-sha "${PRV:-none}" \
             --dep "parent:${CUR_PARENT}:${PRV_PARENT:-none}" \
             --dep "ledger:${CUR_LEDGER}:${PRV_LEDGER:-none}" \
@@ -750,7 +750,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mkdir -p .build-outcomes .build-decisions
-          D=$(./scripts/incremental-build-decision.sh \
+          D=$(./scripts/build-all-decision.sh \
             --module clinical --current-sha "$CUR" --previous-sha "${PRV:-none}" \
             --dep "parent:${CUR_PARENT}:${PRV_PARENT:-none}" \
             --dep "ledger:${CUR_LEDGER}:${PRV_LEDGER:-none}" \
@@ -802,7 +802,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mkdir -p .build-outcomes .build-decisions
-          D=$(./scripts/incremental-build-decision.sh \
+          D=$(./scripts/build-all-decision.sh \
             --module life --current-sha "$CUR" --previous-sha "${PRV:-none}" \
             --dep "parent:${CUR_PARENT}:${PRV_PARENT:-none}" \
             --dep "ledger:${CUR_LEDGER}:${PRV_LEDGER:-none}" \
@@ -847,7 +847,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mkdir -p .build-outcomes .build-decisions
-          D=$(./scripts/incremental-build-decision.sh \
+          D=$(./scripts/build-all-decision.sh \
             --module drafthouse --current-sha "$CUR" --previous-sha "${PRV:-none}" \
             --dep "parent:${CUR_PARENT}:${PRV_PARENT:-none}" \
             --dep "qhorus:${CUR_QHORUS}:${PRV_QHORUS:-none}")
@@ -895,7 +895,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
           mkdir -p .build-outcomes .build-decisions
-          D=$(./scripts/incremental-build-decision.sh \
+          D=$(./scripts/build-all-decision.sh \
             --module quarkmind --current-sha "$CUR" --previous-sha "${PRV:-none}" \
             --dep "parent:${CUR_PARENT}:${PRV_PARENT:-none}" \
             --dep "ledger:${CUR_LEDGER}:${PRV_LEDGER:-none}" \
@@ -940,7 +940,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
           mkdir -p .build-outcomes .build-decisions
-          D=$(./scripts/incremental-build-decision.sh \
+          D=$(./scripts/build-all-decision.sh \
             --module flow --current-sha "$CUR" --previous-sha "${PRV:-none}" \
             --dep "parent:${CUR_PARENT}:${PRV_PARENT:-none}" \
             --dep "engine:${CUR_ENGINE}:${PRV_ENGINE:-none}")

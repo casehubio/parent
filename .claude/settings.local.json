@@ -101,7 +101,19 @@
       "Bash(env PATH=\"/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin\" which dirname)",
       "Bash(env PATH=\"/opt/homebrew/bin:\\\\${PATH}\" which dirname)",
       "Skill(update-config)",
-      "Skill(code-review)"
+      "Skill(code-review)",
+      "Bash(bash *)",
+      "Bash(chmod +x *)",
+      "WebFetch(domain:mdproctor.github.io)",
+      "WebFetch(domain:casehubio.github.io)",
+      "WebFetch(domain:casehub.org)",
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(pkill -f \"slidev presentation.md\")",
+      "Bash(npx slidev *)",
+      "Bash(pip3 install *)",
+      "Bash(awk -F: '$1 > 420 && $1 < 445')",
+      "Bash(awk -F: '$1 > 254 && $1 < 270')"
     ]
   }
 }

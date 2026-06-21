@@ -16,8 +16,7 @@ ROOT = Path(__file__).resolve().parent.parent
 
 CORE_CSV  = ROOT / 'build' / 'modules-core.csv'
 APP_CSV   = ROOT / 'build' / 'modules-applications.csv'
-FULL_YML  = ROOT / '.github' / 'workflows' / 'full-stack-build.yml'
-INCR_YML  = ROOT / '.github' / 'workflows' / 'incremental-full-stack-build.yml'
+BUILD_ALL_YML  = ROOT / '.github' / 'workflows' / 'build-all.yml'
 
 BEGIN = '      # -- BEGIN GENERATED'
 END   = '      # -- END GENERATED'
@@ -51,70 +50,7 @@ def dep_env_key(name):
     return name.upper().replace('-', '_')
 
 
-# ── full-stack-build.yml ──────────────────────────────────────────────────────
-
-def full_step(mod, tier):
-    name  = mod['name']
-    sub   = SUBDIR.get(name, '')
-    cd    = 'casehub/' + name + ('/' + sub if sub else '')
-    depth = '../../' + ('../' if sub else '')
-
-    lines = []
-    lines.append('')
-    if tier == 'application':
-        lines.append('      - name: "Build: ' + name + '"')
-        lines.append('        if: inputs.include_applications')
-    else:
-        lines.append('      - name: "Build: ' + name + '"')
-    lines.append('        id: ' + name)
-    lines.append('        continue-on-error: true')
-    lines.append('        env:')
-
-    if name in YARN:
-        lines.append('          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}')
-    else:
-        lines.append('          SKIP_TESTS: ${{ inputs.skip_tests }}')
-        lines.append('          SKIP_ITS: ${{ inputs.skip_integration_tests }}')
-        lines.append('          MAVEN_EXTRA: ${{ inputs.maven_args }}')
-        lines.append('          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}')
-    if name in PRIVATE:
-        lines.append('          GH_TOKEN: ${{ secrets.GH_PAT }}')
-
-    lines.append('        run: |')
-    lines.append('          mkdir -p .build-outcomes')
-
-    if name in YARN:
-        lines.append('          START=$SECONDS')
-        lines.append('          if cd ' + cd + ' && yarn install && yarn build; then')
-        lines.append('            echo "success" > ' + depth + '.build-outcomes/' + name)
-        lines.append('          else')
-        lines.append('            echo "failure" > ' + depth + '.build-outcomes/' + name)
-        lines.append('          fi')
-    else:
-        lines.append('          FLAGS=""')
-        lines.append('          [ "$SKIP_TESTS" = "true" ] && FLAGS="-DskipTests"')
-        lines.append('          [ "$SKIP_ITS" = "true" ] && FLAGS="$FLAGS -DskipITs"')
-        lines.append('          START=$SECONDS')
-        lines.append('          if cd ' + cd + ' && mvn install --batch-mode $FLAGS $MAVEN_EXTRA; then')
-        lines.append('            echo "success" > ' + depth + '.build-outcomes/' + name)
-        lines.append('          else')
-        lines.append('            echo "failure" > ' + depth + '.build-outcomes/' + name)
-        lines.append('          fi')
-
-    lines.append('          echo $((SECONDS - START)) > ' + depth + '.build-times/' + name)
-    return '\n'.join(lines)
-
-
-def generate_full(core, apps):
-    parts = []
-    for mod in core:
-        parts.append(full_step(mod, 'core'))
-    for mod in apps:
-        parts.append(full_step(mod, 'application'))
-    return '\n'.join(parts) + '\n'
-
-
-# ── incremental-full-stack-build.yml ─────────────────────────────────────────
+# ── build-all.yml ────────────────────────────────────────────────────────────
 
 def incr_step(mod, tier):
     name  = mod['name']
@@ -152,7 +88,7 @@ def incr_step(mod, tier):
     lines.append('          mkdir -p .build-outcomes .build-decisions')
 
     # Decision script call
-    decision = ('          D=$(./scripts/incremental-build-decision.sh \\\n'
+    decision = ('          D=$(./scripts/build-all-decision.sh \\\n'
                 '            --module ' + name + ' --current-sha "$CUR" --previous-sha "${PRV:-none}"')
     for dep in deps:
         k = dep_env_key(dep)
@@ -227,8 +163,7 @@ def main():
     apps = load_csv(APP_CSV)
 
     changed = False
-    changed |= rewrite(FULL_YML, generate_full(core, apps))
-    changed |= rewrite(INCR_YML, generate_incr(core, apps))
+    changed |= rewrite(BUILD_ALL_YML, generate_incr(core, apps))
 
     if changed:
         print('Workflow files updated — stage them before committing.')

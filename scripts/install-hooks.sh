@@ -17,9 +17,7 @@ REPO_ROOT="$(git rev-parse --show-toplevel)"
 if git diff --cached --name-only | grep -qE '^build/modules-(core|applications)\.csv$'; then
   echo "build/modules-*.csv changed — regenerating workflow build steps..."
   python3 "$REPO_ROOT/scripts/generate-workflows.py"
-  git add \
-    "$REPO_ROOT/.github/workflows/full-stack-build.yml" \
-    "$REPO_ROOT/.github/workflows/incremental-full-stack-build.yml"
+  git add "$REPO_ROOT/.github/workflows/build-all.yml"
   echo "Workflow files updated and staged."
 fi
 HOOK_BODY

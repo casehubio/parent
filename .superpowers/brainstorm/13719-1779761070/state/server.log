@@ -1,0 +1,5 @@
+{"type":"server-started","port":64474,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:64474","screen_dir":"/Users/mdproctor/claude/casehub/parent/.superpowers/brainstorm/13719-1779761070/content","state_dir":"/Users/mdproctor/claude/casehub/parent/.superpowers/brainstorm/13719-1779761070/state"}
+{"type":"screen-added","file":"/Users/mdproctor/claude/casehub/parent/.superpowers/brainstorm/13719-1779761070/content/welcome.html"}
+{"type":"screen-added","file":"/Users/mdproctor/claude/casehub/parent/.superpowers/brainstorm/13719-1779761070/content/layout-options.html"}
+{"type":"screen-added","file":"/Users/mdproctor/claude/casehub/parent/.superpowers/brainstorm/13719-1779761070/content/channel-hierarchy.html"}
+{"type":"server-stopped","reason":"idle timeout"}

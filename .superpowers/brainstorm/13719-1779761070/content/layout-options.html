@@ -1,0 +1,114 @@
+<h2>Where does the review loop live in IntelliJ?</h2>
+<p class="subtitle">Three layout options — pick what feels most natural as a director's surface</p>
+
+<div class="cards">
+
+  <!-- Option A -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="display:flex;height:180px;background:#1e1e2e;border-radius:6px;overflow:hidden;font-size:11px;font-family:monospace;">
+        <!-- Editor -->
+        <div style="flex:1;padding:8px;border-right:1px solid #333;">
+          <div style="color:#7c7ca0;margin-bottom:6px;font-size:10px;">Editor</div>
+          <div style="color:#cdd6f4;">fun reviewCode() {</div>
+          <div style="color:#cdd6f4;padding-left:12px;">val x = compute()</div>
+          <div style="background:#3d2020;color:#f38ba8;padding:0 4px;border-left:2px solid #f38ba8;">  return x + 1</div>
+          <div style="color:#cdd6f4;">}</div>
+          <div style="margin-top:8px;background:#1a2a1a;padding:4px;border-left:2px solid #a6e3a1;color:#a6e3a1;font-size:10px;">💬 Issue #2: off-by-one</div>
+        </div>
+        <!-- Right panel -->
+        <div style="width:160px;padding:8px;background:#181825;">
+          <div style="color:#7c7ca0;margin-bottom:6px;font-size:10px;">Review Channel</div>
+          <div style="background:#2a2a3e;border-radius:4px;padding:5px;margin-bottom:4px;">
+            <div style="color:#cba6f7;font-size:10px;">🤖 Reviewer</div>
+            <div style="color:#cdd6f4;font-size:10px;">Found 3 issues...</div>
+          </div>
+          <div style="background:#2a2a3e;border-radius:4px;padding:5px;margin-bottom:4px;">
+            <div style="color:#89b4fa;font-size:10px;">🤖 Author</div>
+            <div style="color:#cdd6f4;font-size:10px;">Addressing #1...</div>
+          </div>
+          <div style="background:#1a2a1a;border-radius:4px;padding:5px;border:1px solid #a6e3a1;">
+            <div style="color:#a6e3a1;font-size:10px;">👤 You</div>
+            <div style="color:#cdd6f4;font-size:10px;">Focus on perf...</div>
+          </div>
+          <div style="margin-top:6px;background:#313244;border-radius:3px;padding:4px;color:#a6e3a1;font-size:10px;text-align:center;">▶ Direct...</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Right tool window</h3>
+      <p>Channel panel lives on the right, alongside the code. Inline gutter annotations mark reviewed lines. You're always seeing code + review simultaneously. The Claudony panel model, applied to the editor.</p>
+    </div>
+  </div>
+
+  <!-- Option B -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="display:flex;flex-direction:column;height:180px;background:#1e1e2e;border-radius:6px;overflow:hidden;font-size:11px;font-family:monospace;">
+        <!-- Editor top -->
+        <div style="flex:1;padding:8px;border-bottom:1px solid #333;">
+          <div style="color:#7c7ca0;margin-bottom:4px;font-size:10px;">Editor</div>
+          <div style="color:#cdd6f4;">fun reviewCode() {</div>
+          <div style="background:#3d2020;color:#f38ba8;padding:0 4px;border-left:2px solid #f38ba8;">  return x + 1 <span style="font-size:9px;color:#f38ba8;">⚠ #2</span></div>
+          <div style="color:#cdd6f4;">}</div>
+        </div>
+        <!-- Bottom panel -->
+        <div style="height:80px;padding:8px;background:#181825;">
+          <div style="display:flex;gap:8px;margin-bottom:4px;">
+            <div style="color:#cba6f7;background:#2a2a3e;padding:2px 6px;border-radius:3px;font-size:10px;">Cycle 1 ✓</div>
+            <div style="color:#89b4fa;background:#2a2a3e;padding:2px 6px;border-radius:3px;font-size:10px;">Cycle 2 ✓</div>
+            <div style="color:#a6e3a1;background:#1a2a1a;padding:2px 6px;border-radius:3px;border:1px solid #a6e3a1;font-size:10px;">Cycle 3 ●</div>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <div style="flex:1;color:#cdd6f4;font-size:10px;background:#2a2a3e;padding:4px;border-radius:3px;">🤖 Author: Fixed the off-by-one, handling the null case now...</div>
+            <div style="background:#313244;padding:4px 6px;border-radius:3px;color:#a6e3a1;font-size:10px;">⚡ Direct</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Bottom panel (cycles)</h3>
+      <p>Review lives at the bottom like a terminal. Each review cycle is a tab — you can see history. The active conversation scrolls in real-time. Familiar to developers who live in the Run/Debug panel. Gutter marks still show in the editor.</p>
+    </div>
+  </div>
+
+  <!-- Option C -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="display:flex;height:180px;background:#1e1e2e;border-radius:6px;overflow:hidden;font-size:11px;font-family:monospace;">
+        <!-- Editor -->
+        <div style="flex:1;padding:8px;position:relative;">
+          <div style="color:#7c7ca0;margin-bottom:4px;font-size:10px;">Editor</div>
+          <div style="color:#cdd6f4;">fun reviewCode() {</div>
+          <div style="color:#cdd6f4;padding-left:12px;">val x = compute()</div>
+          <div style="background:#3d2020;color:#f38ba8;padding:0 4px;border-left:2px solid #f38ba8;">  return x + 1</div>
+          <div style="color:#cdd6f4;">}</div>
+          <!-- Floating bubble -->
+          <div style="position:absolute;top:55px;right:8px;background:#2a2a3e;border:1px solid #cba6f7;border-radius:6px;padding:6px;width:120px;box-shadow:0 4px 12px rgba(0,0,0,0.4);">
+            <div style="color:#cba6f7;font-size:9px;margin-bottom:3px;">🤖 Reviewer → line 3</div>
+            <div style="color:#cdd6f4;font-size:9px;">Off-by-one: should be x, not x+1</div>
+            <div style="display:flex;gap:4px;margin-top:4px;">
+              <div style="background:#a6e3a1;color:#1e1e2e;padding:2px 5px;border-radius:3px;font-size:9px;">✓ Fix</div>
+              <div style="background:#f38ba8;color:#1e1e2e;padding:2px 5px;border-radius:3px;font-size:9px;">✗ Skip</div>
+              <div style="background:#313244;color:#cdd6f4;padding:2px 5px;border-radius:3px;font-size:9px;">✏ Direct</div>
+            </div>
+          </div>
+        </div>
+        <!-- Mini sidebar -->
+        <div style="width:80px;padding:6px;background:#181825;border-left:1px solid #333;">
+          <div style="color:#7c7ca0;font-size:9px;margin-bottom:4px;">Issues</div>
+          <div style="background:#3d2020;padding:3px;border-radius:3px;margin-bottom:3px;color:#f38ba8;font-size:9px;">#1 ✓</div>
+          <div style="background:#3d2020;padding:3px;border-radius:3px;margin-bottom:3px;color:#f38ba8;font-size:9px;border:1px solid #f38ba8;">#2 ●</div>
+          <div style="background:#2a2a3e;padding:3px;border-radius:3px;color:#7c7ca0;font-size:9px;">#3</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Inline bubbles + issue list</h3>
+      <p>Review comments appear as floating bubbles anchored to the exact lines being discussed. A minimal issue tracker sidebar shows status. Very spatial — you see review comments in context. Most native-feeling but complex to build.</p>
+    </div>
+  </div>
+
+</div>
+
+<p class="subtitle" style="margin-top:1rem;">Click to select, or just tell me in the terminal what feels right.</p>

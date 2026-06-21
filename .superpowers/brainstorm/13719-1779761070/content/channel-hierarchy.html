@@ -1,0 +1,86 @@
+<h2>Channel hierarchy — does this match your mental model?</h2>
+<p class="subtitle">A review session spawns issue threads. Issue threads can fan out to multiple code locations.</p>
+
+<div class="section">
+  <div style="display:flex;gap:24px;align-items:flex-start;">
+
+    <!-- Tree diagram -->
+    <div style="flex:1;background:#181825;border-radius:8px;padding:16px;font-family:monospace;font-size:12px;">
+
+      <!-- Root -->
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+        <div style="background:#cba6f7;color:#1e1e2e;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:bold;">📋 Review Session</div>
+        <div style="color:#7c7ca0;font-size:10px;">"Implement payment service" — parent channel</div>
+      </div>
+      <div style="color:#7c7ca0;padding-left:8px;margin-bottom:2px;">Multi-agent back-and-forth across the whole proposal</div>
+      <div style="color:#7c7ca0;padding-left:8px;margin-bottom:12px;font-size:10px;">Participants: Author Claude, Reviewer Claude, You (director)</div>
+
+      <!-- Child 1 -->
+      <div style="padding-left:16px;border-left:2px solid #313244;margin-bottom:8px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px;">
+          <div style="width:8px;height:1px;background:#313244;"></div>
+          <div style="background:#f38ba8;color:#1e1e2e;padding:2px 7px;border-radius:4px;font-size:11px;">⚠ Issue #1</div>
+          <div style="color:#cdd6f4;font-size:10px;">Null handling — 1 location</div>
+        </div>
+        <div style="padding-left:16px;color:#7c7ca0;font-size:10px;">
+          📄 PaymentService.java:42
+        </div>
+      </div>
+
+      <!-- Child 2 — fan out -->
+      <div style="padding-left:16px;border-left:2px solid #313244;margin-bottom:8px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px;">
+          <div style="width:8px;height:1px;background:#313244;"></div>
+          <div style="background:#f38ba8;color:#1e1e2e;padding:2px 7px;border-radius:4px;font-size:11px;">⚠ Issue #2</div>
+          <div style="color:#cdd6f4;font-size:10px;">Retry logic — fans out to 3 locations</div>
+        </div>
+        <div style="padding-left:16px;color:#7c7ca0;font-size:10px;display:flex;flex-direction:column;gap:2px;">
+          <div>📄 PaymentService.java:87</div>
+          <div>📄 RetryConfig.java:12</div>
+          <div>📄 PaymentClient.java:34</div>
+        </div>
+      </div>
+
+      <!-- Child 3 -->
+      <div style="padding-left:16px;border-left:2px solid #313244;margin-bottom:8px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px;">
+          <div style="width:8px;height:1px;background:#313244;"></div>
+          <div style="background:#fab387;color:#1e1e2e;padding:2px 7px;border-radius:4px;font-size:11px;">⚠ Issue #3</div>
+          <div style="color:#cdd6f4;font-size:10px;">API design concern — whole file</div>
+        </div>
+        <div style="padding-left:16px;color:#7c7ca0;font-size:10px;">
+          📁 api/payment/ (folder-level)
+        </div>
+      </div>
+
+      <!-- Child 4 resolved -->
+      <div style="padding-left:16px;border-left:2px solid #313244;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px;">
+          <div style="width:8px;height:1px;background:#313244;"></div>
+          <div style="background:#313244;color:#a6e3a1;padding:2px 7px;border-radius:4px;font-size:11px;">✓ Issue #4</div>
+          <div style="color:#585b70;font-size:10px;">Agreed + resolved</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Key questions panel -->
+    <div style="width:220px;">
+      <div style="background:#1e1e2e;border-radius:8px;padding:12px;margin-bottom:12px;border:1px solid #313244;">
+        <div style="color:#cba6f7;font-size:11px;font-weight:bold;margin-bottom:6px;">What spawns an issue thread?</div>
+        <div style="color:#cdd6f4;font-size:11px;margin-bottom:4px;">A) Reviewer Claude calls it out during the session</div>
+        <div style="color:#cdd6f4;font-size:11px;margin-bottom:4px;">B) You as director explicitly create one</div>
+        <div style="color:#cdd6f4;font-size:11px;">C) Either — automatic or manual</div>
+      </div>
+      <div style="background:#1e1e2e;border-radius:8px;padding:12px;border:1px solid #313244;">
+        <div style="color:#89b4fa;font-size:11px;font-weight:bold;margin-bottom:6px;">What resolves an issue thread?</div>
+        <div style="color:#cdd6f4;font-size:11px;margin-bottom:4px;">A) The agents agree</div>
+        <div style="color:#cdd6f4;font-size:11px;margin-bottom:4px;">B) You sign off</div>
+        <div style="color:#cdd6f4;font-size:11px;">C) You sign off, agents can't self-resolve</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<p class="subtitle">Does this tree structure match what you had in mind? Answer in the terminal — and pick the A/B/C options if they're relevant.</p>

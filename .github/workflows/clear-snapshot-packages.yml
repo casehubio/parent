@@ -162,7 +162,7 @@ jobs:
             if [ "$REBUILD" == "true" ] && [ "$total_failed" -eq 0 ]; then
               echo ""
               echo "==> Triggering full-stack rebuild (skip_tests=true for speed)..."
-              gh api repos/casehubio/parent/actions/workflows/full-stack-build.yml/dispatches \
+              gh api repos/casehubio/parent/actions/workflows/build-all.yml/dispatches \
                 -f ref=main \
                 -f inputs[skip_tests]=true \
                 2>/dev/null && echo "✅ Full stack build triggered" \

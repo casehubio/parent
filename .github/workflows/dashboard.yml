@@ -119,7 +119,7 @@ jobs:
             echo ""
             echo "---"
             echo ""
-            echo "[▶ Run Full Stack Build](https://github.com/$ORG/parent/actions/workflows/full-stack-build.yml) — clones and builds the entire platform in dependency order."
+            echo "[▶ Run Full Stack Build](https://github.com/$ORG/parent/actions/workflows/build-all.yml) — clones and builds the entire platform in dependency order."
           } >> "$GITHUB_STEP_SUMMARY"
 
           # Surface failures as a workflow-level error so the dashboard run goes red
