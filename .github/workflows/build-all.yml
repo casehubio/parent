@@ -1094,46 +1094,46 @@ jobs:
           INCLUDE_APPLICATIONS: ${{ inputs.include_applications }}
           TRIGGER: ${{ github.event_name }}
         run: |
-          python3 - << 'PYEOF'
-          import json, os, subprocess, sys
+          cat > /tmp/sync_casehub_all.py << 'PYEOF'
+import json, os, subprocess
 
-          def sha(name):
-              try:
-                  return open(f'.build-shas/{name}').read().strip()
-              except Exception:
-                  return ''
+def sha(name):
+    try:
+        return open(f'.build-shas/{name}').read().strip()
+    except Exception:
+        return ''
 
-          include_apps = os.environ.get('INCLUDE_APPLICATIONS', 'false') == 'true'
+def load_csv(path):
+    names = []
+    for line in open(path):
+        line = line.strip()
+        if not line or line.startswith('#'):
+            continue
+        names.append(line.split(',')[0])
+    return names
 
-          def load_csv(path):
-              names = []
-              for line in open(path):
-                  line = line.strip()
-                  if not line or line.startswith('#'):
-                      continue
-                  names.append(line.split(',')[0])
-              return names
+include_apps = os.environ.get('INCLUDE_APPLICATIONS', 'false') == 'true'
+core = load_csv('build/modules-core.csv')
+apps = load_csv('build/modules-applications.csv') if include_apps else []
 
-          core = load_csv('build/modules-core.csv')
-          apps = load_csv('build/modules-applications.csv') if include_apps else []
+shas = {'sha_parent': sha('parent')}
+for name in core + apps:
+    shas['sha_' + name.replace('-', '_')] = sha(name)
 
-          shas = {'sha_parent': sha('parent')}
-          for name in core + apps:
-              shas['sha_' + name.replace('-', '_')] = sha(name)
+payload = {
+    'event_type': 'ecosystem-build-succeeded',
+    'client_payload': {
+        'trigger': os.environ.get('TRIGGER', 'workflow_dispatch'),
+        **shas,
+    }
+}
 
-          payload = {
-              'event_type': 'ecosystem-build-succeeded',
-              'client_payload': {
-                  'trigger': os.environ.get('TRIGGER', 'workflow_dispatch'),
-                  **shas,
-              }
-          }
-
-          subprocess.run(
-              ['gh', 'api', 'repos/casehubio/casehub-all/dispatches', '--input', '-'],
-              input=json.dumps(payload).encode(),
-              check=True,
-              env=os.environ.copy()
-          )
-          print('casehub-all dispatch sent — SHAs captured from .build-shas/')
-          PYEOF
+subprocess.run(
+    ['gh', 'api', 'repos/casehubio/casehub-all/dispatches', '--input', '-'],
+    input=json.dumps(payload).encode(),
+    check=True,
+    env=os.environ.copy()
+)
+print('casehub-all dispatch sent — SHAs from .build-shas/')
+PYEOF
+          python3 /tmp/sync_casehub_all.py
