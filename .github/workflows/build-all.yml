@@ -1086,3 +1086,54 @@ jobs:
             echo "::error::$FAIL_COUNT module(s) failed in the build-all."
             exit 1
           fi
+
+      - name: Sync casehub-all to build SHAs
+        if: success()
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+          INCLUDE_APPLICATIONS: ${{ inputs.include_applications }}
+          TRIGGER: ${{ github.event_name }}
+        run: |
+          python3 - << 'PYEOF'
+          import json, os, subprocess, sys
+
+          def sha(name):
+              try:
+                  return open(f'.build-shas/{name}').read().strip()
+              except Exception:
+                  return ''
+
+          include_apps = os.environ.get('INCLUDE_APPLICATIONS', 'false') == 'true'
+
+          def load_csv(path):
+              names = []
+              for line in open(path):
+                  line = line.strip()
+                  if not line or line.startswith('#'):
+                      continue
+                  names.append(line.split(',')[0])
+              return names
+
+          core = load_csv('build/modules-core.csv')
+          apps = load_csv('build/modules-applications.csv') if include_apps else []
+
+          shas = {'sha_parent': sha('parent')}
+          for name in core + apps:
+              shas['sha_' + name.replace('-', '_')] = sha(name)
+
+          payload = {
+              'event_type': 'ecosystem-build-succeeded',
+              'client_payload': {
+                  'trigger': os.environ.get('TRIGGER', 'workflow_dispatch'),
+                  **shas,
+              }
+          }
+
+          subprocess.run(
+              ['gh', 'api', 'repos/casehubio/casehub-all/dispatches', '--input', '-'],
+              input=json.dumps(payload).encode(),
+              check=True,
+              env=os.environ.copy()
+          )
+          print('casehub-all dispatch sent — SHAs captured from .build-shas/')
+          PYEOF
