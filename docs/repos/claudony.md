@@ -129,9 +129,9 @@ tmux does not expose a PTY to the Quarkus process. Streaming uses:
 
 Claudony is the normative reference implementation of the CaseHub agent mesh framework — the pattern for how Claude instances communicate with each other and with the platform in a production multi-agent deployment.
 
-**Key SPIs (defined in `claudony-casehub`):**
-- `CaseChannelLayout` — declares the channel topology for a case type: which channels to create, their semantics (work / observe / oversight), and allowed speech-act types per channel
-- `MeshParticipationStrategy` — governs how a Claude instance joins and leaves the mesh: channel subscription, capability announcement, session lifecycle hooks
+**Platform SPIs (defined in `casehub-engine-api`, `io.casehub.api.spi.mesh`):**
+- `CaseChannelLayout` — SPI declaring the channel topology for an agent case. Canonical implementations `NormativeChannelLayout` (work/observe/oversight) and `SimpleLayout` (work/observe) live in engine-api. Claudony uses `CaseChannelLayout.named("simple")` for lightweight cases; the `SimpleLayout` implementation is resolved from engine-api.
+- `MeshParticipationStrategy` — SPI governing agent participation level (ACTIVE/REACTIVE/SILENT). Standard implementations in engine-api. Claudony's `ClaudonyReactiveWorkerContextProvider` selects via `MeshParticipationStrategy.named(config.meshParticipation())`.
 
 **Normative channel layout (3-channel pattern):**
 

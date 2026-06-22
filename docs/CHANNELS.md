@@ -12,7 +12,13 @@ and describes the open design space for new channel patterns.
 ### 1. Coordination Channels — the agent mesh
 
 The normative pattern for any agent participating in the CaseHub mesh. Three channels per
-agent case, declared by `CaseChannelLayout` SPI, `allowedTypes` enforced at the Qhorus layer.
+agent case, declared by `CaseChannelLayout` SPI (`io.casehub.api.spi.mesh`), `allowedTypes`
+enforced at the Qhorus layer. Canonical implementation: `NormativeChannelLayout`. Light variant
+(no governance gate): `SimpleLayout`. Factory: `CaseChannelLayout.named("normative"|"simple")`.
+
+Companion concept: `MeshParticipationStrategy` (`io.casehub.api.spi.mesh`) — how actively
+an agent participates: ACTIVE (register + periodic check), REACTIVE (respond when addressed),
+SILENT (no participation). See PLATFORM.md Capability Ownership table.
 
 | Channel suffix | Purpose | Participants | Speech acts (allowedTypes) |
 |----------------|---------|-------------|--------------------------|
