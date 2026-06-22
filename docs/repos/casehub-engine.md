@@ -68,6 +68,24 @@ Engine's own routing abstraction — replaces the borrowed `WorkerSelectionStrat
 | `TrustWeightedAgentStrategy` | casehub-engine-ledger | `@Priority(1)` | When casehub-engine-ledger on classpath; implements trust maturity phases 0–3 via `TrustScoreCache` |
 | `SemanticAgentRoutingStrategy` | casehub-engine-ai | `@Priority(2)` | When casehub-engine-ai on classpath; uses `AgentEmbeddingProvider` for embedding-based candidate matching |
 
+### Agent Mesh SPIs (`api/spi/mesh/` — parent#93)
+
+New package added in parent#93 for platform-level agent mesh primitives:
+
+| Type | Purpose |
+|---|---|
+| `CaseChannelLayout` | SPI: declares channel topology for an agent case. `channelsFor(UUID caseId, CaseDefinition)`. `named("normative"|"simple")` factory. |
+| `NormativeChannelLayout` | Canonical 3-channel impl: work (open) / observe (EVENT-only) / oversight (deniedTypes=EVENT) |
+| `SimpleLayout` | 2-channel impl: work + observe, no governance gate |
+| `MeshParticipationStrategy` | SPI: `strategyFor(String workerId, UUID caseId)` → ACTIVE/REACTIVE/SILENT. `named("active"|"reactive"|"silent")` factory. |
+| `ActiveParticipationStrategy` | Fixed ACTIVE |
+| `ReactiveParticipationStrategy` | Fixed REACTIVE |
+| `SilentParticipationStrategy` | Fixed SILENT |
+
+All types are pure Java (Tier 1 — no Quarkus/CDI/JPA). Previously owned by claudony; extracted here so any agent implementation can share the canonical definitions. Protocol: `casehub/garden: docs/protocols/casehub/normative-channel-layout-single-source.md`.
+
+---
+
 ### Worker Provisioner SPIs (`api/spi/`)
 
 Eight operational SPIs (4 blocking + 4 reactive mirrors):
