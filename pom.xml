@@ -113,6 +113,31 @@
         <artifactId>casehub-platform-persistence-mongodb</artifactId>
         <version>${casehub.version}</version>
       </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-platform-governance</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+
+      <!-- ================================================================ -->
+      <!-- casehub-worker                                                   -->
+      <!-- ================================================================ -->
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-worker-api</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-worker</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-worker-testing</artifactId>
+        <version>${casehub.version}</version>
+        <scope>test</scope>
+      </dependency>
 
       <!-- ================================================================ -->
       <!-- casehub-ledger                                                   -->
