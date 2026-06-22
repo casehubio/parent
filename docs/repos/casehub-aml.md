@@ -69,6 +69,7 @@ Current agentic AML systems cannot provide:
 ```
 casehub-aml
   → casehub-engine          (investigation CasePlanModel, adaptive paths)
+  → casehub-engine-flow     (FuncWorkflowBuilder worker execution — `FlowWorkerExecutor @ApplicationScoped` displaces `NoOpWorkflowExecutor @DefaultBean`; enables `WorkerFunction.Flow` via quarkus-flow; aml#46, PP-20260531-worker-func-exec)
   → casehub-engine-ledger   (Layer 6: TrustWeightedAgentStrategy, WorkerDecisionEventCapture; engine#395 scoping fix pending)
   → casehub-ledger          (Merkle audit, FinCEN evidence chain, GDPR erasure, trust scoring)
   → casehub-work            (compliance officer WorkItem, 30-day SLA, escalation)

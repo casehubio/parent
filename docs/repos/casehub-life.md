@@ -21,6 +21,7 @@ The tutorial structure emerges from the natural adoption sequence. Each layer ad
 | 5 | casehub-engine | No multi-step workflow orchestration | pending |
 | 6 | Trust routing | No trust model for agent routing | **complete** (casehubio/life#11) |
 | 7 | casehub-openclaw | OpenClaw as WorkerProvisioner; pre-built skill ecosystem | pending |
+| 8 | Auth (casehub-platform-oidc) | No RBAC enforcement; risk thresholds role-agnostic | **complete** (casehubio/life#40, 2026-06-22) — `@RolesAllowed` on all 5 REST resources; RBAC-differentiated risk thresholds in `LifeActionRiskClassifier` (admin elevated, junior always-gate). Closes life#26. |
 
 ## What It Owns
 
@@ -79,6 +80,7 @@ Foundation capabilities that casehub-life consumes but does not implement:
 
 ```
 casehub-life
+  → casehub-platform-oidc     (Layer 8: OidcCurrentPrincipal, @RolesAllowed enforcement — life#40)
   → casehub-openclaw          (Layer 7: OpenClaw WorkerProvisioner, ChannelContextWindow)
   → casehub-engine            (Layer 5: CasePlanModel orchestration)
   → casehub-engine-work-adapter (HumanTaskScheduleHandler + WorkItemLifecycleAdapter)
