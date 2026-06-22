@@ -45,6 +45,8 @@ public interface CaseChannelLayout {
 }
 ```
 
+**Note on `CaseDefinition definition` parameter:** Every call site in the codebase passes `null` — all current implementations ignore it. This is deliberate. The parameter exists for future layout strategies that may vary channels based on case metadata (e.g., a definition with `requires_oversight: true` selects `NormativeLayout`; otherwise `SimpleLayout`). This was an intentional forward-looking design choice in the original SPI (claudony#87, part of epic #86). **Do not remove it as apparent dead weight** — it is an intentional extensibility point. `CaseChannelLayoutContractTest` must include: `channelsFor(caseId, null)` must not throw (explicit null-safety contract for the current call pattern).
+
 **`NormativeChannelLayout`** — canonical 3-channel mesh implementation.
 
 Per protocols `qhorus-human-governance-channel-types.md` and `channel-type-policy-invariant.md`:
@@ -200,7 +202,7 @@ Both claudony and openclaw already depend on `casehub-engine-api` — **zero new
 
 **Update — `docs/DESIGN.md`** (both changes to the same file, consolidated here):
 - **Line 540 Outstanding note**: remove only the first clause: *"MeshParticipationStrategy.strategyFor() currently receives null for context (context not yet built at call time);"*. Preserve the second clause: *"shared-data keys from prior workers not yet included in the prompt (requires additional Qhorus integration, tracked as future work under epic #86)."*
-- **Architecture section**: note that `CaseChannelLayout`, `NormativeChannelLayout`, `SimpleLayout`, `MeshParticipationStrategy` and its three standard implementations have moved to `io.casehub.api.spi.mesh` in engine-api; claudony retains `SimpleLayout` usage but the type definition is no longer local.
+- **Architecture section**: note that `CaseChannelLayout`, `NormativeChannelLayout`, `SimpleLayout`, `MeshParticipationStrategy` and its three standard implementations have moved to `io.casehub.api.spi.mesh` in engine-api; claudony uses `CaseChannelLayout.named("simple")` for lightweight cases — `SimpleLayout` is the resolved implementation, now defined in engine-api.
 
 **Update tests** (import change only):
 - `MeshSystemPromptTemplateTest` — `MeshParticipation` import update
@@ -218,10 +220,7 @@ Both claudony and openclaw already depend on `casehub-engine-api` — **zero new
 **Delete**:
 - `io.casehub.openclaw.casehub.OpenClawNormativeLayout`
 - `OpenClawNormativeLayoutTest`
-- `docs/protocols/casehub/normative-layout-single-source.md` (PP-20260615-11b9d2) — **update, do not delete**. The rule survives; only the implementation pointer changes. Update:
-  - **Title**: "All changes to the normative channel layout must go through `NormativeChannelLayout` in `casehub-engine-api`"
-  - **Body**: "`NormativeChannelLayout` in `io.casehub.api.spi.mesh` (engine-api) is the single source of truth. Use `CaseChannelLayout.named("normative")` or construct `new NormativeChannelLayout()` directly. Do not define private `ChannelSpec` records or `LAYOUT` maps inside provider classes — this bypasses `NormativeChannelLayoutTest` value assertions in engine-api and re-introduces the duplication this extraction was designed to eliminate."
-  - **violation_hint**: update from `OpenClawNormativeLayout`/`OpenClawNormativeLayoutTest` references to `NormativeChannelLayout`/`NormativeChannelLayoutTest` in `io.casehub.api.spi.mesh`
+- `docs/protocols/casehub/normative-layout-single-source.md` (PP-20260615-11b9d2) — **delete**. This was a repo-scoped protocol that only reached openclaw developers. After migration the rule is platform-wide (applies to claudony, openclaw, and any future agent). It is promoted to the garden (see Garden section below).
 
 **Update — `OpenClawCaseChannelProvider` (sync):**
 
@@ -303,6 +302,31 @@ This eliminates the second map lookup and is architecturally cleaner than the cu
 ---
 
 ### `casehub/garden` — protocols
+
+**Create new platform protocol** `casehub/garden/docs/protocols/casehub/normative-channel-layout-single-source.md`:
+
+```yaml
+---
+id: PP-20260622-<hash>
+title: "Use NormativeChannelLayout from casehub-engine-api — do not define private layout maps"
+type: rule
+scope: platform
+applies_to: "Any casehub module that creates Qhorus channels per case — claudony, openclaw, and any future agent implementation"
+severity: important
+refs:
+  - casehubio/parent#93
+violation_hint: >
+  A private ChannelSpec record or LAYOUT Map<String,ChannelSpec> defined inside a
+  CaseChannelProvider or ReactiveOpenClawCaseChannelProvider — bypasses
+  NormativeChannelLayoutTest value assertions in engine-api and re-introduces the
+  duplication parent#93 eliminated.
+created: 2026-06-22
+---
+```
+
+Body: `NormativeChannelLayout` in `io.casehub.api.spi.mesh` (`casehub-engine-api`) is the single source of truth for the three normative channels (work/observe/oversight) and their MessageType constraints. Use `CaseChannelLayout.named("normative")` or construct `new NormativeChannelLayout()` directly. Do not define private `ChannelSpec` records or `LAYOUT` maps inside provider classes.
+
+Also **add a row to `casehub/garden/docs/protocols/casehub/FOUNDATION-INDEX.md`** for the new protocol.
 
 **Update `casehub/garden/docs/protocols/casehub/spi-case-id-parameter.md`** — protocol table at lines 81–82:
 
