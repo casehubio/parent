@@ -16,9 +16,17 @@ agent case, declared by `CaseChannelLayout` SPI (`io.casehub.api.spi.mesh`), `al
 enforced at the Qhorus layer. Canonical implementation: `NormativeChannelLayout`. Light variant
 (no governance gate): `SimpleLayout`. Factory: `CaseChannelLayout.named("normative"|"simple")`.
 
-Companion concept: `MeshParticipationStrategy` (`io.casehub.api.spi.mesh`) — how actively
-an agent participates: ACTIVE (register + periodic check), REACTIVE (respond when addressed),
-SILENT (no participation). See PLATFORM.md Capability Ownership table.
+**`MeshParticipationStrategy`** (`io.casehub.api.spi.mesh`) is a first-class companion to
+`CaseChannelLayout` — together they define an agent's full mesh participation model:
+
+| Participation | Which channels the agent actively engages |
+|--------------|------------------------------------------|
+| `ACTIVE` | All channels — registers on startup, polls work, posts STATUS |
+| `REACTIVE` | Work channel only — responds when addressed, no startup registration |
+| `SILENT` | None — no mesh participation |
+
+Both SPIs live in `io.casehub.api.spi.mesh`; standard implementations and `named()` factories
+in the same package. See PLATFORM.md Capability Ownership table for full API reference.
 
 | Channel suffix | Purpose | Participants | Speech acts (allowedTypes) |
 |----------------|---------|-------------|--------------------------|
