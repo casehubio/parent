@@ -36,7 +36,7 @@ Consumers observe `Event<InboundMessage>` and react accordingly — they never c
 
 | Module | Contents |
 |--------|----------|
-| `casehub-connectors` (`casehub-connectors-core`) | `Connector` SPI + Slack, Teams, Twilio SMS, WhatsApp outbound impls; `InboundConnector` SPI + `InboundConnectorService` polling engine; `WebhookInboundConnector` abstract base. `ConnectorDiscovery` SPI (connectors#16) — optional interface CDI beans implement when their targets are discoverable (e.g. Slack channels via `conversations.list`); `connectorId()` + `discover() → List<DiscoveredTarget>`. |
+| `casehub-connectors` (`casehub-connectors-core`) | `Connector` SPI + Slack, Teams, Twilio SMS, WhatsApp outbound impls; `InboundConnector` SPI + `InboundConnectorService` polling engine; `WebhookInboundConnector` abstract base. `ConnectorDiscovery` SPI (connectors#16) — optional interface CDI beans implement when their targets are discoverable (e.g. Slack channels via `conversations.list`); `connectorId()` + `discover() → List<DiscoveredTarget>`. `ConnectorsCloudEventAdapter` — CDI adapter observing `@ObservesAsync InboundMessage`, fires `Event<CloudEvent>.fireAsync()` with type `io.casehub.connectors.inbound.<connectorType>`. Follows canonical CloudEvent adapter pattern (GE-20260621-629712). |
 | `casehub-connectors-email` | SMTP outbound via `quarkus-mailer` |
 | `casehub-connectors-email-inbound` | `EmailInboundConnector` — IMAP polling, `EmailInboundAccountProvider` SPI |
 | `casehub-connectors-mcp` | MCP tool surface: `send_slack`, `send_teams`, `send_sms`, `send_whatsapp`, `send_email`, `send_slack_bot` (bot-token Slack posting via `SlackBotClient`, returns `ts` for thread replies), `list_channels` (aggregates all registered `ConnectorDiscovery` beans). Depends on `core` + `email` + `quarkus-mcp-server-core:1.11.1`. Consuming apps add `quarkus-mcp-server-http` for transport. Integrates with Qhorus via `ConnectorMeshBridge` SPI when `connector-backend` is on classpath (qhorus#249). |
@@ -74,7 +74,7 @@ Twilio and WhatsApp require account credentials in config. Slack and Teams webho
 
 ## Depends On
 
-Nothing in the casehubio ecosystem. Pure Java (`java.net.http.HttpClient`) + optional `quarkus-mailer` for email outbound + standard IMAP (`jakarta.mail`) for email inbound.
+Nothing in the casehubio ecosystem. Core module: `java.net.http.HttpClient`, `cloudevents-core` (CNCF CloudEvents SDK), `jackson-databind`. Optional modules: `quarkus-mailer` (email outbound), `jakarta.mail` (email inbound).
 
 ## Depended On By
 
