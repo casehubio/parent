@@ -1,5 +1,6 @@
 # name,dep1,dep2,...  (order = build order)
 platform,parent
+worker,parent
 ledger,parent
 eidos,ledger
 neural-text,platform

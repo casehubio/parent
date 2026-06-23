@@ -152,7 +152,7 @@ Tenancy propagation through the provisioner and channel bridge:
 - **Delivery webhook pattern** — `OpenClawDeliveryResource` uses `@CrossTenant CrossTenantChannelStore.findById()` to resolve tenancyId from the channel entity. Webhook callbacks have no casehub principal. **Protocol: never use tenant-scoped `ChannelService.findById()` in delivery webhook handlers** (PP-20260612-520281).
 - **`OversightGateService.fulfill()`** — uses `CrossTenantMessageStore.scan(MessageQuery)` to find the gate COMMAND cross-tenant. `GateContext` now persists `tenancyId` for crash-safe recovery.
 - **`WorkerProvisioner.terminate(workerId, tenancyId)`** — engine-api#475 landed; SPI now provides tenancyId directly, no registry lookup required.
-- **Deferred** — Python SDK + TypeScript plugin tenancy propagation (openclaw#33) pending auth retrofit. `GET /channel-context/{agentId}` currently scopes to `DEFAULT_TENANT_ID` in both SDK clients.
+- **Python SDK + TypeScript plugin tenancy propagation** — openclaw#33 closed; auth retrofit complete (openclaw#41, 2026-06-23). `@RolesAllowed` on all REST resources; delivery endpoints remain `@PermitAll` (webhook callbacks carry no CaseHub principal — tenancyId resolved from channel entity via `CrossTenantChannelStore`, PP-20260612-520281).
 
 ---
 

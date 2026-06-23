@@ -10,6 +10,7 @@ Org-level parent POM and BOM for the [casehubio](https://github.com/casehubio) e
 |:-----------|:------:|
 | [casehub-parent](https://github.com/casehubio/parent) | [![casehub-parent](https://github.com/casehubio/parent/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/parent/actions/workflows/publish.yml) |
 | [casehub-platform](https://github.com/casehubio/platform) | [![casehub-platform](https://github.com/casehubio/platform/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/platform/actions/workflows/publish.yml) |
+| [casehub-worker](https://github.com/casehubio/casehub-worker) | [![casehub-worker](https://github.com/casehubio/casehub-worker/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/casehub-worker/actions/workflows/publish.yml) |
 | [casehub-ledger](https://github.com/casehubio/ledger) | [![casehub-ledger](https://github.com/casehubio/ledger/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/ledger/actions/workflows/publish.yml) |
 | [casehub-connectors](https://github.com/casehubio/connectors) | [![casehub-connectors](https://github.com/casehubio/connectors/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/connectors/actions/workflows/publish.yml) |
 | [casehub-work](https://github.com/casehubio/work) | [![casehub-work](https://github.com/casehubio/work/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/work/actions/workflows/publish.yml) |

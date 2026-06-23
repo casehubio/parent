@@ -100,13 +100,11 @@ ArchUnit enforced from day one: zero-domain-dep constraint on all `inference-*` 
 
 ---
 
-## Native Image Gate
+## Native Image — JVM Mode by Design
 
-Two JNI layers must work in Quarkus native image on macOS ARM before `inference-quarkus` is used:
-1. ONNX Runtime (`com.microsoft.onnxruntime`)
-2. HuggingFace Tokenizers JNI
+The inference service is long-running — native image's fast startup provides no benefit, and HotSpot's JIT optimisation outperforms AOT for sustained workloads. `inference-*` modules operate in JVM mode.
 
-The prototype is the first deliverable. Until confirmed, all `inference-*` modules operate JVM-only. `casehub-rag` does not require native image.
+The C2 native image gate passed (ONNX Runtime JNI + HuggingFace Tokenizers JNI both work in Quarkus native image on macOS ARM). Reachability metadata ships in `inference-quarkus` for downstream consumers that distribute as native binaries.
 
 ---
 
@@ -145,7 +143,7 @@ C3–C7 complete (neural-text#3, neural-text#7). All inference and RAG modules s
 | C6 — SPLADE | `SparseEmbedder` in `inference-splade` — log-saturation output for Qdrant named vector spaces |
 | C7 — RAG Pipeline | `CorpusStore` SPI, `CaseRetriever` SPI, `QdrantCorpusStore`, `QdrantCaseRetriever` in `rag`; `rag-testing` in-memory stubs |
 
-Native image prototype (Epic 2) gates `inference-quarkus` native deployment and Hortora's native binary goal — currently JVM-only.
+Native image gate passed (C2). Service deploys in JVM mode by design — long-running workloads benefit from HotSpot JIT over AOT. Reachability metadata retained for downstream native consumers.
 
 Design specs:
 - `docs/specs/2026-06-03-ai-fusion-hybrid-fact-space.md` (typed fact space + RAG context)
