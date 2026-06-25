@@ -1,7 +1,8 @@
 # Local-only modules — built by build-all.sh but not by build-all.yml CI.
 # Same format: name,dep1,dep2,...  (build order matters)
 # quarkus-langchain4j is outside casehubio/ — handled as a special case in build-all.sh
-quarkus-langchain4j
+# quarkus-langchain4j — disabled; was needed for a forked build, now consuming from Maven Central
+# quarkus-langchain4j
 iot,platform
 desiredstate,platform
 ras,platform

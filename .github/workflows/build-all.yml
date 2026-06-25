@@ -60,7 +60,7 @@ jobs:
           INCLUDE_APPLICATIONS: ${{ inputs.include_applications }}
         run: |
           mkdir -p .build-times casehub
-          declare -A REPO_OVERRIDE=([pages]="casehubio/casehub-pages")
+          declare -A REPO_OVERRIDE=([pages]="casehubio/casehub-pages" [worker]="casehubio/casehub-worker")
           declare -A TOKEN_OVERRIDE=([quarkmind]="$GH_TOKEN" [flow]="$GH_TOKEN")
           clone_csv() {
             local csv=$1
