@@ -265,6 +265,7 @@ casehub-parent              (BOM — publish first; all others import it)
 | `casehub-desiredstate` (runtime) | `casehub-ops` | `infra` | `DefaultDesiredStateGraphFactory` (test scope) |
 | `casehub-platform-agent-api` | `casehub-desiredstate` | `examples/pipeline` | `AgentProvider` SPI for AI_REVIEW fault node LLM diagnosis (desiredstate#37) |
 | `casehub-eidos-api` | `casehub-ledger` | CBR subsystem | `CapabilitySpecializationStore` SPI — records DECLINE/FAIL patterns per capability for learned routing exclusion (eidos#55) |
+| `casehub-iot-api` | `casehub-ops` | `iot` | `DeviceProvider`, `DeviceRegistry`, `StateChangeEvent`, `DeviceCommand`, `DeviceEntity` hierarchy — IoT desired-state bridge |
 | `casehub-platform-api` | `casehub-ops` | `api` | `Path`, `Preferences`, `CurrentPrincipal` |
 | `casehub-ops-api` | `casehub-ops` | `deployment` | `NodeDriftChecker` SPI, `ProviderConfig`, deployment node spec types |
 | `casehub-eidos-api` | `casehub-ops` | `deployment` | `AgentDescriptor`, `AgentCapability`, `AgentDisposition`, `AgentRegistry` |
@@ -383,7 +384,7 @@ casehub-parent              (BOM — publish first; all others import it)
 | Cross-cutting message notification | `casehub-qhorus` | `MessageObserver` SPI in `casehub-qhorus-api`; `InProcessMessageBus` CDI default (`Scope.LOCAL`); `FleetMessageRelayObserver` in claudony (`Scope.CLUSTER`) — relays a channel-name tick to all healthy fleet peers on every Qhorus message dispatch, enabling real-time SSE delivery across fleet nodes (claudony#118) |
 | Inbound message → WorkItem bridge | `casehub-engine-inbound` | Optional module — `InboundWorkItemBridge implements MessageObserver`; delegates to consumer-provided `InboundWorkItemPolicy @FunctionalInterface` SPI. Inert without a policy bean. Activated by classpath presence. At-most-once delivery. |
 | Human-participating channel backend | `casehub-qhorus` | `HumanParticipatingChannelBackend` SPI — extended `ChannelBackend` for channels where humans receive and respond to messages. Implementations route to messaging apps via `casehub-connectors` or directly via vendor clients. `SlackChannelBackend` (`casehub-qhorus-slack-channel`) uses `SlackBotClient` directly for thread-aware Slack delivery without the generic connector path (qhorus#261). |
-| Qhorus MCP tool surface | `casehub-qhorus` | Six capability groups exposed as MCP tools for LLM agents: channel management, message dispatch, commitment tracking, instance queries, oversight gates, projection queries. `QhorusMcpTools` and `ReactiveQhorusMcpTools` — do NOT call from internal service code (see Boundary Rules). |
+| Qhorus MCP tool surface | `casehub-qhorus` | Six capability groups exposed as MCP tools for LLM agents: channel management, message dispatch, commitment tracking, instance queries, oversight gates, projection queries. `QhorusMcpTools` and `ReactiveQhorusMcpTools` — do NOT call from internal service code (see Boundary Rules). Uses `@McpServer("qhorus")` named server scoping (see convention below). |
 | Agent commitment/obligation tracking | `casehub-qhorus` | `Commitment` with 7-state lifecycle |
 | Normative audit of all agent interactions | `casehub-qhorus` | `MessageLedgerEntry` extends `LedgerEntry`; all 9 speech-act types recorded |
 | Channel read-model projection (left-fold over message history) | `casehub-qhorus` | `ChannelProjection<S>` SPI + `ProjectionService` in runtime; incremental re-projection via `ProjectionResult<S>` cursor (`lastMessageId`); reactive parity via `ReactiveProjectionService` (build-gated) |
@@ -464,6 +465,8 @@ casehub-parent              (BOM — publish first; all others import it)
 **Do not implement implementation-selection trust routing in application repos.** When multiple `TaskDefinition` implementations compete for the same capability, routing between them is a `casehub-engine` concern (`ImplementationRoutingStrategy` — gap, to be filed). Application-layer workarounds (`canActivate()` gating via a selector bean) are temporary and must migrate to the engine SPI once it exists. See [`docs/CBR-CAPABILITY.md`](CBR-CAPABILITY.md) §Reuse.
 
 **Do not re-implement CapabilityHealth probe semantics in casehub-engine.** Engine calls `CapabilityHealth.probe()` via the `casehub-eidos-api` SPI contract from `WorkOrchestrator`. Engine provides a `NoOpCapabilityHealth @DefaultBean` for deployments without eidos — that is the full extent of engine's responsibility. Do not add `AgentDescriptor`, vocabulary, or epistemic domain logic to engine types. `Worker` carries an optional `AgentDescriptor` field for probe dispatch only — not for identity, registry, or vocabulary operations.
+
+**Named MCP server convention.** Library modules that expose MCP tools must use `@McpServer("<library-name>")` to scope their tools to a named server. The default (unnamed) MCP server belongs to the application. This prevents library tools from colliding with application tools and lets applications compose multiple library MCP surfaces. Established by claudony#105 and qhorus#306.
 
 ---
 
