@@ -567,8 +567,8 @@ The platform uses a normative 3-channel layout for agent-to-agent and agent-to-h
 
 | Channel | Purpose | Primary speech acts |
 |---------|---------|---------------------|
-| `work` | Task assignment and completion (prescriptive) | COMMAND, RESPONSE, DONE, DECLINE, EXPIRED |
-| `observe` | Passive monitoring and state sharing (descriptive) | EVENT, QUERY, STATUS |
+| `work` | Task assignment and completion (prescriptive) | COMMAND, RESPONSE, DONE, DECLINE |
+| `observe` | Passive monitoring and state sharing (descriptive) | EVENT |
 | `oversight` | Human governance gates (commitment-based) | All obligation-carrying types (COMMAND, QUERY, RESPONSE, DONE, DECLINE, FAILURE, STATUS, HANDOFF); EVENT excluded — no telemetry on the governance channel (`deniedTypes = EVENT`) |
 
 These map to the 4-layer normative accountability framework implemented by casehub-qhorus:
@@ -614,7 +614,6 @@ SPIs and capabilities that exist in the wrong module pending extraction. Do not 
 
 | Capability | Current home | Intended home | Tracking |
 |---|---|---|---|
-| `CaseChannelLayout` — normative 3-channel constants | `claudony-casehub` | `casehub-engine-api` or `casehub-platform-api` | parent#93 |
 | `OversightGateService` | `casehub-openclaw` | `casehub-engine-api` | *(untracked — file issue before implementing)* |
 
 ---

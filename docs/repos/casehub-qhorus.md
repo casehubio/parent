@@ -198,12 +198,12 @@ See [docs/normative-layer.md](https://raw.githubusercontent.com/casehibio/qhorus
 
 ### Normative Channel Layout
 
-The agent mesh framework defines a 3-channel normative layout implemented via `NormativeChannelLayout` (Claudony SPI) and enforced at channel creation:
+The agent mesh framework defines a 3-channel normative layout implemented via `NormativeChannelLayout` in `casehub-engine-api` (`io.casehub.api.spi.mesh`) and enforced at channel creation:
 
 | Channel suffix | Semantics | `allowedTypes` | `deniedTypes` |
 |----------------|-----------|----------------|---------------|
-| `/work` | Task assignment and completion (prescriptive) | `COMMAND, RESPONSE, DONE, DECLINE, EXPIRED` | null |
-| `/observe` | Passive monitoring and state sharing (descriptive) | `EVENT, QUERY, STATUS` | null |
+| `/work` | Task assignment and completion (prescriptive) | null (all types permitted) | null |
+| `/observe` | Passive monitoring and state sharing (descriptive) | `EVENT` | null |
 | `/oversight` | Human governance gates (commitment-based) | null (all deliberative types permitted) | `EVENT` |
 
 Type constraints on `Channel` are enforced at message dispatch time. `deniedTypes` wins when a type appears in both sets. The oversight channel uses `deniedTypes=EVENT` (denylist) rather than `allowedTypes` (allowlist) because an allowlist would block DONE, DECLINE, FAILURE, STATUS, and HANDOFF — all valid deliberative speech acts that governance participants must be able to send. Only EVENT (telemetry, no commitment effect, excluded from `pollAfter` by default) is structurally excluded from the governance channel. See PP-20260604-a7ad99 and GE-20260519-28967d.
