@@ -9,10 +9,10 @@ Every enum that represents lifecycle states must be registered here and follow t
 
 | State machine | Repo | States | Terminal check method |
 |---------------|------|--------|----------------------|
-| `PlanItemStatus` | `casehub-engine` | `PENDING`, `ENABLED`, `ACTIVE`, `RUNNING`, `COMPLETED`, `TERMINATED`, `FAILED`, `OBSOLETE` (8) | `isTerminal()`, `isActive()` |
-| `WorkItemStatus` | `casehub-work` | `CREATED`, `CLAIMED`, `IN_PROGRESS`, `COMPLETED`, `REJECTED`, `CANCELLED`, `EXPIRED`, `DELEGATED`, `DELEGATION_DECLINED`, `ESCALATED` (10) | `isTerminal()` |
-| `CommitmentState` | `casehub-qhorus` | `OPEN`, `FULFILLED`, `FAILED`, `EXPIRED`, `DECLINED`, `HANDOFF`, `CANCELLED` (7) | `isTerminal()` |
-| `SessionStatus` | `claudony` | `ACTIVE`, `WAITING`, `IDLE` | — |
+| `PlanItemStatus` | `casehub-engine` | `PENDING`, `RUNNING`, `DELEGATED`, `SUSPENDED`, `COMPLETED`, `FAULTED`, `REJECTED`, `OBSOLETE`, `CANCELLED` (9) | `isTerminal()`, `isActive()` |
+| `WorkItemStatus` | `casehub-work` | `PENDING`, `ASSIGNED`, `IN_PROGRESS`, `DELEGATED`, `SUSPENDED`, `COMPLETED`, `REJECTED`, `FAULTED`, `CANCELLED`, `EXPIRED`, `ESCALATED`, `OBSOLETE` (12) | `isTerminal()`, `isActive()` |
+| `CommitmentState` | `casehub-qhorus` | `OPEN`, `ACKNOWLEDGED`, `FULFILLED`, `DECLINED`, `FAILED`, `DELEGATED`, `EXPIRED` (7) | `isTerminal()` |
+| `SessionStatus` | `claudony` | `ACTIVE`, `WAITING`, `IDLE` (3) | — |
 
 ---
 
@@ -24,7 +24,7 @@ Consumer code must never enumerate lifecycle statuses explicitly to determine wh
 
 **Wrong:**
 ```java
-if (status == COMPLETED || status == FAILED || status == TERMINATED || status == OBSOLETE) {
+if (status == COMPLETED || status == FAULTED || status == REJECTED || status == OBSOLETE) {
     // terminal logic
 }
 ```
@@ -50,11 +50,11 @@ When adding a new state to any registered state machine:
 
 ### 3. Cross-module state machine boundaries
 
-`CommitmentState.DELEGATED` (Qhorus) and `WorkItemStatus.DELEGATED` (work) use the same word with opposite terminal semantics:
-- Qhorus `DELEGATED` is **terminal** — obligation transferred, original commitment closed.
-- Work `DELEGATED` is **non-terminal** — work reassigned, item remains active.
+`CommitmentState.DELEGATED` (Qhorus) and `WorkItemStatus.DELEGATED` (work) use the same name with opposite terminal semantics:
+- Qhorus `DELEGATED` is **terminal** — obligation transferred to a new debtor, original commitment closed.
+- Work `DELEGATED` is **non-terminal** — work forwarded to a named actor for acceptance, item remains active.
 
-Integration code bridging a Qhorus HANDOFF to WorkItem delegation must not assume terminal semantics from the word alone. See PLATFORM.md — Gotchas section.
+Integration code bridging Qhorus commitment delegation to WorkItem delegation must not assume terminal semantics from the name alone. See PLATFORM.md — Gotchas section.
 
 ### 4. New state machines
 
@@ -69,5 +69,8 @@ When introducing a new lifecycle enum in any CaseHub repo:
 ## References
 
 - `engine#539` — added `OBSOLETE` to `PlanItemStatus`; `isTerminal()` / `isActive()` introduced as the single source of truth
+- `engine#575` — PlanItemStatus class Javadoc omits `SUSPENDED` from active/terminal grouping
+- `work#240` — lifecycle alignment: added `FAULTED`, `SUSPENDED`, `OBSOLETE` to `WorkItemStatus`; renamed `CREATED`→`PENDING`, `CLAIMED`→`ASSIGNED`; added `isActive()`
+- `qhorus#309` — `CommitmentState` missing `isActive()` — lifecycle protocol compliance
 - PLATFORM.md — Capability Ownership table (Durable PlanItem status row)
 - PLATFORM.md — Gotchas (CommitmentState.DELEGATED vs WorkItemStatus.DELEGATED)
