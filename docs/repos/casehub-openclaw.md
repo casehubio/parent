@@ -17,9 +17,9 @@ Integration tier module (like Claudony). Bridges CaseHub ↔ OpenClaw. Provision
 
 | Module | Contents |
 |--------|----------|
-| `core` | `ContextMessage`, `WindowContent`, `ChannelRingBuffer`, `ChannelContextWindowService`, `OpenClawHookClient`, REST context endpoint. `OpenClawHookClient.invoke()` has a 5-arg overload accepting explicit `deliveryUrl` — used by `OversightGateService` for oversight delivery. `OpenClawCasehubConfig.Oversight` group: `Optional<String> agentId()` (dedicated messaging agent for oversight; falls back to work agent if absent). |
-| `casehub` | `ChannelContextWindowObserver` (`MessageObserver` SPI), `OpenClawChannelBackend` (`ChannelBackend` SPI), `OpenClawWorkerProvisioner`, `OpenClawCaseChannelProvider`, `OpenClawWorkerStatusListener`, `OpenClawAgentRegistry` (tracks agentId → session registration). **Epic 6:** `OversightGateService` — `evaluate()` archives deliver:webhook text as non-resolving STATUS (no commitment state change); `fulfill()` processes human oversight gate responses (Phase 2 gate entry wiring deferred to openclaw#30). `CaseChannelNames` (package-private channel name utility). **Epic 12 (openclaw#12):** `ReactiveOpenClawWorkerProvisioner` (implements `ReactiveWorkerProvisioner`) and `ReactiveOpenClawCaseChannelProvider` (implements `ReactiveCaseChannelProvider`) — reactive mirrors activated by `casehub.qhorus.reactive.enabled=true`; `ReactiveOpenClawCaseChannelProvider` uses a memoized layout cache to eliminate the DB unique-constraint race on concurrent `openChannel()` calls. Fix: `OpenClawCaseChannelProvider.openChannel()` now calls `gateway.initChannel()` after channel creation — previously newly created channels were never registered in the gateway registry, causing silent COMMAND loss until restart. |
-| `app` | Runnable Quarkus application — wires core + casehub modules. REST endpoints: `POST /openclaw/delivery/channel/{channelId}` (deliver:webhook → `OversightGateService.evaluate()`), `POST /openclaw/delivery/oversight/{gateId}` (oversight response → `OversightGateService.fulfill()`), `GET /channel-context/{agentId}?since={seq}`. **Example subpackage (`app/example/` — openclaw#35):** `ExampleController` (`POST /example/{exampleId}/start` demo orchestrator, `@Blocking`, inert when disabled), `ExampleSetup` (transactional channel/agent setup delegate), `ExamplePoller` (transactional JPA polling delegate), `DemoGateClassifier` (`@RiskClassifier` that gates only on configured agentId, inert by default). Guarded by `casehub.example.enabled=false` in production — activates only when explicitly enabled via docker-compose for demo runs. |
+| `core` | `ContextMessage`, `WindowContent`, `ChannelRingBuffer`, `ChannelContextWindowService`, `OpenClawHookClient`, REST context endpoint. `OpenClawHookClient.invoke()` has a 5-arg overload accepting explicit `deliveryUrl` — used by `OversightGateService` for oversight delivery. `invokeDirect()` — sessionless overload for DirectCallBridge (openclaw#49). `OpenClawCasehubConfig.Oversight` group: `Optional<String> agentId()` (dedicated messaging agent for oversight; falls back to work agent if absent). |
+| `casehub` | `ChannelContextWindowObserver` (`MessageObserver` SPI), `OpenClawChannelBackend` (`ChannelBackend` SPI), `OpenClawWorkerProvisioner`, `OpenClawCaseChannelProvider`, `OpenClawWorkerStatusListener`, `OpenClawAgentRegistry` (tracks agentId → session registration). **DirectCallBridge (openclaw#49):** `DirectCallBridge` (`CompletableFuture` registry), `OpenClawAgentProvider` (`AgentProvider` SPI), `OpenClawChatModel` (langchain4j `ChatModel` bridge). **Epic 6:** `OversightGateService` — `evaluate()` archives deliver:webhook text as non-resolving STATUS (no commitment state change); `fulfill()` processes human oversight gate responses (Phase 2 gate entry wiring deferred to openclaw#30). `CaseChannelNames` (package-private channel name utility). **Epic 12 (openclaw#12):** `ReactiveOpenClawWorkerProvisioner` (implements `ReactiveWorkerProvisioner`) and `ReactiveOpenClawCaseChannelProvider` (implements `ReactiveCaseChannelProvider`) — reactive mirrors activated by `casehub.qhorus.reactive.enabled=true`; `ReactiveOpenClawCaseChannelProvider` uses a memoized layout cache to eliminate the DB unique-constraint race on concurrent `openChannel()` calls. Fix: `OpenClawCaseChannelProvider.openChannel()` now calls `gateway.initChannel()` after channel creation — previously newly created channels were never registered in the gateway registry, causing silent COMMAND loss until restart. |
+| `app` | Runnable Quarkus application — wires core + casehub modules. REST endpoints: `POST /openclaw/delivery/channel/{channelId}` (deliver:webhook → `OversightGateService.evaluate()`), `POST /openclaw/delivery/oversight/{gateId}` (oversight response → `OversightGateService.fulfill()`), `POST /openclaw/direct-call/{correlationId}` (DirectCallBridge delivery — openclaw#49), `GET /channel-context/{agentId}?since={seq}`. **Example subpackage (`app/example/` — openclaw#35):** `ExampleController` (`POST /example/{exampleId}/start` demo orchestrator, `@Blocking`, inert when disabled), `ExampleSetup` (transactional channel/agent setup delegate), `ExamplePoller` (transactional JPA polling delegate), `DemoGateClassifier` (`@RiskClassifier` that gates only on configured agentId, inert by default). Guarded by `casehub.example.enabled=false` in production — activates only when explicitly enabled via docker-compose for demo runs. |
 | `examples/` | Three runnable demo scenarios targeting OpenClaw tutorial communities. Not a Maven module — directory at repo root. Activates via docker-compose when `casehub.example.enabled=true`. |
 | `plugin/` | TypeScript OpenClaw plugin — `before_prompt_build` hook via Plugin SDK; published to npm. TypeScript-only due to OpenClaw Plugin SDK design — see ADR 0001. |
 | `python/` | Python channel client library (thin HTTP wrapper); published to PyPI. No hook registration (hooks are TypeScript-only). |
@@ -31,6 +31,7 @@ Integration tier module (like Claudony). Bridges CaseHub ↔ OpenClaw. Provision
 | `POST /hooks/agent` | CaseHub → OpenClaw | Deliver a case step prompt to a running OpenClaw agent |
 | `POST /hooks/wake` | CaseHub → OpenClaw | Wake a dormant agent with context |
 | `deliver:webhook` | OpenClaw → CaseHub | Heartbeat or result delivery from an autonomous agent |
+| `POST /openclaw/direct-call/{correlationId}` | OpenClaw → CaseHub | DirectCallBridge response delivery — completes the caller's `CompletableFuture` (openclaw#49) |
 
 ### ChannelContextWindow
 
@@ -49,6 +50,20 @@ Integration tier module (like Claudony). Bridges CaseHub ↔ OpenClaw. Provision
 ### ChannelBackend SPI
 
 Implements the Qhorus `ChannelBackend` SPI to wire bidirectional message flow between a Qhorus channel and an OpenClaw agent. Inbound (CaseHub → OpenClaw) routes via `/hooks/agent`. Outbound (OpenClaw → CaseHub) routes via the `deliver:webhook` normaliser.
+
+### Direct-Call Bridge (openclaw#49)
+
+Request-reply bridge over async webhooks. Enables synchronous `AgentProvider` and langchain4j `ChatModel` invocations without requiring a persistent OpenClaw session.
+
+**Flow:** Caller → `OpenClawAgentProvider.invoke()` → `DirectCallBridge.submit(correlationId)` registers a `CompletableFuture` → `OpenClawHookClient.invokeDirect()` calls `/hooks/agent` sessionlessly with delivery URL `POST /openclaw/direct-call/{correlationId}` → OpenClaw processes prompt → POSTs result to delivery URL → `DirectCallDeliveryResource` calls `bridge.complete(correlationId, output)` → future completes → caller unblocked.
+
+| Class | Module | Role |
+|-------|--------|------|
+| `OpenClawHookClient.invokeDirect()` | `core` | Sessionless `/hooks/agent` call — no registered session needed, `sessionKey` is null |
+| `DirectCallBridge` | `casehub` | `@ApplicationScoped` in-memory `CompletableFuture<String>` registry keyed by correlationId; auto-removes on completion/timeout |
+| `OpenClawAgentProvider` | `casehub` | `AgentProvider` SPI — orchestrates the bridge flow; emits `Multi<AgentEvent>` with a single `TextDelta`; `openSession()` unsupported (single-shot only) |
+| `OpenClawChatModel` | `casehub` | langchain4j `ChatModel` — extracts system/user prompts from `ChatRequest`, delegates to `AgentProvider`, supports JSON schema via text preamble |
+| `DirectCallDeliveryResource` | `app` | `POST /openclaw/direct-call/{correlationId}` (`@PermitAll @Blocking`) — receives response, completes the future |
 
 ### Oversight Gate (Epic 6)
 
@@ -124,6 +139,8 @@ These two modes are mutually exclusive per invocation. A given agent interaction
 - `casehub-qhorus` — mandatory (`ChannelBackend` SPI, `MessageObserver` SPI)
 - `casehub-engine-api` — SPI interfaces only (`WorkerProvisioner`, `CaseChannelProvider`, `WorkerStatusListener`). Uses `casehub-engine-api` rather than `casehub-engine` to avoid pulling engine CDI beans with unsatisfied persistence SPIs into the `casehub/` module.
 - `casehub-platform-api` — `CurrentPrincipal`, `GroupMembershipProvider` for permission-aware context injection
+- `casehub-platform-agent-api` — `AgentProvider` SPI, `AgentSessionConfig`, `AgentEvent` for DirectCallBridge (openclaw#49)
+- `langchain4j-core` — `ChatModel` interface for `OpenClawChatModel` bridge (openclaw#49)
 
 ## Depended On By
 
@@ -165,6 +182,7 @@ Tenancy propagation through the provisioner and channel bridge:
 - Epic 5 (TypeScript Plugin SDK + Python client library): complete — `plugin/` (npm), `python/` (PyPI), ADR 0001
 - Epic 6 (OversightGateService, oversight delivery endpoint): complete; subsequently simplified in openclaw#28 — `evaluate()` archives webhook text as non-resolving STATUS, gate entry wired to MCP tool calls (`casehub_done`/`casehub_reject`) rather than speech-act classification
 - Epic 7 (Layer 0 — Quarkus MCP endpoint, 9 tools, 3 resources, 4 plugin hooks, global SKILL.md files): complete (openclaw#19)
+- DirectCallBridge (openclaw#49): complete — `AgentProvider` SPI + langchain4j `ChatModel` via sessionless request-reply over async webhooks
 
 ---
 
