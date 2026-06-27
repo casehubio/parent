@@ -11,7 +11,7 @@ Every enum that represents lifecycle states must be registered here and follow t
 |---------------|------|--------|----------------------|
 | `PlanItemStatus` | `casehub-engine` | `PENDING`, `RUNNING`, `DELEGATED`, `SUSPENDED`, `COMPLETED`, `FAULTED`, `REJECTED`, `OBSOLETE`, `CANCELLED` (9) | `isTerminal()`, `isActive()` |
 | `WorkItemStatus` | `casehub-work` | `PENDING`, `ASSIGNED`, `IN_PROGRESS`, `DELEGATED`, `SUSPENDED`, `COMPLETED`, `REJECTED`, `FAULTED`, `CANCELLED`, `EXPIRED`, `ESCALATED`, `OBSOLETE` (12) | `isTerminal()`, `isActive()` |
-| `CommitmentState` | `casehub-qhorus` | `OPEN`, `ACKNOWLEDGED`, `FULFILLED`, `DECLINED`, `FAILED`, `DELEGATED`, `EXPIRED` (7) | `isTerminal()` |
+| `CommitmentState` | `casehub-qhorus` | `OPEN`, `ACKNOWLEDGED`, `FULFILLED`, `DECLINED`, `FAILED`, `DELEGATED`, `EXPIRED` (7) | `isTerminal()`, `isActive()` |
 | `SessionStatus` | `claudony` | `ACTIVE`, `WAITING`, `IDLE` (3) | — |
 
 ---
