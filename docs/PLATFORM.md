@@ -160,7 +160,7 @@ Four tiers, always kept separate:
 | `quarkmind` | [casehubio/quarkmind](https://github.com/casehubio/quarkmind) | StarCraft II game AI — living lab proving the CaseHub harness pattern at millisecond game-loop granularity outside regulated domains | Application |
 | `flow` | [mdproctor/flow](https://github.com/mdproctor/flow) | Standalone Quarkus engine app with REST endpoints — tier and platform coherence pending analysis (external contributor) | TBD |
 
-Application tier (devtown, aml, clinical, life, drafthouse, quarkmind): see [APPLICATIONS.md](APPLICATIONS.md).
+Application tier (devtown, aml, clinical, life, drafthouse, quarkmind, soc, fsitrading): see [APPLICATIONS.md](APPLICATIONS.md).
 
 ---
 
@@ -188,6 +188,8 @@ casehub-parent              (BOM — publish first; all others import it)
   casehub-life              (depends on full foundation stack + casehub-openclaw as WorkerProvisioner)
   casehub-drafthouse        (depends on casehub-qhorus; engine + ledger + work added later)
   quarkmind                 (depends on casehub-poc + casehub-engine-api + casehub-engine-blackboard; migrating from poc to engine — casehubio/quarkmind#193)
+  casehub-soc               (depends on full foundation stack — engine, ledger, work, qhorus, worker, platform)
+  casehub-fsitrading        (depends on full foundation stack — engine, ledger, work, qhorus, worker, platform)
 ```
 
 ---

@@ -30,6 +30,8 @@ The pattern: **bring your domain, use the platform, modify nothing below.**
 | `casehub-life` | [casehubio/life](https://github.com/casehubio/life) | Personal life automation — household coordination, health, finance, elder care, legal compliance; tutorial: OpenClaw as execution layer. Layer 9 (planned): `casehub-iot` integration — Home Assistant and OpenHAB device abstraction, device-driven case types, community automation marketplace | Layer 2 (casehub-work) |
 | `casehub-drafthouse` | [casehubio/drafthouse](https://github.com/casehubio/drafthouse) | MCP-driven document review — four MCP tools live: `start_review`, `update_selection`, `query_review`, `end_review` (`DraftHouseMcpTools @ApplicationScoped`). Structured agent-to-agent debate loop (review manifest), deterministic summary projection via `ChannelProjection<ReviewState>`, LangChain4j + Claude Agent SDK provider pattern. `ReviewSessionResource` (deprecated REST) removed. | Active |
 | `quarkmind` | [mdproctor/quarkmind](https://github.com/mdproctor/quarkmind) | StarCraft II game AI — living lab proving the CaseHub harness pattern at millisecond game-loop granularity outside regulated domains | Active |
+| `casehub-soc` | [casehubio/soc](https://github.com/casehubio/soc) | Security Operations Center — multi-agent cyber incident response, trust-weighted triage, CBR-based incident correlation, oversight-gated containment | Scaffold |
+| `casehub-fsitrading` | [casehubio/fsitrading](https://github.com/casehubio/fsitrading) | FSI Trading — multi-agent trading automation, overnight bot management, situation detection and response, regulatory compliance (MiFID II, Dodd-Frank) | Scaffold |
 
 ---
 
@@ -43,6 +45,8 @@ casehub-aml      ├── depends on: engine + ledger + work + qhorus (+ connec
 casehub-clinical ┘
 casehub-life     — depends on: full foundation stack + casehub-openclaw (Layer 7+)
 casehub-drafthouse — depends on: qhorus (initially; engine + ledger + work added later)
+casehub-soc      — depends on: full foundation stack (engine + ledger + work + qhorus + worker + platform)
+casehub-fsitrading — depends on: full foundation stack (engine + ledger + work + qhorus + worker + platform)
 ```
 
 Application repos are **opt-in and off by default** in the platform CI pipeline.
@@ -60,6 +64,8 @@ See [PLATFORM.md — Build Order](PLATFORM.md) for the full dependency graph.
 | Personal life automation (household, health, finance, care, legal) | `casehub-life` |
 | MCP-driven document review (multi-LLM critique, version-tracked revisions) | `casehub-drafthouse` |
 | SC2 game AI (strategy, economics, tactics, scouting plugin agents) | `quarkmind` |
+| SOC domain logic (incident triage, threat intel, forensics, containment, SOC2/DORA compliance) | `casehub-soc` |
+| FSI trading domain logic (strategy execution, overnight bot management, market situation detection, MiFID II/Dodd-Frank) | `casehub-fsitrading` |
 
 All other capabilities live in the foundation. See [PLATFORM.md — Capability Ownership](PLATFORM.md).
 
@@ -92,3 +98,5 @@ foundation, not as a shared application library.
 | `casehub-life` | https://raw.githubusercontent.com/casehubio/parent/main/docs/repos/casehub-life.md |
 | `casehub-drafthouse` | https://raw.githubusercontent.com/casehubio/parent/main/docs/repos/casehub-drafthouse.md |
 | `quarkmind` | https://raw.githubusercontent.com/casehubio/parent/main/docs/repos/quarkmind.md |
+| `casehub-soc` | https://raw.githubusercontent.com/casehubio/parent/main/docs/repos/casehub-soc.md |
+| `casehub-fsitrading` | https://raw.githubusercontent.com/casehubio/parent/main/docs/repos/casehub-fsitrading.md |
