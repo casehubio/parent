@@ -6,5 +6,7 @@ aml,parent,ledger,work,qhorus,engine
 clinical,parent,ledger,work,qhorus,engine
 life,parent,ledger,work,qhorus,engine,openclaw
 drafthouse,parent,qhorus
+soc,parent,platform,ledger,work,qhorus,engine
+fsitrading,parent,platform,ledger,work,qhorus,engine
 quarkmind,parent,ledger,work,qhorus,engine
 flow,parent,engine

@@ -25,23 +25,31 @@ jobs:
           REPOS=$(printf '%s\n' \
             casehubio/parent \
             casehubio/platform \
+            casehubio/casehub-worker \
             casehubio/ledger \
             casehubio/eidos \
             casehubio/neural-text \
             casehubio/connectors \
-            casehubio/casehub-worker \
+            casehubio/iot \
             casehubio/work \
             casehubio/qhorus \
+            casehubio/casehub-desiredstate \
             casehubio/casehub-pages \
             casehubio/engine \
+            casehubio/casehub-ras \
+            casehubio/workers \
             casehubio/claudony \
             casehubio/openclaw \
+            casehubio/casehub-ops \
             casehubio/devtown \
             casehubio/aml \
             casehubio/clinical \
             casehubio/life \
             casehubio/drafthouse \
-            mdproctor/quarkmind)
+            casehubio/soc \
+            casehubio/fsitrading \
+            mdproctor/quarkmind \
+            mdproctor/flow)
 
           if [ -z "$REPOS" ]; then
             echo "::error::REPOS list is empty."

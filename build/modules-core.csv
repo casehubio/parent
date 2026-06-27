@@ -5,8 +5,13 @@ ledger,parent
 eidos,ledger
 neural-text,platform
 connectors,parent
+iot,platform
 work,parent,ledger,connectors
 qhorus,parent,ledger,work
+desiredstate,platform
 pages
 engine,parent,ledger,work
+ras,platform
+workers,platform,engine
 claudony,parent,ledger,work,qhorus
+ops,platform,desiredstate
