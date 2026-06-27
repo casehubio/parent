@@ -17,7 +17,7 @@ A `WorkItem` is deliberately NOT called `Task` — CNCF Serverless Workflow and 
 
 | Module | Type | Purpose |
 |---|---|---|
-| `casehub-work-api` | Pure-Java SPI (no Quarkus) | All SPIs: worker selection, registry, workload provision, SLA breach policy, spawn, skill profiling, notification channel. Depends on `casehub-platform-api` for `Path` and `Preferences` used in `SlaBreachContext`. Also owns `ActorType` / `ActorTypeResolver` via `casehub-platform-api` (moved there in ledger#88). New in engine#56: `WorkItemCallerRef.parseCaseId(String callerRef): UUID` — parses the `caseId:planItemId` callerRef format set by casehub-engine on engine-created WorkItems; returns `null` for non-engine callerRefs. |
+| `casehub-work-api` | Pure-Java SPI (no Quarkus) | All SPIs: worker selection, registry, workload provision, SLA breach policy, spawn, skill profiling, notification channel, and WorkItem lifecycle SPIs (`io.casehub.work.api.spi`). Depends on `casehub-platform-api` for `Path` and `Preferences` used in `SlaBreachContext`. Also owns `ActorType` / `ActorTypeResolver` via `casehub-platform-api` (moved there in ledger#88). New in engine#56: `WorkItemCallerRef.parseCaseId(String callerRef): UUID` — parses the `caseId:planItemId` callerRef format set by casehub-engine on engine-created WorkItems; returns `null` for non-engine callerRefs. New in work#275: `WorkItemCreator`, `WorkItemLifecycle` SPIs + `WorkItemRef`, `WorkItemEvent`, `WorkItemSpiAdapter` types in `io.casehub.work.api.spi`. |
 | `casehub-work-core` | Jandex library (no JPA) | `WorkBroker` and built-in `WorkerSelectionStrategy` implementations — used for human task routing only; casehub-engine uses its own `AgentRoutingStrategy` SPI (engine#337) |
 | `runtime` | Full Quarkus extension | WorkItem entity, services, REST API, filter engine |
 | `deployment` | Quarkus extension deployment | Build-time processor (`@BuildStep`); pairs with `runtime` |
@@ -70,6 +70,14 @@ REST endpoints cover: WorkItem inbox and creation, lifecycle transitions (start,
 
 See `docs/DESIGN.md` for the full endpoint inventory.
 
+### WorkItem SPI Types (work#275)
+
+`WorkItemRef` — lightweight reference to a WorkItem carrying template, callerRef, and payload. Used as the creation argument for `WorkItemCreator.create()` — decouples callers from the full `WorkItem` entity.
+
+`WorkItemEvent` — interface for WorkItem lifecycle events consumed by SPI implementations. Carries the WorkItem state at transition time.
+
+`WorkItemSpiAdapter` — adapter that bridges `WorkItemCreator` and `WorkItemLifecycle` SPI calls to the runtime `WorkItemService`. Lives in runtime; SPI consumers depend on `casehub-work-api` only. Template creation unified via `createFromTemplate()`.
+
 ### CDI Events
 
 A lifecycle event fires on every status transition, carrying the transition details and an optional named outcome (the named completion classification from the WorkItem's template). The outcome field lets downstream adapters switch on completion type without parsing the resolution payload.
@@ -88,6 +96,8 @@ See `docs/DESIGN.md` for event payload shape.
 | `SpawnPort` | `spawn(SpawnRequest) → SpawnResult` | Child WorkItem creation with idempotency |
 | `AssignmentTrigger` | enum | Values: `CREATED`, `RELEASED`, `DELEGATED`, `SLA_ESCALATED`, `DELEGATION_DECLINED` — strategies subscribe via `triggers()` |
 | `SlaBreachPolicy` | `onBreach(SlaBreachContext) → BreachDecision` | `SlaBreachContext` carries `BreachType` (CLAIM_EXPIRED / COMPLETION_EXPIRED), `BreachedTask`, `Path scope`, and `Preferences`. `SLA_ESCALATED` trigger fires after `EscalateTo` execution — strategies pre-assign before `put()`. |
+| `WorkItemCreator` | `create(WorkItemRef)`, `findByCallerRef(String)`, `findActiveByCallerRef(String)` | WorkItem creation and caller reference lookup SPI (work#275) |
+| `WorkItemLifecycle` | `cancel(UUID)`, `complete(UUID, ...)` | WorkItem lifecycle transition SPI (work#275) |
 
 ---
 
@@ -101,7 +111,7 @@ See `docs/DESIGN.md` for event payload shape.
 
 | Repo | How |
 |---|---|
-| `casehub-engine` | `casehub-work-api` only (compile, via work-adapter — `CaseSignalSink` injection). Routing no longer uses `casehub-work-core`/`WorkBroker` — engine uses its own `AgentRoutingStrategy` SPI (engine#337). Receives `WorkItemLifecycleEvent` and `WorkItemGroupLifecycleEvent` via CDI adapter to drive plan-item transitions. |
+| `casehub-engine` | `casehub-work-api` only (compile, via work-adapter — `CaseSignalSink`, `WorkItemCreator`, `WorkItemLifecycle` injection; engine#578). Routing no longer uses `casehub-work-core`/`WorkBroker` — engine uses its own `AgentRoutingStrategy` SPI (engine#337). Receives `WorkItemLifecycleEvent` and `WorkItemGroupLifecycleEvent` via CDI adapter to drive plan-item transitions. |
 | `claudony` | Future, via `casehub-work-casehub` adapter (currently blocked on CaseHub stability) |
 | `casehub-clinical` | Layer 2 — adverse event WorkItems with GCP SLA (24h Grade≥3, 1h Grade 5); first consumer of `SlaBreachPolicy` with DSMB escalation |
 
