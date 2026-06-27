@@ -143,12 +143,13 @@ filtering or dropping commits that touch these paths.
 
 ## IntelliJ MCP Routing
 
-Two IntelliJ MCP servers are available. They are **not interchangeable**:
+One IntelliJ MCP server is available:
 
 - **`mcp__intellij-index__*`** — use this for ALL code intelligence and navigation. Supports auto-opening projects via `project_path` — pass the project path and the plugin opens it automatically. Never ask the user to open a project manually.
-- **`mcp__intellij__*`** — use only for build/run, formatting, terminal, and file browsing. Cannot open projects. Never use this to check whether a project is open or to trigger an open.
 
-**If a project is not open:** pass `project_path` to any `mcp__intellij-index__` tool — it opens automatically. Do not fall back to bash. Do not use `mcp__intellij__` to verify. Do not launch IntelliJ from the command line.
+`mcp__intellij__*` (built-in JetBrains MCP) is **disabled** due to a memory leak. Do not attempt to use it. All operations (find class, find references, type hierarchy, diagnostics, rename, move) go through `mcp__intellij-index__*`.
+
+**If a project is not open:** pass `project_path` to any `mcp__intellij-index__` tool — it opens automatically. Do not fall back to bash. Do not launch IntelliJ from the command line.
 
 ## Development Workflow
 
