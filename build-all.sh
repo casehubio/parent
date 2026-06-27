@@ -166,6 +166,11 @@ for repo in "${REPOS[@]}"; do
 done
 
 # ── Step 5: Build ────────────────────────────────────────────────────────────
+# Install parent POM first — modules reference it as their parent/import POM,
+# and Maven must resolve it locally before the aggregator can parse their POMs.
+echo ""; echo "==> Installing parent POM..."
+mvn install -N -f "$SCRIPT_DIR/pom.xml" "${MVN_ARGS[@]}"
+
 # pages is yarn-only — not in aggregator.xml
 if [ "${STATE[pages]:-skip}" = "build" ]; then
   echo ""; echo "==> Building pages (yarn)"
