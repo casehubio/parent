@@ -11,7 +11,7 @@ Two related capabilities in one repo:
 
 **Neural Text Inference** — a standalone, general-purpose ONNX inference layer for JVM projects. Zero casehub domain dependencies in `inference-api`, `inference-runtime`, `inference-tasks`, and `inference-splade`. Shared with Hortora. Fills the gap LangChain4j leaves: NLI, classification, regression, SPLADE sparse embeddings, cross-encoder reranking.
 
-**RAG Integration** — casehub-specific LangChain4j RAG pipeline wiring. Tenancy-isolated Qdrant corpus storage, hybrid dense+sparse search via RRF fusion. Exposes `CorpusStore` and `CaseRetriever` SPIs for use by engine case steps and the typed fact space.
+**RAG Integration** — casehub-specific LangChain4j RAG pipeline wiring. Tenancy-isolated Qdrant corpus storage, hybrid dense+sparse search via RRF fusion. Exposes `EmbeddingIngestor` and `CaseRetriever` SPIs for use by engine case steps and the typed fact space.
 
 ---
 
@@ -25,9 +25,9 @@ Two related capabilities in one repo:
 | `inference-splade/` | `casehub-inference-splade` | JVM library | SPLADE sparse embeddings (`Map<Integer, Float>`); log-saturation + threshold |
 | `inference-inmem/` | `casehub-inference-inmem` | Test library | Deterministic `InferenceModel` stubs; no JNI; safe in all test contexts |
 | `inference-quarkus/` | `casehub-inference-quarkus` | Quarkus extension | CDI wiring, `@InferenceModel` qualifier, Dev Services, `@QuarkusTest` support |
-| `rag-api/` | `casehub-rag-api` | Pure Java, Mutiny provided | `CorpusStore` SPI, `CaseRetriever` SPI (blocking); `ReactiveCorpusStore`, `ReactiveCaseRetriever` (Mutiny `Uni<T>` variants — Mutiny `provided` scope per module-tier-structure protocol); `RetrievedChunk`, `CorpusRef`; `MetadataExtractor` SPI — extracts body + metadata from document content; `CursorStore` SPI — pluggable cursor persistence |
-| `rag/` | `casehub-rag` | Quarkus module | LangChain4j pipeline, Qdrant, hybrid RRF fusion, tenancy isolation; `BlockingToReactiveRagBridge @DefaultBean` wraps blocking adapters as reactive; `CorpusIngestionService` — `@Scheduled` polling bridge (`ChangeSource` → `CorpusReader` → `MetadataExtractor` → chunk → `EmbeddingIngestor`); `CorpusBindingProducer` — config-driven binding creation (design debt: extract to `corpus-quarkus/` when second consumer appears); `YamlFrontmatterExtractor @DefaultBean` `MetadataExtractor`; `FileCursorStore @DefaultBean` file-based cursor persistence. Dependency: `langchain4j` full artifact (replaces `langchain4j-core`) for `DocumentSplitters`; `quarkus-scheduler` for `@Scheduled` polling. |
-| `rag-testing/` | `casehub-rag-testing` | Test library | In-memory `CorpusStore` + `CaseRetriever` + reactive stubs for `@QuarkusTest`; `InMemoryCursorStore @Alternative @Priority(1)` test stub |
+| `rag-api/` | `casehub-rag-api` | Pure Java, Mutiny provided | `EmbeddingIngestor` SPI, `CaseRetriever` SPI (blocking); `ReactiveEmbeddingIngestor`, `ReactiveCaseRetriever` (Mutiny `Uni<T>` variants — Mutiny `provided` scope per module-tier-structure protocol); `RetrievedChunk`, `CorpusRef`; `MetadataExtractor` SPI — extracts body + metadata from document content; `CursorStore` SPI — pluggable cursor persistence |
+| `rag/` | `casehub-rag` | Quarkus module | LangChain4j pipeline, Qdrant, hybrid RRF fusion, tenancy isolation; `BlockingToReactiveRagBridge @DefaultBean` wraps blocking adapters as reactive; `CorpusIngestionService` — `@Scheduled` polling bridge (`ChangeSource` → `CorpusReader` → `MetadataExtractor` → chunk → `EmbeddingIngestor`); `CorpusBindingProducer` — config-driven binding creation (design debt: extract to `corpus-quarkus/` when second consumer appears); `YamlFrontmatterExtractor @DefaultBean` `MetadataExtractor`; `FileCursorStore @DefaultBean` file-based cursor persistence. Dependency: `langchain4j` full artifact (replaces `langchain4j-core`) for `DocumentSplitters`; `quarkus-scheduler` for `@Scheduled` polling; `MatryoshkaEmbeddingModel` — truncating `EmbeddingModel` decorator (config-driven via `casehub.rag.matryoshka.dimension`); `DenseQuantization` enum — binary/scalar quantization config for Qdrant dense vector params; `RagBeanProducer` — CDI producer that conditionally wraps `EmbeddingModel` in `MatryoshkaEmbeddingModel` and passes quantization config to both `QdrantEmbeddingIngestor` (collection creation: type + alwaysRam) and `HybridCaseRetriever` (search-time: type + oversampling); `ReactiveRagBeanProducer` — same conditional Matryoshka wrapping and quantization wiring for reactive implementations (`ReactiveQdrantEmbeddingIngestor`, `ReactiveHybridCaseRetriever`), gated by `casehub.rag.reactive.enabled=true`. |
+| `rag-testing/` | `casehub-rag-testing` | Test library | In-memory `EmbeddingIngestor` + `CaseRetriever` + reactive stubs for `@QuarkusTest`; `InMemoryCursorStore @Alternative @Priority(1)` test stub |
 | `examples/example-text-analysis` | — | Standalone Java demos | NLI, zero-shot classification, scoring, reranking, SPLADE demos (no Quarkus) |
 | `examples/example-rag-pipeline` | — | Quarkus demos | Corpus ingestion, hybrid search with RRF fusion, cross-encoder reranking. Maven profiles: `-Pexamples-smoke` (in-memory stubs), `-Pexamples` (real ONNX models + Testcontainers Qdrant) |
 
@@ -50,11 +50,25 @@ Two related capabilities in one repo:
 
 `SparseEmbedder.embed(String text)` → `Map<Integer, Float>` — sparse term weights after log-saturation (`log(1 + relu(weight))`) and threshold filtering. Output is suitable for direct Qdrant named vector space upsert. Forms the sparse leg of hybrid search in `casehub-rag`.
 
-### CorpusStore / CaseRetriever (rag-api)
+### EmbeddingIngestor / CaseRetriever (rag-api)
 
-`CorpusStore` — ingest, delete, and list documents per tenant corpus. Tenancy-scoped; `CorpusRef` carries tenant ID + corpus name.
+`EmbeddingIngestor` — ingest pre-chunked text into vector store (embedding + storage), delete and list by source document. Tenancy-scoped; `CorpusRef` carries tenant ID + corpus name.
 
 `CaseRetriever` — retrieval entry point for case steps and the fact space. `retrieve(query, CorpusRef)` → `List<RetrievedChunk>`. Hybrid search: LangChain4j `OnnxEmbeddingModel` (dense) + `SparseEmbedder` (sparse) fused via RRF. Reranked by `CrossEncoderReranker` in precision mode. Reactive variant: `ReactiveCaseRetriever` — `retrieve()` → `Uni<List<RetrievedChunk>>`; `BlockingToReactiveRagBridge @DefaultBean` in `rag/` wraps blocking impl.
+
+`HybridCaseRetriever` (and `ReactiveHybridCaseRetriever`) accept `DenseQuantization` type and optional oversampling. When quantization is active (`DenseQuantization != NONE`) and `casehub.rag.quantization.oversampling` is set, the dense prefetch leg applies `QuantizationSearchParams` with the configured oversampling factor + `rescore=true`. Compensates for quantization precision loss by fetching more candidates from the quantized index before rescoring against full-precision vectors. Sparse prefetch is unaffected — sparse vectors are not quantized. See [`casehub-neural-text/ARC42STORIES.MD` §6](https://github.com/casehubio/neural-text/blob/main/ARC42STORIES.MD#6-runtime-view) for the oversampling design rationale.
+
+### MatryoshkaEmbeddingModel (rag)
+
+`MatryoshkaEmbeddingModel` — truncating `EmbeddingModel` decorator in `rag/`. Takes a delegate model and `targetDimension`, truncates the output vector to the first N dimensions and L2-renormalizes. Config-driven: active when `casehub.rag.matryoshka.dimension` is set. Reports `modelName()` as `delegate/matryoshka-N`. Validates that target dimension is positive and does not exceed delegate dimension.
+
+The decorator pattern is architecturally significant: `dimension()` returns the truncated size, which flows transparently to `ensureCollection()` — collection vector dimensions are automatically correct without separate dimension tracking. See [`casehub-neural-text/ARC42STORIES.MD` §4](https://github.com/casehubio/neural-text/blob/main/ARC42STORIES.MD#4-solution-strategy) for the dual-vector tiered search alternative that was evaluated and rejected.
+
+### DenseQuantization (rag)
+
+`DenseQuantization` — enum in `rag/` with values `NONE`, `BINARY`, `SCALAR`. Configures Qdrant quantization on the **dense vector params** at collection creation time — applied to `denseParamsBuilder` specifically, not to the entire collection (sparse vectors are not quantized). `BINARY` applies `BinaryQuantization`; `SCALAR` applies `ScalarQuantization` with `Int8` type. Both respect `casehub.rag.quantization.always-ram` (default `true`). Config: `casehub.rag.quantization.type` (default `NONE`).
+
+Named `DenseQuantization` rather than `QuantizationType` because the Qdrant client already defines `io.qdrant.client.grpc.Collections.QuantizationType` — both enums appear in `ensureCollection()` / `buildCreateRequest()` and sharing the name would create ambiguous unqualified usage (see [`casehub-neural-text/ARC42STORIES.MD` §8](https://github.com/casehubio/neural-text/blob/main/ARC42STORIES.MD#8-crosscutting-concepts)).
 
 ### Corpus Ingestion Bridge (neural-text#19)
 
@@ -87,6 +101,8 @@ This module sits **below** LangChain4j for inference, and **above** LangChain4j 
 | NLI, classification, regression | `inference-tasks` (this module) |
 | Cross-encoder reranking | `inference-tasks` (this module) |
 | casehub-specific RAG wiring + tenancy | `rag` / `rag-api` (this module) |
+| Matryoshka dimension reduction + L2 renorm | `rag` (this module) — decorator above LangChain4j `EmbeddingModel` |
+| Dense vector quantization (binary/scalar) + search-time oversampling | `rag` (this module) — Qdrant collection config + search params |
 
 ---
 
@@ -141,7 +157,7 @@ C3–C7 complete (neural-text#3, neural-text#7). All inference and RAG modules s
 | C4 — Task Adapters | `NliClassifier`, `TextClassifier`, `ScalarRegressor`, `CrossEncoderReranker` in `inference-tasks` |
 | C5 — Quarkus CDI wiring | `@InferenceModel` qualifier, `InferenceModelProducer`, Dev Services, `@QuarkusTest` support in `inference-quarkus` |
 | C6 — SPLADE | `SparseEmbedder` in `inference-splade` — log-saturation output for Qdrant named vector spaces |
-| C7 — RAG Pipeline | `CorpusStore` SPI, `CaseRetriever` SPI, `QdrantCorpusStore`, `QdrantCaseRetriever` in `rag`; `rag-testing` in-memory stubs |
+| C7 — RAG Pipeline | `EmbeddingIngestor` SPI, `CaseRetriever` SPI, `QdrantEmbeddingIngestor`, `HybridCaseRetriever` in `rag`; `rag-testing` in-memory stubs; storage/search optimization (neural-text#31): `MatryoshkaEmbeddingModel` (truncating decorator), `DenseQuantization` (binary/scalar dense vector params config), search-time oversampling on quantized dense prefetch, `RagBeanProducer` / `ReactiveRagBeanProducer` CDI wiring — both blocking and reactive implementations carry all features |
 
 Native image gate passed (C2). Service deploys in JVM mode by design — long-running workloads benefit from HotSpot JIT over AOT. Reachability metadata retained for downstream native consumers.
 
@@ -157,3 +173,4 @@ Design specs:
 - [casehubio/parent#158](https://github.com/casehubio/parent/issues/158) — casehubio/neural-text tracking issue
 - [casehubio/parent#164](https://github.com/casehubio/parent/issues/164) — casehub-rag tracking issue
 - [Hortora/spec#15](https://github.com/Hortora/spec/issues/15) — Hortora alignment
+- [casehubio/neural-text ARC42STORIES.MD](https://github.com/casehubio/neural-text/blob/main/ARC42STORIES.MD) — authoritative architecture record (Matryoshka §4, oversampling §6, dimension consistency §7, naming §8)
