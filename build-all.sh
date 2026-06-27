@@ -2,9 +2,8 @@
 # build-all.sh — Full-stack casehubio incremental build
 #
 # Module list, dependency graph, and build order are read from:
-#   build/modules-core.csv       — core CI+local modules
+#   build/modules-core.csv       — foundation/orchestration/integration modules
 #   build/modules-applications.csv — application modules (opt-in)
-#   build/modules-local.csv      — local-only modules (not built in CI)
 #
 # Each CSV row: name,dep1,dep2,...  (row order = build order)
 #
@@ -77,7 +76,6 @@ for arg in "$@"; do
   esac
 done
 
-load_csv "$SCRIPT_DIR/build/modules-local.csv"
 load_csv "$SCRIPT_DIR/build/modules-core.csv"
 if [ "$INCLUDE_APPS" = true ]; then
   load_csv "$SCRIPT_DIR/build/modules-applications.csv"
