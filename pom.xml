@@ -33,7 +33,7 @@
     <surefire-plugin.version>3.2.5</surefire-plugin.version>
     <compiler-plugin.version>3.13.0</compiler-plugin.version>
     <cloudevents.version>4.0.1</cloudevents.version>
-    <assertj.version>3.27.3</assertj.version>
+    <assertj.version>3.27.7</assertj.version>
   </properties>
 
   <dependencyManagement>
@@ -53,7 +53,6 @@
       <!-- ================================================================ -->
       <!-- Third-party library version pins                                -->
       <!-- ================================================================ -->
-      <!-- assertj — not managed by Quarkus BOM, used across all test suites -->
       <dependency>
         <groupId>org.assertj</groupId>
         <artifactId>assertj-core</artifactId>
@@ -79,11 +78,16 @@
       </dependency>
 
       <!-- ================================================================ -->
-      <!-- casehub-platform — zero-dep foundational SPIs (publishes first) -->
+      <!-- casehub-platform                                                -->
       <!-- ================================================================ -->
       <dependency>
         <groupId>io.casehub</groupId>
         <artifactId>casehub-platform-api</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-platform-agent-api</artifactId>
         <version>${casehub.version}</version>
       </dependency>
       <dependency>
@@ -127,6 +131,101 @@
         <artifactId>casehub-platform-governance</artifactId>
         <version>${casehub.version}</version>
       </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-platform-memory-inmem</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-platform-memory-jpa</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-platform-memory-sqlite</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-platform-memory-mem0</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-platform-memory-graphiti</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-platform-endpoints-memory</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-platform-endpoints-config</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-platform-scim</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-platform-identity</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-platform-agent-claude</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-platform-agent-langchain4j</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-platform-acl-inmem</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-platform-acl-jpa</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-platform-streams-kafka</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-platform-streams-amqp</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-platform-streams-webhook</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-platform-streams-poll</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-platform-streams-camel</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-platform-credentials-quarkus</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
 
       <!-- ================================================================ -->
       <!-- casehub-worker                                                   -->
@@ -153,6 +252,11 @@
       <!-- ================================================================ -->
       <dependency>
         <groupId>io.casehub</groupId>
+        <artifactId>casehub-ledger-api</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
         <artifactId>casehub-ledger</artifactId>
         <version>${casehub.version}</version>
       </dependency>
@@ -163,7 +267,7 @@
       </dependency>
       <dependency>
         <groupId>io.casehub</groupId>
-        <artifactId>casehub-ledger-api</artifactId>
+        <artifactId>casehub-ledger-memory</artifactId>
         <version>${casehub.version}</version>
       </dependency>
 
@@ -192,7 +296,62 @@
       </dependency>
       <dependency>
         <groupId>io.casehub</groupId>
+        <artifactId>casehub-work-flow</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
         <artifactId>casehub-work-ledger</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-work-notifications</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-work-queues</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-work-queues-dashboard</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-work-persistence-mongodb</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-work-persistence-memory</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-work-issue-tracker</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-work-ai</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-work-reports</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-work-postgres-broadcaster</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-work-queues-postgres-broadcaster</artifactId>
         <version>${casehub.version}</version>
       </dependency>
 
@@ -201,7 +360,27 @@
       <!-- ================================================================ -->
       <dependency>
         <groupId>io.casehub</groupId>
+        <artifactId>casehub-qhorus-api</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-qhorus-connectors</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
         <artifactId>casehub-qhorus</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-qhorus-connector-backend</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-qhorus-slack-channel</artifactId>
         <version>${casehub.version}</version>
       </dependency>
       <dependency>
@@ -217,11 +396,16 @@
       </dependency>
 
       <!-- ================================================================ -->
-      <!-- casehub-engine modules                                           -->
+      <!-- casehub-engine                                                   -->
       <!-- ================================================================ -->
       <dependency>
         <groupId>io.casehub</groupId>
         <artifactId>casehub-engine-api</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-engine-codegen</artifactId>
         <version>${casehub.version}</version>
       </dependency>
       <dependency>
@@ -280,10 +464,222 @@
         <artifactId>casehub-engine-ledger</artifactId>
         <version>${casehub.version}</version>
       </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-engine-inbound</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-engine-actor-state</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-engine-ai</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-engine-flow</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
 
       <!-- ================================================================ -->
-      <!-- casehub-openclaw — CaseHub × OpenClaw integration               -->
-      <!-- Integration tier: WorkerProvisioner, ChannelBackend, MCW        -->
+      <!-- casehub-eidos                                                    -->
+      <!-- ================================================================ -->
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-eidos-api</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-eidos</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-eidos-memory</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-eidos-deployment</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-eidos-vocab</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-eidos-eval</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-eidos-graph</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+
+      <!-- ================================================================ -->
+      <!-- casehub-connectors                                               -->
+      <!-- ================================================================ -->
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-connectors-core</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-connectors-webhook</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-connectors-email</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-connectors-email-inbound</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-connectors-mcp</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-connectors-slack-bot</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-connectors-chat-spi</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-connectors-chat-ref</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-connectors-chat-irc</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+
+      <!-- ================================================================ -->
+      <!-- casehub-iot                                                      -->
+      <!-- ================================================================ -->
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-iot-api</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-iot-homeassistant</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-iot-openhab</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-iot-testing</artifactId>
+        <version>${casehub.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-iot-bridge</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-iot-bridge-server</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+
+      <!-- ================================================================ -->
+      <!-- casehub-desiredstate                                             -->
+      <!-- ================================================================ -->
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-desiredstate-api</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-desiredstate</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-desiredstate-testing</artifactId>
+        <version>${casehub.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-desiredstate-engine</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-desiredstate-work</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+
+      <!-- ================================================================ -->
+      <!-- casehub-ras                                                      -->
+      <!-- ================================================================ -->
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-ras-api</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-ras</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-ras-drools</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-ras-llm</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-ras-memory</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-ras-jpa</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-ras-testing</artifactId>
+        <version>${casehub.version}</version>
+        <scope>test</scope>
+      </dependency>
+
+      <!-- ================================================================ -->
+      <!-- casehub-openclaw                                                 -->
       <!-- ================================================================ -->
       <dependency>
         <groupId>io.casehub</groupId>
@@ -302,7 +698,130 @@
       </dependency>
 
       <!-- ================================================================ -->
-      <!-- casehub-life — personal life automation (application tier)      -->
+      <!-- casehub-claudony                                                 -->
+      <!-- ================================================================ -->
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-claudony-core</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-claudony-casehub</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-claudony-app</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+
+      <!-- ================================================================ -->
+      <!-- casehub-ops                                                      -->
+      <!-- ================================================================ -->
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-ops-api</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-ops-deployment</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-ops-infra</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-ops-compliance</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-ops-iot</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-ops-testing</artifactId>
+        <version>${casehub.version}</version>
+        <scope>test</scope>
+      </dependency>
+
+      <!-- ================================================================ -->
+      <!-- casehub-devtown                                                  -->
+      <!-- ================================================================ -->
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-devtown-domain</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-devtown-review</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-devtown-queue</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-devtown-github</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-devtown-app</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+
+      <!-- ================================================================ -->
+      <!-- casehub-workers                                                  -->
+      <!-- ================================================================ -->
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-workers-common</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-workers-http</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-workers-camel</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-workers-github-actions</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-workers-mcp</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-workers-script</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-workers-testing</artifactId>
+        <version>${casehub.version}</version>
+        <scope>test</scope>
+      </dependency>
+
+      <!-- ================================================================ -->
+      <!-- casehub-life                                                     -->
       <!-- ================================================================ -->
       <dependency>
         <groupId>io.casehub</groupId>
@@ -316,6 +835,62 @@
       </dependency>
 
       <!-- ================================================================ -->
+      <!-- casehub-aml                                                      -->
+      <!-- ================================================================ -->
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-aml-api</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-aml-app</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+
+      <!-- ================================================================ -->
+      <!-- casehub-clinical                                                 -->
+      <!-- ================================================================ -->
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-clinical-api</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-clinical</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+
+      <!-- ================================================================ -->
+      <!-- casehub-soc                                                      -->
+      <!-- ================================================================ -->
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-soc-api</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-soc-app</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+
+      <!-- ================================================================ -->
+      <!-- casehub-fsitrading                                               -->
+      <!-- ================================================================ -->
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-fsitrading-api</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-fsitrading-app</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+
+      <!-- ================================================================ -->
       <!-- casehub-drafthouse                                               -->
       <!-- ================================================================ -->
       <dependency>
@@ -325,7 +900,7 @@
       </dependency>
 
       <!-- ================================================================ -->
-      <!-- casehub-neural-text                                               -->
+      <!-- casehub-neural-text                                              -->
       <!-- ================================================================ -->
       <dependency>
         <groupId>io.casehub</groupId>
@@ -369,7 +944,42 @@
       </dependency>
       <dependency>
         <groupId>io.casehub</groupId>
+        <artifactId>casehub-rag-tika</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
         <artifactId>casehub-rag-testing</artifactId>
+        <version>${casehub.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-rag-crag</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-rag-expansion</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-corpus-api</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-corpus</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+
+      <!-- ================================================================ -->
+      <!-- quarkmind                                                        -->
+      <!-- ================================================================ -->
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>quarkmind-agent</artifactId>
         <version>${casehub.version}</version>
       </dependency>
 
@@ -385,6 +995,7 @@
           <version>${compiler-plugin.version}</version>
           <configuration>
             <release>${maven.compiler.release}</release>
+            <parameters>true</parameters>
           </configuration>
         </plugin>
         <plugin>
