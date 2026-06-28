@@ -27,15 +27,22 @@ declare -A PATH_OVERRIDE=(
   [quarkus-langchain4j]="../../quarkus-langchain4j"
   [drafthouse]="../drafthouse/server"
 )
+declare -A GIT_PATH_OVERRIDE=(
+  [drafthouse]="../drafthouse"
+)
 declare -A REPO_OVERRIDE=(
+  [worker]="casehub-worker"
   [pages]="casehub-pages"
   [desiredstate]="casehub-desiredstate"
   [ras]="casehub-ras"
   [ops]="casehub-ops"
+  [flow]="scaffold"
 )
 # quarkus-langchain4j is under a different GitHub org
 declare -A ORG_OVERRIDE=(
   [quarkus-langchain4j]="quarkusio"
+  [fsitrading]="mdproctor"
+  [soc]="mdproctor"
 )
 
 # ── Load modules from CSV ─────────────────────────────────────────────────────
@@ -83,6 +90,11 @@ local_path() {
   echo "${PATH_OVERRIDE[$name]:-../$name}"
 }
 
+git_path() {
+  local name=$1
+  echo "${GIT_PATH_OVERRIDE[$name]:-$(local_path "$name")}"
+}
+
 gh_repo() {
   local name=$1
   local org="${ORG_OVERRIDE[$name]:-casehubio}"
@@ -111,16 +123,16 @@ fi
 # ── Step 1: Clone or update ──────────────────────────────────────────────────
 echo ""; echo "==> Fetching repos..."
 for repo in "${REPOS[@]}"; do
-  dir="$(local_path "$repo")"
-  if [ -d "$dir/.git" ]; then
+  gdir="$(git_path "$repo")"
+  if [ -d "$gdir/.git" ]; then
     printf "    %-30s updating\n" "$repo"
-    git -C "$dir" fetch --quiet origin main
-    git -C "$dir" reset --quiet --hard origin/main
+    git -C "$gdir" fetch --quiet origin main
+    git -C "$gdir" reset --quiet --hard origin/main
   else
     gh_url="https://github.com/$(gh_repo "$repo").git"
-    printf "    %-30s cloning into %s\n" "$repo" "$dir"
-    mkdir -p "$(dirname "$dir")"
-    git clone --quiet "$gh_url" "$dir"
+    printf "    %-30s cloning into %s\n" "$repo" "$gdir"
+    mkdir -p "$(dirname "$gdir")"
+    git clone --quiet "$gh_url" "$gdir"
   fi
 done
 
@@ -128,7 +140,7 @@ done
 echo ""; echo "==> Recording SHAs..."
 declare -A CURR_SHA
 for repo in "${REPOS[@]}"; do
-  sha=$(git -C "$(local_path "$repo")" rev-parse HEAD)
+  sha=$(git -C "$(git_path "$repo")" rev-parse HEAD)
   CURR_SHA[$repo]=$sha
   echo "$repo=$sha" >> "$LOG_FILE"
   printf "    %-30s %s\n" "$repo" "$sha"
@@ -136,7 +148,7 @@ done
 
 # ── Step 3: Pin to SHAs ──────────────────────────────────────────────────────
 for repo in "${REPOS[@]}"; do
-  git -C "$(local_path "$repo")" checkout --quiet --detach "${CURR_SHA[$repo]}"
+  git -C "$(git_path "$repo")" checkout --quiet --detach "${CURR_SHA[$repo]}"
 done
 
 # ── Step 4: Classify ─────────────────────────────────────────────────────────
