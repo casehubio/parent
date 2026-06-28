@@ -55,8 +55,9 @@
     <module>../clinical</module>
     <module>../life</module>
     <module>../drafthouse/server</module>
-    <module>../soc</module>
-    <module>../fsitrading</module>
+    <!-- soc and fsitrading excluded until CDI wiring is fixed -->
+    <!-- <module>../soc</module> -->
+    <!-- <module>../fsitrading</module> -->
     <module>../quarkmind</module>
     <module>../scaffold</module>
   </modules>
