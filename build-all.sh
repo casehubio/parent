@@ -3,7 +3,7 @@
 #
 # Module list, dependency graph, and build order are read from:
 #   build/modules-core.csv       — foundation/orchestration/integration modules
-#   build/modules-applications.csv — application modules (opt-in)
+#   build/modules-applications.csv — application modules
 #
 # Each CSV row: name,dep1,dep2,...  (row order = build order)
 #
@@ -11,7 +11,6 @@
 #   ./build-all.sh                  # incremental build
 #   ./build-all.sh --no-cache       # force full rebuild
 #   ./build-all.sh --skip-tests
-#   ./build-all.sh --include-apps   # also build application modules
 #   ./build-all.sh -T 1C            # extra Maven args
 
 set -euo pipefail
@@ -65,21 +64,17 @@ load_csv() {
 # Parse flags
 NO_CACHE=false
 SKIP_TESTS=false
-INCLUDE_APPS=false
 MVN_ARGS=()
 for arg in "$@"; do
   case "$arg" in
     --no-cache)      NO_CACHE=true ;;
     --skip-tests)    SKIP_TESTS=true ;;
-    --include-apps)  INCLUDE_APPS=true ;;
     *)               MVN_ARGS+=("$arg") ;;
   esac
 done
 
 load_csv "$SCRIPT_DIR/build/modules-core.csv"
-if [ "$INCLUDE_APPS" = true ]; then
-  load_csv "$SCRIPT_DIR/build/modules-applications.csv"
-fi
+load_csv "$SCRIPT_DIR/build/modules-applications.csv"
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
