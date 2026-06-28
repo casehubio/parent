@@ -104,7 +104,6 @@ gh_repo() {
 # ── Setup ────────────────────────────────────────────────────────────────────
 
 mkdir -p "$LOG_DIR"
-{ echo "# casehubio full-stack build"; echo "# timestamp: $TIMESTAMP"; echo ""; } > "$LOG_FILE"
 
 # Load previous cache
 declare -A PREV_SHA
@@ -135,13 +134,12 @@ for repo in "${REPOS[@]}"; do
   fi
 done
 
-# ── Step 2: Record SHAs ──────────────────────────────────────────────────────
+# ── Step 2: Record SHAs (in memory — written to disk only after successful build)
 echo ""; echo "==> Recording SHAs..."
 declare -A CURR_SHA
 for repo in "${REPOS[@]}"; do
   sha=$(git -C "$(git_path "$repo")" rev-parse HEAD)
   CURR_SHA[$repo]=$sha
-  echo "$repo=$sha" >> "$LOG_FILE"
   printf "    %-30s %s\n" "$repo" "$sha"
 done
 
@@ -206,6 +204,12 @@ if [ -n "$TEST_LIST" ] && [ "$SKIP_TESTS" = false ]; then
   echo ""; echo "==> Retesting: $TEST_LIST"
   mvn test -f "$SCRIPT_DIR/aggregator.xml" -pl "$TEST_LIST" "${MVN_ARGS[@]}"
 fi
+
+# ── Write SHA log (only on success) ──────────────────────────────────────────
+{ echo "# casehubio full-stack build"; echo "# timestamp: $TIMESTAMP"; echo ""; } > "$LOG_FILE"
+for repo in "${REPOS[@]}"; do
+  echo "$repo=${CURR_SHA[$repo]}" >> "$LOG_FILE"
+done
 
 echo ""
 echo "==> Done. SHA log: $LOG_FILE"
