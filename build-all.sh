@@ -182,14 +182,24 @@ if [ "${STATE[pages]:-skip}" = "build" ]; then
 fi
 
 BUILD_LIST=""
+SKIP_COUNT=0
 for repo in "${REPOS[@]}"; do
   [ "$repo" = "pages" ] && continue
-  [ "${STATE[$repo]:-skip}" = "build" ] && BUILD_LIST="${BUILD_LIST:+$BUILD_LIST,}$(local_path "$repo")"
+  if [ "${STATE[$repo]:-skip}" = "build" ]; then
+    BUILD_LIST="${BUILD_LIST:+$BUILD_LIST,}$(local_path "$repo")"
+  elif [ "${STATE[$repo]:-skip}" = "skip" ]; then
+    SKIP_COUNT=$((SKIP_COUNT + 1))
+  fi
 done
 echo ""
 if [ -n "$BUILD_LIST" ]; then
-  echo "==> Installing: $BUILD_LIST"
-  mvn install -f "$SCRIPT_DIR/aggregator.xml" -pl "$BUILD_LIST" -am "${MVN_ARGS[@]}"
+  if [ "$SKIP_COUNT" -gt 0 ]; then
+    echo "==> Installing (incremental): $BUILD_LIST"
+    mvn install -f "$SCRIPT_DIR/aggregator.xml" -pl "$BUILD_LIST" "${MVN_ARGS[@]}"
+  else
+    echo "==> Installing (full reactor)"
+    mvn install -f "$SCRIPT_DIR/aggregator.xml" "${MVN_ARGS[@]}"
+  fi
 else
   echo "==> Nothing to build."
 fi
@@ -202,7 +212,7 @@ for repo in "${REPOS[@]}"; do
 done
 if [ -n "$TEST_LIST" ] && [ "$SKIP_TESTS" = false ]; then
   echo ""; echo "==> Retesting: $TEST_LIST"
-  mvn test -f "$SCRIPT_DIR/aggregator.xml" -pl "$TEST_LIST" -am "${MVN_ARGS[@]}"
+  mvn test -f "$SCRIPT_DIR/aggregator.xml" -pl "$TEST_LIST" "${MVN_ARGS[@]}"
 fi
 
 # ── Write SHA log (only on success) ──────────────────────────────────────────
