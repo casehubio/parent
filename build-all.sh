@@ -143,12 +143,7 @@ for repo in "${REPOS[@]}"; do
   printf "    %-30s %s\n" "$repo" "$sha"
 done
 
-# ── Step 3: Pin to SHAs ──────────────────────────────────────────────────────
-for repo in "${REPOS[@]}"; do
-  git -C "$(git_path "$repo")" checkout --quiet --detach "${CURR_SHA[$repo]}"
-done
-
-# ── Step 4: Classify ─────────────────────────────────────────────────────────
+# ── Step 3: Classify ─────────────────────────────────────────────────────────
 echo ""; echo "==> Incremental analysis..."
 declare -A STATE
 for repo in "${REPOS[@]}"; do
