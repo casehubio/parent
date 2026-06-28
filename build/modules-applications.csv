@@ -1,5 +1,5 @@
 # name,dep1,dep2,...  (order = build order)
-# repos under mdproctor/ (not casehubio/): quarkmind, flow
+# repos under mdproctor/ (not casehubio/): fsitrading, soc
 openclaw,parent,platform,ledger,qhorus,engine
 devtown,parent,ledger,work,qhorus,engine
 aml,parent,ledger,work,qhorus,engine
@@ -9,4 +9,4 @@ drafthouse,parent,qhorus
 soc,parent,platform,ledger,work,qhorus,engine
 fsitrading,parent,platform,ledger,work,qhorus,engine
 quarkmind,parent,ledger,work,qhorus,engine
-flow,parent,engine
+scaffold,parent,engine

@@ -58,7 +58,7 @@
     <module>../soc</module>
     <module>../fsitrading</module>
     <module>../quarkmind</module>
-    <module>../flow</module>
+    <module>../scaffold</module>
   </modules>
 
   <profiles>

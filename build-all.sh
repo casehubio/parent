@@ -36,7 +36,6 @@ declare -A REPO_OVERRIDE=(
   [desiredstate]="casehub-desiredstate"
   [ras]="casehub-ras"
   [ops]="casehub-ops"
-  [flow]="scaffold"
 )
 # quarkus-langchain4j is under a different GitHub org
 declare -A ORG_OVERRIDE=(
