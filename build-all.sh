@@ -74,7 +74,7 @@ MVN_ARGS=()
 for arg in "$@"; do
   case "$arg" in
     --no-cache)      NO_CACHE=true ;;
-    --skip-tests)    SKIP_TESTS=true ;;
+    --skip-tests)    SKIP_TESTS=true; MVN_ARGS+=("-DskipTests") ;;
     *)               MVN_ARGS+=("$arg") ;;
   esac
 done
