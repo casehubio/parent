@@ -189,7 +189,7 @@ done
 echo ""
 if [ -n "$BUILD_LIST" ]; then
   echo "==> Installing: $BUILD_LIST"
-  mvn install -f "$SCRIPT_DIR/aggregator.xml" -pl "$BUILD_LIST" "${MVN_ARGS[@]}"
+  mvn install -f "$SCRIPT_DIR/aggregator.xml" -pl "$BUILD_LIST" -am "${MVN_ARGS[@]}"
 else
   echo "==> Nothing to build."
 fi
@@ -202,7 +202,7 @@ for repo in "${REPOS[@]}"; do
 done
 if [ -n "$TEST_LIST" ] && [ "$SKIP_TESTS" = false ]; then
   echo ""; echo "==> Retesting: $TEST_LIST"
-  mvn test -f "$SCRIPT_DIR/aggregator.xml" -pl "$TEST_LIST" "${MVN_ARGS[@]}"
+  mvn test -f "$SCRIPT_DIR/aggregator.xml" -pl "$TEST_LIST" -am "${MVN_ARGS[@]}"
 fi
 
 # ── Write SHA log (only on success) ──────────────────────────────────────────
