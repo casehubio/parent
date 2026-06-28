@@ -78,7 +78,19 @@ All pom.xml files must be populated and valid — IntelliJ must be able to open 
       classpath — if you see `UnsatisfiedResolutionException` for `PreferenceProvider` during
       augmentation, this is the fix. Set `<scope>runtime</scope>` proactively.
     - `casehub-platform-expression` if casehub-engine is a dep
+    - `casehub-platform-memory-jpa` when casehub-work is a dep (entity classes for
+      the default persistence unit)
+    - `quarkus-jdbc-postgresql` alongside `quarkus-jdbc-h2` — the `%prod` profile
+      requires a PostgreSQL driver at augmentation time even for dev/test builds
     - All test deps (qhorus-testing, engine-testing, platform-testing, assertj, awaitility)
+    - **Do NOT add `-deployment` artifacts** (`casehub-work-deployment`,
+      `casehub-qhorus-deployment`, `casehub-ledger-deployment`) as explicit dependencies —
+      Quarkus auto-discovers them from the runtime modules. Adding them explicitly causes
+      duplicate CDI bean processing and `AmbiguousResolutionException` errors.
+    - **Do NOT add explicit `-api`/`-common` modules** (`casehub-engine-api`,
+      `casehub-engine-common`, `casehub-engine-schema`, `casehub-ledger-api`,
+      `casehub-work-api`, `casehub-worker-api`) when the corresponding runtime module is
+      already a dependency — they are transitive.
   - Integration tier core/ — Jandex plugin; no Quarkus build goal.
   - Integration tier casehub/ — Jandex plugin.
   - Integration tier app/ — Quarkus build goal.
@@ -92,20 +104,70 @@ All pom.xml files must be populated and valid — IntelliJ must be able to open 
 - [ ] Stub `src/main/java/.gitkeep`, `src/main/resources/.gitkeep`, `src/test/java/.gitkeep`
   in every module so IntelliJ sees the source roots and Git tracks the empty dirs.
 
-- [ ] Stub `src/main/resources/application.properties` in the app module. Minimum content:
+- [ ] Stub `src/main/resources/application.properties` in the app module. The minimum
+  content depends on which foundation modules are on the classpath.
+
+  **Bare minimum (no foundation modules):**
   ```properties
   quarkus.datasource.db-kind=h2
   quarkus.datasource.jdbc.url=jdbc:h2:mem:<name>;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
   quarkus.flyway.migrate-at-start=true
   quarkus.flyway.locations=classpath:db/migration
   ```
-  When casehub-qhorus is a dependency, add a named `qhorus` datasource alongside the
-  default (see clinical `runtime/application.properties` for the full pattern including
-  `%dev` profile overrides and per-datasource Flyway locations).
-  When casehub-ledger is a dependency, add `classpath:db/ledger/migration` to Flyway
-  locations (PP-20260524-10efef).
-  For multi-datasource apps, use `quarkus.hibernate-orm.packages` to list all JPA
-  packages that the default datasource should scan (aml pattern).
+
+  **Standard application (casehub-work + casehub-qhorus + casehub-engine):**
+  This is the typical pattern — copy verbatim and adjust `<name>` only.
+  ```properties
+  # CDI wiring — activate in-memory engine persistence @Alternative beans
+  quarkus.arc.selected-alternatives=\
+    io.casehub.persistence.memory.MemoryPlanItemStore,\
+    io.casehub.persistence.memory.InMemoryEventLogRepository,\
+    io.casehub.persistence.memory.InMemoryCaseMetaModelRepository,\
+    io.casehub.persistence.memory.InMemoryCaseInstanceRepository,\
+    io.casehub.persistence.memory.MemorySubCaseGroupRepository
+  # CDI wiring — exclude competing CurrentPrincipal implementations
+  quarkus.arc.exclude-types=\
+    io.casehub.persistence.memory.DefaultTestPrincipal,\
+    io.casehub.work.runtime.service.NoOpGroupMembershipProvider,\
+    io.casehub.work.runtime.service.TenantScopedPrincipal
+
+  # Default datasource — casehub-work entities
+  quarkus.datasource.db-kind=h2
+  quarkus.datasource.jdbc.url=jdbc:h2:mem:<name>;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
+  quarkus.datasource.username=sa
+  quarkus.datasource.password=
+  quarkus.hibernate-orm.packages=io.casehub.work.runtime.model,io.casehub.work.runtime.filter,io.casehub.platform.memory.jpa
+  quarkus.hibernate-orm.database.generation=none
+  quarkus.flyway.migrate-at-start=true
+  quarkus.flyway.locations=classpath:db/work/migration,classpath:db/memory/migration
+
+  # Qhorus datasource — qhorus + ledger entities
+  quarkus.datasource.qhorus.db-kind=h2
+  quarkus.datasource.qhorus.jdbc.url=jdbc:h2:mem:<name>-qhorus;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
+  quarkus.datasource.qhorus.username=sa
+  quarkus.datasource.qhorus.password=
+  quarkus.hibernate-orm.qhorus.datasource=qhorus
+  quarkus.hibernate-orm.qhorus.packages=io.casehub.qhorus.runtime,io.casehub.ledger.runtime.model,io.casehub.ledger.model
+  quarkus.hibernate-orm.qhorus.database.generation=none
+  quarkus.flyway.qhorus.migrate-at-start=true
+  quarkus.flyway.qhorus.locations=classpath:db/qhorus/migration,classpath:db/ledger/migration
+
+  %prod.quarkus.datasource.db-kind=postgresql
+  %prod.quarkus.datasource.qhorus.db-kind=postgresql
+  ```
+
+  **Why these CDI lines are required:** casehub-engine-persistence-memory provides
+  `@Alternative` beans for engine SPIs (EventLogRepository, CaseInstanceRepository, etc.)
+  — alternatives are inactive by default and must be selected via
+  `quarkus.arc.selected-alternatives`. Without this, every engine injection point fails
+  with `UnsatisfiedResolutionException`. The `exclude-types` resolves the 4-way
+  `CurrentPrincipal` ambiguity (MockCurrentPrincipal @DefaultBean + DefaultTestPrincipal
+  @DefaultBean + TenantScopedPrincipal + QhorusInboundCurrentPrincipal) by removing the
+  two that conflict.
+
+  As the app adds its own domain entities, add their packages to
+  `quarkus.hibernate-orm.packages` (default PU) or `quarkus.hibernate-orm.qhorus.packages`
+  (qhorus PU) and add corresponding Flyway migration locations.
 
 ---
 
@@ -426,6 +488,11 @@ drafts — the project repo copy is the authoritative record.
 ## 20. Post-Bootstrap Verification
 
 - [ ] `mvn validate` in new repo — confirms pom.xml hierarchy is valid.
+- [ ] `mvn install` in new repo — confirms the full build including Quarkus augmentation
+  and CDI wiring succeeds. `mvn validate` only checks pom syntax — CDI wiring failures
+  (`UnsatisfiedResolutionException`, `AmbiguousResolutionException`) only surface during
+  `quarkus:build` which runs in the `package` phase. **A repo that passes `validate` but
+  fails `install` is broken.**
 - [ ] `gh repo view casehubio/<name>` — confirms GitHub repo exists and is accessible.
 - [ ] `gh workflow list --repo casehubio/<name>` — confirms publish.yml is registered.
 - [ ] Dashboard HTML loads the new repo in the correct section.
@@ -495,3 +562,10 @@ Map the new repo into the existing dispatch chain and verify:
 | CLAUDE.md Work Tracking missing automatic behaviours | Issue creation, epic linkage, and commit refs are not enforced — sessions drift into untracked work | Add 4 automatic behaviour rules under `## Work Tracking` (issue-before-code, epic linkage, commit linkage, no orphan issues) |
 | Workspace `blog-routing.yaml` missing | `publish-blog` skill can't find routing chain; blog entries never published even though global config exists | Create `blog-routing.yaml` in workspace dir with `extends: ~/.claude/blog-routing.yaml` |
 | Module not in parent `<modules>` list | Child module builds locally but never publishes — downstream repos get `Could not resolve` | Verify every child module is listed in root pom.xml `<modules>` and has correct `<parent>` reference |
+| Explicit `-deployment` deps in app pom | `AmbiguousResolutionException` and duplicate CDI bean processing — multiple beans registered for same type | Remove `casehub-work-deployment`, `casehub-qhorus-deployment`, `casehub-ledger-deployment` from pom.xml — Quarkus auto-discovers them |
+| Missing `quarkus.arc.selected-alternatives` | `UnsatisfiedResolutionException` for `EventLogRepository`, `CaseInstanceRepository`, `CaseMetaModelRepository`, `SubCaseGroupRepository` | Add `selected-alternatives` listing all 5 in-memory persistence beans (see application.properties template above) |
+| Missing `quarkus.arc.exclude-types` | `AmbiguousResolutionException` for `CurrentPrincipal` — 4 competing beans from platform, work, qhorus, and persistence-memory | Exclude `DefaultTestPrincipal`, `TenantScopedPrincipal`, `NoOpGroupMembershipProvider` |
+| Missing `quarkus.hibernate-orm.packages` | `UnsatisfiedResolutionException` for `EntityManager @Default` — no default persistence unit created | List entity packages for the default PU: `io.casehub.work.runtime.model,io.casehub.work.runtime.filter,io.casehub.platform.memory.jpa` |
+| Missing `casehub-platform-memory-jpa` dep | Entity classes missing from default PU scan | Add `casehub-platform-memory-jpa` to app pom.xml when casehub-work is a dependency |
+| Missing `quarkus-jdbc-postgresql` | `ConfigurationException: Unable to find a JDBC driver corresponding to 'postgresql'` during augmentation | Add `quarkus-jdbc-postgresql` alongside `quarkus-jdbc-h2` — `%prod` profile needs the driver at build time |
+| Explicit `-api` deps alongside runtime modules | Cluttered pom, potential bean discovery issues from double-indexed jars | Remove `casehub-engine-api`, `casehub-engine-common` etc. when `casehub-engine` is already a dep — they are transitive |
