@@ -59,7 +59,7 @@
     <!-- <module>../soc</module> -->
     <!-- <module>../fsitrading</module> -->
     <module>../quarkmind</module>
-    <module>../scaffold</module>
+    <!-- <module>../scaffold</module> --> <!-- excluded until engine API alignment -->
   </modules>
 
   <profiles>

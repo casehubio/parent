@@ -9,4 +9,4 @@ drafthouse,parent,qhorus
 # soc,parent,platform,ledger,work,qhorus,engine — excluded until CDI wiring fixed
 # fsitrading,parent,platform,ledger,work,qhorus,engine — excluded until CDI wiring fixed
 quarkmind,parent,ledger,work,qhorus,engine
-scaffold,parent,engine
+# scaffold,parent,engine — excluded until engine API alignment
