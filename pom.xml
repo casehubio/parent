@@ -33,6 +33,7 @@
     <surefire-plugin.version>3.2.5</surefire-plugin.version>
     <compiler-plugin.version>3.13.0</compiler-plugin.version>
     <cloudevents.version>4.0.1</cloudevents.version>
+    <assertj.version>3.27.3</assertj.version>
   </properties>
 
   <dependencyManagement>
@@ -52,6 +53,14 @@
       <!-- ================================================================ -->
       <!-- Third-party library version pins                                -->
       <!-- ================================================================ -->
+      <!-- assertj — not managed by Quarkus BOM, used across all test suites -->
+      <dependency>
+        <groupId>org.assertj</groupId>
+        <artifactId>assertj-core</artifactId>
+        <version>${assertj.version}</version>
+        <scope>test</scope>
+      </dependency>
+
       <!-- CloudEvents SDK — overrides Quarkus BOM's cloudevents-api:3.0.0 -->
       <dependency>
         <groupId>io.cloudevents</groupId>
