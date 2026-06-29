@@ -208,19 +208,21 @@ for repo in "${REPOS[@]}"; do
   fi
 done
 echo ""
+BUILD_EXIT=0
 if [ -n "$BUILD_LIST" ]; then
   if [ "$SKIP_COUNT" -gt 0 ]; then
     echo "==> Installing (incremental): $BUILD_LIST"
-    mvn install -f "$SCRIPT_DIR/aggregator.xml" -pl "$BUILD_LIST" "${MVN_ARGS[@]}"
+    mvn install -fae -f "$SCRIPT_DIR/aggregator.xml" -pl "$BUILD_LIST" "${MVN_ARGS[@]}" || BUILD_EXIT=$?
   else
     echo "==> Installing (full reactor)"
-    mvn install -f "$SCRIPT_DIR/aggregator.xml" "${MVN_ARGS[@]}"
+    mvn install -fae -f "$SCRIPT_DIR/aggregator.xml" "${MVN_ARGS[@]}" || BUILD_EXIT=$?
   fi
 else
   echo "==> Nothing to build."
 fi
 
 # ── Step 6: Test ─────────────────────────────────────────────────────────────
+TEST_EXIT=0
 TEST_LIST=""
 for repo in "${REPOS[@]}"; do
   [ "$repo" = "pages" ] && continue
@@ -228,7 +230,19 @@ for repo in "${REPOS[@]}"; do
 done
 if [ -n "$TEST_LIST" ] && [ "$SKIP_TESTS" = false ]; then
   echo ""; echo "==> Retesting: $TEST_LIST"
-  mvn test -f "$SCRIPT_DIR/aggregator.xml" -pl "$TEST_LIST" "${MVN_ARGS[@]}"
+  mvn test -fae -f "$SCRIPT_DIR/aggregator.xml" -pl "$TEST_LIST" "${MVN_ARGS[@]}" || TEST_EXIT=$?
+fi
+
+# ── Result ───────────────────────────────────────────────────────────────────
+if [ "$BUILD_EXIT" -ne 0 ] || [ "$TEST_EXIT" -ne 0 ]; then
+  echo ""
+  echo "==> BUILD FAILED — some modules had errors."
+  echo "  Review the output above for FAILURE lines."
+  echo "  To resume from a failed module:"
+  echo "    mvn install -fae -f aggregator.xml -rf :<failed-module> ${MVN_ARGS[*]}"
+  echo ""
+  echo "  SHA log NOT written — next run will rebuild all changed modules."
+  exit 1
 fi
 
 # ── Write SHA log (only on success) ──────────────────────────────────────────
