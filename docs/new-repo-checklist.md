@@ -78,8 +78,15 @@ All pom.xml files must be populated and valid — IntelliJ must be able to open 
       classpath — if you see `UnsatisfiedResolutionException` for `PreferenceProvider` during
       augmentation, this is the fix. Set `<scope>runtime</scope>` proactively.
     - `casehub-platform-expression` if casehub-engine is a dep
+    - `quarkus-hibernate-orm-panache` (NOT plain `quarkus-hibernate-orm`) — Panache
+      wires the default `EntityManager` with `@Default` qualifier needed by
+      casehub-work JPA stores. Without Panache, Quarkus creates only named PUs
+      (ledger, qhorus) and work module injections fail with
+      `UnsatisfiedResolutionException` for `EntityManager @Default`.
     - `casehub-platform-memory-jpa` when casehub-work is a dep (entity classes for
       the default persistence unit)
+    - `casehub-platform-memory-inmem` at `<scope>test</scope>` — in-memory
+      CaseMemoryStore for test isolation
     - `quarkus-jdbc-postgresql` alongside `quarkus-jdbc-h2` — the `%prod` profile
       requires a PostgreSQL driver at augmentation time even for dev/test builds
     - All test deps (qhorus-testing, engine-testing, platform-testing, assertj, awaitility)
@@ -569,3 +576,5 @@ Map the new repo into the existing dispatch chain and verify:
 | Missing `casehub-platform-memory-jpa` dep | Entity classes missing from default PU scan | Add `casehub-platform-memory-jpa` to app pom.xml when casehub-work is a dependency |
 | Missing `quarkus-jdbc-postgresql` | `ConfigurationException: Unable to find a JDBC driver corresponding to 'postgresql'` during augmentation | Add `quarkus-jdbc-postgresql` alongside `quarkus-jdbc-h2` — `%prod` profile needs the driver at build time |
 | Explicit `-api` deps alongside runtime modules | Cluttered pom, potential bean discovery issues from double-indexed jars | Remove `casehub-engine-api`, `casehub-engine-common` etc. when `casehub-engine` is already a dep — they are transitive |
+| `quarkus-hibernate-orm` instead of `quarkus-hibernate-orm-panache` | `UnsatisfiedResolutionException` for `EntityManager @Default` — work module JPA stores can't find the default persistence unit | Replace with `quarkus-hibernate-orm-panache`; Panache wires the default EntityManager with `@Default` qualifier |
+| Missing `casehub-platform-memory-inmem` (test scope) | Test isolation gaps — CaseMemoryStore falls through to JPA in tests | Add `casehub-platform-memory-inmem` at `<scope>test</scope>` |
