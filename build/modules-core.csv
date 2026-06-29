@@ -11,6 +11,7 @@ qhorus,parent,ledger,work
 desiredstate,platform
 pages
 engine,parent,ledger,work
+blocks,parent,qhorus,work,engine
 ras,platform
 workers,platform,engine
 claudony,parent,ledger,work,qhorus

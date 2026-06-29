@@ -900,6 +900,15 @@
       </dependency>
 
       <!-- ================================================================ -->
+      <!-- casehub-blocks                                                   -->
+      <!-- ================================================================ -->
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-blocks</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+
+      <!-- ================================================================ -->
       <!-- casehub-neural-text                                              -->
       <!-- ================================================================ -->
       <dependency>
