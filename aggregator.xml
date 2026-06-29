@@ -55,11 +55,10 @@
     <module>../clinical</module>
     <module>../life</module>
     <module>../drafthouse/server</module>
-    <!-- soc and fsitrading excluded until CDI wiring is fixed -->
-    <!-- <module>../soc</module> -->
-    <!-- <module>../fsitrading</module> -->
+    <module>../soc</module>
+    <module>../fsitrading</module>
     <module>../quarkmind</module>
-    <!-- <module>../scaffold</module> --> <!-- excluded until engine API alignment -->
+    <module>../scaffold</module>
   </modules>
 
   <profiles>

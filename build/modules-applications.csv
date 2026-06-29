@@ -6,7 +6,7 @@ aml,parent,ledger,work,qhorus,engine
 clinical,parent,ledger,work,qhorus,engine
 life,parent,ledger,work,qhorus,engine,openclaw
 drafthouse,parent,qhorus
-# soc,parent,platform,ledger,work,qhorus,engine — excluded until CDI wiring fixed
-# fsitrading,parent,platform,ledger,work,qhorus,engine — excluded until CDI wiring fixed
+soc,parent,platform,ledger,work,qhorus,engine
+fsitrading,parent,platform,ledger,work,qhorus,engine
 quarkmind,parent,ledger,work,qhorus,engine
-# scaffold,parent,engine — excluded until engine API alignment
+scaffold,parent,engine
