@@ -148,6 +148,7 @@ Four tiers, always kept separate:
 | `casehub-connectors` | [casehubio/connectors](https://github.com/casehubio/connectors) | Outbound and inbound message connectors (Slack, Teams, SMS, email outbound; webhook + IMAP email inbound) | Foundation |
 | `casehub-iot` | [casehubio/iot](https://github.com/casehubio/iot) | Typed IoT device abstraction layer — `DeviceEntity` hierarchy (Matter-aligned), `DeviceProvider` SPI (reactive `Uni<>` returns), `StateChangeEvent` CDI bus, `DeviceCommand` dispatch. Modules: `api` (public API — semver), `homeassistant` (HA REST + WebSocket provider + HA supplement types), `openhab` (OpenHAB REST + SSE provider + OH supplement types), `testing` (MockDeviceProvider, Java `Fixtures` + YAML `DeviceFixtureLoader`, `DeviceTypeHandler` SPI with 16 handlers, `StateChangeEventPublisher`), `bridge` (local bridge agent — event relay, CDI filter chain, WebSocket client), `bridge-server` (cloud-side `BridgeDeviceProvider implements DeviceProvider` — remote devices look local to cloud consumers; `DeviceTypeIdResolver` for compound type ID serialization; 6 deployment topologies). **Note:** `api` module now includes Jackson annotations for `DeviceTypeIdResolver`. Triggers `casehub-life` downstream on publish. | Foundation |
 | `casehub-desiredstate` | [casehubio/casehub-desiredstate](https://github.com/casehubio/casehub-desiredstate) | Generic desired-state management runtime — `DesiredStateGraph`, `TransitionPlanner` (pruning-first), `ReconciliationLoop`, `FaultPolicyEngine`; SPIs: `GoalCompiler`, `ActualStateAdapter`, `NodeProvisioner`, `FaultPolicy`, `EventSource`, `TransitionExecutor`. Domain-agnostic; delegates to `casehub-engine-flow`; human nodes via casehub-work WorkItems. 6 modules: api, runtime, testing, engine-adapter, examples/dungeon, examples/pipeline. Runtime module: OTel tracing instrumentation (`opentelemetry-api`) on `ReconciliationLoop` and `SimpleTransitionExecutor`. **Examples:** Nefarious Dungeons (entity hierarchy), Data Pipeline (medallion architecture — Bronze/Silver/Gold, schema validation, three-tier fault escalation: auto-retry → AI_REVIEW via real `AgentProvider` SPI for LLM diagnosis → HUMAN_REVIEW via casehub-work `WorkItem`; pluggable `ExecutionBackend` strategy per processing stage for per-node execution dispatch). Research project. | Foundation |
+| `casehub-blocks` | [casehubio/blocks](https://github.com/casehubio/blocks) | Reusable building blocks composed from qhorus, engine, work primitives | Foundation-adjacent |
 | `casehub-engine` | [casehubio/engine](https://github.com/casehubio/engine) | Hybrid choreography+blackboard orchestration engine | Orchestration |
 | `claudony` | [casehubio/claudony](https://github.com/casehubio/claudony) | Remote Claude CLI sessions + unified ecosystem dashboard | Integration |
 | `casehub-openclaw` | [casehubio/openclaw](https://github.com/casehubio/openclaw) | CaseHub × OpenClaw integration — ChannelContextWindow, WorkerProvisioner, ChannelBackend SPI, Python SDK context hook | Integration |
@@ -178,6 +179,7 @@ casehub-parent              (BOM — publish first; all others import it)
   casehub-eidos             (depends on casehub-ledger; casehub-eidos-api depends on nothing)
   casehub-neural-text       (inference-*: zero casehubio deps; rag-*: depends on casehub-platform-api + LangChain4j)
   casehub-engine            (depends on casehub-work-core + optionally casehub-ledger + optionally casehub-eidos-api)
+  casehub-blocks            (depends on casehub-qhorus-api, casehub-work-api, casehub-engine-api — foundation-adjacent library)
   casehub-engine-ai         (optional — depends on casehub-engine-api; adds AgentEmbeddingProvider SPI + SemanticAgentRoutingStrategy)
   casehub-engine-flow       (optional — depends on casehub-engine-common only; enables Worker(Workflow) to dispatch casehub workers from Serverless Workflow steps)
   claudony                  (depends on casehub-qhorus + implements casehub-engine SPIs)
@@ -313,6 +315,15 @@ casehub-parent              (BOM — publish first; all others import it)
 | `casehub-engine-common` | `casehub-workers` | `common`, `camel`, `http`, `github-actions` | `WorkerExecutionManager`, `CaseInstance`, shared execution types |
 | `casehub-platform-api` | `casehub-workers` | `http` | `CurrentPrincipal` — HTTP request context |
 | `casehub-platform-api` | `casehub-openclaw` | `core` | `CurrentPrincipal`, `GroupMembershipProvider` (permission-aware context) |
+| `casehub-qhorus-api` | `casehub-blocks` | (root) | Channel and message SPIs for structured conversation and channel dispatch |
+| `casehub-work-api` | `casehub-blocks` | (root) | WorkItem types for oversight gate coordination |
+| `casehub-engine-api` | `casehub-blocks` | (root) | Case orchestration SPIs for context tracking and gate signal routing |
+| `casehub-blocks` | `casehub-drafthouse` | `runtime` | (planned) Structured conversation, channel dispatch |
+| `casehub-blocks` | `claudony` | `casehub` | (planned) Oversight gate, context tracking |
+| `casehub-blocks` | `casehub-openclaw` | `casehub` | (planned) Oversight gate, channel dispatch |
+| `casehub-blocks` | `casehub-aml` | `app` | (planned) Oversight gate, context tracking |
+| `casehub-blocks` | `casehub-clinical` | `runtime` | (planned) Oversight gate, structured conversation |
+| `casehub-blocks` | `casehub-life` | `app` | (planned) Context tracking, channel dispatch |
 | `casehub-ledger` (runtime) | `casehub-life` | `app` | Merkle audit, GDPR erasure, trust scoring |
 | `casehub-work` (runtime) | `casehub-life` | `app` | WorkItems with SLA and escalation |
 | `casehub-qhorus` (runtime) | `casehub-life` | `app` | commitment lifecycle, oversight channel |
@@ -419,6 +430,10 @@ casehub-parent              (BOM — publish first; all others import it)
 | Ecosystem CI dashboards | `casehub-parent` | `dashboard.yml`, `pr-dashboard.yml`, `full-stack-build.yml` |
 | Document diff review MCP tools (start_review, update_selection, query_review, end_review) | `casehub-drafthouse` | `DraftHouseMcpTools @ApplicationScoped` — Qhorus APPEND channel per session; `DocumentReviewer @AiService` handles QUERY messages; session state in `ReviewSessionRegistry`; session handle is channel.id.toString(). |
 | Multi-participant LLM debate MCP tools | `casehub-drafthouse` | `DebateMcpTools @ApplicationScoped` — 10 tools: `start_debate`, `raise_point`, `respond_to`, `flag_human`, `get_debate_summary`, `end_debate`, `post_memo`, `request_subagent`, `get_debate_summary_at_round`, `restart_from_round`; `DebateChannelProjection` + `DebateChannelProjection.RoundBoundedProjection` for bounded round views; `DebateChannelBackend`; session branching via `restart_from_round` with RESTART_CONTEXT provenance (drafthouse#40). Participant roles: REV, IMP, SUPERVISOR, MODERATOR, SELECTOR — any role may post; REV and IMP registered eagerly, others lazy-register on first use. `DebateSession` stores participants in `ConcurrentHashMap<AgentType,String>`; `DebateChannelProjection.agentType()` uses `AgentType.valueOf()` for fold-safe role resolution (drafthouse#41). |
+| Oversight gate orchestration (reusable approval lifecycle) | `casehub-blocks` | Composes casehub-work (WorkItem) with casehub-engine (case signal) for human-review gates. Scaffold — not yet extracted. |
+| Structured conversation management (turn-taking, topic scoping) | `casehub-blocks` | Higher-level API over casehub-qhorus channel dispatch for structured multi-turn agent interactions. Scaffold — not yet extracted. |
+| Channel agent dispatch coordination | `casehub-blocks` | Manages agent participation across qhorus channels — provisioning lifecycle and context-based routing. Scaffold — not yet extracted. |
+| Cross-lifecycle context tracking | `casehub-blocks` | Composes casehub-engine case state with casehub-qhorus channel history for unified context view. Scaffold — not yet extracted. |
 | Application domain logic (devtown, aml, clinical, life, drafthouse, quarkmind) | Application tier | See [APPLICATIONS.md](APPLICATIONS.md) |
 | ONNX neural text inference (NLI, classification, regression, reranking) | `casehub-neural-text` | `inference-tasks` — typed adapters over `InferenceModel` SPI; `inference-inmem` for testing |
 | SPLADE sparse embeddings | `casehub-neural-text` | `inference-splade` — log-saturation SPLADE output; sparse leg of hybrid RAG search |
@@ -639,6 +654,7 @@ SPIs and capabilities that exist in the wrong module pending extraction. Do not 
 | `claudony` | `repos/claudony.md` |
 | `casehub-connectors` | `repos/casehub-connectors.md` |
 | `casehub-iot` | `repos/casehub-iot.md` |
+| `casehub-blocks` | `repos/casehub-blocks.md` |
 | `casehub-ops` | `repos/casehub-ops.md` |
 | `casehub-devtown` | `repos/casehub-devtown.md` |
 | `casehub-aml` | `repos/casehub-aml.md` |
