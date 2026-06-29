@@ -17,7 +17,7 @@ Two modes from one binary: **server** (owns sessions, WebSocket streaming, dashb
 
 | Module | Purpose |
 |---|---|
-| `claudony-core` | Session lifecycle management — tmux session control, registry, and expiry policy SPI |
+| `claudony-core` | Session lifecycle management — tmux session control, registry and expiry policy SPI, `TenantContext` SPI with tenant-filtered `SessionRegistry` |
 | `claudony-casehub` | Implements the 4 casehub-engine worker provisioner SPIs |
 | `claudony-app` | Quarkus application: authentication, session API, WebSocket streaming, MCP server, fleet management, browser dashboard |
 
@@ -27,7 +27,7 @@ Two modes from one binary: **server** (owns sessions, WebSocket streaming, dashb
 
 ### Core (`claudony-core`)
 
-Manages tmux session lifecycle: starting, stopping, and expiring sessions. A pluggable expiry policy SPI controls when sessions are considered idle. On restart, the registry is repopulated from live tmux sessions — tmux is the source of truth, independent of the Quarkus process.
+Manages tmux session lifecycle: starting, stopping, and expiring sessions. A pluggable expiry policy SPI controls when sessions are considered idle. On restart, the registry is repopulated from live tmux sessions — tmux is the source of truth, independent of the Quarkus process. `TenantContext` SPI (`currentTenantId()`) with `DefaultTenantContext @ApplicationScoped` — delegates to `CurrentPrincipal.tenancyId()` when request scope is active, falls back to `TenancyConstants.DEFAULT_TENANT_ID` outside request context. `SessionRegistry` now filters `all()`/`find()`/`findByCaseId()` by tenant unconditionally; `allUnscoped()`/`findUnscoped()`/`existsByName()` for system operations (claudony#121).
 
 See `docs/DESIGN.md` for class structure and expiry policy implementations.
 
@@ -35,7 +35,7 @@ See `docs/DESIGN.md` for class structure and expiry policy implementations.
 
 Implements all casehub-engine worker provisioner and execution SPIs:
 - **`ClaudonyReactiveWorkerProvisioner`** (`WorkerProvisioner`) — creates a tmux session running the Claude CLI. `provision()` uses `Uni.combine()` to run `setupSession()` (blocking tmux IO, worker pool) and `QhorusCausalLinkResolver.resolve()` (reactive Qhorus DB, event loop) concurrently; resolver must be called from the event loop (before `runSubscriptionOn(workerPool)`) for `@WithSession("qhorus")` to hold the correct Vert.x safe sub-context (see protocol PP-20260616-d32bc3).
-- **`QhorusCausalLinkResolver`** (`@ApplicationScoped`) — resolves `causedByEntryId` for each provisioned worker by looking up the Qhorus `MessageLedgerEntry` via `ReactiveMessageLedgerEntryRepository.findLatestByCorrelationId(channelId, correlationId, null)`, using `triggerChannelId` and `triggerCorrelationId` fields threaded through `ProvisionContext` by the engine (engine#231). Result stored in `causalContext: ConcurrentHashMap<UUID, UUID>` in the provisioner; drained by `ClaudonyLedgerEventCapture` on `WorkerStarted` to set `CaseLedgerEntry.causedByEntryId`. The `causalContext` side-channel is permanent — `CaseLifecycleEvent` must not carry consumer-specific fields (engine#389). Establishes the W3C PROV-DM causal chain: COMMAND → WorkerStarted → CaseLedgerEntry (claudony#94).
+- **`QhorusCausalLinkResolver`** (`@ApplicationScoped`) — resolves `causedByEntryId` for each provisioned worker by looking up the Qhorus `MessageLedgerEntry` via `ReactiveMessageLedgerEntryRepository.findLatestByCorrelationId(channelId, correlationId, null)`, using `triggerChannelId` and `triggerCorrelationId` fields threaded through `ProvisionContext` by the engine (engine#231). Result stored in `causalContext: ConcurrentHashMap<CausalKey, UUID>` (where `CausalKey(tenancyId, caseId)`) in the provisioner; drained by `ClaudonyLedgerEventCapture` on `WorkerStarted` to set `CaseLedgerEntry.causedByEntryId`. The `causalContext` side-channel is permanent — `CaseLifecycleEvent` must not carry consumer-specific fields (engine#389). Establishes the W3C PROV-DM causal chain: COMMAND → WorkerStarted → CaseLedgerEntry (claudony#94).
 - **`ClaudonyWorkerExecutionManager`** (`WorkerExecutionManager`) — virtual thread watcher; when a tmux session exits, stores `pendingExitSignals.put(caseId, roleName)` before publishing `WorkflowExecutionCompleted`; supports recovery after server restart via tmux session options (claudony#146)
 - **`ClaudonyLedgerEventCapture`** — replaces casehub-ledger's excluded `CaseLedgerEventCapture`; on `WorkerExecutionCompleted`, drains `pendingExitSignals` and calls `CaseHubRuntime.signal('workers.<role>.exited', true)`, patching case context and triggering goal evaluation (`ConcurrentHashMap` drain pattern, same as `drainCausalContext`)
 - **`CasehubStartupService`** — plain Java extraction from `ServerStartup.bootstrapCasehubWatchers()`; iterates registry on startup and restarts exit watchers for in-flight workers after server restart
@@ -151,7 +151,7 @@ Related epics: [claudony#86](https://github.com/casehubio/claudony/issues/86) (f
 
 ## Current State
 
-- 525+ tests passing (4 in `claudony-core` + 137 in `claudony-casehub` + 384 in `claudony-app`, as of 2026-05-30 after claudony#118)
+- 703 tests passing (16 in `claudony-core` + 163 in `claudony-casehub` + 408 in `claudony-app` + integration, as of claudony#121 multi-tenancy foundation)
 - Core complete: session management, WebSocket streaming, WebAuthn, fleet, CaseHub SPI wiring
 - ADR-0005: CaseHub integration is optional — Claudony works as a standalone session manager without CaseHub
 
