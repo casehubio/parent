@@ -11,7 +11,10 @@
 #   ./build-all.sh                  # incremental build
 #   ./build-all.sh --no-cache       # force full rebuild
 #   ./build-all.sh --skip-tests
+#   ./build-all.sh --local          # build from current checkout (no fetch/reset)
 #   ./build-all.sh -T 1C            # extra Maven args
+#
+# Inside an isx container, --local is auto-detected (ISX_CONTAINER is set).
 
 set -euo pipefail
 
@@ -70,11 +73,13 @@ load_csv() {
 # Parse flags
 NO_CACHE=false
 SKIP_TESTS=false
+LOCAL=false
 MVN_ARGS=()
 for arg in "$@"; do
   case "$arg" in
     --no-cache)      NO_CACHE=true ;;
     --skip-tests)    SKIP_TESTS=true; MVN_ARGS+=("-DskipTests") ;;
+    --local)         LOCAL=true ;;
     *)               MVN_ARGS+=("$arg") ;;
   esac
 done
@@ -118,21 +123,37 @@ else
   echo "==> Cache: none (full rebuild)"
 fi
 
+# Auto-detect isx container — default to --local mode
+if [ -n "${ISX_CONTAINER:-}" ] && [ "$LOCAL" = false ]; then
+  LOCAL=true
+fi
+
 # ── Step 1: Clone or update ──────────────────────────────────────────────────
-echo ""; echo "==> Fetching repos..."
-for repo in "${REPOS[@]}"; do
-  gdir="$(git_path "$repo")"
-  if [ -d "$gdir/.git" ]; then
-    printf "    %-30s updating\n" "$repo"
-    git -C "$gdir" fetch --quiet origin main
-    git -C "$gdir" reset --quiet --hard origin/main
-  else
-    gh_url="https://github.com/$(gh_repo "$repo").git"
-    printf "    %-30s cloning into %s\n" "$repo" "$gdir"
-    mkdir -p "$(dirname "$gdir")"
-    git clone --quiet "$gh_url" "$gdir"
-  fi
-done
+if [ "$LOCAL" = true ]; then
+  echo ""; echo "==> Local mode: building from current checkout"
+  for repo in "${REPOS[@]}"; do
+    gdir="$(git_path "$repo")"
+    if [ ! -d "$gdir/.git" ]; then
+      echo "    ERROR: $repo not found at $gdir"
+      exit 1
+    fi
+  done
+else
+  echo ""; echo "==> Fetching repos..."
+  for repo in "${REPOS[@]}"; do
+    gdir="$(git_path "$repo")"
+    if [ -d "$gdir/.git" ]; then
+      printf "    %-30s updating\n" "$repo"
+      git -C "$gdir" fetch --quiet origin main
+      git -C "$gdir" reset --quiet --hard origin/main
+    else
+      gh_url="https://github.com/$(gh_repo "$repo").git"
+      printf "    %-30s cloning into %s\n" "$repo" "$gdir"
+      mkdir -p "$(dirname "$gdir")"
+      git clone --quiet "$gh_url" "$gdir"
+    fi
+  done
+fi
 
 # ── Step 2: Record SHAs (in memory — written to disk only after successful build)
 echo ""; echo "==> Recording SHAs..."
