@@ -174,7 +174,7 @@ Config prefix: `casehub.ledger.agent-identity.scim.*`
 
 ## Current State
 
-- 449 tests passing, native image validated
+- 962 tests passing, native image validated
 - Reactive/blocking service parity enforced at build time via `BlockingReactiveParityTest` (ArchUnit 1.4.1) — auto-discovers all `Reactive*Service` classes and asserts bidirectional method parity and `Uni<T>` returns
 - All epics complete: MMR, PROV-DM, privacy/pseudonymisation, EigenTrust, trust routing signals, OTel auto-wiring
 - No deployed production instances — schema migrations can be rewritten in place (no incremental migration scripts needed)

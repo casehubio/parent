@@ -160,7 +160,7 @@ Each optional module owns a dedicated V-number range to prevent collision when m
 
 ## Current State
 
-- 746 tests in runtime module; 60 in api; 84 in queues; 73 in reports; 76 in ledger; 93 in issue-tracker; 25 integration tests. Native image validated.
+- 2,089 tests total. Native image validated.
 - All major epics complete through #218 (CI fixes, platform-api scope rules)
 - Blocking: engine#330 — `HumanTaskTarget.scope` propagation (small, unblocked)
 - Pending: `casehub-work-qhorus` adapter (MCP tools for agent-driven approval flows)

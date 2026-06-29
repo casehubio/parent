@@ -158,6 +158,13 @@ Four tiers, always kept separate:
 | `casehub-eidos` | [casehubio/eidos](https://github.com/casehubio/eidos) | Agent identity — descriptor, discovery registry, vocabulary system, system prompt generation | Foundation |
 | `casehub-neural-text` | [casehubio/neural-text](https://github.com/casehubio/neural-text) | ONNX neural text inference (NLI, classification, SPLADE, reranking) + LangChain4j RAG integration with hybrid search. `rag-api`, `rag`, `rag-testing` now also consumed by Hortora/engine (neural-text#35). | Foundation |
 | `casehub-poc` | [casehubio/casehub](https://github.com/casehubio/casehub) | **Retiring** — original POC; no new features | — |
+| `casehub-devtown` | [casehubio/devtown](https://github.com/casehubio/devtown) | PR review automation, merge queue management, GitHub integration | Application |
+| `casehub-aml` | [casehubio/aml](https://github.com/casehubio/aml) | Anti-money laundering case management | Application |
+| `casehub-clinical` | [casehubio/clinical](https://github.com/casehubio/clinical) | Clinical adverse event investigation | Application |
+| `casehub-life` | [casehubio/life](https://github.com/casehubio/life) | Personal life automation | Application |
+| `casehub-drafthouse` | [casehubio/drafthouse](https://github.com/casehubio/drafthouse) | Document review and multi-participant LLM debate | Application |
+| `casehub-soc` | [casehubio/soc](https://github.com/casehubio/soc) | Security operations center | Application |
+| `casehub-fsitrading` | [casehubio/fsitrading](https://github.com/casehubio/fsitrading) | Financial services trading compliance | Application |
 | `quarkmind` | [casehubio/quarkmind](https://github.com/casehubio/quarkmind) | StarCraft II game AI — living lab proving the CaseHub harness pattern at millisecond game-loop granularity outside regulated domains | Application |
 | `flow` | [mdproctor/flow](https://github.com/mdproctor/flow) | Standalone Quarkus engine app with REST endpoints — tier and platform coherence pending analysis (external contributor) | TBD |
 

@@ -194,7 +194,7 @@ Qhorus implements a 4-layer normative accountability framework:
 3. **Temporal** — when obligations become stale (Watchdog, deadline enforcement)
 4. **Enforcement** — casehub-engine orchestration reacts to commitment outcomes via CDI events
 
-See [docs/normative-layer.md](https://raw.githubusercontent.com/casehibio/qhorus/main/docs/normative-layer.md).
+See [docs/normative-layer.md](https://raw.githubusercontent.com/casehubio/qhorus/main/docs/normative-layer.md).
 
 ### Normative Channel Layout
 
