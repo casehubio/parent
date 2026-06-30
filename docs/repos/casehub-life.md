@@ -18,7 +18,7 @@ The tutorial structure emerges from the natural adoption sequence. Each layer ad
 | 2 | casehub-work | No formal SLA on household tasks | **complete** (casehubio/life#3, 2026-05-27) |
 | 3 | casehub-qhorus | No commitment tracking; no oversight gates | **complete** (casehubio/life#4) |
 | 4 | casehub-ledger | No tamper-evident audit for health/financial decisions | **complete** (casehubio/life#5) |
-| 5 | casehub-engine | No multi-step workflow orchestration | pending |
+| 5 | casehub-engine | No multi-step workflow orchestration | **in progress** — `LifeTypedCaseHub` abstract base class (life#47): `augment()` final, `configureCase()` abstract, `lifeCaseType()` abstract. 6 CaseHubs extend it (AppointmentCycle, HomeMaintenance, TravelPlan, CareCoordination, ContractorCoordination, FinancialReview). `agentWorker(capabilityName, systemPrompt, responseSchema)` helper replaces per-worker boilerplate. `CareEpisodeCaseHub` stays on `YamlCaseHub` (sub-case only). |
 | 6 | Trust routing | No trust model for agent routing | **complete** (casehubio/life#11) |
 | 7 | casehub-openclaw | OpenClaw as WorkerProvisioner; pre-built skill ecosystem | pending |
 | 8 | Auth (casehub-platform-oidc) | No RBAC enforcement; risk thresholds role-agnostic | **complete** (casehubio/life#40, 2026-06-22) — `@RolesAllowed` on all 5 REST resources; RBAC-differentiated risk thresholds in `LifeActionRiskClassifier` (admin elevated, junior always-gate). Closes life#26. |

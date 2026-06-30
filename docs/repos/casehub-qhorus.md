@@ -34,6 +34,10 @@ See docs/DESIGN.md for channel semantics, message types, commitment state machin
 
 All channel writes flow through a single enforcement gate: `MessageService.dispatch(MessageDispatch)`. In order: paused check → `AllowedWritersPolicy` ACL → `RateLimiter` → LAST_WRITE overwrite semantics → `LedgerWriteService.record()` → `ChannelGateway.fanOut()`. There is no bypass path. `ReactiveMessageService` mirrors this with `dispatch(MessageDispatch) → Uni<DispatchResult>`.
 
+**LAST_WRITE version-aware delivery** (qhorus#313) — `Message.version` counter enables AT_LEAST_ONCE delivery for LAST_WRITE channels. V26 migration.
+
+**Delivery metrics** (qhorus#312) — 4 Micrometer metrics in `DeliveryService`: `qhorus.delivery.messages.delivered` (counter, backendId tag), `qhorus.delivery.failures` (counter, backendId tag), `qhorus.delivery.backends.unhealthy` (gauge), `qhorus.delivery.cursor.lag` (gauge per backend).
+
 `MessageDispatch` is the unified request object: `sender`, `type`, `content`, `correlationId`, `inReplyTo`, `artefactRefs`, `target`, `actorType`, `deadline` (all except sender/type/content optional). Builds via `MessageDispatch.builder(channelId, sender, type, content)`.
 
 **Builder protocol invariants** — enforced at `build()`, not downstream:
@@ -136,7 +140,8 @@ See docs/DESIGN.md for SPI interfaces.
 | `connector-backend` | Optional — `ConnectorChannelBackend` implements `HumanParticipatingChannelBackend`; bridges `InboundMessage` CDI events (`@ObservesAsync`) from casehub-connectors into Qhorus channel dispatch; self-registers for channels with a `ChannelBackend` type of `CONNECTOR`. `ConnectorQhorusMeshBridge` implements `ConnectorMeshBridge`; posts a STATUS message to the configured delivery channel (`casehub.qhorus.connector-backend.delivery-channel`) after each successful MCP connector delivery; activates by classpath presence alongside `ConnectorChannelBackend`. Activates by classpath presence. |
 | `slack-channel` | Optional — `SlackChannelBackend` implements `HumanParticipatingChannelBackend`; delivers outbound messages to Slack threads via `SlackBotClient` with thread continuity through a composite in-memory + DB-backed cache keyed by `(channelId, correlationId)`. `SlackInboundNormaliser` routes thread replies as RESPONSE, new messages as QUERY. REST: `PUT/GET/DELETE /slack-channel/bindings/{channelId}`. Credentials: Tier 1.5 (workspaceId as config key). Activates by classpath presence. Refs qhorus#261. |
 | `deployment` | Quarkus extension deployment descriptors |
-| `testing` | In-memory store implementations for `@QuarkusTest`. `MessageLedgerEntryTestFactory` is in `casehub-qhorus-testing` (package `io.casehub.qhorus.testing`) — promoted from `runtime/src/test/` to make it available to consumer test suites (qhorus#280). |
+| `persistence-memory` | Standalone in-memory store implementations (qhorus#169) — `InMemoryMessageStore`, `InMemoryInstanceStore`, `InMemoryChannelStore`, `InMemoryCommitmentStore`, `InMemoryWatchdogStore`, `InMemoryCrossTenantMessageStore`, `InMemoryCrossTenantCommitmentStore`, `InMemoryDeliveryCursorStore`. Moved from `testing/` to a standalone module; `testing/` depends on it transitively. ArtifactId: `casehub-qhorus-persistence-memory`. |
+| `testing` | Test utilities for `@QuarkusTest`. `MessageLedgerEntryTestFactory` is in `casehub-qhorus-testing` (package `io.casehub.qhorus.testing`) — promoted from `runtime/src/test/` to make it available to consumer test suites (qhorus#280). Depends on `persistence-memory` transitively. |
 
 ---
 

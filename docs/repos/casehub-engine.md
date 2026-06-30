@@ -107,6 +107,10 @@ All eight ship with `@DefaultBean @ApplicationScoped` no-op defaults that yield 
 
 **`WorkerExecutionManager.getActiveCaseIds(String workerId): List<UUID>`** — `default` method returning Quartz job case UUIDs currently scheduled for the given worker. Added in engine#56 for the actor state view; consumers that implement `WorkerExecutionManager` inherit the default unless they override it.
 
+**`WorkerExecutionManager.canExecute(WorkerFunction): boolean`** — `default true` method. `QuartzWorkerExecutionManager` overrides with positive handler delegation: iterates `WorkerFunctionHandler` instances, returns `true` only when a handler supports the function. External backends inherit `true`. Called by `FirstSupportedRoutingStrategy` alongside `supports()` to determine backend eligibility. Added for `WorkerFunction.None` support (engine#586–589).
+
+**`Worker.capabilityNames`** — `Worker` record carries `Set<String> capabilityNames` (not `List<Capability>`, engine#591). Workers declare support by name; the engine resolves authoritative `Capability` instances from `CaseDefinition.getCapabilities()`. Builder: `capabilityName(String)` (single) or `capabilityNames(String...)` (multiple). `YamlCaseHub.getDefinition()` is `final` with `protected void augment(CaseDefinition)` hook for subclasses to add programmatic workers.
+
 **`CaseChannel.parseCaseId(String channelName): UUID`** — static utility in `casehub-engine-api` that parses a `case-{caseId}/{purpose}` channel name and returns the embedded `caseId`. Returns `null` for non-case channel names. Used by the actor-state module to resolve channels back to their originating case.
 
 ### Inbound Message Bridge (`casehub-engine-inbound` — engine#468, engine#469)
