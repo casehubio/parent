@@ -121,7 +121,7 @@ class: text-sm
 | `casehub-iot` | Integration | Matter-aligned device abstraction (HA, OpenHAB) |
 | `casehub-ras` | Integration | Reactive case creation from event streams |
 | `casehub-desiredstate` | Integration | Desired-state runtime — intent to execution |
-| `casehub-pages` | Foundation | YAML-driven visualization, TypeScript |
+| `casehub-pages` | Foundation | Web application framework — TypeScript DSL, reactive data pipeline |
 | `devtown · aml · clinical` | Application | Showcase + tutorial applications |
 | `drafthouse · life · quarkmind` | Application | Specialist domains |
 
@@ -532,51 +532,50 @@ layout: section
 
 # casehub-pages
 
-*YAML-driven visualization. TypeScript. Zero Java at runtime.*
+*Web application framework. TypeScript. Zero Java at runtime.*
 
 ---
 
 # casehub-pages — Architecture
 
-**Pure TypeScript dashboard rendering runtime.**  
+**TypeScript web application framework.**  
 *Strict mode throughout — no implicit any, no escape hatches.*
 
 **Stack** — TypeScript (strict) · React · Web Components · Apache ECharts · js-yaml · JSONata
 
 **Core packages**
-- `@casehub/pages-data` — DataSet model, filter/group/sort, REST/CSV/Prometheus/JSONata adapters
-- `@casehub/pages-ui` — YAML parser, layout model, DashBuilder compatibility layer
-- `@casehub/pages-viz` — chart wrappers (bar, line, pie, timeseries, table, metric, map)
-- `@casehub/pages-component` — CSS grid, tabs, pills, sidebar, carousel, accordion
-- `@casehub/pages-runtime` — `loadSite(yaml, container)` one-call API
+- `@casehub/pages-data` — Reactive event engine (snapshot/append/replace/remove), filter/group/sort, WebSocket/REST/CSV/Prometheus sources, JSONata
+- `@casehub/pages-ui` — TypeScript DSL builders, YAML parser, component model
+- `@casehub/pages-viz` — Chart/table/metric Web Components (ECharts)
+- `@casehub/pages-component` — Layouts (grid, tabs, pills, sidebar, split, dock bar, accordion), panel hosting
+- `@casehub/pages-runtime` — `loadSite(tree, container)` — data pipeline, event delegation, panel lifecycle
 
-28/31 DashBuilder dashboards render without modification.  
 **Consumers:** claudony · drafthouse · devtown · aml · life
 
 ---
 
 # casehub-pages — Design Philosophy
 
-**Describe your site as data. Dynamic bindings alter the display.**
+**Compose applications from a recursive component tree.**
 
 ```typescript
-loadSite(yaml, document.getElementById('dashboard'))
+loadSite(document.getElementById('app')!, workbench)
 ```
 
-**Data-structure-first**  
-A site is a data structure, not a program. YAML declares pages, charts, forms, and layout. No rendering logic leaks into configuration.
+**Data–display separation**  
+Data defined once, bound by reference. Same dataset drives a chart, a table, and a form simultaneously. Swap the visualization without touching the data.
 
 **Recursive composition**  
-Pages within pages. Charts within forms. Forms within pages. Every component is composable at any nesting depth — the model is regular all the way down.
+Any component nests inside any other. Tabs inside splits inside grids. Forms alongside charts inside accordions. The tree is the API.
+
+**Reactive data pipeline**  
+Event-driven mutations (snapshot, append, replace, remove) cascade automatically to all bound components. Unified data + event bus — data mutations and inter-panel events flow through one pipeline.
+
+**Component hosting**  
+`hostPanel()` mounts arbitrary Web Components with managed lifecycle. Build domain-specific panels (terminals, diff viewers, session grids) and let pages manage layout, communication, and data around them.
 
 **Scoped cascading data chains**  
-Data flows down through the component tree. Each scope filters, transforms, and passes context to children — like CSS cascade, but for data. Components bind to the nearest matching scope.
-
-**Adaptive display**  
-Dynamic bindings completely alter layout and display from the same data structure — different views, same source.
-
-**Extended beyond dashboards**  
-Forms support (`pages-llm-prompter`) · View state persistence · Case status dashboards (trust scores, actor state, commitment views)
+Data flows down through the component tree. Each scope filters, transforms, and passes context to children — like CSS cascade, but for data.
 
 ---
 layout: section
@@ -892,7 +891,7 @@ Structured agent-to-agent debate loop. `ChannelProjection<ReviewState>`. Qhorus 
 - Multiple LLM agents critique the same document
 - Debate loop — each agent responds to other's critique
 - Review grounded in document diffs, not memory
-- `casehub-pages` embeds review dashboards
+- `casehub-pages` embeds review UI
 
 </div>
 </div>
@@ -998,7 +997,7 @@ layout: section
 - openclaw — 5,400+ skills as workers
 - connectors — Slack, Teams, email, SMS
 - iot — 10 Matter-aligned device types
-- casehub-pages — YAML-driven dashboards
+- casehub-pages — web application framework
 
 **Applications**
 - aml · clinical · devtown · drafthouse · life · quarkmind
