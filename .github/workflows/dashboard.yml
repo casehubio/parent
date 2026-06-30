@@ -46,6 +46,7 @@ jobs:
             casehubio/devtown \
             casehubio/aml \
             casehubio/blocks \
+            casehubio/blocks-ui \
             casehubio/clinical \
             casehubio/life \
             casehubio/drafthouse \
