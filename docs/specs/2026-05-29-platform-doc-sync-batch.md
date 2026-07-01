@@ -46,7 +46,7 @@ New tests: `IEM10MultiGameValidationTest` (all 30 IEM10 games via `IEM10CommandE
 
 `ReactiveCaseMemoryStore` interface + `BlockingToReactiveBridge @DefaultBean` in `platform/` — wraps blocking adapters transparently; native async adapters override as `@Alternative @Priority(N)`.
 
-Adapter implementations (Memori, Mem0, Graphiti) live in the separate `casehub-memory` repo (`casehubio/memory`).
+Adapter implementations (Memori, Mem0, Graphiti) live in the separate `casehub-neocortex-memory` repo (`casehubio/memory`).
 
 ### Changes to docs/repos/casehub-platform.md
 
@@ -60,9 +60,9 @@ Document the two `@DefaultBean` patterns explicitly (this is an important design
 
 Document `BlockingToReactiveBridge` — the standard pattern for wrapping blocking adapters as reactive; native async adapters override with `@Alternative @Priority(N)`. This is the same pattern used elsewhere in the platform.
 
-Note `casehub-memory` repo: adapter implementations activate by classpath presence (no config needed).
+Note `casehub-neocortex-memory` repo: adapter implementations activate by classpath presence (no config needed).
 
-**Module Roadmap:** add `memory/` row: status shipped (platform#27); note adapters in casehub-memory repo.
+**Module Roadmap:** add `memory/` row: status shipped (platform#27); note adapters in casehub-neocortex-memory repo.
 
 ---
 

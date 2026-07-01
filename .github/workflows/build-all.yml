@@ -305,8 +305,8 @@ jobs:
           [ $RC -eq 0 ] && echo "success" > .build-outcomes/eidos || echo "failure" > .build-outcomes/eidos
           echo $((SECONDS - START)) > .build-times/eidos
 
-      - name: "Build: neural-text"
-        id: neural-text
+      - name: "Build: neocortex"
+        id: neocortex
         continue-on-error: true
         env:
           CUR: ${{ steps.shas.outputs.sha_neural_text }}
@@ -320,27 +320,27 @@ jobs:
         run: |
           mkdir -p .build-outcomes .build-decisions
           D=$(./scripts/build-all-decision.sh \
-            --module neural-text --current-sha "$CUR" --previous-sha "${PRV:-none}" \
+            --module neocortex --current-sha "$CUR" --previous-sha "${PRV:-none}" \
             --dep "platform:${CUR_PLATFORM}:${PRV_PLATFORM:-none}")
           echo "decision=$D" >> $GITHUB_OUTPUT
-          echo "$D" > .build-decisions/neural-text
+          echo "$D" > .build-decisions/neocortex
           START=$SECONDS
           RC=0
           case "$D" in
-            SKIP) echo "⏭️  neural-text: SKIP" ;;
+            SKIP) echo "⏭️  neocortex: SKIP" ;;
             TEST)
-              if [ "$SKIP_TESTS" = "true" ]; then echo "⏭️  neural-text: SKIP (TEST — tests disabled)"
+              if [ "$SKIP_TESTS" = "true" ]; then echo "⏭️  neocortex: SKIP (TEST — tests disabled)"
               else
                 ITS=""; [ "$SKIP_ITS" = "true" ] && ITS="-DskipITs"
-                cd casehub/neural-text && mvn test --batch-mode $ITS $MAVEN_EXTRA || RC=$?
+                cd casehub/neocortex && mvn test --batch-mode $ITS $MAVEN_EXTRA || RC=$?
               fi ;;
             BUILD)
               F=""; [ "$SKIP_TESTS" = "true" ] && F="-DskipTests"
               [ "$SKIP_ITS" = "true" ] && F="$F -DskipITs"
-              cd casehub/neural-text && mvn install --batch-mode $F $MAVEN_EXTRA || RC=$? ;;
+              cd casehub/neocortex && mvn install --batch-mode $F $MAVEN_EXTRA || RC=$? ;;
           esac
-          [ $RC -eq 0 ] && echo "success" > .build-outcomes/neural-text || echo "failure" > .build-outcomes/neural-text
-          echo $((SECONDS - START)) > .build-times/neural-text
+          [ $RC -eq 0 ] && echo "success" > .build-outcomes/neocortex || echo "failure" > .build-outcomes/neocortex
+          echo $((SECONDS - START)) > .build-times/neocortex
 
       - name: "Build: connectors"
         id: connectors

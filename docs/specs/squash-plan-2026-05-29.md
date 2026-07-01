@@ -23,7 +23,7 @@ All KEEP commits assessed. All have either issue references, introduce new proto
 | `78a107a` | docs: rewrite SIAL protocol — clean language, no accumulated patchwork |
 | `85e351c` | protocol(PP-20260528-6b1d80): cross-foundation-bridge-module-placement |
 | `6fc667f` | docs: sync platform deep-dives for recent implementation work |
-| `404ca02` | docs(platform#27): CaseMemoryStore capability, casehub-memory repo, build order, dep map |
+| `404ca02` | docs(platform#27): CaseMemoryStore capability, casehub-neocortex-memory repo, build order, dep map |
 | `8703bee` | docs: Arc42Stories spec and CaseHub profile |
 | `b708f76` | protocol: add flyway-extension-migration-registration (PP-20260528-flyway-ext-reg) |
 | `045e9fc` | protocol(PP-20260528-ac6d93): reactive-pg-devservices-test-profile |

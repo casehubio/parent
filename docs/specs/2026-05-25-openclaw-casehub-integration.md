@@ -1280,9 +1280,9 @@ Module structure mirrors the existing PreferenceProvider and CurrentPrincipal pa
 |---|---|---|
 | `platform-api` (existing) | `casehub-platform-api` | `CaseMemoryStore` SPI added here alongside `CurrentPrincipal` and `PreferenceProvider` |
 | `platform` (existing) | `casehub-platform` | `@DefaultBean` no-op — zero overhead when no adapter installed |
-| `memory-memori/` (new) | `casehub-memory-memori` | SQL-native Postgres adapter (default — zero extra infra) |
-| `memory-mem0/` (new) | `casehub-memory-mem0` | Vector + BM25 adapter (Docker + pgvector) |
-| `memory-graphiti/` (new) | `casehub-memory-graphiti` | Temporal knowledge graph adapter (regulated domains) |
+| `memory-memori/` (new) | `casehub-neocortex-memory-memori` | SQL-native Postgres adapter (default — zero extra infra) |
+| `memory-mem0/` (new) | `casehub-neocortex-memory-mem0` | Vector + BM25 adapter (Docker + pgvector) |
+| `memory-graphiti/` (new) | `casehub-neocortex-memory-graphiti` | Temporal knowledge graph adapter (regulated domains) |
 
 SPI design constraints:
 - Permission-aware recall enforced at the SPI layer via `CurrentPrincipal` +
@@ -1626,7 +1626,7 @@ design work can proceed:
    CDI observer (consistent with existing ledger pattern)? Explicit API call from case
    definition? Automatic extraction from ledger entries? (§11.1)
 
-7. **casehub-memory module placement:** standalone repo or module within casehub-platform
+7. **casehub-neocortex-memory module placement:** standalone repo or module within casehub-platform
    or casehub-ledger? (§9.1)
 
 8. **Speech act classification approach:** which approach for classifying OpenClaw LLM

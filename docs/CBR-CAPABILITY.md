@@ -45,9 +45,9 @@ Both are needed. The ledger provides the compliance record and trust signal; the
 
 ### 2. Retrieve — find similar past cases
 
-**Owner:** `casehub-neural-text` — `CaseRetriever` / `ReactiveCaseRetriever` SPIs
+**Owner:** `casehub-neocortex` — `CaseRetriever` / `ReactiveCaseRetriever` SPIs
 
-`CaseRetriever` performs similarity-based retrieval against the `CaseMemoryStore`. It is already declared in `casehub-neural-text` (see `casehub-rag-api`) and marked for future engine integration (PLATFORM.md cross-dependency table, entry: "fact space prompt compiler context injection, future, #154").
+`CaseRetriever` performs similarity-based retrieval against the `CaseMemoryStore`. It is already declared in `casehub-neocortex` (see `casehub-neocortex-rag-api`) and marked for future engine integration (PLATFORM.md cross-dependency table, entry: "fact space prompt compiler context injection, future, #154").
 
 Similarity functions are domain-specific and pluggable:
 - QuarkMind: feature vector = `[opponent_race, detected_build_order, enemy_posture, game_phase, army_size_ratio]`
@@ -101,7 +101,7 @@ Problem description (CaseFile features)
         │
         ▼
 ┌──────────────────────────────────────┐
-│  casehub-neural-text / CaseRetriever │  ← RETRIEVE: similarity search
+│  casehub-neocortex / CaseRetriever │  ← RETRIEVE: similarity search
 │  (CaseMemoryStore backend)           │
 └──────────────────────────────────────┘
         │  top-k similar past cases
@@ -183,7 +183,7 @@ This migration is tracked separately. Do not implement new CBR capabilities in c
 |------|--------------------|--------|
 | `casehub-ledger` | Retain: outcome attestation, trust scoring | ✅ Done — extend to full case representation when CaseMemoryStore is wired |
 | `casehub-platform` | Retain: `CaseMemoryStore` adapters (jpa, mem0, graphiti) | ✅ Adapters exist — no harness has wired for CBR yet |
-| `casehub-neural-text` | Retrieve: `CaseRetriever` SPI + RAG implementation | ⏳ SPI declared, not yet wired to CBR retrieval |
+| `casehub-neocortex` | Retrieve: `CaseRetriever` SPI + RAG implementation | ⏳ SPI declared, not yet wired to CBR retrieval |
 | `casehub-engine` | Reuse: `ImplementationRoutingStrategy` SPI — route among competing `TaskDefinition` implementations | ❌ Gap — to be filed as engine issue |
 | `casehub-engine` | Revise: adaptive plan templates | ❌ Gap — long-term |
 | `casehub-aml` | CBR over AML investigation patterns — retrieve similar past investigations at case open | ❌ Not started |

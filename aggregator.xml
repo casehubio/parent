@@ -35,7 +35,7 @@
     <module>../worker</module>
     <module>../ledger</module>
     <module>../eidos</module>
-    <module>../neural-text</module>
+    <module>../neocortex</module>
     <module>../connectors</module>
     <module>../iot</module>
     <module>../work</module>

@@ -93,7 +93,7 @@ GCP / FDA / FinCEN — proven across applications
 |------|---------|
 | APPLICATION | devtown · aml · clinical · drafthouse · life · quarkmind |
 | INTEGRATION | claudony · openclaw · connectors · iot · casehub-ras · casehub-desiredstate |
-| ORCHESTRATION | engine · eidos · neural-text |
+| ORCHESTRATION | engine · eidos · neocortex |
 | FOUNDATION | platform · ledger · qhorus · work |
 
 <br/>
@@ -114,7 +114,7 @@ class: text-sm
 | `casehub-work` | Foundation | Human task lifecycle, SLA, delegation, escalation |
 | `casehub-engine` | Orchestration | Blackboard+CMMN coordinator, routing, oversight gates |
 | `casehub-eidos` | Orchestration | Agent identity, health probing, system prompt rendering |
-| `casehub-neural-text` | Orchestration | Local ONNX inference, RAG, CRAG |
+| `casehub-neocortex` | Orchestration | Local ONNX inference, RAG, CRAG |
 | `claudony` | Integration | Claude CLI sessions, agent mesh dashboard |
 | `casehub-openclaw` | Integration | OpenClaw agent bridge, 5,400+ skills |
 | `casehub-connectors` | Integration | Slack, Teams, email, SMS, webhooks |
@@ -373,7 +373,7 @@ class: text-sm
 class: text-sm
 ---
 
-# casehub-neural-text
+# casehub-neocortex
 
 **Local AI inference. No cloud dependency.**
 
@@ -602,12 +602,12 @@ class: text-xs
 | casehub-engine | `ActionRiskClassifier` SPI | Action risk → gate or pass |
 | casehub-eidos | `EpistemicallyWeak` health probe | Domain confidence below threshold → demote candidate |
 | casehub-eidos | Vocab system | Belbin/DISC/Thomas-Kilmann axes → structured disposition matching |
-| casehub-neural-text | `NliClassifier` | Hallucination: LLM output faithfulness against source facts |
-| casehub-neural-text | `TextClassifier` | Action risk classification |
-| casehub-neural-text | `ScalarRegressor` | Epistemic domain confidence estimation |
-| casehub-neural-text | `SparseEmbedder` | SPLADE sparse embeddings for precision retrieval |
-| casehub-neural-text | `CrossEncoderReranker` | Top-N precision reranking |
-| casehub-neural-text | CRAG `RelevanceEvaluator` | Evaluates retrieved chunks, corrects low-relevance results |
+| casehub-neocortex | `NliClassifier` | Hallucination: LLM output faithfulness against source facts |
+| casehub-neocortex | `TextClassifier` | Action risk classification |
+| casehub-neocortex | `ScalarRegressor` | Epistemic domain confidence estimation |
+| casehub-neocortex | `SparseEmbedder` | SPLADE sparse embeddings for precision retrieval |
+| casehub-neocortex | `CrossEncoderReranker` | Top-N precision reranking |
+| casehub-neocortex | CRAG `RelevanceEvaluator` | Evaluates retrieved chunks, corrects low-relevance results |
 | quarkmind | `StrategyTrustRouter` | Bayesian Beta routing among competing strategy plugins |
 | casehub-ras | `DroolsCepGanglion` | CEP sliding windows for event stream pattern detection |
 | casehub-ras | `BayesianGanglion` | Weighted multi-signal accumulation |
@@ -628,8 +628,8 @@ class: text-xs
 | casehub-platform | `memory-graphiti` | Temporal knowledge graph — LLM entity extraction |
 | casehub-eidos | System prompt rendering | Semantic enrichment: identity, role, capability, disposition, goal narratives |
 | casehub-eidos | Knowledge graph | Wilson lower-bound reputation, task history |
-| casehub-neural-text | `CorpusIngestionService` | LangChain4j dense embeddings for RAG |
-| casehub-neural-text | `QdrantCaseRetriever` | Hybrid RRF retrieval — dense + sparse |
+| casehub-neocortex | `CorpusIngestionService` | LangChain4j dense embeddings for RAG |
+| casehub-neocortex | `QdrantCaseRetriever` | Hybrid RRF retrieval — dense + sparse |
 | casehub-drafthouse | Multi-LLM debate | Structured agent-to-agent critique, Qhorus-grounded |
 | claudony | `ClaudeAgentProvider` | Claude Code CLI sessions as CaseHub workers |
 | casehub-openclaw | OpenClaw agents | 5,400+ pre-built skills as workers |

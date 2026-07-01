@@ -3,7 +3,7 @@ platform,parent
 worker,parent
 ledger,parent
 eidos,ledger
-neural-text,platform
+neocortex,platform
 connectors,parent
 iot,platform
 work,parent,ledger,connectors

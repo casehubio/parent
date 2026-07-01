@@ -129,7 +129,7 @@ Platform-level oversight gate for consequential worker actions. Workers return `
 
 Key facts:
 - `Agent.execute()` returns `WorkerResult`
-- `@RiskClassifier @ApplicationScoped` for consumer implementations (e.g. `TextClassifier` from `casehub-neural-text`)
+- `@RiskClassifier @ApplicationScoped` for consumer implementations (e.g. `TextClassifier` from `casehub-neocortex`)
 - Gate resolved via `WorkItem` in casehub-work — requires `casehub-engine-work-adapter` on classpath
 - `pendingActionGate` is in-memory only in v1 — a server restart loses pending gates (tracked engine#433)
 - Gate approval re-fires `WorkflowExecutionCompleted(plannedAction=null)` — normal completion path

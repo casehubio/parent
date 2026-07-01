@@ -269,7 +269,7 @@ Every harness application is a natural CBR system. CaseHub provides the building
 | Step | What it does | CaseHub owner |
 |------|-------------|--------------|
 | **Retain** | Store the outcome as a retrievable case | `casehub-ledger` (trust scores) + `CaseMemoryStore` (full case representation) |
-| **Retrieve** | Find the *k* most similar past cases by feature-vector similarity | `casehub-neural-text` — `CaseRetriever` SPI |
+| **Retrieve** | Find the *k* most similar past cases by feature-vector similarity | `casehub-neocortex` — `CaseRetriever` SPI |
 | **Reuse** | Select or weight solutions from retrieved cases | `casehub-engine` — `TrustWeightedAgentStrategy` ✅ (workers); `ImplementationRoutingStrategy` (competing implementations — gap) |
 | **Revise** | Adapt the retrieved solution to the current context | Adaptive plan templates — gap, long-term |
 

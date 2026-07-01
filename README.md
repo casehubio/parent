@@ -18,7 +18,7 @@ Org-level parent POM and BOM for the [casehubio](https://github.com/casehubio) e
 | [casehub-qhorus](https://github.com/casehubio/qhorus) | [![casehub-qhorus](https://github.com/casehubio/qhorus/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/qhorus/actions/workflows/publish.yml) |
 | [casehub-pages](https://github.com/casehubio/casehub-pages) | [![casehub-pages](https://github.com/casehubio/casehub-pages/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/casehubio/casehub-pages/actions/workflows/ci.yml) |
 | [casehub-eidos](https://github.com/casehubio/eidos) | [![casehub-eidos](https://github.com/casehubio/eidos/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/eidos/actions/workflows/publish.yml) |
-| [casehub-neural-text](https://github.com/casehubio/neural-text) | [![casehub-neural-text](https://github.com/casehubio/neural-text/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/neural-text/actions/workflows/publish.yml) |
+| [casehub-neocortex](https://github.com/casehubio/neocortex) | [![casehub-neocortex](https://github.com/casehubio/neocortex/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/neocortex/actions/workflows/publish.yml) |
 | [casehub-iot](https://github.com/casehubio/iot) | [![casehub-iot](https://github.com/casehubio/iot/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/iot/actions/workflows/publish.yml) |
 | [casehub-desiredstate](https://github.com/casehubio/casehub-desiredstate) | [![casehub-desiredstate](https://github.com/casehubio/casehub-desiredstate/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/casehub-desiredstate/actions/workflows/publish.yml) |
 | [casehub-ras](https://github.com/casehubio/casehub-ras) | [![casehub-ras](https://github.com/casehubio/casehub-ras/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/casehub-ras/actions/workflows/publish.yml) |
@@ -136,7 +136,7 @@ Each project in the ecosystem has its own Maven parent (casehub projects use int
 | `casehub-work` | `io.casehub` | `casehubio/work` | ledger, connectors |
 | `casehub-qhorus` | `io.casehub` | `casehubio/qhorus` | ledger, work |
 | `casehub-pages` | TypeScript/Yarn | `casehubio/casehub-pages` | — (runtime iframe embedding) |
-| `casehub-neural-text` | `io.casehub` | `casehubio/neural-text` | platform |
+| `casehub-neocortex` | `io.casehub` | `casehubio/neocortex` | platform |
 | `casehub-iot` | `io.casehub` | `casehubio/iot` | platform |
 | `casehub-desiredstate` | `io.casehub` | `casehubio/casehub-desiredstate` | platform |
 | `casehub-ras` | `io.casehub` | `casehubio/casehub-ras` | platform |
@@ -194,7 +194,7 @@ All unrecognised flags are passed through to Maven.
 
 **Core repos** (always built): quarkus-langchain4j, platform, ledger, eidos, connectors, work, qhorus, engine, workers, claudony
 
-**`--include-apps` adds**: iot, neural-text, desiredstate, ras, ops, openclaw, devtown, aml, clinical, life, drafthouse
+**`--include-apps` adds**: iot, neocortex, desiredstate, ras, ops, openclaw, devtown, aml, clinical, life, drafthouse
 
 ### Incremental build logic
 

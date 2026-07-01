@@ -1,15 +1,15 @@
-# neural-text deep-dive sync — Matryoshka + quantization
+# neocortex deep-dive sync — Matryoshka + quantization
 
 **Date:** 2026-06-27
 **Issue:** [casehubio/parent#315](https://github.com/casehubio/parent/issues/315)
-**Source:** [casehubio/neural-text#31](https://github.com/casehubio/neural-text/issues/31)
-**ARC42STORIES ref:** `casehub-neural-text/ARC42STORIES.MD` §4 (Matryoshka embeddings), §6 (search-time oversampling), §7 (embedding dimension consistency), §8 (DenseQuantization naming)
+**Source:** [casehubio/neocortex#31](https://github.com/casehubio/neocortex/issues/31)
+**ARC42STORIES ref:** `casehub-neocortex/ARC42STORIES.MD` §4 (Matryoshka embeddings), §6 (search-time oversampling), §7 (embedding dimension consistency), §8 (DenseQuantization naming)
 
 ---
 
 ## Summary
 
-Update `docs/repos/casehub-neural-text.md` to reflect four features shipped in neural-text#31: `MatryoshkaEmbeddingModel`, `DenseQuantization` enum, search-time oversampling on quantized vectors, and CDI producer wiring for both. All features exist in both blocking and reactive implementations. Also fix stale class names from the #17 refactor (CorpusStore → EmbeddingIngestor, QdrantCorpusStore → QdrantEmbeddingIngestor, QdrantCaseRetriever → HybridCaseRetriever) and update the EmbeddingIngestor description to match the interface.
+Update `docs/repos/casehub-neocortex.md` to reflect four features shipped in neocortex#31: `MatryoshkaEmbeddingModel`, `DenseQuantization` enum, search-time oversampling on quantized vectors, and CDI producer wiring for both. All features exist in both blocking and reactive implementations. Also fix stale class names from the #17 refactor (CorpusStore → EmbeddingIngestor, QdrantCorpusStore → QdrantEmbeddingIngestor, QdrantCaseRetriever → HybridCaseRetriever) and update the EmbeddingIngestor description to match the interface.
 
 ## Approach
 
@@ -25,17 +25,17 @@ Use `###` subsection headers to match the existing pattern (`### InferenceModel 
 
 `MatryoshkaEmbeddingModel` — truncating `EmbeddingModel` decorator in `rag/`. Takes a delegate model and `targetDimension`, truncates the output vector to the first N dimensions and L2-renormalizes. Config-driven: active when `casehub.rag.matryoshka.dimension` is set. Reports `modelName()` as `delegate/matryoshka-N`. Validates that target dimension is positive and does not exceed delegate dimension.
 
-The decorator pattern is architecturally significant: `dimension()` returns the truncated size, which flows transparently to `ensureCollection()` — collection vector dimensions are automatically correct without separate dimension tracking. See [`casehub-neural-text/ARC42STORIES.MD` §4](https://github.com/casehubio/neural-text/blob/main/ARC42STORIES.MD#4-solution-strategy) for the dual-vector tiered search alternative that was evaluated and rejected.
+The decorator pattern is architecturally significant: `dimension()` returns the truncated size, which flows transparently to `ensureCollection()` — collection vector dimensions are automatically correct without separate dimension tracking. See [`casehub-neocortex/ARC42STORIES.MD` §4](https://github.com/casehubio/neocortex/blob/main/ARC42STORIES.MD#4-solution-strategy) for the dual-vector tiered search alternative that was evaluated and rejected.
 
 #### ### DenseQuantization (rag)
 
 `DenseQuantization` — enum in `rag/` with values `NONE`, `BINARY`, `SCALAR`. Configures Qdrant quantization on the **dense vector params** at collection creation time — applied to `denseParamsBuilder` specifically, not to the entire collection (sparse vectors are not quantized). `BINARY` applies `BinaryQuantization`; `SCALAR` applies `ScalarQuantization` with `Int8` type. Both respect `casehub.rag.quantization.always-ram` (default `true`). Config: `casehub.rag.quantization.type` (default `NONE`).
 
-Named `DenseQuantization` rather than `QuantizationType` because the Qdrant client already defines `io.qdrant.client.grpc.Collections.QuantizationType` — both enums appear in `ensureCollection()` / `buildCreateRequest()` and sharing the name would create ambiguous unqualified usage (see [`casehub-neural-text/ARC42STORIES.MD` §8](https://github.com/casehubio/neural-text/blob/main/ARC42STORIES.MD#8-crosscutting-concepts)).
+Named `DenseQuantization` rather than `QuantizationType` because the Qdrant client already defines `io.qdrant.client.grpc.Collections.QuantizationType` — both enums appear in `ensureCollection()` / `buildCreateRequest()` and sharing the name would create ambiguous unqualified usage (see [`casehub-neocortex/ARC42STORIES.MD` §8](https://github.com/casehubio/neocortex/blob/main/ARC42STORIES.MD#8-crosscutting-concepts)).
 
 ### 2. CaseRetriever description — update existing paragraph
 
-Update the `CaseRetriever` paragraph to note that `HybridCaseRetriever` (and `ReactiveHybridCaseRetriever`) now accept `DenseQuantization` type and optional oversampling. When quantization is active (`DenseQuantization != NONE`) and `casehub.rag.quantization.oversampling` is set, the dense prefetch leg applies `QuantizationSearchParams` with the configured oversampling factor + `rescore=true`. Compensates for quantization precision loss by fetching more candidates from the quantized index before rescoring against full-precision vectors. Sparse prefetch is unaffected — sparse vectors are not quantized. See [`casehub-neural-text/ARC42STORIES.MD` §6](https://github.com/casehubio/neural-text/blob/main/ARC42STORIES.MD#6-runtime-view) for the oversampling design rationale.
+Update the `CaseRetriever` paragraph to note that `HybridCaseRetriever` (and `ReactiveHybridCaseRetriever`) now accept `DenseQuantization` type and optional oversampling. When quantization is active (`DenseQuantization != NONE`) and `casehub.rag.quantization.oversampling` is set, the dense prefetch leg applies `QuantizationSearchParams` with the configured oversampling factor + `rescore=true`. Compensates for quantization precision loss by fetching more candidates from the quantized index before rescoring against full-precision vectors. Sparse prefetch is unaffected — sparse vectors are not quantized. See [`casehub-neocortex/ARC42STORIES.MD` §6](https://github.com/casehubio/neocortex/blob/main/ARC42STORIES.MD#6-runtime-view) for the oversampling design rationale.
 
 Search-time oversampling is documented here (not as a standalone Key Abstraction) because it is a parameter-driven behavior of the retriever, not an independent abstraction.
 
@@ -52,13 +52,13 @@ Add to the rag/ module description: `MatryoshkaEmbeddingModel` — truncating `E
 
 ### 5. Current State — update C7 row
 
-Add to the C7 description, distinguished as optimization features (not new SPIs): storage/search optimization via `MatryoshkaEmbeddingModel` (truncating decorator), `DenseQuantization` (binary/scalar dense vector params config), search-time oversampling on quantized dense prefetch, `RagBeanProducer` / `ReactiveRagBeanProducer` CDI wiring for both features. Both blocking and reactive implementations carry all features. Reference neural-text#31.
+Add to the C7 description, distinguished as optimization features (not new SPIs): storage/search optimization via `MatryoshkaEmbeddingModel` (truncating decorator), `DenseQuantization` (binary/scalar dense vector params config), search-time oversampling on quantized dense prefetch, `RagBeanProducer` / `ReactiveRagBeanProducer` CDI wiring for both features. Both blocking and reactive implementations carry all features. Reference neocortex#31.
 
 ### 6. Design Documents — add ARC42STORIES.MD reference
 
 Add to the Design Documents section (after the existing spec and issue references):
 
-- [casehubio/neural-text ARC42STORIES.MD](https://github.com/casehubio/neural-text/blob/main/ARC42STORIES.MD) — authoritative architecture record (Matryoshka §4, oversampling §6, dimension consistency §7, naming §8)
+- [casehubio/neocortex ARC42STORIES.MD](https://github.com/casehubio/neocortex/blob/main/ARC42STORIES.MD) — authoritative architecture record (Matryoshka §4, oversampling §6, dimension consistency §7, naming §8)
 
 ### 7. Fix stale class names from #17 refactor
 

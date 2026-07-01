@@ -26,7 +26,7 @@ Each line is: `name,dep1,dep2,...`
 platform,parent
 ledger,parent
 eidos,ledger
-neural-text,platform
+neocortex,platform
 connectors,parent
 work,parent,ledger,connectors
 qhorus,parent,ledger,work

@@ -281,11 +281,11 @@ All pom.xml files must be populated and valid — IntelliJ must be able to open 
 This is the step most likely to be missed. For each repo that the new repo **depends on**,
 check whether that repo's publish workflow already dispatches to the new repo. If not, update it.
 
-**The actual dispatch map (verified against workflow files, 2026-05-25; neural-text added 2026-06-04):**
+**The actual dispatch map (verified against workflow files, 2026-05-25; neocortex added 2026-06-04):**
 
 ```
 parent       → platform, ledger, connectors
-platform     → ledger, connectors, neural-text   ← neural-text added (platform#63 pending)
+platform     → ledger, connectors, neocortex   ← neocortex added (platform#63 pending)
 ledger       → work, qhorus
 connectors   → work
 work         → engine
@@ -293,7 +293,7 @@ qhorus       → engine, claudony
 engine       → scaffold            ← engine#350 must add openclaw here
 claudony     → (nothing)
 openclaw     → life
-neural-text  → (nothing yet — eidos/openclaw/engine will add when wired)
+neocortex  → (nothing yet — eidos/openclaw/engine will add when wired)
 ```
 
 Note: engine triggers `scaffold`, not claudony directly — claudony is triggered by

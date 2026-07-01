@@ -30,7 +30,7 @@ jobs:
             casehubio/casehub-worker \
             casehubio/ledger \
             casehubio/eidos \
-            casehubio/neural-text \
+            casehubio/neocortex \
             casehubio/connectors \
             casehubio/iot \
             casehubio/work \

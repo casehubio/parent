@@ -909,77 +909,77 @@
       </dependency>
 
       <!-- ================================================================ -->
-      <!-- casehub-neural-text                                              -->
+      <!-- casehub-neocortex                                              -->
       <!-- ================================================================ -->
       <dependency>
         <groupId>io.casehub</groupId>
-        <artifactId>casehub-inference-api</artifactId>
+        <artifactId>casehub-neocortex-inference-api</artifactId>
         <version>${casehub.version}</version>
       </dependency>
       <dependency>
         <groupId>io.casehub</groupId>
-        <artifactId>casehub-inference-runtime</artifactId>
+        <artifactId>casehub-neocortex-inference-runtime</artifactId>
         <version>${casehub.version}</version>
       </dependency>
       <dependency>
         <groupId>io.casehub</groupId>
-        <artifactId>casehub-inference-tasks</artifactId>
+        <artifactId>casehub-neocortex-inference-tasks</artifactId>
         <version>${casehub.version}</version>
       </dependency>
       <dependency>
         <groupId>io.casehub</groupId>
-        <artifactId>casehub-inference-splade</artifactId>
+        <artifactId>casehub-neocortex-inference-splade</artifactId>
         <version>${casehub.version}</version>
       </dependency>
       <dependency>
         <groupId>io.casehub</groupId>
-        <artifactId>casehub-inference-inmem</artifactId>
+        <artifactId>casehub-neocortex-inference-inmem</artifactId>
         <version>${casehub.version}</version>
       </dependency>
       <dependency>
         <groupId>io.casehub</groupId>
-        <artifactId>casehub-inference-quarkus</artifactId>
+        <artifactId>casehub-neocortex-inference-quarkus</artifactId>
         <version>${casehub.version}</version>
       </dependency>
       <dependency>
         <groupId>io.casehub</groupId>
-        <artifactId>casehub-rag-api</artifactId>
+        <artifactId>casehub-neocortex-rag-api</artifactId>
         <version>${casehub.version}</version>
       </dependency>
       <dependency>
         <groupId>io.casehub</groupId>
-        <artifactId>casehub-rag</artifactId>
+        <artifactId>casehub-neocortex-rag</artifactId>
         <version>${casehub.version}</version>
       </dependency>
       <dependency>
         <groupId>io.casehub</groupId>
-        <artifactId>casehub-rag-tika</artifactId>
+        <artifactId>casehub-neocortex-rag-tika</artifactId>
         <version>${casehub.version}</version>
       </dependency>
       <dependency>
         <groupId>io.casehub</groupId>
-        <artifactId>casehub-rag-testing</artifactId>
+        <artifactId>casehub-neocortex-rag-testing</artifactId>
         <version>${casehub.version}</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>io.casehub</groupId>
-        <artifactId>casehub-rag-crag</artifactId>
+        <artifactId>casehub-neocortex-rag-crag</artifactId>
         <version>${casehub.version}</version>
       </dependency>
       <dependency>
         <groupId>io.casehub</groupId>
-        <artifactId>casehub-rag-expansion</artifactId>
+        <artifactId>casehub-neocortex-rag-expansion</artifactId>
         <version>${casehub.version}</version>
       </dependency>
       <dependency>
         <groupId>io.casehub</groupId>
-        <artifactId>casehub-corpus-api</artifactId>
+        <artifactId>casehub-neocortex-corpus-api</artifactId>
         <version>${casehub.version}</version>
       </dependency>
       <dependency>
         <groupId>io.casehub</groupId>
-        <artifactId>casehub-corpus</artifactId>
+        <artifactId>casehub-neocortex-corpus</artifactId>
         <version>${casehub.version}</version>
       </dependency>
 
