@@ -7,7 +7,7 @@
 
 ## Purpose
 
-Outbound and inbound message connector library for the casehubio platform. Provides a `Connector` CDI SPI (outbound) and `InboundConnector`/`WebhookInboundConnector` SPIs (inbound) with built-in implementations for Slack, Teams, Twilio SMS, WhatsApp, email (outbound), and email inbound (IMAP polling). No Camel, no vendor SDKs — pure `java.net.http.HttpClient`.
+Outbound and inbound message connector library for the casehubio platform. Provides a `Connector` CDI SPI (outbound) and `InboundConnector`/`WebhookInboundConnector` SPIs (inbound) with built-in implementations for Slack, Teams, Twilio SMS, WhatsApp, email (outbound), and email inbound (IMAP polling). Also provides a `ChatPlatform` SPI for structured interaction with chat systems (channels, threads, reactions, presence, members, channel management, member management, message history) with graceful degradation across platforms. No Camel, no vendor SDKs — pure `java.net.http.HttpClient`.
 
 This is the **canonical notification infrastructure** for the platform. Any repo that needs to send outbound messages (escalations, alerts, notifications) or receive inbound messages must use these SPIs rather than implementing its own connectors.
 
@@ -32,6 +32,14 @@ Two inbound SPIs:
 
 Consumers observe `Event<InboundMessage>` and react accordingly — they never call inbound SPIs directly.
 
+### ChatPlatform SPI (`chat-spi`)
+
+Structured interface for chat-system interactions beyond simple message delivery. Defines capability interfaces: `Messaging`, `Threading`, `Discovery`, `Reactions`, `Presence`, `Members`, `ChannelManagement`, `MemberManagement`, `MessageHistory`. Each platform declares which capabilities it supports; unsupported capabilities degrade gracefully (no-op or fallback). Implementations: `chat-ref` (in-memory reference), `chat-irc`, `chat-discord` (8 native capabilities), `chat-slack` (9 native capabilities — most complete).
+
+### RichCard (`chat-spi`)
+
+Platform-agnostic rich content model. Record with title, description, url, color (decimal RGB), fields (name/value/inline), thumbnailUrl, imageUrl, footer, author — plus a Builder. `ChatContent.cards()` carries `List<RichCard>`. Outbound: translators render RichCard to platform-native formats (Discord embeds, Slack Block Kit blocks). Inbound: translators parse platform-native rich content (Discord embeds, Slack blocks) back into RichCard objects. `Channel` includes `memberCount` (nullable Integer) populated from guild/workspace metadata.
+
 ### Module Structure
 
 | Module | Contents |
@@ -39,9 +47,14 @@ Consumers observe `Event<InboundMessage>` and react accordingly — they never c
 | `casehub-connectors` (`casehub-connectors-core`) | `Connector` SPI + Slack, Teams, Twilio SMS, WhatsApp outbound impls; `InboundConnector` SPI + `InboundConnectorService` polling engine; `WebhookInboundConnector` abstract base. `ConnectorDiscovery` SPI (connectors#16) — optional interface CDI beans implement when their targets are discoverable (e.g. Slack channels via `conversations.list`); `connectorId()` + `discover() → List<DiscoveredTarget>`. `ConnectorsCloudEventAdapter` — CDI adapter observing `@ObservesAsync InboundMessage`, fires `Event<CloudEvent>.fireAsync()` with type `io.casehub.connectors.inbound.<connectorType>`. Follows canonical CloudEvent adapter pattern (GE-20260621-629712). |
 | `casehub-connectors-email` | SMTP outbound via `quarkus-mailer` |
 | `casehub-connectors-email-inbound` | `EmailInboundConnector` — IMAP polling, `EmailInboundAccountProvider` SPI |
-| `casehub-connectors-mcp` | MCP tool surface: `send_slack`, `send_teams`, `send_sms`, `send_whatsapp`, `send_email`, `send_slack_bot` (bot-token Slack posting via `SlackBotClient`, returns `ts` for thread replies), `list_channels` (aggregates all registered `ConnectorDiscovery` beans). Depends on `core` + `email` + `quarkus-mcp-server-core:1.11.1`. Consuming apps add `quarkus-mcp-server-http` for transport. Integrates with Qhorus via `ConnectorMeshBridge` SPI when `connector-backend` is on classpath (qhorus#249). |
-| `casehub-connectors-slack-bot` | `SlackBotClient` — pure `java.net.http` client for the Slack Web API (`chat.postMessage`). Implements `ConnectorDiscovery` via `conversations.list` — registers Slack channels as discoverable targets for `list_channels` MCP tool. Config: `casehub.connectors.slack-bot.token` (bot token). No Slack SDK dependency (connectors#2). Also adds `InboundConnectorIds.SLACK_INBOUND = "slack-inbound"` constant and `slack-ts` / `slack-thread-ts` metadata fields to `casehub-connectors-core`. |
-| `casehub-connectors-discord` | Discord bot connector — `DiscordClient` (REST API: post messages, manage channels/guilds/members), `DiscordGateway` (WebSocket real-time event listener via `GatewayEventListener` SPI). Pure `java.net.http`. Config: bot token. |
+| `casehub-connectors-mcp` | MCP tool surface: `send_slack`, `send_teams`, `send_sms`, `send_whatsapp`, `send_email`, `send_chat` (cross-platform chat via ChatPlatformService — replaces per-platform tools for chat, supports RichCard and multi-card), `list_channels` (aggregates ConnectorDiscovery), `list_chat_channels` (ChatPlatform Discovery with rich Channel detail including memberCount). Integrates with Qhorus via `ConnectorMeshBridge` SPI. |
+| `casehub-connectors-slack-bot` | `SlackBotClient` — pure `java.net.http` client for the Slack Web API (14 methods: messaging, channel listing, reactions, presence, members, users, channel management, member management, message history). Block Kit `blocks` parameter on `postMessage`. `ConversationInfo` includes `numMembers`. Paginating methods use generic `paginateGet<T>` helper with fail-soft partial results. |
+| `casehub-connectors-discord` | `DiscordClient` (REST API v10 + Gateway WebSocket + CDN attachment download with SSRF defense + rich embed serialization). `DiscordGuild` with nullable `approximateMemberCount`. Pure `java.net.http`. |
+| `casehub-connectors-chat-spi` | ChatPlatform SPI, capability interfaces, `RichCard` model with Builder, `ChatContent`, `Channel` (with `memberCount`), `ReceivedMessage`. |
+| `casehub-connectors-chat-ref` | In-memory reference ChatPlatform implementation for testing. |
+| `casehub-connectors-chat-discord` | Discord ChatPlatform — 8 native capabilities. RichCard → DiscordEmbed translation (outbound), embed → RichCard parsing (inbound). |
+| `casehub-connectors-chat-slack` | Slack ChatPlatform — 9 native capabilities (most complete). RichCard → Block Kit translation (outbound), blocks → RichCard parsing (inbound). Batch user fetch for members, full ts-precision message history. |
+| `casehub-connectors-chat-irc` | IRC ChatPlatform — 3 native capabilities. |
 | `casehub-connectors-qhorus` | Optional — `WatchdogAlertEvent → ConnectorService.send()` bridge (Qhorus → connectors); activates by classpath presence |
 | *(qhorus-side)* `casehub-qhorus-connector-backend` | Optional — `InboundMessage → ConnectorChannelBackend` bridge (connectors → Qhorus); lives in casehub-qhorus repo; activates by classpath presence |
 
