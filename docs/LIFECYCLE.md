@@ -12,6 +12,7 @@ Every enum that represents lifecycle states must be registered here and follow t
 | `PlanItemStatus` | `casehub-engine` | `PENDING`, `RUNNING`, `DELEGATED`, `SUSPENDED`, `COMPLETED`, `FAULTED`, `REJECTED`, `OBSOLETE`, `CANCELLED` (9) | `isTerminal()`, `isActive()` |
 | `WorkItemStatus` | `casehub-work` | `PENDING`, `ASSIGNED`, `IN_PROGRESS`, `DELEGATED`, `SUSPENDED`, `COMPLETED`, `REJECTED`, `FAULTED`, `CANCELLED`, `EXPIRED`, `ESCALATED`, `OBSOLETE` (12) | `isTerminal()`, `isActive()` |
 | `CommitmentState` | `casehub-qhorus` | `OPEN`, `ACKNOWLEDGED`, `FULFILLED`, `DECLINED`, `FAILED`, `DELEGATED`, `EXPIRED` (7) | `isTerminal()`, `isActive()` |
+| `GroupStatus` | `casehub-work` | `IN_PROGRESS`, `COMPLETED`, `REJECTED` (3) | `isTerminal()`, `isActive()` |
 | `SessionStatus` | `claudony` | `ACTIVE`, `WAITING`, `IDLE` (3) | — |
 
 ---
@@ -72,5 +73,6 @@ When introducing a new lifecycle enum in any CaseHub repo:
 - `engine#575` — PlanItemStatus class Javadoc omits `SUSPENDED` from active/terminal grouping
 - `work#240` — lifecycle alignment: added `FAULTED`, `SUSPENDED`, `OBSOLETE` to `WorkItemStatus`; renamed `CREATED`→`PENDING`, `CLAIMED`→`ASSIGNED`; added `isActive()`
 - `qhorus#309` — `CommitmentState` missing `isActive()` — lifecycle protocol compliance
+- `work#279` — `GroupStatus` retroactive registration; `isTerminal()` / `isActive()` added, persisted on WorkItemSpawnGroup
 - PLATFORM.md — Capability Ownership table (Durable PlanItem status row)
 - PLATFORM.md — Gotchas (CommitmentState.DELEGATED vs WorkItemStatus.DELEGATED)
