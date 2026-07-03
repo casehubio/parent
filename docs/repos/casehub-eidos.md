@@ -82,20 +82,24 @@ SPI: `render(AgentDescriptor, AgentPromptContext)` → `RenderedPrompt`. `Render
 
 **`RenderFormat`** — 3 values: `MARKDOWN` (was `CLAUDE_MD`), `PROSE` (consolidates `OPENAI_SYSTEM` + `GEMINI` — structurally identical), `A2A_CARD`. `A2A_CARD` exposes `slot` (with vocabularyUri/vocabularyName), per-axis `disposition` objects with vocabulary context, and a `frameworks` array — deduplicated index of actively-instantiated vocabulary URIs enabling machine-to-machine capability negotiation. Separate `A2ASemanticEnrichmentStep` handles per-capability descriptions in `A2A_CARD` format (eidos#45). `A2A_CARD` capability objects include full routing signals: `qualityHint` (Double, 0–1), `latencyHintP50Ms` (Long), `costHint` (String), `epistemicDomains` (Map<String,Double>), `inputTypes`/`outputTypes` (String lists). PROSE and MARKDOWN suppress all numeric routing signals (PP-20260611-228599). `vocabUriForSlot()` on `AgentDescriptor` — `slotVocabulary → domainVocabulary` two-step fallback, alongside `vocabUriForAxis()`.
 
-### CapabilitySpecializationStore (eidos#55, redesigned eidos#70)
+### BehavioralSignalStore (eidos#55, eidos#70, eidos#85, eidos#88)
 
-SPI in `casehub-eidos-api` — bidirectional, signal-parameterized API for learned specialization patterns. Records both DECLINE and SUCCESS signals per agent/capability/domain. Enables proactive routing: when patterns exceed a threshold, agents are excluded (DECLINE) or preferred (SUCCESS) for future routing.
+SPI in `casehub-eidos-api` — signal-parameterized API for learned behavioral patterns. Accumulates DECLINE/SUCCESS signals for routing specialization and COMPLIANT/VIOLATED signals for behavioral compliance checking.
 
-- `SpecializationSignal` enum: `DECLINE`, `SUCCESS`
-- `record(agentId, tenancyId, capabilityName, domain, signal)` — called by casehub-ledger CBR on each attestation
-- `clear(agentId, tenancyId, capabilityName, signal)` — remove learned patterns for a signal type
-- `learned(agentId, tenancyId, capabilityName, signal)` → `Map<String, Integer>` — domain → count
-- `count(agentId, tenancyId, capabilityName, domain, signal)` → `int`
-- Per-signal TTL: `decline-ttl-days` and `success-ttl-days` independently configurable
-- V5 schema migration (table recreated with `signal_type` discriminator column)
-- Default probe behavior unchanged — positive evidence consumption is a strategy concern
-- `EidosPreferenceKeys.EXCLUDE_THRESHOLD` — DECLINE count threshold before exclusion activates
-- `InMemoryCapabilitySpecializationStore @Alternative @Priority(1)` in `casehub-eidos-memory` for test isolation
+- `BehavioralSignal` enum: `DECLINE`, `SUCCESS`, `COMPLIANT`, `VIOLATED`
+- `record(agentId, tenancyId, capabilityName, qualifier, signal)` — qualifier is task domain for DECLINE/SUCCESS, `ComplianceDimension` key for COMPLIANT/VIOLATED
+- `clear(agentId, tenancyId, capabilityName, signal)` — remove all learned data for a signal type
+- `learned(agentId, tenancyId, capabilityName, signal)` → `Map<String, Integer>` — qualifier → count
+- `count(agentId, tenancyId, capabilityName, qualifier, signal)` → `int`
+- Per-signal TTL independently configurable via `@ConfigProperty`
+- V5 schema migration (table with `signal_type` discriminator column)
+- `ComplianceDimension` — constants: `LATENCY`, `ATTESTATION_RATE`; `ATTESTOR_ID`, `TRUST_DIMENSION_PREFIX` conventions
+- `BehavioralExpectations` — static utility extracting testable expectations from descriptor fields
+- `ComplianceAttestations` — bridges compliance observations to casehub-ledger `LedgerAttestation`
+- `CapabilityResolver` — shared subsumption resolution for probe and recording paths; callers of `record()` must pass the declared capability name
+- Probe Step 4: DECLINE count ≥ `EidosPreferenceKeys.EXCLUDE_THRESHOLD` → `Excluded(LEARNED)`
+- Probe Step 6: VIOLATED per-dimension ≥ `COMPLIANCE_VIOLATION_THRESHOLD` → `BehavioralViolation(PER_DIMENSION)`; aggregate total ≥ `AGGREGATE_VIOLATION_THRESHOLD` → `BehavioralViolation(AGGREGATE)`
+- `InMemoryBehavioralSignalStore @Alternative @Priority(1)` in `casehub-eidos-memory` for test isolation
 
 Foundation for epic #258 (adaptive agent routing).
 
