@@ -115,7 +115,7 @@ Refs: qhorus#230 (projection SPI + `ProjectionService`), qhorus#231 (`ReactivePr
 
 ### Store SPIs
 
-Six store interfaces (blocking and reactive mirrors) cover the full domain: channels, messages, instances, shared data, watchdogs, and commitments.
+Six store interfaces (blocking and reactive mirrors) in `api/store/` cover the full domain: channels, messages, instances, shared data, watchdogs, and commitments. Cross-tenant variants (`CrossTenantChannelStore`, `CrossTenantCommitmentStore`, `CrossTenantMessageStore`, `CrossTenantWatchdogStore`) and query types (`api/store/query/`) are co-located. JPA implementations in `runtime/` use `*Entity` suffixed classes (e.g. `ChannelEntity`, `MessageEntity`) to distinguish persistence from domain records. Refs qhorus#314.
 
 **New in qhorus#231:** `ReactiveMessageStore.stream(MessageQuery) → Multi<Message>` — streaming message query used by `ReactiveProjectionService` to collect message history reactively.
 
@@ -134,7 +134,7 @@ See docs/DESIGN.md for SPI interfaces.
 
 | Module | Contents |
 |--------|----------|
-| `api` | SPIs: `ChannelBackend`, `MessageObserver`, `HumanParticipatingChannelBackend`, `ChannelProjection<S>`, `CommitmentAttestationPolicy` (abstract 3-arg: `attestationFor(MessageType, String, CommitmentContext)`; 2-arg default delegates with null; DONE→SOUND, FAILURE/DECLINE/RESPONSE→FLAGGED); DTOs: `MessageView`; Records: `ProjectionResult<S>`, `CommitmentContext` (`api/spi/` — carries `correlationId`, `channelId`, `channelName`, `commitmentId`; passed to `CommitmentAttestationPolicy.attestationFor()` so evidential policy implementations can query the ledger before deciding verdict; refs qhorus#304); domain event types |
+| `api` | SPIs: `ChannelBackend`, `MessageObserver`, `HumanParticipatingChannelBackend`, `ChannelProjection<S>`, `CommitmentAttestationPolicy` (abstract 3-arg: `attestationFor(MessageType, String, CommitmentContext)`; 2-arg default delegates with null; DONE→SOUND, FAILURE/DECLINE/RESPONSE→FLAGGED); Store SPIs in `api/store/` (blocking + reactive mirrors, cross-tenant variants, query types); Domain records in `api/{channel,message,instance,data,watchdog}/` — `Channel`, `Message`, `Commitment`, `Instance`, `SharedData`, `Watchdog`, `ChannelCreateRequest`, `FindOrCreateResult`; Service facades in `api/channel/` and `api/message/` — `ChannelManager`, `ReactiveChannelManager`, `MessageDispatcher`, `ReactiveMessageDispatcher`; DTOs: `MessageView`; Records: `ProjectionResult<S>`, `CommitmentContext` (`api/spi/` — carries `correlationId`, `channelId`, `channelName`, `commitmentId`; passed to `CommitmentAttestationPolicy.attestationFor()` so evidential policy implementations can query the ledger before deciding verdict; refs qhorus#304); domain event types |
 | `connectors` | Optional — `WatchdogAlertEvent → ConnectorService.send()` bridge; activates by classpath presence |
 | `runtime` | `MessageService`, `ChannelGateway`, `QhorusDashboardService`, `ProjectionService`, `ReactiveProjectionService`, ledger integration, MCP tools, A2A endpoint. `runtime.audit` package: `EvidentialChecker` (`@DefaultBean @ApplicationScoped`) — two entry points: `check(String messageType, String content, BenchmarkContext)` (benchmark path, Zone 1–3 variants) and `checkObligation(String terminalType, CommitmentContext)` (attestation path vocabulary check). Injectable by consumers (e.g. casehub-devtown pre-attestation checks). Refs qhorus#303. |
 | `connector-backend` | Optional — `ConnectorChannelBackend` implements `HumanParticipatingChannelBackend`; bridges `InboundMessage` CDI events (`@ObservesAsync`) from casehub-connectors into Qhorus channel dispatch; self-registers for channels with a `ChannelBackend` type of `CONNECTOR`. `ConnectorQhorusMeshBridge` implements `ConnectorMeshBridge`; posts a STATUS message to the configured delivery channel (`casehub.qhorus.connector-backend.delivery-channel`) after each successful MCP connector delivery; activates by classpath presence alongside `ConnectorChannelBackend`. Activates by classpath presence. |
@@ -232,6 +232,8 @@ See the full agent mesh framework spec: [`casehubio/claudony docs/superpowers/sp
 ## Type-Safe Channel API (qhorus#246, qhorus#247)
 
 - `ChannelCreateRequest.allowedTypes` / `deniedTypes` changed from `String` to `Set<MessageType>`
+- `ChannelCreateRequest.barrierContributors`, `allowedWriters`, `adminInstances` changed from `String` to `List<String>`
+- `ChannelService.findOrCreateWithBinding()` renamed to `findOrCreate()` with dual-mode lookup; returns `FindOrCreateResult` (in `api/channel/`)
 - `MessageType.serializeTypes(Set<MessageType>)` — sorted canonical CSV
 - `ChannelService.setTypeConstraints(UUID, Set<MessageType>, Set<MessageType>)` — typed params
 - MCP tools parse at boundary; service layer is typed throughout
