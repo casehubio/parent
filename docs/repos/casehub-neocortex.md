@@ -7,11 +7,13 @@
 
 ## Purpose
 
-Two related capabilities in one repo:
+Three related capabilities in one repo:
 
 **Neural Text Inference** — a standalone, general-purpose ONNX inference layer for JVM projects. Zero casehub domain dependencies in `inference-api`, `inference-runtime`, `inference-tasks`, and `inference-splade`. Shared with Hortora. Fills the gap LangChain4j leaves: NLI, classification, regression, SPLADE sparse embeddings, cross-encoder reranking.
 
 **RAG Integration** — casehub-specific LangChain4j RAG pipeline wiring. Tenancy-isolated Qdrant corpus storage, hybrid dense+sparse search via RRF fusion. Exposes `EmbeddingIngestor` and `CaseRetriever` SPIs for use by engine case steps and the typed fact space.
+
+**Agent Memory** — queryable, permission-aware, persistent agent memory. `CaseMemoryStore` SPI with multiple backends (in-memory, JPA/PostgreSQL, SQLite, Mem0, Graphiti, Qdrant). Migrated from `casehub-platform` in neocortex#56 — memory is a cognitive capability that belongs alongside inference and RAG, not in the foundational SPI layer.
 
 ---
 
@@ -33,6 +35,16 @@ Two related capabilities in one repo:
 | `rag-expansion/` | `casehub-neocortex-rag-expansion` | JVM library | Query expansion — `QueryExpandingCaseRetriever` + `ReactiveQueryExpandingCaseRetriever` wrapping `CaseRetriever` with multi-query retrieval. Expander implementations: `LlmQueryExpander` (LLM-generated reformulations), `TemplateQueryExpander` (pattern-based), `StepBackQueryExpander` (abstraction-based). `ExpansionConfig` for tuning |
 | `corpus-api/` | `casehub-neocortex-corpus-api` | Pure Java, Mutiny provided | Corpus storage and change-tracking SPIs — `CorpusStore`, `CorpusReader`, `ChangeSource` (polling), `WatchableChangeSource` (push), `ChangeListener`; reactive mirrors: `ReactiveCorpusStore`, `ReactiveCorpusReader`, `ReactiveChangeSource`; types: `ChangeSet`, `ChangedEntry`, `ChangeType`, `VersionInfo`; `CorpusIntegrity` SPI + `IntegrityReport`, `IntegrityIssue`, `Severity` for corpus health checks |
 | `corpus/` | `casehub-neocortex-corpus` | JVM library | Corpus storage implementations — `ZipCorpusStore` (append-only zip archive with rollover + `MasterIndex` + `ChainManifest`), `FlatCorpusStore` (directory-based), `CompositeCorpusStore` (multi-backend); `ZipChangeSource`, `FlatChangeSource`, `CompositeChangeSource` change tracking; `Compactor` + `CompactionMode` for archive maintenance; `CorpusMigrator` for format upgrades; `ZipIntegrityChecker` for corpus health; blocking-to-reactive bridges |
+| `memory-api/` | `casehub-neocortex-memory-api` | Pure Java | `CaseMemoryStore`, `ReactiveCaseMemoryStore`, `GraphCaseMemoryStore` SPIs; value types: `Memory`, `MemoryInput`, `MemoryQuery`, `EraseRequest`, `MemoryDomain`, `MemoryCapability`; `MemoryPermissions` utility; `CbrCaseMemoryStore` in `cbr/` subpackage. Package: `io.casehub.neocortex.memory`. Migrated from `casehub-platform-api` (neocortex#56). |
+| `memory/` | `casehub-neocortex-memory` | CDI module | `NoOpCaseMemoryStore @DefaultBean`, `BlockingToReactiveBridge @DefaultBean`, `CaseEnrichmentDecorator`; `NoOpCbrCaseMemoryStore @DefaultBean` in `cbr/runtime/` |
+| `memory-inmem/` | `casehub-neocortex-memory-inmem` | Backend | @Alternative @Priority(1) volatile ConcurrentHashMap — test-scope for isolation; compile for ephemeral |
+| `memory-jpa/` | `casehub-neocortex-memory-jpa` | Backend | @ApplicationScoped JPA/PostgreSQL + Flyway + FTS via websearch_to_tsquery |
+| `memory-sqlite/` | `casehub-neocortex-memory-sqlite` | Backend | @Alternative @Priority(1) SQLite + HikariCP WAL + FTS5 |
+| `memory-mem0/` | `casehub-neocortex-memory-mem0` | Backend | @Alternative @Priority(1) Mem0 REST adapter — vector embeddings + semantic search |
+| `memory-graphiti/` | `casehub-neocortex-memory-graphiti` | Backend | @Alternative @Priority(2) Graphiti REST GraphCaseMemoryStore — temporal knowledge graph |
+| `memory-qdrant/` | `casehub-neocortex-memory-qdrant` | Backend | Qdrant vector store backend |
+| `memory-cbr-inmem/` | `casehub-neocortex-memory-cbr-inmem` | Backend | In-memory CBR case memory store |
+| `memory-testing/` | `casehub-neocortex-memory-testing` | Test library | Test stubs for memory SPIs |
 | `examples/example-text-analysis` | — | Standalone Java demos | NLI, zero-shot classification, scoring, reranking, SPLADE demos (no Quarkus) |
 | `examples/example-rag-pipeline` | — | Quarkus demos | Corpus ingestion, hybrid search with RRF fusion, cross-encoder reranking. Maven profiles: `-Pexamples-smoke` (in-memory stubs), `-Pexamples` (real ONNX models + Testcontainers Qdrant) |
 

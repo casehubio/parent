@@ -12,15 +12,15 @@ This document answers the question developers will always ask: *"Why does casehu
 
 ```
 platform-api/   ← Tier 1: zero dependencies — pure Java interfaces and records
-platform/       ← Tier 3: Quarkus @DefaultBean mocks, @ConfigProperty; ReactiveCaseMemoryStore SPI; BlockingToReactiveBridge
+platform/       ← Tier 3: Quarkus @DefaultBean mocks, @ConfigProperty
 testing/        ← companion: @Alternative @Priority(1) test fixtures (CDI API only)
 config/         ← optional: scope-aware YAML + SmallRye Config preference provider
 oidc/           ← optional: @RequestScoped CurrentPrincipal backed by SecurityIdentity + JWT
-memory-inmem/   ← optional: volatile ConcurrentHashMap adapter (@Alternative @Priority(1)) — test-scope for isolation; compile for ephemeral
-memory-jpa/     ← optional: JPA/PostgreSQL adapter (@ApplicationScoped) — FTS via websearch_to_tsquery; Flyway V1000 at classpath:db/memory/migration
-memory-sqlite/  ← optional: SQLite adapter (@Alternative @Priority(1)) — HikariCP WAL + FTS5; Flyway programmatic; configure casehub.memory.sqlite.path
-memory-mem0/    ← optional: Mem0 REST adapter (@Alternative @Priority(1)) — vector embeddings + semantic search via Mem0 OSS (Docker + pgvector); infer:false for verbatim 1:1 storage; compound user_id={tenantId}::{entityId} for tenant isolation
-memory-graphiti/ ← optional: @Alternative @Priority(2) Graphiti REST GraphCaseMemoryStore — extends CaseMemoryStore; adds graphQuery(GraphMemoryQuery) for temporal graph queries; LLM entity extraction (async); temporal knowledge graph (Neo4j/FalkorDB/Kuzu). Configure: quarkus.rest-client.graphiti.url, casehub.memory.graphiti.api-key
+memory-inmem/   ← LEGACY STUB — memory backends migrated to casehub-neocortex (neocortex#56); pending removal
+memory-jpa/     ← LEGACY STUB — see above
+memory-sqlite/  ← LEGACY STUB — see above
+memory-mem0/    ← LEGACY STUB — see above
+memory-graphiti/ ← LEGACY STUB — see above
 agent-api/      ← optional: AgentProvider SPI (Mutiny only, no Quarkus) — package: io.casehub.platform.agent
 agent-claude/   ← optional: ClaudeAgentProvider @ApplicationScoped + ClaudeAgentClient @Startup — activates by classpath presence; requires Claude CLI; concurrent-session semaphore. Two subprocess paths: invoke() → ClaudeOneShotProcess (direct ProcessBuilder, immediate destroyForcibly() on cancellation — fixes zombie subprocess accumulation, eidos#52); openSession(AgentSessionInit) → ClaudeAgentSession (SDK session mode, IDLE/ACTIVE/CLOSED state machine, per-turn wall-clock timeout, true-drain close(), interrupt() fire-and-forget, semaphore held for session lifetime). ClaudeAgentClient CDI constructor requires ObjectMapper alongside ClaudeAgentProperties.
 endpoints-memory/ ← optional: @Alternative @Priority(100) InMemoryEndpointRegistry — volatile tenant-scoped endpoint registry; CDI Tier 4; data lost on restart
