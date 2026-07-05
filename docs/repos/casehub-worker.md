@@ -19,8 +19,8 @@ Extracted from `casehub-engine-api` (desiredstate#40, engine#543). The extractio
 | Module | artifactId | What it is |
 |--------|-----------|------------|
 | `api/` | `casehub-worker-api` | Pure-Java value types + `WorkerFunction` interface. No Quarkus, no JPA. |
-| `runtime/` | `casehub-worker` | `DefaultWorkerExecutor` — CDI-aware execution with `WorkerExecutor` SPI. |
-| `testing/` | `casehub-worker-testing` | `MockWorkerExecutor`, `TestWorkerBuilder` — `@QuarkusTest` isolation. |
+| `runtime/` | `casehub-worker` | `DefaultWorkerExecutor` — capability-aware execution: `execute(Worker, Capability, Map)` with validation guards (null check, capability membership) and OTel `worker.capability` span attribute. |
+| `testing/` | `casehub-worker-testing` | `MockWorkerExecutor` (`@DefaultBean @ApplicationScoped`), `TestWorkerBuilder` (`syncWithCapability()` convenience, `WorkerWithCapability` record) — `@QuarkusTest` isolation. |
 
 ---
 
@@ -32,8 +32,8 @@ Extracted from `casehub-engine-api` (desiredstate#40, engine#543). The extractio
 | `Capability` | record | Named capability tag — used for routing and selection |
 | `WorkerFunction` | interface | Strategy interface — implement to define worker behaviour |
 | `WorkerResult` | record | Output of a worker execution — success or failure with output map |
-| `WorkerOutcome` | enum | `SUCCESS`, `FAILURE`, `DECLINED` |
-| `PlannedAction` | record | Structured follow-on action — returned via `output.put("_plannedAction", ...)` |
+| `WorkerOutcome` | sealed interface | `Success(PlannedAction)`, `Declined(String reason)`, `Failed(String reason)`, `Expired(String reason)` |
+| `PlannedAction` | record | Structured follow-on action — returned via `WorkerOutcome.Success(PlannedAction)` |
 
 ---
 
@@ -41,7 +41,7 @@ Extracted from `casehub-engine-api` (desiredstate#40, engine#543). The extractio
 
 ```
 casehub-worker-api  →  (none — pure Java)
-casehub-worker      →  casehub-worker-api, casehub-platform-api
+casehub-worker      →  casehub-worker-api, casehub-platform-api, casehub-platform-governance
 casehub-worker-testing → casehub-worker-api
 ```
 
@@ -78,5 +78,5 @@ Version managed by `casehub-parent` BOM (`version.io.casehub.worker`).
 
 - `api/` has zero framework dependencies — safe to use in any Java module without container constraints
 - `WorkerFunction` implementations live in consuming repos (`AgentWorkerFunction`, `FlowWorkerFunction` in `casehub-engine-api`)
-- `casehub-worker-testing` never uses `@DefaultBean` — test fixtures are `@Alternative @Priority`
+- `MockWorkerExecutor` is `@DefaultBean @ApplicationScoped` — displaced by the runtime `DefaultWorkerExecutor` when present
 - Governance types (`ExecutionPolicy`, `RetryPolicy`, `BackoffStrategy`) live in `casehub-platform-governance`, not here
