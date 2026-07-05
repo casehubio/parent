@@ -51,7 +51,7 @@ Known consolidation candidates:
 
 Check how the same concern is handled in the two or three most similar places in the platform. Then implement it the same way. Specifically:
 
-- SPIs: consumer-facing SPI interfaces go in `api/spi/` — see `casehub/garden: docs/protocols/casehub/consumer-spi-placement.md`. `@DefaultBean` implementations go in `runtime/` when they have JPA or config deps; in `api/spi/` itself when they are trivially pure-Java. Persistence SPIs with JPA deps belong in model modules. The test: could a consumer implement this interface without depending on `runtime/`? If yes, the interface belongs in `api/spi/`.
+- API interface taxonomy: `api/` modules expose four categories of interface — stores (`api/store/`), SPIs (`api/spi/`), gateways (`api/gateway/`), and service facades (`api/<domain>/`). Stores, SPIs, and gateways are provided by consumers; service facades are consumed by consumers (the consumer calls them, never implements). Service facades colocate with domain types, not in `api/spi/`. `@DefaultBean` SPI implementations go in `runtime/` when they have JPA or config deps; in `api/spi/` itself when trivially pure-Java. The test: could a consumer implement this interface without depending on `runtime/`? If yes, the interface belongs in `api/spi/`. See `casehub/garden: docs/protocols/casehub/api-interface-taxonomy.md`.
 - Ledger subclasses: JOINED inheritance, consumer-owned V2000+ migration (V1000–V1007 reserved for ledger base; V2000+ provides safe buffer), domain-agnostic leaf hash. See `casehub/garden: docs/protocols/casehub/ledger-subclass-extension.md`.
 - CDI events: async (`@ObservesAsync`) for ledger capture; sync for routing decisions
 - Named datasources: Qhorus always on `qhorus`, domain tables never mixed in
