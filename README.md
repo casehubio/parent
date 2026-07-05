@@ -44,6 +44,7 @@ Org-level parent POM and BOM for the [casehubio](https://github.com/casehubio) e
 | [casehub-life](https://github.com/casehubio/life) | [![casehub-life](https://github.com/casehubio/life/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/life/actions/workflows/publish.yml) |
 | [casehub-drafthouse](https://github.com/casehubio/drafthouse) | [![casehub-drafthouse](https://github.com/casehubio/drafthouse/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/drafthouse/actions/workflows/publish.yml) |
 | [casehub-quarkmind](https://github.com/casehubio/quarkmind) | [![casehub-quarkmind](https://github.com/casehubio/quarkmind/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/casehubio/quarkmind/actions/workflows/ci.yml) |
+| [casehub-soc](https://github.com/casehubio/soc) | [![casehub-soc](https://github.com/casehubio/soc/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/soc/actions/workflows/publish.yml) |
 
 > Full detail: [Build Status Dashboard](https://github.com/casehubio/parent/actions/workflows/dashboard.yml) &nbsp;|&nbsp; [PR Dashboard](https://github.com/casehubio/parent/actions/workflows/pr-dashboard.yml) &nbsp;|&nbsp; [▶ Run Full Stack Build](https://github.com/casehubio/parent/actions/workflows/full-stack-build.yml)
 
