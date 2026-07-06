@@ -1,0 +1,27 @@
+name: BOM Drift Audit
+
+on:
+  schedule:
+    - cron: '17 7 * * 1'   # Monday 07:17 UTC — weekly
+  workflow_dispatch:
+  repository_dispatch:
+    types: [upstream-published]
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Audit BOM against child repos
+        run: python3 scripts/bom-audit.py --github
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

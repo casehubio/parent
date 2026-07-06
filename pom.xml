@@ -133,27 +133,7 @@
       </dependency>
       <dependency>
         <groupId>io.casehub</groupId>
-        <artifactId>casehub-platform-memory-inmem</artifactId>
-        <version>${casehub.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>io.casehub</groupId>
-        <artifactId>casehub-platform-memory-jpa</artifactId>
-        <version>${casehub.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>io.casehub</groupId>
-        <artifactId>casehub-platform-memory-sqlite</artifactId>
-        <version>${casehub.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>io.casehub</groupId>
-        <artifactId>casehub-platform-memory-mem0</artifactId>
-        <version>${casehub.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>io.casehub</groupId>
-        <artifactId>casehub-platform-memory-graphiti</artifactId>
+        <artifactId>casehub-platform-datasource-inmem</artifactId>
         <version>${casehub.version}</version>
       </dependency>
       <dependency>
@@ -226,6 +206,51 @@
         <artifactId>casehub-platform-credentials-quarkus</artifactId>
         <version>${casehub.version}</version>
       </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-platform-notifications-inmem</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-platform-notifications-jpa</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-platform-notifications</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-platform-notification-settings-inmem</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-platform-notification-settings-jpa</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-platform-notification-dispatch</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-platform-subscriptions-inmem</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-platform-subscriptions-jpa</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-platform-subscriptions</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
 
       <!-- ================================================================ -->
       <!-- casehub-worker                                                   -->
@@ -269,6 +294,22 @@
         <groupId>io.casehub</groupId>
         <artifactId>casehub-ledger-memory</artifactId>
         <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-ledger-rest</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-ledger-signing</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-ledger-testing</artifactId>
+        <version>${casehub.version}</version>
+        <scope>test</scope>
       </dependency>
 
       <!-- ================================================================ -->
@@ -354,6 +395,11 @@
         <artifactId>casehub-work-queues-postgres-broadcaster</artifactId>
         <version>${casehub.version}</version>
       </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-work-rest</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
 
       <!-- ================================================================ -->
       <!-- casehub-qhorus                                                   -->
@@ -393,6 +439,11 @@
         <artifactId>casehub-qhorus-testing</artifactId>
         <version>${casehub.version}</version>
         <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-qhorus-persistence-memory</artifactId>
+        <version>${casehub.version}</version>
       </dependency>
 
       <!-- ================================================================ -->
@@ -572,6 +623,21 @@
         <artifactId>casehub-connectors-chat-irc</artifactId>
         <version>${casehub.version}</version>
       </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-connectors-chat-slack</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-connectors-chat-discord</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-connectors-discord</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
 
       <!-- ================================================================ -->
       <!-- casehub-iot                                                      -->
@@ -607,6 +673,31 @@
         <artifactId>casehub-iot-bridge-server</artifactId>
         <version>${casehub.version}</version>
       </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-iot-bridge-persistence-jpa</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-iot-bridge-persistence-memory</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-iot-webapp-api</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-iot-webapp</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-iot-webapp-drools</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
 
       <!-- ================================================================ -->
       <!-- casehub-desiredstate                                             -->
@@ -637,6 +728,11 @@
         <artifactId>casehub-desiredstate-work</artifactId>
         <version>${casehub.version}</version>
       </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-desiredstate-ras</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
 
       <!-- ================================================================ -->
       <!-- casehub-ras                                                      -->
@@ -663,12 +759,12 @@
       </dependency>
       <dependency>
         <groupId>io.casehub</groupId>
-        <artifactId>casehub-ras-memory</artifactId>
+        <artifactId>casehub-ras-persistence-memory</artifactId>
         <version>${casehub.version}</version>
       </dependency>
       <dependency>
         <groupId>io.casehub</groupId>
-        <artifactId>casehub-ras-jpa</artifactId>
+        <artifactId>casehub-ras-persistence-jpa</artifactId>
         <version>${casehub.version}</version>
       </dependency>
       <dependency>
@@ -750,6 +846,11 @@
         <version>${casehub.version}</version>
         <scope>test</scope>
       </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-ops-app</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
 
       <!-- ================================================================ -->
       <!-- casehub-devtown                                                  -->
@@ -777,6 +878,11 @@
       <dependency>
         <groupId>io.casehub</groupId>
         <artifactId>casehub-devtown-app</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-devtown-merge</artifactId>
         <version>${casehub.version}</version>
       </dependency>
 
@@ -818,6 +924,11 @@
         <artifactId>casehub-workers-testing</artifactId>
         <version>${casehub.version}</version>
         <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-workers-k8s</artifactId>
+        <version>${casehub.version}</version>
       </dependency>
 
       <!-- ================================================================ -->
@@ -887,15 +998,6 @@
       <dependency>
         <groupId>io.casehub</groupId>
         <artifactId>casehub-fsitrading-app</artifactId>
-        <version>${casehub.version}</version>
-      </dependency>
-
-      <!-- ================================================================ -->
-      <!-- casehub-drafthouse                                               -->
-      <!-- ================================================================ -->
-      <dependency>
-        <groupId>io.casehub</groupId>
-        <artifactId>casehub-drafthouse</artifactId>
         <version>${casehub.version}</version>
       </dependency>
 
@@ -980,6 +1082,67 @@
       <dependency>
         <groupId>io.casehub</groupId>
         <artifactId>casehub-neocortex-corpus</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-neocortex-inference-bge-m3</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-neocortex-memory-api</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-neocortex-memory</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-neocortex-memory-inmem</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-neocortex-memory-jpa</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-neocortex-memory-sqlite</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-neocortex-memory-mem0</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-neocortex-memory-graphiti</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-neocortex-memory-cbr-inmem</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-neocortex-memory-qdrant</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-neocortex-memory-testing</artifactId>
+        <version>${casehub.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-neocortex-rag-tracking</artifactId>
         <version>${casehub.version}</version>
       </dependency>
 
