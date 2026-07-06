@@ -87,6 +87,26 @@ The decorator pattern is architecturally significant: `dimension()` returns the 
 
 Named `DenseQuantization` rather than `QuantizationType` because the Qdrant client already defines `io.qdrant.client.grpc.Collections.QuantizationType` — both enums appear in `ensureCollection()` / `buildCreateRequest()` and sharing the name would create ambiguous unqualified usage (see [`casehub-neocortex/ARC42STORIES.MD` §8](https://github.com/casehubio/neocortex/blob/main/ARC42STORIES.MD#8-crosscutting-concepts)).
 
+### Configurable Fusion Strategy (rag-api, neocortex#104)
+
+`FusionStrategy` enum in `rag-api` — `RRF` (Reciprocal Rank Fusion, server-side), `DBSF` (Distribution-Based Score Fusion, server-side), `CC` (Convex Combination, client-side weighted score fusion). Config: `casehub.rag.retrieval.fusion-strategy` (default `RRF`). `ConvexCombinationFusion` in `rag/` implements client-side CC with configurable per-leg weights (`casehub.rag.retrieval.cc-weights.*`).
+
+### SeparateModelEmbedder (rag, neocortex#104)
+
+`SeparateModelEmbedder` in `rag/` — bridges LangChain4j `EmbeddingModel` + optional `SparseEmbedder` into `MultiModalEmbedder` contract. `@DefaultBean` displaced by BgeM3 when configured.
+
+### CBR Weighted Similarity Scoring (memory-api, neocortex#104)
+
+`CbrSimilarityScorer` in `memory-api/cbr/` — pure-Java per-field similarity with configurable per-field weights. Supports categorical exact match, numeric linear decay, and text exact match. `CbrQuery` gains `weights` and `vectorWeight` fields. Replaces hard Qdrant payload filters with client-side graded scoring for more nuanced case retrieval.
+
+### OnnxInferenceModel Input Name Alias Resolution (inference-runtime, neocortex#104)
+
+Static alias table + `ModelConfig` overrides for input tensor names. Handles models with non-standard input names transparently.
+
+### SparseEmbedder Rank-3 Max-Pool Reduction (inference-splade, neocortex#104)
+
+Rank-3 output tensors from SPLADE models are reduced via max-pool across the sequence dimension before log-saturation, handling models that output per-token weights instead of per-vocab weights.
+
 ### Corpus Ingestion Bridge (neocortex#19)
 
 Config-driven polling bridge that populates a RAG corpus from external sources. Ships in `rag/`.

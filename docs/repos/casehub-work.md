@@ -17,9 +17,10 @@ A `WorkItem` is deliberately NOT called `Task` — CNCF Serverless Workflow and 
 
 | Module | Type | Purpose |
 |---|---|---|
-| `casehub-work-api` | Pure-Java SPI (no Quarkus) | All SPIs: worker selection, registry, workload provision, SLA breach policy, spawn, skill profiling, notification channel, and WorkItem lifecycle SPIs (`io.casehub.work.api.spi`). Depends on `casehub-platform-api` for `Path` and `Preferences` used in `SlaBreachContext`. Also owns `ActorType` / `ActorTypeResolver` via `casehub-platform-api` (moved there in ledger#88). New in engine#56: `WorkItemCallerRef.parseCaseId(String callerRef): UUID` — parses the `caseId:planItemId` callerRef format set by casehub-engine on engine-created WorkItems; returns `null` for non-engine callerRefs. New in work#275: `WorkItemCreator`, `WorkItemLifecycle` SPIs + `WorkItemRef`, `WorkItemEvent`, `WorkItemSpiAdapter` types in `io.casehub.work.api.spi`. |
+| `casehub-work-api` | Pure-Java SPI (no Quarkus) | All SPIs: worker selection, registry, workload provision, SLA breach policy, spawn, skill profiling, notification channel, and WorkItem lifecycle SPIs (`io.casehub.work.api.spi`). Depends on `casehub-platform-api` for `Path` and `Preferences` used in `SlaBreachContext`. Also owns `ActorType` / `ActorTypeResolver` via `casehub-platform-api` (moved there in ledger#88). `WorkCloudEventTypes` — pure-Java CloudEvent type constants (`io.casehub.work.workitem.*` prefix, extension attribute names `tenancyid`/`templateid`). New in engine#56: `WorkItemCallerRef.parseCaseId(String callerRef): UUID`. New in work#275: `WorkItemCreator`, `WorkItemLifecycle` SPIs + `WorkItemRef`, `WorkItemEvent`, `WorkItemSpiAdapter` types in `io.casehub.work.api.spi`. |
 | `casehub-work-core` | Jandex library (no JPA) | `WorkBroker` and built-in `WorkerSelectionStrategy` implementations — used for human task routing only; casehub-engine uses its own `AgentRoutingStrategy` SPI (engine#337) |
-| `runtime` | Full Quarkus extension | WorkItem entity, services, REST API, filter engine |
+| `runtime` | Full Quarkus extension | WorkItem entity, services, filter engine |
+| `rest` | Jandex library | JAX-RS resources (12), request/response DTOs, exception mappers, WorkItemMapper — opt-in REST surface (work#292) |
 | `deployment` | Quarkus extension deployment | Build-time processor (`@BuildStep`); pairs with `runtime` |
 | `casehub-work-persistence-memory` (`persistence-memory/`) | Test utilities | In-memory stores (WorkItem, audit, notes, issue links, routing cursor) using `ConcurrentHashMap` (thread-safe); `@Alternative @Priority(100)` (Tier 3 — ephemeral); zero-datasource alternative to JPA stores |
 | `casehub-work-ledger` | Optional module | Attaches casehub-ledger for WorkItem ledger entries, trust scoring, and peer attestation. Requires both `db/migration` and `db/ledger/migration` Flyway locations in test config (since ledger#95 moved base migrations). |
@@ -62,9 +63,9 @@ See `docs/ARC42STORIES.MD` for service class structure and the M-of-N coordinati
 
 `Outcome` is now a 3-arg record: `Outcome(String name, String displayName, String condition)`. The `condition` field is a nullable JEXL expression evaluated at completion/rejection. `WorkItem.permittedOutcomes` stores full `Outcome` objects (not plain name strings); legacy rows are decoded transparently via format detection. `OutcomeValidator` (`runtime/service/`) encapsulates outcome name + condition validation, injected into `WorkItemService`. REST responses `WorkItemResponse.permittedOutcomes` and `WorkItemWithAuditResponse.permittedOutcomes` are now `List<Outcome>` (was `List<String>`).
 
-### REST API
+### REST API (casehub-work-rest module)
 
-REST endpoints cover: WorkItem inbox and creation, lifecycle transitions (start, complete, cancel, delegate, accept-delegation, decline-delegation), audit history, child instance queries with group progress, SLA compliance reports, dynamic filter rules, and child WorkItem spawning.
+REST endpoints live in the `rest/` module (`casehub-work-rest`) — opt-in via explicit dependency (work#292). Covers: WorkItem inbox and creation, lifecycle transitions (start, complete, cancel, delegate, accept-delegation, decline-delegation), audit history, child instance queries with group progress, SLA compliance reports, dynamic filter rules, and child WorkItem spawning.
 
 **`PATCH /workitem-templates/{id}`** (work#199) — merge-patch endpoint (`Content-Type: application/merge-patch+json`, RFC 7396). Absent fields are unchanged; null clears.
 
@@ -129,7 +130,7 @@ See `docs/DESIGN.md` for event payload shape.
 
 ## The Core/Runtime Split (Critical for casehub-engine)
 
-`casehub-work-core` is a Jandex library (not a Quarkus extension) containing only `WorkBroker` and selection strategies. casehub-engine depends on this module — it gets worker routing without pulling in WorkItem entities, Flyway migrations, REST resources, or datasource requirements.
+`casehub-work-core` is a Jandex library (not a Quarkus extension) containing only `WorkBroker` and selection strategies. casehub-engine depends on this module — it gets worker routing without pulling in WorkItem entities, Flyway migrations, or datasource requirements. REST is now a separate opt-in module (`casehub-work-rest`) — the separation is explicit rather than implicit (work#292).
 
 The `WorkBroker` is generic: it routes any work unit, not just WorkItems.
 
@@ -147,7 +148,7 @@ Each optional module owns a dedicated V-number range to prevent collision when m
 
 | Range | Module |
 |---|---|
-| V1–V999 | `runtime` (sequential; currently at V31) |
+| V1–V999 | `runtime` (sequential; currently at V40) |
 | V2000–V2999 | `casehub-work-queues` and `casehub-work-ledger` |
 | V3000–V3999 | `casehub-work-notifications` |
 | V4000–V4999 | `casehub-work-ai` |

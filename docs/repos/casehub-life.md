@@ -18,7 +18,7 @@ The tutorial structure emerges from the natural adoption sequence. Each layer ad
 | 2 | casehub-work | No formal SLA on household tasks | **complete** (casehubio/life#3, 2026-05-27) |
 | 3 | casehub-qhorus | No commitment tracking; no oversight gates | **complete** (casehubio/life#4) |
 | 4 | casehub-ledger | No tamper-evident audit for health/financial decisions | **complete** (casehubio/life#5) |
-| 5 | casehub-engine | No multi-step workflow orchestration | **in progress** — `LifeTypedCaseHub` abstract base class (life#47): `augment()` final, `configureCase()` abstract, `lifeCaseType()` abstract. 6 CaseHubs extend it (AppointmentCycle, HomeMaintenance, TravelPlan, CareCoordination, ContractorCoordination, FinancialReview). `agentWorker(capabilityName, systemPrompt, responseSchema)` helper replaces per-worker boilerplate. `CareEpisodeCaseHub` stays on `YamlCaseHub` (sub-case only). |
+| 5 | casehub-engine | No multi-step workflow orchestration | **in progress** — `LifeTypedCaseHub` abstract base class (life#47): `augment()` final, `configureCase()` abstract, `lifeCaseType()` abstract. 6 CaseHubs extend it (AppointmentCycle, HomeMaintenance, TravelPlan, CareCoordination, ContractorCoordination, FinancialReview). `agentWorker(capabilityName, systemPrompt, responseSchema)` helper replaces per-worker boilerplate. `CareEpisodeCaseHub` stays on `YamlCaseHub` (sub-case only). `LifeCaseService.resolve()` uses CDI `Instance<LifeTypedCaseHub>` instead of 6-arm switch (life#51). |
 | 6 | Trust routing | No trust model for agent routing | **complete** (casehubio/life#11) |
 | 7 | casehub-openclaw | OpenClaw as WorkerProvisioner; pre-built skill ecosystem | pending |
 | 8 | Auth (casehub-platform-oidc) | No RBAC enforcement; risk thresholds role-agnostic | **complete** (casehubio/life#40, 2026-06-22) — `@RolesAllowed` on all 5 REST resources; RBAC-differentiated risk thresholds in `LifeActionRiskClassifier` (admin elevated, junior always-gate). Closes life#26. |
@@ -26,7 +26,7 @@ The tutorial structure emerges from the natural adoption sequence. Each layer ad
 ## What It Owns
 
 - `LifeDomain` enum: `HEALTH`, `FINANCE`, `HOUSEHOLD`, `LEGAL`, `CARE`, `TRAVEL`
-- Domain model: `ExternalActor`, `LifeTaskContext` (domain supplement: `domain`, `priority`, `externalActorId`, deadline context — held alongside the foundation `WorkItem`)
+- Domain model: `ExternalActor`, `LifeTaskContext` (domain supplement: `domain`, `priority`, `externalActorId`, `jurisdiction` (ISO 3166-1/2), deadline context — held alongside the foundation `WorkItem`)
 - Capability tags: `household-management`, `health-coordination`, `financial-planning`, `family-scheduling`, `travel-planning`, `legal-deadline`, `contractor-coordination`
 - Trust dimensions: `deadline-reliability`, `cost-accuracy`, `factual-accuracy`, `proactive-alerting`
 - `CasePlanModel` definitions: `appointment-cycle`, `home-maintenance-cycle`, `financial-review`, `travel-plan`, `contractor-coordination`, `care-coordination`
@@ -56,10 +56,12 @@ Household tasks are now formal `WorkItem`s: SLA-enforced, delegable, auditable. 
 
 ### Layer 4 — casehub-ledger integration
 
-- 4 `LedgerEntry` subclasses: `HealthLedgerEntry`, `FinancialLedgerEntry`, `LegalLedgerEntry`, `ExternalActorErasureLedgerEntry`
+- 4 `LedgerEntry` subclasses: `HealthLedgerEntry`, `FinancialLedgerEntry`, `LegalLedgerEntry` (with `jurisdiction` field — prefers task-level jurisdiction over tenant-wide config, life#48), `ExternalActorErasureLedgerEntry` (with `ledgerEntriesAffected` field for self-contained Merkle-chained erasure proof)
 - `LifeLedgerWriter` — unified writer service; single injection point for all ledger writes
+- `LegalDomainLedgerHandler` — prefers task-level `jurisdiction` over `casehub.life.jurisdiction` config (life#48)
 - `LifeDecisionLedgerObserver` — CDI observer; bridges domain events to ledger entries
-- GDPR Art.17 erasure endpoint: `DELETE /external-actors/{id}/personal-data`
+- `LifeGdprErasureService` (life#49) — dedicated GDPR erasure pipeline integrating `LedgerErasureService.erase()` for actor ID tokenisation. Replaces `ExternalActorService.erase()`
+- GDPR Art.17 erasure endpoint: `DELETE /external-actors/{id}/personal-data` — returns 200 with `ErasureResponse` (was 204, life#50)
 - actorId convention: `"life-system"` (platform actions) / `"household-admin"` (admin actions)
 - Flyway: `db/life/ledger/migration/` (V2100+) on qhorus datasource
 - Entity package: `io.casehub.life.app.ledger` (not `entity/ledger` — multi-PU prefix matching constraint forces app-level package)
