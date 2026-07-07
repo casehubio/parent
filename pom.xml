@@ -34,6 +34,7 @@
     <compiler-plugin.version>3.13.0</compiler-plugin.version>
     <cloudevents.version>4.0.1</cloudevents.version>
     <assertj.version>3.27.7</assertj.version>
+    <quarkus-quinoa.version>2.8.3</quarkus-quinoa.version>
   </properties>
 
   <dependencyManagement>
@@ -58,6 +59,13 @@
         <artifactId>assertj-core</artifactId>
         <version>${assertj.version}</version>
         <scope>test</scope>
+      </dependency>
+
+      <!-- Quarkiverse Quinoa — SPA serving alongside Quarkus -->
+      <dependency>
+        <groupId>io.quarkiverse.quinoa</groupId>
+        <artifactId>quarkus-quinoa</artifactId>
+        <version>${quarkus-quinoa.version}</version>
       </dependency>
 
       <!-- CloudEvents SDK — overrides Quarkus BOM's cloudevents-api:3.0.0 -->
