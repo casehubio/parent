@@ -23,7 +23,7 @@ Org-level parent POM and BOM for the [casehubio](https://github.com/casehubio) e
 | [casehub-desiredstate](https://github.com/casehubio/casehub-desiredstate) | [![casehub-desiredstate](https://github.com/casehubio/casehub-desiredstate/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/casehub-desiredstate/actions/workflows/publish.yml) |
 | [casehub-ras](https://github.com/casehubio/casehub-ras) | [![casehub-ras](https://github.com/casehubio/casehub-ras/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/casehub-ras/actions/workflows/publish.yml) |
 | [casehub-ops](https://github.com/casehubio/casehub-ops) | [![casehub-ops](https://github.com/casehubio/casehub-ops/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/casehub-ops/actions/workflows/publish.yml) |
-| [casehub-engine](https://github.com/casehubio/engine) | [![casehub-engine](https://github.com/casehubio/engine/actions/workflows/maven.yml/badge.svg?branch=main)](https://github.com/casehubio/engine/actions/workflows/maven.yml) |
+| [casehub-engine](https://github.com/casehubio/engine) | [![casehub-engine](https://github.com/casehubio/engine/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/engine/actions/workflows/publish.yml) |
 
 **Integration**
 
@@ -39,7 +39,7 @@ Org-level parent POM and BOM for the [casehubio](https://github.com/casehubio) e
 | Repository | Status |
 |:-----------|:------:|
 | [casehub-devtown](https://github.com/casehubio/devtown) | [![casehub-devtown](https://github.com/casehubio/devtown/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/devtown/actions/workflows/publish.yml) |
-| [casehub-aml](https://github.com/casehubio/aml) | [![casehub-aml](https://github.com/casehubio/aml/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/casehubio/aml/actions/workflows/build.yml) |
+| [casehub-aml](https://github.com/casehubio/aml) | [![casehub-aml](https://github.com/casehubio/aml/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/aml/actions/workflows/publish.yml) |
 | [casehub-clinical](https://github.com/casehubio/clinical) | [![casehub-clinical](https://github.com/casehubio/clinical/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/clinical/actions/workflows/publish.yml) |
 | [casehub-life](https://github.com/casehubio/life) | [![casehub-life](https://github.com/casehubio/life/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/life/actions/workflows/publish.yml) |
 | [casehub-drafthouse](https://github.com/casehubio/drafthouse) | [![casehub-drafthouse](https://github.com/casehubio/drafthouse/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/drafthouse/actions/workflows/publish.yml) |
