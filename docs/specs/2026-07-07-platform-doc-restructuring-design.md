@@ -496,6 +496,7 @@ The restructuring label is accurate for the overall shape (monolith → chunks),
 |---|---|
 | `APPLICATIONS.md` | Add UI status column, blocks-ui usage, cross-references to pattern catalogue |
 | `ARCHITECTURE.md` | Update header — replace "Supplement to PLATFORM.md" with standalone description referencing the new structure |
+| `arc42stories-casehub-profile.md` | Remap 6 section-specific PLATFORM.md references to new chunk locations (see §arc42stories-casehub-profile.md Remapping below) |
 | `config-architecture.md` | Remap all PLATFORM.md topic ownership entries to their new chunk locations (see §config-architecture.md Remapping below) |
 | `prompt-snippets.md` | Update "consult PLATFORM.md" → "consult INDEX.md + relevant chunks" |
 
@@ -517,6 +518,19 @@ Every entry currently pointing to PLATFORM.md must be remapped:
 | Known overlap risks | PLATFORM.md | `platform/overlap-risks.md` |
 | Implementation protocols | PLATFORM.md | `platform/protocols.md` |
 | Platform doc layer entry | PLATFORM.md | INDEX.md (new entry point; platform/ chunks are the authoritative locations per topic) |
+
+#### arc42stories-casehub-profile.md Remapping
+
+Section-specific references that the 5-line redirect cannot resolve:
+
+| Current reference | New reference |
+|---|---|
+| `docs/PLATFORM.md` §Persistence (named datasources) | `platform/persistence.md` |
+| `docs/PLATFORM.md` §Step 4 (SPI placement) | `platform/coherence-protocol.md` (Step 4) |
+| `docs/PLATFORM.md` Capability Ownership table | `platform/capability-ownership.md` |
+| `docs/PLATFORM.md` — capability ownership table and boundary rules (§Default Platform References, Application tier) | `platform/capability-ownership.md` + `platform/boundary-rules.md` |
+| `docs/PLATFORM.md` Cross-Repo Dependency Map | `platform/dependency-map.md` |
+| `docs/PLATFORM.md` — capability ownership and boundary rules (§Default Platform References, Foundation tier) | `platform/capability-ownership.md` + `platform/boundary-rules.md` |
 
 ### CLAUDE.md Updates (~26 repos)
 
@@ -560,7 +574,7 @@ This restructuring should be tracked as an epic in casehub-parent with sub-issue
 | New files | 21 (5 extracted/restructured + 13 new content + 3 guides/index) |
 | Deep-dives to update | 18 |
 | Deep-dives to verify | 9 |
-| Non-deep-dive updates | 4 |
+| Non-deep-dive updates | 5 |
 | CLAUDE.md updates | ~26 repos (phased) |
 | Files retired/redirected | 2 |
 | Cross-cutting name fixes | 8 patterns across multiple files |
