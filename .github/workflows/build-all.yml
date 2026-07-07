@@ -488,6 +488,29 @@ jobs:
           [ $RC -eq 0 ] && echo "success" > .build-outcomes/pages || echo "failure" > .build-outcomes/pages
           echo $((SECONDS - START)) > .build-times/pages
 
+      - name: "Build: blocks-ui"
+        id: blocks_ui
+        continue-on-error: true
+        env:
+          CUR: ${{ steps.shas.outputs.sha_blocks_ui }}
+          PRV: ${{ steps.prev.outputs.sha_blocks_ui }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p .build-outcomes .build-decisions
+          D=$(./scripts/build-all-decision.sh \
+            --module blocks-ui --current-sha "$CUR" --previous-sha "${PRV:-none}")
+          echo "decision=$D" >> $GITHUB_OUTPUT
+          echo "$D" > .build-decisions/blocks-ui
+          START=$SECONDS
+          RC=0
+          case "$D" in
+            SKIP) echo "⏭️  blocks-ui: SKIP" ;;
+            TEST) echo "⏭️  blocks-ui: SKIP (yarn-only, no separate test phase)" ;;
+            BUILD) cd casehub/blocks-ui && yarn install && yarn build || RC=$? ;;
+          esac
+          [ $RC -eq 0 ] && echo "success" > .build-outcomes/blocks-ui || echo "failure" > .build-outcomes/blocks-ui
+          echo $((SECONDS - START)) > .build-times/blocks-ui
+
       - name: "Build: engine"
         id: engine
         continue-on-error: true

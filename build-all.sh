@@ -197,10 +197,17 @@ if [ "${STATE[pages]:-skip}" = "build" ]; then
   (cd "$(local_path pages)" && yarn install && yarn build)
 fi
 
+# blocks-ui is yarn-only — not in aggregator.xml
+if [ "${STATE[blocks-ui]:-skip}" = "build" ]; then
+  echo ""; echo "==> Building blocks-ui (yarn)"
+  (cd "$(local_path blocks-ui)" && yarn install && yarn build)
+fi
+
 BUILD_LIST=""
 SKIP_COUNT=0
 for repo in "${REPOS[@]}"; do
   [ "$repo" = "pages" ] && continue
+  [ "$repo" = "blocks-ui" ] && continue
   if [ "${STATE[$repo]:-skip}" = "build" ]; then
     BUILD_LIST="${BUILD_LIST:+$BUILD_LIST,}$(local_path "$repo")"
   elif [ "${STATE[$repo]:-skip}" = "skip" ]; then
@@ -226,6 +233,7 @@ TEST_EXIT=0
 TEST_LIST=""
 for repo in "${REPOS[@]}"; do
   [ "$repo" = "pages" ] && continue
+  [ "$repo" = "blocks-ui" ] && continue
   [ "${STATE[$repo]:-skip}" = "test" ] && TEST_LIST="${TEST_LIST:+$TEST_LIST,}$(local_path "$repo")"
 done
 if [ -n "$TEST_LIST" ] && [ "$SKIP_TESTS" = false ]; then
