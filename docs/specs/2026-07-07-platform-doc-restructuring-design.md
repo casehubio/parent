@@ -54,27 +54,25 @@ After this restructuring:
 
 **A7. Deep-dives at full SPI depth are worth the maintenance cost.** We're keeping full class names, method signatures, and invariants in deep-dives. This makes them authoritative but expensive to maintain. The alternative (trimming to family-awareness level, pushing detail to repo-owned DESIGN.md) was considered and rejected because deep-dives are the primary source LLMs use for cross-repo understanding.
 
-### Open Questions for the Reviewer
+### Resolved Design Questions
 
-**Q1. Chunk granularity.** We propose ~13 topic chunks in `platform/`. Is this the right granularity? Too many chunks means the index becomes a maze. Too few means chunks are still monolithic. Should some proposed chunks be merged (e.g. `auth.md` + `privacy.md` → `security.md`)? Should any be split further?
+These questions were explored during adversarial review (rounds 1-2) and are now settled design decisions.
 
-**Q2. Pattern catalogue maintenance.** The app-builder guide includes a pattern catalogue showing how each app implemented each capability. This is high-value but high-maintenance. When a new app adds trust routing, someone must update the catalogue. Is this realistic? Would a lighter-weight approach (just the capability matrix, no detailed patterns) be more sustainable?
+**Q1. Chunk granularity → 16 topic chunks.** Keep auth.md and privacy.md separate (different audiences: infrastructure vs compliance). The original 13 grew to 16 with the addition of coherence-protocol.md, capability-ownership.md, and dependency-map.md as operational chunks.
 
-**Q3. Does this actually prevent the blind spots we identified?** Walk through the specific scenarios:
-- LLM in AML building a new UI view — does it find blocks-ui components?
-- LLM in SOC starting from scratch — does it find the right app to copy?
-- LLM in engine adding a new SPI — does it know to update INDEX.md and building-apps.md?
-- LLM reviewing a spec — does the skill integration actually work better than loading PLATFORM.md?
+**Q2. Pattern catalogue maintenance → lightweight.** Capability matrix (grid) without detailed per-app patterns. Per-app implementation details live in deep-dives. building-apps.md entries are compact references (one-line shared pattern + link to deep-dive section).
 
-**Q4. Protocol integration depth.** We propose protocols appearing in three places: INDEX.md (names inline with topics), topic chunks (summarized + linked), and garden INDEX.md (authoritative). Is the summary-in-chunk approach right, or should chunks just link to protocols without summarizing them? Summaries risk drift from the authoritative protocol text.
+**Q3. Blind-spot prevention → works with conditions.** The INDEX.md → chunk → deep-dive chain prevents blind spots IF: (a) CLAUDE.md files are updated to point to the new structure, and (b) INDEX.md entries are keyword-rich enough for topic matching. Phased CLAUDE.md migration (foundation repos first) addresses the dependency.
 
-**Q5. CLAUDE.md update scope.** We propose updating ~26 repo CLAUDE.md files to point to the new structure. This is a massive cross-repo change. Is it worth doing atomically, or should we phase it (update parent docs first, then update CLAUDE.md files repo by repo)?
+**Q4. Protocol integration depth → link only.** Topic chunks provide a one-line scope statement + link to the full protocol in garden. No summaries. Consistent with the duplication avoidance principle. See §Protocol Integration.
 
-**Q6. Is the two-audience split sufficient for the UI dimension?** App builders who are doing Java backend work have different needs than app builders doing TypeScript UI work. Should building-apps.md have clear sections for "backend integration" vs "UI composition", or is the current structure (capability matrix + pattern catalogue covering both) sufficient?
+**Q5. CLAUDE.md update scope → phased.** Foundation repos first, then app repos. A partial rollout where some CLAUDE.md files point to INDEX.md and others to PLATFORM.md (which redirects) still works.
 
-**Q7. Deep-dive update verification.** We list 18 deep-dives as needing updates based on recent git activity. But git commits don't tell us exactly which deep-dive sections are stale. Should the implementation plan include a per-deep-dive verification step (read the deep-dive, read the current code, diff the gap), or is the commit-based gap list sufficient?
+**Q6. Two-audience split for UI → sections, not a third guide.** Clear section headers within building-apps.md for "backend integration" vs "UI composition." The audience is the same person (app builder) at different moments.
 
-**Q8. How do we prevent this from going stale again?** This restructuring fixes the current state, but the same drift will recur. Should we propose a maintenance mechanism (e.g. a periodic doc-sync check, a skill that audits INDEX.md against actual repo state, a CI check)? Or is that out of scope for this design?
+**Q7. Deep-dive update verification → per-deep-dive verification.** Each deep-dive update includes reading the current code to confirm the gap list is complete. The 9 VERIFY entries in the deep-dive disposition implement this. See §Deep-Dive Disposition.
+
+**Q8. Staleness prevention → ownership headers + doc-sync extension.** Two complementary mechanisms prevent drift. See §Staleness Prevention.
 
 ---
 
@@ -93,7 +91,7 @@ docs/
 │                                   # Organized by CONCERN, not by repo
 │
 ├── guides/
-│   ├── building-apps.md            # App builder journey (~500 lines)
+│   ├── building-apps.md            # App builder journey (~400 lines max)
 │   │                               # Capability matrix, pattern catalogue,
 │   │                               # cross-app learning, placement criteria
 │   │
@@ -125,7 +123,7 @@ docs/
 │
 ├── PLATFORM.md                     # REDIRECT — 5-line pointer to INDEX.md
 ├── APPLICATIONS.md                 # UPDATED — UI status, cross-references
-├── ARCHITECTURE.md                 # KEEP — pattern reference
+├── ARCHITECTURE.md                 # UPDATE — header fix (no longer "supplement to PLATFORM.md")
 ├── CHANNELS.md                     # KEEP — channel taxonomy
 ├── LIFECYCLE.md                    # KEEP — state machines
 ├── DSL-STYLE-GUIDE.md              # KEEP — API conventions
@@ -421,10 +419,10 @@ The restructuring label is accurate for the overall shape (monolith → chunks),
 | `docs/INDEX.md` | Discovery index, skill dispatch | ~150 |
 | `docs/guides/building-apps.md` | App builder journey, cross-app patterns | ~400 |
 | `docs/guides/building-platform.md` | Platform builder journey | ~200 |
-| `docs/platform/coherence-protocol.md` | Steps 1-6 pre-implementation protocol (extracted from PLATFORM.md lines 13-98) | ~100 |
+| `docs/platform/coherence-protocol.md` | Steps 1-6 pre-implementation protocol (extracted from PLATFORM.md lines 13-98). Steps 1-3 + 5-6 are procedural. Step 4 is a curated link list to topic chunks and garden protocols — not inline pattern summaries (consistent with R1-13 link-only principle). | ~80 |
 | `docs/platform/capability-ownership.md` | "Where does X live?" lookup table (extracted from PLATFORM.md lines 361-474) | ~120 |
 | `docs/platform/dependency-map.md` | Cross-repo dependency impact analysis (extracted from PLATFORM.md lines 219-354) | ~140 |
-| `docs/platform/overview.md` | Tier structure, repo map, build order | ~200 |
+| `docs/platform/overview.md` | Tier structure, repo map, build order, upstream consistency (Serverless Workflow 1.0 / quarkus-flow constraint — extracted from PLATFORM.md lines 107-117) | ~200 |
 | `docs/platform/boundary-rules.md` | All "do not" rules | ~250 |
 | `docs/platform/persistence.md` | Flyway, datasources, migrations | ~200 |
 | `docs/platform/auth.md` | Auth topology, roles, outbound credentials | ~250 |
@@ -559,7 +557,7 @@ This restructuring should be tracked as an epic in casehub-parent with sub-issue
 
 | Category | Count |
 |---|---|
-| New files | 21 (3 extracted + 15 new content + 3 guides/index) |
+| New files | 21 (5 extracted/restructured + 13 new content + 3 guides/index) |
 | Deep-dives to update | 18 |
 | Deep-dives to verify | 9 |
 | Non-deep-dive updates | 4 |
