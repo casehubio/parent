@@ -15,10 +15,12 @@ Domain-agnostic, immutable, cryptographically tamper-evident audit ledger for an
 
 | Module | Artifact ID | Purpose |
 |--------|-------------|---------|
-| `api/` | `casehub-ledger-api` | Pure-Java SPIs and model types — no JPA, no Quarkus framework deps |
+| `api/` | `casehub-ledger-api` | Pure-Java SPIs and model types — no JPA, no Quarkus framework deps. Two-tier `LedgerEntry` model (ledger#168): `@MappedSuperclass` base in `api/`, `JpaLedgerEntry` entity in `runtime/`. `LedgerAppender` SPI for domain-agnostic ledger writes with `AuditRecord` value type (ledger#168). |
 | `runtime/` | `casehub-ledger` | Full extension: JPA entities, services, Flyway migrations, CDI |
 | `deployment/` | `casehub-ledger-deployment` | Quarkus build-time augmentation |
 | `persistence-memory/` | `casehub-ledger-memory` | Zero-datasource in-memory `@Alternative @Priority(1)` implementations of all persistence SPIs — for `@QuarkusTest` isolation and ephemeral installs. Add as `compile`-scope dependency in consumer modules to activate. |
+| `rest/` | `casehub-ledger-rest` | JAX-RS REST API for ledger queries and admin operations — opt-in via explicit dependency (ledger#162). Provides `GET /ledger/entries`, `GET /ledger/entries/{id}`, `POST /ledger/entries/search` with pagination, filtering, and type discrimination. Exception mappers for ledger-specific errors. |
+| `testing/` | `casehub-ledger-testing` | NoOp SPI implementations for test isolation — `NoOpLedgerAppender`, `NoOpActorIdentityProvider`, `NoOpTrustScoreSource`, etc. (ledger#173). |
 
 ---
 
@@ -153,6 +155,19 @@ Bump criteria: model family change, persona behaviour change, scope change. Do N
 **`AgentKeyRotatedEvent`** — CDI event fired by `KeyRotationService` and `ReactiveKeyRotationService` after a rotation is persisted. Observers: `ActorIdentityValidationEnricher` and `ScimActorDIDProvider` each evict their per-actorId cache on receipt.
 
 **`ScimActorDIDProvider`** — `@Alternative` enterprise resolver. Maps actorId → DID via a SCIM2 Agent endpoint with a configurable TTL cache. Activated via `quarkus.arc.selected-alternatives`. See `docs/integration/scim2-agent-identity.md` for integration guide.
+
+### Cloud KMS Signers
+
+`casehub-ledger` supports cloud-managed Ed25519 signing keys via four cloud KMS implementations. All signers implement the `VaultTokenSource` SPI for credential acquisition.
+
+| Module | Cloud Provider | Auth Methods | Config Prefix |
+|--------|----------------|-------------|---------------|
+| `casehub-ledger-vault-aws` | AWS KMS | IAM credentials, STS AssumeRole | `casehub.ledger.vault.aws.*` |
+| `casehub-ledger-vault-gcp` | GCP Cloud KMS | Service Account JSON, Workload Identity | `casehub.ledger.vault.gcp.*` |
+| `casehub-ledger-vault-azure` | Azure Key Vault | Managed Identity, Service Principal | `casehub.ledger.vault.azure.*` |
+| `casehub-ledger-vault` | HashiCorp Vault | Token, AppRole, Kubernetes, JWT | `casehub.ledger.vault.*` |
+
+**Vault auth unification (ledger#101, #102):** `VaultTokenSource` SPI abstracted credential acquisition. Vault module now supports `AuthMethod` enum with `TOKEN`, `APPROLE`, `KUBERNETES`, `JWT` variants. JWT auth method consolidates Kubernetes auth (ledger#101) — `JwtVaultTokenSource` replaces `KubernetesVaultTokenSource`, accepts a `Supplier<String>` for JWT acquisition. Kubernetes service account tokens are one JWT source; others include OIDC tokens, federated identity tokens, etc.
 
 ---
 

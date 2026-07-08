@@ -2,8 +2,8 @@
 
 > **Purpose:** Reference for application repos built on the casehubio platform. Foundation
 > repo sessions do not need this document unless explicitly asked to investigate how an
-> application uses a platform feature. Application repo sessions should load both this
-> document and [PLATFORM.md](PLATFORM.md).
+> application uses a platform feature. Application repo sessions should start with
+> [INDEX.md](INDEX.md) and [guides/building-apps.md](guides/building-apps.md).
 
 ---
 
@@ -22,16 +22,16 @@ The pattern: **bring your domain, use the platform, modify nothing below.**
 
 ## Repository Map
 
-| Repo | GitHub | Domain | Status |
-|------|--------|--------|--------|
-| `casehub-devtown` | [casehubio/devtown](https://github.com/casehubio/devtown) | AI-assisted software development — PR review, merge queue, trust-weighted reviewer routing | Active |
-| `casehub-aml` | [casehubio/aml](https://github.com/casehubio/aml) | Anti-money laundering investigation — FinCEN-compliant audit, SAR workflow, adaptive investigation paths | Active |
-| `casehub-clinical` | [casehubio/clinical](https://github.com/casehubio/clinical) | Clinical trial coordination — GCP/FDA compliance, multi-site sub-cases, adverse event escalation | Active |
-| `casehub-life` | [casehubio/life](https://github.com/casehubio/life) | Personal life automation — household coordination, health, finance, elder care, legal compliance; tutorial: OpenClaw as execution layer. Layer 9 (planned): `casehub-iot` integration — Home Assistant and OpenHAB device abstraction, device-driven case types, community automation marketplace | Layers 2, 3, 4, 6, 8 complete (casehub-work + casehub-qhorus + casehub-ledger + trust routing + auth) |
-| `casehub-drafthouse` | [casehubio/drafthouse](https://github.com/casehubio/drafthouse) | MCP-driven document review — four MCP tools live: `start_review`, `update_selection`, `query_review`, `end_review` (`DraftHouseMcpTools @ApplicationScoped`). Structured agent-to-agent debate loop (review manifest), deterministic summary projection via `ChannelProjection<ReviewState>`, LangChain4j + Claude Agent SDK provider pattern. `ReviewSessionResource` (deprecated REST) removed. | Active |
-| `quarkmind` | [mdproctor/quarkmind](https://github.com/mdproctor/quarkmind) | StarCraft II game AI — living lab proving the CaseHub harness pattern at millisecond game-loop granularity outside regulated domains | Active |
-| `casehub-soc` | [casehubio/soc](https://github.com/casehubio/soc) | Security Operations Center — multi-agent cyber incident response, trust-weighted triage, CBR-based incident correlation, oversight-gated containment | Scaffold |
-| `casehub-fsitrading` | [casehubio/fsitrading](https://github.com/casehubio/fsitrading) | FSI Trading — multi-agent trading automation, overnight bot management, situation detection and response, regulatory compliance (MiFID II, Dodd-Frank) | Scaffold |
+| Repo | GitHub | Domain | UI | blocks-ui Components | Status |
+|------|--------|--------|-----|---------------------|--------|
+| `casehub-devtown` | [casehubio/devtown](https://github.com/casehubio/devtown) | AI-assisted software development — PR review, merge queue, trust-weighted reviewer routing | Web UI (Quinoa) | work-item-inbox, trust-score-panel | Active |
+| `casehub-aml` | [casehubio/aml](https://github.com/casehubio/aml) | Anti-money laundering investigation — FinCEN-compliant audit, SAR workflow, adaptive investigation paths | Web UI (Quinoa) | work-item-inbox, accountability-view, investigation-view | Active |
+| `casehub-clinical` | [casehubio/clinical](https://github.com/casehubio/clinical) | Clinical trial coordination — GCP/FDA compliance, multi-site sub-cases, adverse event escalation | No UI (API only) | — | Active |
+| `casehub-life` | [casehubio/life](https://github.com/casehubio/life) | Personal life automation — household coordination, health, finance, elder care, legal compliance; tutorial: OpenClaw as execution layer. Layer 9 (planned): `casehub-iot` integration — Home Assistant and OpenHAB device abstraction, device-driven case types, community automation marketplace | No UI yet | — | Layers 2, 3, 4, 6, 8 complete (casehub-work + casehub-qhorus + casehub-ledger + trust routing + auth) |
+| `casehub-drafthouse` | [casehubio/drafthouse](https://github.com/casehubio/drafthouse) | MCP-driven document review — four MCP tools live: `start_review`, `update_selection`, `query_review`, `end_review` (`DraftHouseMcpTools @ApplicationScoped`). Structured agent-to-agent debate loop (review manifest), deterministic summary projection via `ChannelProjection<ReviewState>`, LangChain4j + Claude Agent SDK provider pattern. `ReviewSessionResource` (deprecated REST) removed. | Web UI (Quinoa) | — | Active |
+| `quarkmind` | [mdproctor/quarkmind](https://github.com/mdproctor/quarkmind) | StarCraft II game AI — living lab proving the CaseHub harness pattern at millisecond game-loop granularity outside regulated domains | SC2 client integration | — | Active |
+| `casehub-soc` | [casehubio/soc](https://github.com/casehubio/soc) | Security Operations Center — multi-agent cyber incident response, trust-weighted triage, CBR-based incident correlation, oversight-gated containment | Planned | — | Scaffold |
+| `casehub-fsitrading` | [casehubio/fsitrading](https://github.com/casehubio/fsitrading) | FSI Trading — multi-agent trading automation, overnight bot management, situation detection and response, regulatory compliance (MiFID II, Dodd-Frank) | Planned | — | Scaffold |
 
 ---
 
@@ -50,7 +50,7 @@ casehub-fsitrading — depends on: full foundation stack (engine + ledger + work
 ```
 
 Application repos are **opt-in and off by default** in the platform CI pipeline.
-See [PLATFORM.md — Build Order](PLATFORM.md) for the full dependency graph.
+See [platform/overview.md](platform/overview.md) for the full dependency graph and build order.
 
 ---
 
@@ -67,7 +67,7 @@ See [PLATFORM.md — Build Order](PLATFORM.md) for the full dependency graph.
 | SOC domain logic (incident triage, threat intel, forensics, containment, SOC2/DORA compliance) | `casehub-soc` |
 | FSI trading domain logic (strategy execution, overnight bot management, market situation detection, MiFID II/Dodd-Frank) | `casehub-fsitrading` |
 
-All other capabilities live in the foundation. See [PLATFORM.md — Capability Ownership](PLATFORM.md).
+All other capabilities live in the foundation. See [INDEX.md](INDEX.md) for platform discovery and [guides/building-apps.md](guides/building-apps.md) for the pattern catalogue showing what shared capabilities exist across apps.
 
 ---
 

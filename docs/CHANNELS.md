@@ -442,7 +442,7 @@ The channel taxonomy draws on established multi-agent systems research:
 
 ## References
 
-- `docs/PLATFORM.md` — Capability Ownership table (channel SPIs, mesh primitives)
+- `docs/platform/capability-ownership.md` — channel SPIs, mesh primitives
 - `docs/LIFECYCLE.md` — state machine taxonomy (companion document)
 - `docs/repos/casehub-qhorus.md` — qhorus deep-dive (normative layout detail)
 - parent#93 — coordination channel extraction (CLOSED — shipped)

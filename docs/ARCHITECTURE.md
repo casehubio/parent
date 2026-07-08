@@ -1,6 +1,6 @@
 # CaseHub Architecture Patterns
 
-> **Supplement to PLATFORM.md.** This document names the architectural patterns in use across the platform, states the invariants that flow from each, and explains the rationale. It does not need to be read for every implementation decision — the Platform Coherence Protocol in PLATFORM.md covers that. This document is for understanding *why* the platform is shaped the way it is, and for making principled decisions about new modules, new repos, or structural changes.
+> This document names the architectural patterns in use across the platform, states the invariants that flow from each, and explains the rationale. For implementing new capabilities, start with INDEX.md to find relevant topic chunks and protocols. This document is for understanding *why* the platform is shaped the way it is, and for making principled decisions about new modules, new repos, or structural changes.
 
 ---
 

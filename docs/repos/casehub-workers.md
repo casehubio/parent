@@ -23,6 +23,7 @@ This repo provides the *how* of worker execution (transport, session management,
 | `workers-github-actions/` | `casehub-workers-github-actions` | GitHub Actions dispatch: `GitHubActionsWorkerRuntime`, `GitHubActionsTokenResolver`, `GitHubActionsWorkerExecutionManager`, `GitHubActionsReactiveWorkerProvisioner`, fault handler. |
 | `workers-mcp/` | `casehub-workers-mcp` | MCP (Model Context Protocol) dispatch: `McpWorkerRuntime` (with `tools/list` discovery), `McpServerResolver`, `McpSessionManager`, `McpSession` (JSON-RPC over HTTP with `Mcp-Session-Id`), `McpWorkerExecutionManager`, `McpReactiveWorkerProvisioner`, `ResolvedMcpServer`, `ServerInitResult`, fault handler. |
 | `workers-script/` | `casehub-workers-script` | Script dispatch: `ScriptWorkerRuntime`, `ScriptDefinitionResolver`, `ScriptDefinition`, `ScriptWorkerExecutionManager`, `ScriptReactiveWorkerProvisioner`, fault handler. |
+| `workers-k8s/` | `casehub-workers-k8s` | Kubernetes Job dispatch: `K8sWorkerRuntime`, `K8sJobSpecBuilder`, `K8sWorkerExecutionManager`, `K8sReactiveWorkerProvisioner`, fault handler. Restart recovery via enriched Job labels — reconstructs `PendingCompletion` from K8s metadata when registry is empty (workers#17). Eager resolver initialization via `@PostConstruct` eliminates startup race (workers#17). |
 | `workers-testing/` | `casehub-workers-testing` | `WorkerTestSupport` -- factory methods for test `CaseInstance`, `Worker`, `Capability` instances. |
 
 ---
@@ -77,6 +78,15 @@ Generic SPI for resolving capability tags to transport-specific targets. `resolv
 
 JAX-RS resource in `workers-common`. Receives completion callbacks at `/workers/callback/{dispatchId}` from async worker transports. Completes the pending entry in `AsyncWorkerCompletionRegistry` and publishes completion via `WorkflowCompletionPublisher`.
 
+### BindingName Correlation (workers#18)
+
+`bindingName` propagation from casehub-engine through worker dispatch enables tracing which YAML binding triggered a worker execution. `WorkerCorrelationContext` carries `bindingName` alongside `caseId` and `eventLogId`. All 6 worker modules override the 6-arg `submit()` to thread `bindingName` through to transport-specific metadata:
+
+- **K8s:** persisted as `casehub.binding-name` Job label annotation for restart recovery
+- **HTTP/MCP/Script/Camel/GitHub Actions:** passed via context payload, logged in fault events
+
+`WorkerFaultHandler` includes `bindingName` in retry and exhaustion events. Engine consumes this for per-binding failure tracking (engine#676).
+
 ---
 
 ## Dispatch Mechanisms
@@ -104,6 +114,19 @@ Dispatches work by triggering GitHub Actions workflow runs via the GitHub API. `
 ### Script (`workers-script`)
 
 Local script execution. `ScriptDefinitionResolver` maps capability tags to `ScriptDefinition` records containing the script path and execution parameters. `ScriptWorkerExecutionManager` executes scripts as local processes.
+
+### Kubernetes (`workers-k8s`)
+
+Kubernetes Job-based worker dispatch. `K8sWorkerRuntime` initializes K8s client and discovers capabilities from `K8sJobSpecResolver`. Each capability maps to a Job spec template. `K8sWorkerExecutionManager` creates Jobs on demand, monitors completion via K8s API watch.
+
+**Restart recovery (workers#17):** Enriched Job labels carry recovery metadata:
+- `casehub.case-id` — originating case UUID
+- `casehub.worker-name` — worker identifier
+- `casehub.event-log-id` — engine event log entry for retry/audit correlation
+- `casehub.binding-name` — YAML binding that triggered the dispatch
+- `casehub.idempotency-key` — prevents duplicate Job creation
+
+On restart, `processTerminal()` checks if the Job still exists in K8s. If `PendingCompletion` is missing from the registry but the Job is still running, reconstructs the registry entry from Job labels. `schedulePersistedEvent()` (called by engine recovery) checks K8s for existing Jobs matching the event-log-id; only re-dispatches if no Job is found. Eager resolver initialization via `@PostConstruct` ensures capabilities are loaded before engine recovery runs.
 
 ---
 

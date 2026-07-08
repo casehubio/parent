@@ -137,7 +137,7 @@ filtering or dropping commits that touch these paths.
 | Path | What it is |
 |------|------------|
 | `CLAUDE.md` | Project conventions |
-| `docs/` | Platform documentation (PLATFORM.md, APPLICATIONS.md, repo deep-dives, arc42stories spec + README) |
+| `docs/` | Platform documentation (INDEX.md, guides/, platform/, repos/, APPLICATIONS.md, arc42stories spec + README) |
 | `docs/adr/` | Architecture decision records |
 
 
@@ -162,9 +162,12 @@ After implementation: `implementation-doc-sync` (scoped doc sweep)
 **Prompt snippet:** `docs/prompt-snippets.md` — paste the work-item snippet at the start of each issue to enforce the above chain explicitly.
 
 Living docs — check for drift after significant changes:
-- `docs/PLATFORM.md`
+- `docs/INDEX.md` — discovery index (add new capabilities here)
+- `docs/guides/building-apps.md` — app builder guide (update when platform changes affect apps)
+- `docs/guides/building-platform.md` — platform builder guide
+- `docs/platform/` — topic chunks (update the relevant chunk when a capability changes)
 - `docs/APPLICATIONS.md`
-- `docs/repos/`
+- `docs/repos/` — deep-dives (update when a repo's modules/SPIs change)
 
 ## Work Tracking
 

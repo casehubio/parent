@@ -38,7 +38,7 @@ endpoints-config/ ← optional: @Startup @ApplicationScoped YAML-backed endpoint
 ## Path
 
 **Problem:** casehub needs a hierarchical, scope-labelling type — for case types
-(`casehubio/devtown/pr-review`), preference scopes, and label paths. It must be
+(`casehubio/devtown/pr-review`), preference scopes, label paths, and work-item types. It must be
 a domain record with strict validation, not a filesystem path.
 
 **Why not `java.nio.file.Path`?** Filesystem semantics (`/`, `..`, absolute vs relative) do not apply. `java.nio.file.Path` also carries heavy I/O semantics and platform-specific behaviour. A dedicated record gives strict validation (no empty segments, no leading/trailing slashes) and domain methods (`isAncestorOf`, `parent`, `depth`).
@@ -256,6 +256,53 @@ For Claude-native work, keep `agent-claude/` for direct CLI integration or `agen
 ### `AgentSessionConfig` and MCP
 
 `AgentMcpServer` is a sealed interface with three variants: `Stdio` (subprocess MCP server), `Sse` (legacy HTTP SSE), and `Http` (streamable HTTP, current standard). `Sse` and `Http` are protocol-neutral. `Stdio` assumes a subprocess execution model (currently only Claude Code). All three map cleanly to the MCP spec, which is now a cross-provider standard — OpenAI, Google, and others adopted it in 2025. Including MCP in `AgentSessionConfig` is not Claude-specific.
+
+---
+
+## Notification and Subscription System
+
+`casehub-platform-notification-dispatch` implements the platform-wide notification and subscription infrastructure. Channels receive notifications, apply suppression rules, deliver via connectors, or buffer into digest aggregations. All stored in a named `notifications` datasource — separate from application data. V1 and V2 Flyway migrations at `classpath:db/notifications/migration`.
+
+### Key Abstractions
+
+| Type | Location | Purpose |
+|------|----------|---------|
+| `NotificationEvent` | `notification-api/` | Domain event with `severity`, `type` (`EventType`), `payload`, `timestamp`, `sourceId`, `actorId`, `tenancyId` |
+| `EventType` | `notification-api/` | Value type — unique identifier (`EventTypeId`) + `canonicalName` + optional `displayName` |
+| `EventTypeId` | `notification-api/` | Composite key: `namespace` + `name` (both non-blank, ≤200 chars) |
+| `EventTypeRegistry` | `notification-api/spi/` | SPI for event type registration and lookup — `register(EventType)`, `find(EventTypeId)`, `all()`, `allInNamespace(String)` |
+| `Channel` | `notification-api/` | Delivery target — has `name`, `enabledEventTypes`, `disabledEventTypes`, type (`CONNECTOR`, `SUBSCRIPTION`) |
+| `ChannelPreference` | `notification-api/` | Per-user channel opt-in/opt-out settings — `userId`, `channelId`, `suppressionRules`, `digestSchedule` (nullable) |
+| `ConnectorChannel` | `notification-api/` | Channel subtype for outbound connector delivery — carries `connectorId` + `destination` |
+| `SubscriptionChannel` | `notification-api/` | Channel subtype for in-app subscription — subscribers receive notifications without external delivery |
+| `DigestSchedule` | `notification-api/digest/` | When digests flush — `DAILY_AT(hour, minute, zone)`, `WEEKLY_AT(dayOfWeek, hour, minute, zone)` |
+| `DigestBuffer` | `notification-api/spi/` | SPI for buffering notifications for digest aggregation — `buffer(DigestSummary)`, `flush(userId)` |
+| `DigestSummary` | `notification-api/digest/` | Aggregate digest record — `userId`, `channelId`, `summaries` (per `groupBy` key), `timestamp` |
+| `ChannelRouter` | `notification-api/spi/` | SPI for selecting which channels receive a notification — `route(NotificationEvent) → List<Channel>` |
+| `SuppressionEvaluator` | `notification-dispatch/` | Evaluates user suppression rules and quiet-hours buffers |
+| `NotificationDispatcher` | `notification-dispatch/` | Three-path delivery: digest buffer (external + schedule + non-URGENT), suppress (rules), or deliver (immediate) |
+| `DigestFlushScheduler` | `notification-dispatch/` | `@Scheduled` digest flusher with per-key error isolation, suppression deferral, orphan drain |
+| `EntityWatcherProvider` | `notification-dispatch/spi/` | SPI for discovering which users are watching which entities — `getWatchers(entityId) → Set<String>` |
+
+**New in platform#144:** Notification digest buffering — timer-driven aggregation for external channels. Non-URGENT notifications with a digest schedule are buffered and flushed on the configured schedule. URGENT notifications always deliver immediately. V1 and V2 Flyway migrations for digest buffer storage.
+
+**New in platform#155, #160:** `EventTypeRegistry` SPI — domain consumers register their event types programmatically; subscribers and channel filters reference them via `EventTypeId`. `WeeklyAt` digest schedule added alongside `DailyAt`.
+
+**New in platform#156:** `EntityWatcherProvider` SPI + `ENTITY_WATCHERS` target type — channels can use entity-based subscriber routing (e.g. "notify all watchers of issue #123") without requiring explicit subscriptions.
+
+**New in platform#157, #159, #161, #162, #163:** Digest groupBy, quiet hours buffering, digest status endpoint, additional schedule types, MethodHandles performance optimization.
+
+### Modules
+
+| Module | Artifact | Purpose |
+|--------|----------|---------|
+| `notification-api/` | `casehub-platform-notification-api` | Pure Java SPIs and domain types — `NotificationEvent`, `EventType`, `EventTypeRegistry`, `Channel`, `ChannelPreference`, `DigestSchedule`, `DigestBuffer`, `ChannelRouter`, `SuppressionEvaluator` |
+| `notification-dispatch/` | `casehub-platform-notification-dispatch` | Full Quarkus extension — CDI wiring, Flyway, JPA entities, `NotificationDispatcher`, `DigestFlushScheduler`, `SuppressionEvaluator`, `ChannelRouter` default |
+| `notification-memory/` | `casehub-platform-notification-memory` | In-memory channel, preference, event-type, and digest stores — `@Alternative @Priority(1)` for test isolation |
+
+`notification-dispatch` requires a named `notifications` datasource. Flyway migrations at `classpath:db/notifications/migration`.
+
+**DataSource SPI Integration:** casehub-platform ships `DataSource` SPI in `platform-api` for multi-datasource apps. Implementations provide named datasources; consumers inject via CDI qualifier. `notification-dispatch` depends on the `@Named("notifications")` DataSource.
 
 ---
 

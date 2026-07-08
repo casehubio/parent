@@ -47,7 +47,7 @@ When adding a new state to any registered state machine:
 2. **Audit all consumers** — search all repos for any code that enumerates the status values explicitly (switch statements, if-chains, collections). Each must be reviewed and updated if necessary.
 3. **Update this file** — update the state count in the table above.
 4. **File cross-repo issues** — if consumer repos need updating, file issues on those repos. Do not commit to peer repos from the adding repo's session.
-5. **Update PLATFORM.md** — update the capability ownership row for the affected state machine.
+5. **Update capability-ownership.md** — update the capability ownership row for the affected state machine in `docs/platform/capability-ownership.md`.
 
 ### 3. Cross-module state machine boundaries
 
@@ -55,7 +55,7 @@ When adding a new state to any registered state machine:
 - Qhorus `DELEGATED` is **terminal** — obligation transferred to a new debtor, original commitment closed.
 - Work `DELEGATED` is **non-terminal** — work forwarded to a named actor for acceptance, item remains active.
 
-Integration code bridging Qhorus commitment delegation to WorkItem delegation must not assume terminal semantics from the name alone. See PLATFORM.md — Gotchas section.
+Integration code bridging Qhorus commitment delegation to WorkItem delegation must not assume terminal semantics from the name alone. See `platform/overlap-risks.md`.
 
 ### 4. New state machines
 
@@ -63,7 +63,7 @@ When introducing a new lifecycle enum in any CaseHub repo:
 
 1. Define `isTerminal()` and `isActive()` from the start.
 2. Register the enum in this file before the first commit that uses it.
-3. Add a capability ownership row in PLATFORM.md.
+3. Add a capability ownership row in `docs/platform/capability-ownership.md`.
 
 ---
 
@@ -74,5 +74,5 @@ When introducing a new lifecycle enum in any CaseHub repo:
 - `work#240` — lifecycle alignment: added `FAULTED`, `SUSPENDED`, `OBSOLETE` to `WorkItemStatus`; renamed `CREATED`→`PENDING`, `CLAIMED`→`ASSIGNED`; added `isActive()`
 - `qhorus#309` — `CommitmentState` missing `isActive()` — lifecycle protocol compliance
 - `work#279` — `GroupStatus` retroactive registration; `isTerminal()` / `isActive()` added, persisted on WorkItemSpawnGroup
-- PLATFORM.md — Capability Ownership table (Durable PlanItem status row)
-- PLATFORM.md — Gotchas (CommitmentState.DELEGATED vs WorkItemStatus.DELEGATED)
+- `platform/capability-ownership.md` — Durable PlanItem status row
+- `platform/overlap-risks.md` — CommitmentState.DELEGATED vs WorkItemStatus.DELEGATED

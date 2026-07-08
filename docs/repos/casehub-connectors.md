@@ -34,11 +34,15 @@ Consumers observe `Event<InboundMessage>` and react accordingly — they never c
 
 ### ChatPlatform SPI (`chat-spi`)
 
-Structured interface for chat-system interactions beyond simple message delivery. Defines capability interfaces: `Messaging`, `Threading`, `Discovery`, `Reactions`, `Presence`, `Members`, `ChannelManagement`, `MemberManagement`, `MessageHistory`. Each platform declares which capabilities it supports; unsupported capabilities degrade gracefully (no-op or fallback). Implementations: `chat-ref` (in-memory reference), `chat-irc`, `chat-discord` (8 native capabilities), `chat-slack` (9 native capabilities — most complete).
+Structured interface for chat-system interactions beyond simple message delivery. Defines capability interfaces: `Messaging`, `Threading`, `Discovery`, `Reactions`, `Presence`, `Members`, `ChannelManagement`, `MemberManagement`, `MessageHistory`. Each platform declares which capabilities it supports; unsupported capabilities degrade gracefully (no-op or fallback). Implementations: `chat-ref` (in-memory reference), `chat-irc` (3 capabilities), `chat-discord` (8 native capabilities), `chat-slack` (9 native capabilities — most complete).
 
 ### RichCard (`chat-spi`)
 
 Platform-agnostic rich content model. Record with title, description, url, color (decimal RGB), fields (name/value/inline), thumbnailUrl, imageUrl, footer, author — plus a Builder. `ChatContent.cards()` carries `List<RichCard>`. Outbound: translators render RichCard to platform-native formats (Discord embeds, Slack Block Kit blocks). Inbound: translators parse platform-native rich content (Discord embeds, Slack blocks) back into RichCard objects. `Channel` includes `memberCount` (nullable Integer) populated from guild/workspace metadata.
+
+### Chat Demo (`chat-demo`)
+
+Full-stack chat application demonstrating ChatPlatform SPI. Built with Quarkus backend + Lit frontend. Features: identity-based messaging with JWT auth, auto-membership, presence tracking, responsive layout (phone drawers, tablet tabs), auto-expanding textarea. Backend uses `ChatPlatform` for channel/message operations; frontend uses WebSocket for real-time updates. SQLite persistence for dev mode. Serves as both reference implementation and integration test for all ChatPlatform capabilities. Refs connectors#52, #54.
 
 ### Module Structure
 

@@ -39,7 +39,9 @@ Hybrid choreography+orchestration coordination engine for multi-agent work. Impl
 
 ### YAML DSL (`CaseDefinition.yaml`)
 
-Cases are defined declaratively: namespace, name, version, capabilities, workers, bindings, goals, milestones, completion conditions. `CaseDefinitionYamlMapper` converts the JSON Schema–generated model to the runtime API model.
+Cases are defined declaratively: namespace, name, version, capabilities, workers, bindings, goals, milestones, completion conditions, `types` (Set<Path>), and `labels` (Set<Path>). `CaseDefinitionYamlMapper` converts the JSON Schema–generated model to the runtime API model.
+
+**Classification:** `CaseDefinition.types` and `CaseDefinition.labels` (both `Set<Path>`) replace the legacy `category` field (engine#655). Types are hierarchical case classification paths (e.g. `casehubio/devtown/pr-review`); labels are arbitrary tags. Both are validated against vocabulary at registration time when vocabulary is configured. V28 migration adds `types` column; `category` deprecated.
 
 **Binding target types** (mutually exclusive per binding):
 - `capability` — routes to a worker by capability match
@@ -176,6 +178,20 @@ Three external signal entry points that reach a running case:
 - **`WorkerOutcome.Expired`** — `DefaultWorkerExecutor` converts `TimeoutException` to `WorkerResult.expired()`. `handleSemanticFailure` routes EXPIRED through `OutcomePolicy.onExpired` (not `onFailure`) — preserves the distinction between timeout and functional failure for retry and escalation policy decisions.
 - **`CaseHubEventType.WORKER_OUTCOME_EXPIRED`** — CDI event fired on expiry; observers can trigger alternative routing, alerts, or audit writes.
 - **`OutcomePolicy.onExpired`** — consumer-defined handler; `DefaultOutcomePolicy` re-queues for retry up to `maxRetries`, then escalates.
+
+### RoutingOutcomeRecorder (engine#616, #617, #618)
+
+`RoutingOutcomeRecorder` — records granular worker dispatch outcomes for trust scoring, behavioral learning, and audit. Tracks: which worker was selected, why, what it produced, and whether selection succeeded.
+
+- **`CaseFileContribution`** — key-level audit trail for context writes. Records which worker produced which context keys, enabling blame tracking and provenance queries. Consumed by casehub-ledger for lineage export.
+- **`RetryState`** — explicit retry attempt history with timestamps, reasons, and which bindings were retried. Replaces implicit retry counters.
+- **`ExecutionOrigin`** — provenance metadata for worker executions — distinguishes user-initiated, scheduled, retried, and system-triggered dispatches.
+
+### CBR Bridge (casehub-neocortex integration)
+
+`CbrCaseRetriever` — SPI in `casehub-neocortex` for case-based reasoning retrieval. Engine consumes this to populate typed fact space from prior cases. Weighted similarity scoring over categorical and numeric features. `CbrConfig` on `CaseDefinition` enables CBR retrieval with configurable `topK`, feature `weights`, and `vectorWeight` blend.
+
+**Cache optimization (engine#671):** case-lifetime CBR retrieval caching — retrieved cases are cached per `CaseInstance` lifecycle to avoid redundant queries. Config: `enableCaching` on `CbrConfig`. Cleared on case completion.
 
 ### Tenancy Enforcement (persistence-hibernate)
 

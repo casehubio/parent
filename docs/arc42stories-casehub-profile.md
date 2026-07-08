@@ -105,11 +105,11 @@ Reference these protocols in §8 rather than duplicating their content:
 |---|---|
 | Module structure | `casehub/garden: docs/protocols/universal/module-tier-structure.md` |
 | Flyway migrations | `casehub/garden: docs/protocols/casehub/flyway-version-range-allocation.md` |
-| Named datasources | `docs/PLATFORM.md` §Persistence |
+| Named datasources | `docs/platform/persistence.md` |
 | CDI displacement (`@DefaultBean`) | `casehub/garden: docs/protocols/casehub/alternative-extension-patterns.md` |
-| SPI placement | `docs/PLATFORM.md` §Step 4 |
+| SPI placement | `docs/platform/coherence-protocol.md` §Step 4 |
 | Architectural patterns | `docs/ARCHITECTURE.md` |
-| Capability ownership | `docs/PLATFORM.md` Capability Ownership table |
+| Capability ownership | `docs/platform/capability-ownership.md` |
 
 **Anti-patterns must be present inline in §8** — do not merely reference AGENTIC-HARNESS-GUIDE.md. A reader with only ARC42STORIES.MD in context will not follow the reference. Include the 2–3 most dangerous failure modes for this specific component in Symptom → Cause → Fix format.
 
@@ -123,7 +123,7 @@ Reference these protocols in §8 rather than duplicating their content:
 
 Every harness app's §3 should reference:
 
-- `docs/PLATFORM.md` — capability ownership table and boundary rules
+- `docs/platform/capability-ownership.md` and `docs/platform/boundary-rules.md`
 - `docs/repos/{this-app}.md` — what this application owns
 - Comparison baseline if one exists (e.g. `docs/gastown-casehub-analysis-v2.md` for devtown)
 
@@ -132,7 +132,7 @@ Every harness app's §3 should reference:
 A foundation module's §3 Context and Scope should:
 
 - Include a C4 System Context diagram showing consumers and dependencies
-- Reference `docs/PLATFORM.md` Cross-Repo Dependency Map for the authoritative consumer list
+- Reference `docs/platform/dependency-map.md` for the authoritative consumer list
 - Reference `docs/repos/{this-module}.md` for the platform deep-dive
 
 The preamble's **Build position**, **Consumed by**, and **Depends on** fields give a compact machine-readable summary; §3 provides the full context with diagrams.
@@ -181,5 +181,5 @@ If no — do not build it. Document the architecture in the Arc42Stories documen
 - [Arc42Stories Specification](arc42stories-spec.md)
 - `docs/AGENTIC-HARNESS-GUIDE.md` — production-first rules, anti-patterns, session conventions
 - `docs/ARCHITECTURE.md` — CaseHub architectural patterns
-- `docs/PLATFORM.md` — capability ownership and boundary rules
+- `docs/INDEX.md` — platform discovery index
 - `casehub/garden: docs/protocols/universal/` — cross-cutting conventions applicable across all casehub modules (module structure, Maven naming, persistence patterns)

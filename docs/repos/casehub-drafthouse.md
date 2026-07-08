@@ -47,6 +47,20 @@ Nothing in the casehubio ecosystem — application tier only.
 
 ---
 
+## Recent Features
+
+**Quinoa integration (drafthouse#74)** — adopted casehub-pages workbench via Quinoa frontend build system. Replaces hand-coded HTML shell with `loadSite()` runtime. DebateEventBus migrated to `pages-event` CustomEvent. Hot-reload in dev mode, compiled with esbuild.
+
+**WebSocket real-time updates (drafthouse#88)** — replaced SSE polling with WebSocket push for debate events (round transitions, point submissions, flags raised). Includes reconnection logic with exponential backoff (max 60s).
+
+**Section highlighting (drafthouse#90)** — clicking a review point scrolls to and highlights the corresponding document section (before/after sides). Uses CSS `::part()` for styling.
+
+**Replay adapter (drafthouse#95)** — replays design-review workspaces from CLAUDE.md snapshots into draft debate channels. Parser extracts review points + agent responses → channel messages. Marks points as VERIFIED (consensus) or DEFERRED (split). MCP tool: `casehubio-drafthouse:replay-design-review`.
+
+**Document timeline (drafthouse#98)** — version navigation UI across review rounds. Allows comparing any two versions from the review history.
+
+---
+
 ## What This Repo Explicitly Does NOT Do
 
 - Provide general-purpose document storage (no document database — review state is in-memory or JPA when added)

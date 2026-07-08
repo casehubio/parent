@@ -20,7 +20,7 @@ A `WorkItem` is deliberately NOT called `Task` — CNCF Serverless Workflow and 
 | `casehub-work-api` | Pure-Java SPI (no Quarkus) | All SPIs: worker selection, registry, workload provision, SLA breach policy, spawn, skill profiling, notification channel, and WorkItem lifecycle SPIs (`io.casehub.work.api.spi`). Depends on `casehub-platform-api` for `Path` and `Preferences` used in `SlaBreachContext`. Also owns `ActorType` / `ActorTypeResolver` via `casehub-platform-api` (moved there in ledger#88). `WorkCloudEventTypes` — pure-Java CloudEvent type constants (`io.casehub.work.workitem.*` prefix, extension attribute names `tenancyid`/`templateid`). New in engine#56: `WorkItemCallerRef.parseCaseId(String callerRef): UUID`. New in work#275: `WorkItemCreator`, `WorkItemLifecycle` SPIs + `WorkItemRef`, `WorkItemEvent`, `WorkItemSpiAdapter` types in `io.casehub.work.api.spi`. |
 | `casehub-work-core` | Jandex library (no JPA) | `WorkBroker` and built-in `WorkerSelectionStrategy` implementations — used for human task routing only; casehub-engine uses its own `AgentRoutingStrategy` SPI (engine#337) |
 | `runtime` | Full Quarkus extension | WorkItem entity, services, filter engine |
-| `rest` | Jandex library | JAX-RS resources (12), request/response DTOs, exception mappers, WorkItemMapper — opt-in REST surface (work#292) |
+| `rest` | Jandex library | JAX-RS resources (12), request/response DTOs, exception mappers, WorkItemMapper — opt-in REST surface (work#292). No `quarkus:build` goal — library JAR, not an application. |
 | `deployment` | Quarkus extension deployment | Build-time processor (`@BuildStep`); pairs with `runtime` |
 | `casehub-work-persistence-memory` (`persistence-memory/`) | Test utilities | In-memory stores (WorkItem, audit, notes, issue links, routing cursor) using `ConcurrentHashMap` (thread-safe); `@Alternative @Priority(100)` (Tier 3 — ephemeral); zero-datasource alternative to JPA stores |
 | `casehub-work-ledger` | Optional module | Attaches casehub-ledger for WorkItem ledger entries, trust scoring, and peer attestation. Requires both `db/migration` and `db/ledger/migration` Flyway locations in test config (since ledger#95 moved base migrations). |
@@ -47,7 +47,9 @@ A `WorkItem` is deliberately NOT called `Task` — CNCF Serverless Workflow and 
 
 `DELEGATED` is a pre-acceptance state — item forwarded to a named actor who must explicitly accept (`PUT /workitems/{id}/accept-delegation?claimant=X`) or decline (`PUT /workitems/{id}/decline-delegation?actor=X`); non-terminal (`isTerminal()` = false, `isActive()` = true; can expire). On decline, `DELEGATION_DECLINED` fires the `AssignmentTrigger` and the item returns to `PENDING` (POOL) or `ASSIGNED` (DELEGATOR) per `DeclineTarget` scope preference (`casehub.work.delegation.decline-target`: POOL/DELEGATOR, default POOL). `EXPIRED` and `ESCALATED` are both terminal.
 
-**Key field:** `scope VARCHAR(255)` (V31 migration) — hierarchical scope path for SLA preference resolution via `casehub-platform-api`'s `Path` type; null = org root. Set by callers; propagated from casehub-engine via `HumanTaskTarget.scope` (engine#330).
+**Key fields:**
+- `scope VARCHAR(255)` (V31 migration) — hierarchical scope path for SLA preference resolution via `casehub-platform-api`'s `Path` type; null = org root. Set by callers; propagated from casehub-engine via `HumanTaskTarget.scope` (engine#330).
+- `types: Set<Path>` (V42 migration, work#291) — hierarchical type classification (replaces legacy `category` String). Embeddable `WorkItemType` value type. Tenancy-aware ancestor matching in JPA store. REST queries accept `type` param for filtering; responses include `types` and `typePaths` (CSV). `WorkItemLifecycleEvent` carries `types`. Migration from `category` complete across all modules (notifications, AI, reports, queues, MongoDB).
 
 See `docs/ARC42STORIES.MD` for status enumeration and field model.
 

@@ -55,6 +55,28 @@ Follows hexagonal architecture ([PP-20260512-9b8847](../protocols/casehub/hexago
 - `AmlActionRiskClassifier @RiskClassifier` — Layer 9 `ActionRiskClassifier` SPI implementation; fail-closed paths derive all gate metadata from domain type
 - `AmlOversightCaseHub`, `AmlOversightCoordinator`, `AmlLayer9Resource` — Layer 9 oversight harness; demonstrates PEP entity gating and low-risk CORPORATE autonomous path
 
+## Web UI (aml#91)
+
+Lit-based web UI built with casehub-blocks-ui components and casehub-pages. Three views:
+
+**Investigations view** — case workbench for AML investigations:
+- `case-workbench` — split-pane layout with investigation list (left) and detail tabs (right)
+- Five detail panels: investigation overview (transaction + prior context), findings (specialist results), routing (agent selection + gate cards), compliance (FinCEN requirements + SAR status + GDPR), audit trail (ledger entries + Merkle verification)
+- Uses blocks-ui `data-table` for investigation list, `work-item-detail` for tabs, `audit-trail-viewer` for ledger entries
+
+**Compliance view** — compliance officer work queue:
+- `work-item-inbox` (blocks-ui) — compliance review WorkItems with 30-day FinCEN SLA
+- Three-tab perspective (My Work / Claimable / All)
+- SSE live updates for new SAR reviews
+
+**Operations view** — operational dashboard with four tabs:
+- Throughput metrics — investigation status breakdown (open, under review, SAR filed, closed)
+- Trust scores — agent trust scores table (blocks-ui `trust-score-panel` with per-capability breakdown)
+- Gates — oversight gate metrics (action type distribution, gate outcomes)
+- Intervention — manual intervention reasons (flag distribution)
+
+All views use blocks-ui `data-table` for tabular data. Built with Quinoa (Quarkus frontend integration) — TypeScript compiled with esbuild, hot-reload in dev mode.
+
 ## The Compliance Gap It Closes
 
 Current agentic AML systems cannot provide:

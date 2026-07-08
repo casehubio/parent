@@ -40,9 +40,11 @@ Four-layer record: identity (`id`, `name`, `agentId`), slot (open `String` — d
 
 ### AgentCapability
 
-Declares a named capability with an optional `qualityHint` (Double, 0–1) and `epistemicDomains` map (domain → confidence, e.g. `{"java": 0.95, "rust": 0.42}`). The `epistemicDomains` map qualifies *how well* the agent handles the declared capability in specific subject domains — it is not a list of separate capabilities.
+Declares a named capability with an optional `qualityHint` (Double, 0–1), `description` (String, ≤500 chars, eidos#77), and `epistemicDomains` map (domain → confidence, e.g. `{"java": 0.95, "rust": 0.42}`). The `epistemicDomains` map qualifies *how well* the agent handles the declared capability in specific subject domains — it is not a list of separate capabilities.
 
-**Validation (compact constructor):** `name` required ≤100; `costHint` optional ≤200; list items in `inputTypes`/`outputTypes`/`tags` ≤200 each; `epistemicDomains` keys ≤200. Same character-set rules as `AgentDescriptor`. Throws `AgentValidationException` on violation.
+**Capability descriptions (eidos#77, #95):** `description` field provides human- and machine-readable capability semantics — what the capability does, constraints, expected inputs/outputs. Rendered in all formats (MARKDOWN, PROSE, A2A_CARD) with enrichment fallback when LLM semantic pass is unavailable. Enables semantic capability matching during agent routing — caller specifies desired capability semantics; registry matches against stored descriptions via embedding similarity.
+
+**Validation (compact constructor):** `name` required ≤100; `description` optional ≤500; `costHint` optional ≤200; list items in `inputTypes`/`outputTypes`/`tags` ≤200 each; `epistemicDomains` keys ≤200. Same character-set rules as `AgentDescriptor`. Throws `AgentValidationException` on violation.
 
 ### AgentDisposition
 
@@ -102,6 +104,15 @@ SPI in `casehub-eidos-api` — signal-parameterized API for learned behavioral p
 - `InMemoryBehavioralSignalStore @Alternative @Priority(1)` in `casehub-eidos-memory` for test isolation
 
 Foundation for epic #258 (adaptive agent routing).
+
+### Behavioral Contracts (eidos#87)
+
+Agents with `delegation: true` or vocabulary terms that imply supervision (e.g. `ConscientiousnessTerm.DELEGATING`, `DiscTerm.S_STEADY`) are expected to delegate and escalate appropriately. `BehavioralExpectations.escalationExpected()` derives these expectations from vocabulary terms via `VocabularyTerm.impliesSupervision()`. Compliance tracking:
+
+- `ComplianceDimension.DELEGATION` — tracks whether agent delegates when expected
+- `ComplianceDimension.ESCALATION` — tracks whether agent escalates when supervision is required
+
+`BehavioralSignalStore` records `COMPLIANT` / `VIOLATED` signals per dimension. `DefaultCapabilityHealth.probe()` Step 6 checks per-dimension VIOLATED counts against `COMPLIANCE_VIOLATION_THRESHOLD` (per-dimension) and aggregate total against `AGGREGATE_VIOLATION_THRESHOLD`. Violations downgrade probe result to `BehavioralViolation(PER_DIMENSION)` or `BehavioralViolation(AGGREGATE)` — enabling routing to avoid agents that consistently violate their stated behavioral profile.
 
 ### AgentStateStore (Phase 3 — complete)
 

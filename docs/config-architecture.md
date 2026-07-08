@@ -17,7 +17,7 @@ Each layer has a defined purpose and hard boundaries.
 | **Global norms** | `~/.claude/engagement.md`, `working-style.md`, `document-boundaries.md`, `design-implementation.md` | Behavioral norms — how Claude engages, universal workflow principles | Project-specific facts, workflow procedures, tool catalogues |
 | **Skills** | `~/.claude/skills/*/SKILL.md` | Comprehensive guidance for a specific task type | Repetition of other skills' content — use Prerequisites instead |
 | **Project CLAUDE.md** | `<repo>/CLAUDE.md` | Project-specific facts + invocation hooks | Generic norms already in global config |
-| **Platform doc** | `~/claude/casehub/parent/docs/PLATFORM.md` | Platform architecture + coherence protocol | Workflow procedures, skill invocations, tool catalogues |
+| **Platform doc** | `~/claude/casehub/parent/docs/INDEX.md` | Platform discovery index + topic chunks | Workflow procedures, skill invocations, tool catalogues |
 | **Prompt snippet** | `~/claude/casehub/parent/docs/prompt-snippets.md` | Session-critical non-negotiables that must not fade | Everything that can live elsewhere |
 | **This map** | `~/.claude/config-architecture.md` | Topic ownership — where each concern lives | (meta — do not add guidance here) |
 
@@ -55,7 +55,6 @@ For each topic: the **authoritative** location, plus acceptable secondary appear
 | Location | Role |
 |----------|------|
 | `design-implementation.md` ## Before Designing ← **authoritative** | The norm |
-| `PLATFORM.md` Development Session Protocol | One-line pointer |
 | Project CLAUDE.md Development Workflow | Invocation hook (3 lines) — project-specific surface |
 
 ### TDD / tests before implementing
@@ -63,7 +62,6 @@ For each topic: the **authoritative** location, plus acceptable secondary appear
 | Location | Role |
 |----------|------|
 | `design-implementation.md` ## Before Implementing ← **authoritative** | The norm |
-| `PLATFORM.md` Development Session Protocol | One-line pointer |
 | Project CLAUDE.md Development Workflow | Invocation hook — project-specific surface |
 
 ### Code review before committing
@@ -85,7 +83,6 @@ For each topic: the **authoritative** location, plus acceptable secondary appear
 | Location | Role |
 |----------|------|
 | `design-implementation.md` ## Protocols Are Not Dogma ← **authoritative** | General principle |
-| `PLATFORM.md` Protocol preamble | One sentence in context — kept for in-situ reminder |
 
 ### Documentation drift
 
@@ -98,7 +95,7 @@ For each topic: the **authoritative** location, plus acceptable secondary appear
 
 | Location | Role |
 |----------|------|
-| `PLATFORM.md` ← **authoritative** | Full 6-step protocol |
+| `platform/coherence-protocol.md` ← **authoritative** | Full 6-step protocol |
 | All CaseHub project CLAUDE.md | Reference via `~/claude/casehub/parent/docs/` path; skip gracefully if not cloned, GitHub raw URL fallback |
 | Prompt snippet | Reminder to read it at session start |
 
@@ -107,8 +104,44 @@ For each topic: the **authoritative** location, plus acceptable secondary appear
 | Location | Role |
 |----------|------|
 | `~/claude/casehub/garden/docs/protocols/INDEX.md` ← **authoritative** | All platform-wide architectural rules |
-| `PLATFORM.md` Implementation Conventions section | Summary table of key entries — pointer to full index |
+| `platform/protocols.md` | Summary table of key entries — pointer to full index |
 | `protocol` skill | Tool for CAPTURE / SWEEP / SEARCH / HEALTH operations on protocol files |
+
+### Capability ownership (CaseHub-specific)
+
+| Location | Role |
+|----------|------|
+| `platform/capability-ownership.md` ← **authoritative** | "Where does X live?" lookup table |
+
+### Cross-repo dependency map (CaseHub-specific)
+
+| Location | Role |
+|----------|------|
+| `platform/dependency-map.md` ← **authoritative** | Cross-repo impact analysis for renames, removals, SPI breaks |
+
+### Boundary rules (CaseHub-specific)
+
+| Location | Role |
+|----------|------|
+| `platform/boundary-rules.md` ← **authoritative** | All "do not" rules across the platform |
+
+### Known overlap risks (CaseHub-specific)
+
+| Location | Role |
+|----------|------|
+| `platform/overlap-risks.md` ← **authoritative** | Known semantic collisions + placement violations |
+
+### Named datasources / persistence (CaseHub-specific)
+
+| Location | Role |
+|----------|------|
+| `platform/persistence.md` ← **authoritative** | Flyway conventions, datasource naming, migration path scoping |
+
+### SPI placement (CaseHub-specific)
+
+| Location | Role |
+|----------|------|
+| `platform/coherence-protocol.md` Step 4 ← **authoritative** | SPI placement criteria within the coherence protocol |
 
 ### Behavioral norms (engagement, directness, no sycophancy)
 

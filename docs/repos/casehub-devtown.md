@@ -51,6 +51,29 @@ LAYER-LOG.md in the project root is the authoritative layer-by-layer record with
   - Known tech debt: `CrossTenantCaseInstanceRepository` in async observer (engine#429 tracks fix)
   - Follow-up: engine#428–430, qhorus#251, devtown#65–68
 
+## Governance Workbench UI
+
+Web UI built with casehub-pages DSL. Six views:
+
+**Operations** — operational metrics dashboard (throughput, latency, error rates)
+
+**Reviews** — PR review case workbench with inbox and detail tabs
+
+**Merge Queue** — merge batch status, SLA tracking, batch composition
+
+**Reviewers** (governance workbench) — reviewer trust management:
+- List view: all reviewers with trust scores table (by capability: code-analysis, security, architecture, style), open commitments, total decisions, maturity phase
+- Profile view: detailed reviewer breakdown with trust charts (by capability and by dimension), decision history, commitment timeline
+- Dataset: `reviewers` (powered by `GovernanceQueryService`)
+
+**Triage** — incident feedback and FLAGGED attestation entry for production incidents traced to missed reviews
+
+**System** — configuration, diagnostics, health checks
+
+**GovernanceQueryService** — aggregates reviewer health metrics from ledger, trust scores, and commitment state. Queries used by Reviewers view.
+
+**GovernanceEventBridge** (`@ServerEndpoint("/governance/events")`) — WebSocket endpoint for real-time reviewer status updates. Broadcasts reviewer trust score changes, commitment lifecycle events, and attestation submissions to connected clients.
+
 ## What It Does NOT Own
 
 Everything below belongs in the foundation:

@@ -57,10 +57,11 @@ immediately get defaults that can be displaced by activating the built-in altern
 | `NoOpActorDIDProvider` | `@DefaultBean` — always active | Returns `Optional.empty()` for every actorId |
 | `NoOpDIDResolver` | `@DefaultBean` — always active | Returns `Optional.empty()` for every DID URI |
 | `NoOpCredentialValidator` | `@DefaultBean` — always active | Returns `CredentialValidationResult.VALID` for every credential |
-| `ConfiguredActorDIDProvider` | `@Alternative` — activate via `quarkus.arc.selected-alternatives` | Static `actorId → DID` mapping from config (`casehub.identity.dids.*`). No HTTP; suitable for testing and single-tenant deployments. |
-| `KeyDIDResolver` | `@Alternative` — activate via `quarkus.arc.selected-alternatives` | Resolves `did:key` URIs by decoding the multibase-encoded public key directly. No HTTP calls, no `alsoKnownAs` traversal. Cryptographic only. |
+| `CompositeActorDIDProvider` | `@ApplicationScoped` — automatically active | Iterates `@ActorDIDSource` providers by `@Priority` (platform#128). First non-empty result wins. Enables multi-source resolution (config fallback to SCIM). |
+| `ConfiguredActorDIDProvider` | `@ActorDIDSource @Alternative` — activate via `quarkus.arc.selected-alternatives` | Static `actorId → DID` mapping from config (`casehub.identity.dids.*`). No HTTP; suitable for testing and single-tenant deployments. |
+| `KeyDIDResolver` | `@Alternative` — activate via `quarkus.arc.selected-alternatives` | Resolves `did:key` URIs via multicodec dispatch (platform#130). Supports Ed25519 (0xed) and P-256 (0x1200) with varint decoding. Populates `alsoKnownAs` from actorId. No HTTP calls. |
 | `WebDIDResolver` | `@Alternative` — activate via `quarkus.arc.selected-alternatives` | Resolves `did:web` URIs by fetching `https://<hostname>/.well-known/did.json`. SSRF protection: configurable allowlist/blocklist, private-range blocking enabled by default. |
-| `ScimActorDIDProvider` | `@Alternative @ApplicationScoped` — activate via `quarkus.arc.selected-alternatives` | Resolves `actorId → DID` via SCIM2 `Agent` endpoint (`externalId` = `actorId`). TTL cache. Invalidates on `AgentKeyRotatedEvent`. Config prefix: `casehub.identity.scim.*`. |
+| `ScimActorDIDProvider` | `@ActorDIDSource @Alternative @ApplicationScoped` — activate via `quarkus.arc.selected-alternatives` | Resolves `actorId → DID` via SCIM2 `Agent` endpoint (`externalId` = `actorId`). TTL cache. Invalidates on `AgentKeyRotatedEvent`. Config prefix: `casehub.identity.scim.*`. Lazy HTTPS validation (platform#132). |
 
 `AbstractCachingIdentityProvider` is a base class for building TTL-capable generic caches
 with atomic eviction and external-driven `put()` invalidation. `ScimActorDIDProvider` extends it.
@@ -100,10 +101,12 @@ io.casehub.platform.identity       (casehub-platform-identity)
   NoOpActorDIDProvider             — @DefaultBean
   NoOpDIDResolver                  — @DefaultBean
   NoOpCredentialValidator          — @DefaultBean
-  ConfiguredActorDIDProvider       — @Alternative (config-based)
-  KeyDIDResolver                   — @Alternative (did:key, no HTTP)
+  CompositeActorDIDProvider        — @ApplicationScoped (iterates @ActorDIDSource by @Priority)
+  ConfiguredActorDIDProvider       — @ActorDIDSource @Alternative (config-based)
+  KeyDIDResolver                   — @Alternative (did:key, multicodec dispatch, Ed25519/P-256)
+  MulticodecKeyType                — enum: Ed25519/P-256 SPKI encoding
   WebDIDResolver                   — @Alternative (did:web, SSRF protection)
-  ScimActorDIDProvider             — @Alternative @ApplicationScoped (SCIM2 lookup)
+  ScimActorDIDProvider             — @ActorDIDSource @Alternative @ApplicationScoped (SCIM2 lookup)
   ScimAgentResource                — record: cached SCIM2 agent lookup result
 ```
 
@@ -183,4 +186,4 @@ Multiple alternatives can be selected simultaneously (e.g. `KeyDIDResolver` + `S
 - [`docs/repos/casehub-ledger.md`](casehub-ledger.md) — the primary consumer; owns enrichers, binding persistence, enforcement
 - [`docs/repos/casehub-platform.md`](casehub-platform.md) — sibling modules (OIDC, SCIM group membership, memory adapters)
 - [`integration/scim2-agent-identity.md`](../integration/scim2-agent-identity.md) — SCIM2 `Agent` endpoint schema and filter protocol
-- [PLATFORM.md](../PLATFORM.md) — capability ownership table (DID/VC resolution entry)
+- [capability-ownership.md](../platform/capability-ownership.md) — DID/VC resolution entry

@@ -59,6 +59,23 @@ See `docs/DESIGN.md` for the endpoint inventory and authentication mechanism det
 
 ---
 
+## Recent Features
+
+**Pages/Quinoa adoption (claudony#161)** — migrated browser dashboard from hand-coded HTML to casehub-pages DSL. UI composition via `page()`, `tabs()`, `table()`, `metric()` primitives. Built with Quinoa (Quarkus frontend integration) — TypeScript compiled with esbuild, hot-reload in dev mode. Dashboard shows session cards, PR/CI status, service health.
+
+**Multi-tenancy foundation (claudony#121)** — tenancyId enforcement throughout:
+- `TenantContext` SPI with `DefaultTenantContext @ApplicationScoped` — delegates to `CurrentPrincipal.tenancyId()` when request scope is active, falls back to `TenancyConstants.DEFAULT_TENANT_ID` outside request context
+- `SessionRegistry` filters `all()`/`find()`/`findByCaseId()` by tenant unconditionally
+- `allUnscoped()`/`findUnscoped()`/`existsByName()` for system operations (cross-tenant admin, health checks)
+
+**ProvisionerConfigRegistry SPI infrastructure (claudony#164, #163, #156)** — three-phase provisioner config model:
+- `ProviderConfigSource` SPI — query interface for provisioner parameters (LLM provider, model, temperature, max tokens)
+- `CompositeProviderConfigSource` — aggregates multiple sources, precedence-ordered (env vars → tenant prefs → system defaults)
+- `WorkerContextProvider` — builds Claude startup prompt from ledger lineage + mesh system prompt (three-layer model: system + tenant + case)
+- Removes `WorkerCommandResolver` — consolidated into `ProviderConfigSource` SPI
+
+---
+
 ## Depends On
 
 | Repo | How |

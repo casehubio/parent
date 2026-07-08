@@ -69,11 +69,13 @@ Three related capabilities in one repo:
 
 ### EmbeddingIngestor / CaseRetriever (rag-api)
 
-`EmbeddingIngestor` — ingest pre-chunked text into vector store (embedding + storage), delete and list by source document. Tenancy-scoped; `CorpusRef` carries tenant ID + corpus name.
+`EmbeddingIngestor` — ingest pre-chunked text into vector store (embedding + storage), delete and list by source document. Tenancy-scoped; `CorpusRef` carries tenant ID + corpus name. `QdrantEmbeddingIngestor` is the default implementation in `rag/`.
 
-`CaseRetriever` — retrieval entry point for case steps and the fact space. `retrieve(query, CorpusRef)` → `List<RetrievedChunk>`. Hybrid search: LangChain4j `OnnxEmbeddingModel` (dense) + `SparseEmbedder` (sparse) fused via RRF. Reranked by `CrossEncoderReranker` in precision mode. Reactive variant: `ReactiveCaseRetriever` — `retrieve()` → `Uni<List<RetrievedChunk>>`; `BlockingToReactiveRagBridge @DefaultBean` in `rag/` wraps blocking impl.
+`CaseRetriever` — retrieval entry point for case steps and the fact space. `retrieve(query, CorpusRef)` → `List<RetrievedChunk>`. Hybrid search: LangChain4j `OnnxEmbeddingModel` (dense) + `SparseEmbedder` (sparse) fused via configurable `FusionStrategy` (RRF, DBSF, or CC). Reranked by `CrossEncoderReranker` in precision mode. Reactive variant: `ReactiveCaseRetriever` — `retrieve()` → `Uni<List<RetrievedChunk>>`; `BlockingToReactiveRagBridge @DefaultBean` in `rag/` wraps blocking impl.
 
 `HybridCaseRetriever` (and `ReactiveHybridCaseRetriever`) accept `DenseQuantization` type and optional oversampling. When quantization is active (`DenseQuantization != NONE`) and `casehub.rag.quantization.oversampling` is set, the dense prefetch leg applies `QuantizationSearchParams` with the configured oversampling factor + `rescore=true`. Compensates for quantization precision loss by fetching more candidates from the quantized index before rescoring against full-precision vectors. Sparse prefetch is unaffected — sparse vectors are not quantized. See [`casehub-neocortex/ARC42STORIES.MD` §6](https://github.com/casehubio/neocortex/blob/main/ARC42STORIES.MD#6-runtime-view) for the oversampling design rationale.
+
+**Per-leg embedding separation (neocortex#113):** dense leg uses `RetrievalQuery.searchText()` (optimized for search), sparse and ColBERT legs use `text()` (full original query). Enables query reformulation for dense retrieval while preserving term-level signals for sparse matching.
 
 ### MatryoshkaEmbeddingModel (rag)
 
@@ -95,9 +97,16 @@ Named `DenseQuantization` rather than `QuantizationType` because the Qdrant clie
 
 `SeparateModelEmbedder` in `rag/` — bridges LangChain4j `EmbeddingModel` + optional `SparseEmbedder` into `MultiModalEmbedder` contract. `@DefaultBean` displaced by BgeM3 when configured.
 
-### CBR Weighted Similarity Scoring (memory-api, neocortex#104)
+### CBR Weighted Similarity Scoring (memory-api, neocortex#104, #107, #108)
 
-`CbrSimilarityScorer` in `memory-api/cbr/` — pure-Java per-field similarity with configurable per-field weights. Supports categorical exact match, numeric linear decay, and text exact match. `CbrQuery` gains `weights` and `vectorWeight` fields. Replaces hard Qdrant payload filters with client-side graded scoring for more nuanced case retrieval.
+`CbrSimilarityScorer` in `memory-api/cbr/` — pure-Java per-field similarity with configurable per-field weights and `SimilaritySpec` functions. Supports:
+- **Categorical:** exact match, or `CategoricalTable` rank-based similarity (e.g. severity HIGH→MEDIUM = 0.75)
+- **Numeric:** `GaussianDecay`, `StepDecay`, `ExponentialDecay` distance functions
+- **Text:** exact match
+
+`CbrQuery` gains `weights`, `vectorWeight`, and per-field `SimilaritySpec` overrides. `FeatureField` sealed interface with exhaustive switches at all dispatch sites (neocortex#107). Replaces hard Qdrant payload filters with client-side graded scoring for more nuanced case retrieval.
+
+**CBR reconciliation with RAG (neocortex#104, engine#671):** `CbrCaseMemoryStore` SPI in `memory-api/cbr/` enables case-based reasoning alongside RAG retrieval. Engine consumes this for typed fact space population — weighted similarity scoring over prior case features, combined with vector search. Cache optimization: case-lifetime retrieval caching controlled by `CbrConfig.enableCaching`. In-memory CBR implementation (`memory-cbr-inmem`) for test isolation.
 
 ### OnnxInferenceModel Input Name Alias Resolution (inference-runtime, neocortex#104)
 

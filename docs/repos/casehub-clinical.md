@@ -73,6 +73,30 @@ The tutorial structure emerges from the natural adoption sequence. Each layer ad
 - **Layer 10 — IND deadline enforcement (clinical#83):** `regulatory-submission.yaml` `humanTask` uses `expiresAtExpression` (engine#549) — `WorkItem.expiresAt` set to exact absolute FDA deadline (`ae.reportedAt + window`). `ClinicalIndReportingBreachPolicy @ApplicationScoped` — stateless two-tier `SlaBreachPolicy`: EscalateTo regulatory-leadership 48h. `RegulatorySubmissionCompletedListener` sets `FILED` on `GoalReached`. `RegulatorySubmissionBreachListener` sets `DEADLINE_MISSED` on `WorkItemLifecycleEvent.ESCALATED` via `CallerRef.parse()`. `IndReportFiledLedgerEntry` + `IndReportBreachLedgerEntry` (V2026/V2027, qhorus datasource). `RegulatorySubmissionStatus.DEADLINE_MISSED`. `RegulatorySubmissionLedgerWriter` gains `writeFiledEntry()` + `writeBreachEntry()`. `ClinicalComplianceSupplement` gains `regulatorySubmissionFiled()` + `regulatorySubmissionBreach()` factory methods. Requires `ExpressionEngine.extractString()` SPI (engine#549).
 - 3-site showcase scenario vs ClinicalAgent
 
+## CBR Integration (clinical#116, clinical#33)
+
+**ClinicalRoutingFeatureExtractor** (clinical#33): `@ApplicationScoped` implementation of blocks `RoutingFeatureExtractor` — displaces `TextOnlyFeatureExtractor @DefaultBean`. Extracts structured features from `AgentRoutingContext` for CBR similarity queries: CTCAE grade, AE type, patient demographics, trial phase, site location. Used by blocks `CbrAgentRoutingStrategy` for evidence-based agent selection.
+
+**ClinicalCbrService** (clinical#116): central facade for CBR `CbrCaseMemoryStore` operations. Owns domain-specific feature extraction and precedent query logic. Used by REST resources for precedent retrieval.
+
+**ClinicalCbrDomains**: domain constants for CBR storage — ADVERSE_EVENT, PROTOCOL_DEVIATION, PROTOCOL_AMENDMENT. Each domain stores precedent cases with outcome, features, and problem text.
+
+**Precedent storage**: observes CDI events (`AdverseEventReportedEvent`, `DeviationResolvedEvent`, `AmendmentResolvedEvent`) and persists precedent cases via `CbrCaseMemoryStore`. Structured features (CTCAE grade, deviation severity, amendment type) enable hybrid similarity (feature vector + semantic text).
+
+## REST Precedent Endpoints
+
+Three precedent endpoints surface CBR similarity queries to the UI:
+
+| Endpoint | What it returns |
+|----------|-----------------|
+| `GET /trials/{t}/adverse-events/{aeId}/precedents` | Similar past AEs — feature vector similarity (CTCAE grade, AE type, demographics) + semantic text. Returns `AePrecedentResponse` with score, outcome, features, safety officer decision. |
+| `GET /trials/{t}/deviations/{devId}/precedents` | Similar past protocol deviations — plan-based similarity (PlanCbrCase) with deviation type, severity, PI decision, IRB outcome. Returns `DeviationPrecedentResponse`. |
+| `GET /trials/{t}/amendments/{amendmentId}/precedents` | Similar past protocol amendments — textual similarity (amendment description, IRB decision rationale). Returns `AmendmentPrecedentResponse`. |
+
+**Query parameters:** `limit` (default 5, max 20), `minScore` (default 0.5).
+
+**Security:** all three endpoints require `TrialMembership` check — user must be a member of the trial (PI, site coordinator, or safety officer).
+
 ## The Compliance Gap It Closes
 
 ClinicalAgent (peer-reviewed baseline) structurally cannot provide:

@@ -29,7 +29,7 @@ Extracted from `casehub-engine-api` (desiredstate#40, engine#543). The extractio
 | Type | Kind | Purpose |
 |------|------|---------|
 | `Worker` | record | Named automated task with function, capabilities, execution policy |
-| `Capability` | record | Named capability tag — used for routing and selection |
+| `Capability` | record | Named capability tag with input/output schema — used for routing and validation. Fields: `name`, `inputSchema` (JSON Schema string), `outputSchema` (JSON Schema string), `description` (optional). Schema validation enforced by `DefaultWorkerExecutor` (worker#7). |
 | `WorkerFunction` | interface | Strategy interface — implement to define worker behaviour |
 | `WorkerResult` | record | Output of a worker execution — success or failure with output map |
 | `WorkerOutcome` | sealed interface | `Success(PlannedAction)`, `Declined(String reason)`, `Failed(String reason)`, `Expired(String reason)` |
