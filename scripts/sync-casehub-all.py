@@ -108,3 +108,14 @@ subprocess.run(
     env=os.environ.copy()
 )
 print('casehub-all dispatch sent.')
+
+try:
+    subprocess.run(
+        ['gh', 'api', 'repos/casehubio/examples/dispatches', '--input', '-'],
+        input=json.dumps(payload).encode(),
+        check=True,
+        env=os.environ.copy()
+    )
+    print('examples dispatch sent.')
+except subprocess.CalledProcessError as e:
+    print(f'WARNING: examples dispatch failed — {e}')
