@@ -119,3 +119,14 @@ try:
     print('examples dispatch sent.')
 except subprocess.CalledProcessError as e:
     print(f'WARNING: examples dispatch failed — {e}')
+
+try:
+    subprocess.run(
+        ['gh', 'api', 'repos/casehubio/docs/dispatches', '--input', '-'],
+        input=json.dumps(payload).encode(),
+        check=True,
+        env=os.environ.copy()
+    )
+    print('docs dispatch sent.')
+except subprocess.CalledProcessError as e:
+    print(f'WARNING: docs dispatch failed — {e}')
