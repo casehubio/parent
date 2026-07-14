@@ -43,6 +43,7 @@ jobs:
             casehubio/claudony \
             casehubio/openclaw \
             casehubio/casehub-ops \
+            casehubio/chat-app \
             casehubio/devtown \
             casehubio/aml \
             casehubio/blocks \

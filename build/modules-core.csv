@@ -17,3 +17,4 @@ ras,platform
 workers,platform,engine
 claudony,parent,ledger,work,qhorus
 ops,platform,desiredstate
+chat-app,connectors,pages

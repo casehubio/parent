@@ -37,6 +37,7 @@ Four tiers, always kept separate:
 | `casehub-openclaw` | [casehubio/openclaw](https://github.com/casehubio/openclaw) | CaseHub × OpenClaw integration | Integration |
 | `casehub-workers` | [casehubio/workers](https://github.com/casehubio/workers) | HTTP, Camel, and GitHub Actions worker dispatch adapters | Integration |
 | `casehub-ops` | [casehubio/casehub-ops](https://github.com/casehubio/casehub-ops) | Domain implementations of casehub-desiredstate SPIs for CaseHub-specific deployment concerns | Integration |
+| `casehub-chat-app` | [casehubio/chat-app](https://github.com/casehubio/chat-app) | Chat workbench application — qhorus UI + SQLite backend | Integration |
 | `casehub-eidos` | [casehubio/eidos](https://github.com/casehubio/eidos) | Agent identity — descriptor, discovery registry, vocabulary system, system prompt generation | Foundation |
 | `casehub-neocortex` | [casehubio/neocortex](https://github.com/casehubio/neocortex) | ONNX neural text inference + LangChain4j RAG integration + agent memory SPI | Foundation |
 | `casehub-pages` | [casehubio/casehub-pages](https://github.com/casehubio/casehub-pages) | Web application framework (TypeScript/Yarn foundation module) | Foundation |
@@ -74,6 +75,7 @@ casehub-parent              (BOM — publish first; all others import it)
   casehub-openclaw          (depends on qhorus + engine SPIs)
   casehub-workers           (depends on engine-api + engine-common)
   casehub-ops               (depends on desiredstate + platform-api)
+  casehub-chat-app          (depends on connectors + pages + blocks-ui)
 
   — Application tier (opt-in, off by default in CI) —
   casehub-life
