@@ -50,6 +50,15 @@ LAYER-LOG.md in the project root is the authoritative layer-by-layer record with
   - Recall: `CaseMemoryRecaller` called before `PrReviewCaseService.startCase()`
   - Known tech debt: `CrossTenantCaseInstanceRepository` in async observer (engine#429 tracks fix)
   - Follow-up: engine#428–430, qhorus#251, devtown#65–68
+- **CBR Phase 1 — PR similarity model (devtown#130, devtown#131):**
+  - `PrFeatureVector` — structured feature extraction from PRs (file paths, modules, languages, change size, contributor)
+  - `WeightedJaccardSimilarity` — 5-dimension weighted scoring with per-dimension breakdown
+  - `CbrRetrievalService` — precedent retrieval from `CaseMemoryStore` (scan → score → rank → enrich)
+  - `FeatureVectorEmitter` — stores case-scoped feature vectors as memory facts at case open
+  - `Precedent` — past case with similarity score, feature vector, and capability outcomes
+  - `MemoryContext` now includes `List<Precedent> precedents` alongside existing `contributorHistory` and `codeAreaHistory`
+  - Uses `CaseMemoryStore` (not `CbrCaseMemoryStore`) due to four platform gaps documented in the spec; migration path to `CbrCaseMemoryStore` when neocortex gains `FeatureField.SetValued`
+  - Epic #129 Phase 1 complete; Phase 2 (#132, #133) unblocked
 
 ## Governance Workbench UI
 

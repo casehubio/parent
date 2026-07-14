@@ -20,7 +20,7 @@ Reusable building blocks for CaseHub applications — composed from qhorus, engi
 A pattern belongs in blocks if it meets at least one of these criteria:
 1. **Needs an LLM in the loop** — the pattern involves LLM invocation, prompt construction, or LLM-driven decision-making
 2. **Uses classical AI** — classical planning, Bayesian reasoning, CEP (complex event processing), or similar
-3. **Requires integration with foundational platform parts** — the pattern composes across qhorus, engine, work, or eidos APIs in a way that would otherwise be duplicated by every consumer
+3. **Requires integration across foundational platform parts that the consuming module does not already depend on** — the pattern composes across qhorus, engine, work, or eidos APIs in combinations that would otherwise force every consumer to take on new cross-module dependencies. If all dependencies are already available in the consuming module's API tier, the type belongs in that API module, not blocks.
 
 **The test:** if removing the LLM/AI/integration aspect leaves a generic utility, it belongs in platform. If removing the domain-specific aspect leaves a reusable AI-integration pattern, it belongs in blocks.
 
@@ -32,7 +32,7 @@ Single module — `casehub-blocks` is a flat library, not a multi-module reactor
 
 | Module | Artifact | Contents |
 |--------|----------|----------|
-| (root) | `casehub-blocks` | Six packages: channel, agentic, conversation, oversight, routing, routing.agent |
+| (root) | `casehub-blocks` | Seven packages: channel, agentic, conversation, oversight, routing, routing.agent, summarisation |
 
 ---
 
@@ -147,6 +147,22 @@ AI-powered `AgentRoutingStrategy` implementations for the engine's routing pipel
 
 ---
 
+## Package: `io.casehub.blocks.summarisation`
+
+Layered event summarisation framework — temporal event accumulation with configurable window policies and pluggable summarisation strategies. Extracted from quarkmind via blocks#27.
+
+| Class | What it does |
+|-------|-------------|
+| `EventLevel` | Enum defining temporal granularity levels for event accumulation |
+| `LevelEvent` | Event at a specific temporal level — carries content and metadata |
+| `WindowPolicy` | Configurable window boundaries for event accumulation (time-based, count-based) |
+| `EventAccumulator` | Accumulates events within a window policy, triggers summarisation at window boundaries |
+| `EventStreamBus` | CDI event bus for streaming events through the summarisation pipeline |
+| `Summariser` | SPI for pluggable summarisation strategies — consumers implement domain-specific summarisation |
+| `SummarisationRunner` | Orchestrates the summarisation pipeline: accumulate → summarise → emit higher-level events |
+
+---
+
 ## Trust Routing Architecture
 
 The trust routing system spans four layers — blocks owns policy configuration AND AI-powered routing strategies.
@@ -174,7 +190,7 @@ Epic #28 tracks extraction of shared patterns from domain repos into blocks. Eac
 | #24 | Universal pluggable routing strategy | L | High | **Moved → engine#634** | engine | engine, work | engine, work, qhorus, eidos |
 | #30 | AI routing strategy impls (trust, LLM, CBR) | M | Med | **Done** | blocks | — | engine, domain repos |
 | #25 | Worker data coordination (DataExchange/DataChannel) | L | High | **Moved → engine#633** | engine | engine | engine, workers, desiredstate |
-| #27 | Layered event summarisation | M | Med | Not yet — quarkmind still baking | blocks | quarkmind | quarkmind, iot, aml, clinical |
+| #27 | Layered event summarisation | M | Med | **Done** | blocks | quarkmind | quarkmind, iot, aml, clinical |
 
 ---
 

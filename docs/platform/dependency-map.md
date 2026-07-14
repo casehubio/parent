@@ -202,6 +202,7 @@ casehub-parent              (BOM — publish first; all others import it)
 | `casehub-blocks` | `casehub-aml` | `app` | (planned) Oversight gate, context tracking |
 | `casehub-blocks` | `casehub-clinical` | `runtime` | (planned) Oversight gate, structured conversation |
 | `casehub-blocks` | `casehub-life` | `app` | (planned) Context tracking, channel dispatch |
+| `casehub-blocks` | `quarkmind` | `quarkmind-agent` | Summarisation framework — `EventStreamBus`, `SummarisationRunner`, etc. (blocks#27) |
 | `casehub-ledger` (runtime) | `casehub-life` | `app` | Merkle audit, GDPR erasure, trust scoring |
 | `casehub-work` (runtime) | `casehub-life` | `app` | WorkItems with SLA and escalation |
 | `casehub-qhorus` (runtime) | `casehub-life` | `app` | commitment lifecycle, oversight channel |
