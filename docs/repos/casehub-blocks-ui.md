@@ -28,7 +28,7 @@ Domain-aware but app-agnostic — components know about trust scores, case timel
 
 | Package | Purpose | Maturity |
 |---------|---------|----------|
-| `packages/blocks-ui-core` | Tokens (re-exported from pages-ui-tokens), DataEndpointMixin, a11y mixins, event helpers (re-exported from pages-component), domain types, SharedTimerController, blocks-confirm-dialog, schema-form | Beta |
+| `packages/blocks-ui-core` | Tokens (re-exported from pages-ui-tokens), DataSourceMixin + DataSourceAdapter + fetchSource + createTypedFetchSource + EMPTY_DATASET, TrendSourceMixin, renderSparkline, event helpers (re-exported from pages-component), domain types (TrustLevel, trustLevelFromScore), SharedTimerController, EventStreamController, blocks-confirm-dialog, schema-form, pulseAnimation | Beta |
 | `components/data-table` | Generic data table with three display modes, virtual scroll, ARIA grid, 2D keyboard navigation | Stable |
 | `components/work-item-inbox` | Work item inbox — queue pill bar, scope context, filter bar, SSE lifecycle, three-tab perspective (My Work / Claimable / All) | Beta |
 | `components/work-item-row` | Single work item row component (legacy — inbox now uses data-table) | Deprecated |
@@ -39,9 +39,14 @@ Domain-aware but app-agnostic — components know about trust scores, case timel
 | `components/kpi-metric-row` | KPI metric cards — responsive grid with sparklines, trends, status colours, density property (comfortable/compact/dense), reactive endpoint | Stable |
 | `components/approval-gate` | Approval gate — structured decision point with quorum, evidence slots, SLA integration, confirmation dialog | Beta |
 | `components/audit-trail-viewer` | Audit trail viewer — ledger entries with data-table, Merkle verification banner, attestations, actor/type/date filters, GDPR erasure handling | Beta |
-| `components/case-timeline` | Case lifecycle timeline — vertical CSS timeline with 30+ event type nodes, compact dot strip mode, stream type filter | Beta |
-| `components/trust-score-panel` | Trust score panel — SVG gauge, per-capability breakdown table, maturity badges, compact badge mode | Beta |
-| `components/channel-activity` | Qhorus channel activity feed — message stream, commitment status, speech act badges | Beta |
+| `components/blocks-timeline` | Pluggable timeline — strategy-based content (event chronology, state progression, commitment lifecycle), three layouts (vertical, horizontal, compact), render callbacks. Replaces case-timeline. | Beta |
+| `components/trust-score-panel` | Trust score panel — SVG gauge, per-capability breakdown table, trend sparkline, maturity badges, compact badge mode | Beta |
+| `components/channel-activity` | Qhorus channel activity — message feed with sender grouping/threading, channel nav, member panel, message input with speech-act type selector, emoji reactions | Beta |
+| `components/similarity-panel` | Similar past cases — similarity scores, outcomes, resolution times via pages-table. Promoted from clinical. | Beta |
+| `components/compliance-summary` | Regulation compliance grid — status badges (MET/PARTIAL/GAP/BREACHED), evidence links via pages-table. Promoted from clinical. | Beta |
+| `components/trust-feedback-display` | Post-gate trust score delta — decision/attestation badges, trust before→after, full card and compact modes. Promoted from clinical. | Beta |
+| `components/sla-breach-policy` | SLA breach escalation tiers — active tier highlighting, optional embedded sla-indicator countdown. Promoted from clinical. | Beta |
+| `components/gdpr-erasure-action` | GDPR data erasure form — three-phase (input → confirmation → receipt), customisable subject/reasons. Promoted from clinical. | Beta |
 
 **Maturity levels:**
 - **Stable** — API locked, used in production apps, full test coverage
@@ -76,11 +81,11 @@ Ledger entry viewer — data-table rendering, Merkle verification banner, attest
 
 **Consumers:** aml, clinical, devtown, life, soc (compliance-heavy applications)
 
-### case-timeline
+### blocks-timeline
 
-Case lifecycle timeline — vertical CSS timeline with 30+ event type nodes, compact dot strip mode, stream type filter.
+Pluggable timeline — strategy-based content with three strategies: event chronology (case events), state progression (qhorus workflows), commitment lifecycle (COMMANDED → ACKNOWLEDGED → DONE/DECLINED). Three layouts (vertical, horizontal, compact), render callback resolution, temporal weighting. Replaces case-timeline.
 
-**Consumers:** aml, clinical, life, ops, drafthouse (case-centric applications)
+**Consumers:** aml, clinical, life, ops, drafthouse, devtown (case-centric and workflow applications)
 
 ### trust-score-panel
 
