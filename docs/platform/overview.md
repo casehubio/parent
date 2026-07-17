@@ -21,26 +21,26 @@ Four tiers, always kept separate:
 | Repo | GitHub | One-liner | Tier |
 |------|--------|-----------|------|
 | `casehub-parent` | [casehubio/parent](https://github.com/casehubio/parent) | BOM, CI dashboards, full-stack build tooling | — |
-| `casehub-platform` | [casehubio/platform](https://github.com/casehubio/platform) | Zero-dep foundational SPIs — Path, Preferences, Identity. Memory SPI types migrated to neocortex | Foundation |
+| `casehub-platform` | [casehubio/platform](https://github.com/casehubio/platform) | Zero-dep foundational SPIs — Path, Preferences, Identity, DataSource alpha network, notification pipeline (subscriptions, dispatch, digest, delivery tracking), expression engines (JQ + MVEL3), DID infrastructure. Memory SPI types migrated to neocortex | Foundation |
 | `casehub-worker` | [casehubio/casehub-worker](https://github.com/casehubio/casehub-worker) | Worker primitive foundation — Worker, Capability, WorkerFunction, WorkerResult, WorkerOutcome | Foundation |
-| `casehub-ledger` | [casehubio/ledger](https://github.com/casehubio/ledger) | Immutable tamper-evident audit ledger + trust scoring | Foundation |
+| `casehub-ledger` | [casehubio/ledger](https://github.com/casehubio/ledger) | Immutable tamper-evident audit ledger + trust scoring + Vault/Cloud KMS signing + GDPR erasure receipts | Foundation |
 | `casehub-work` | [casehubio/work](https://github.com/casehubio/work) | Human task lifecycle (WorkItem inbox, SLA, delegation, routing) | Foundation |
-| `casehub-qhorus` | [casehubio/qhorus](https://github.com/casehubio/qhorus) | Peer-to-peer agent communication mesh | Foundation |
-| `casehub-connectors` | [casehubio/connectors](https://github.com/casehubio/connectors) | Outbound and inbound message connectors (Slack, Teams, SMS, email) | Foundation |
+| `casehub-qhorus` | [casehubio/qhorus](https://github.com/casehubio/qhorus) | Peer-to-peer agent communication mesh — channels, commitments, spaces, presence, topic-aware projections, OTel tracing | Foundation |
+| `casehub-connectors` | [casehubio/connectors](https://github.com/casehubio/connectors) | Outbound and inbound message connectors (Slack, Discord, Teams, SMS, email) + ChatPlatform SPI + RichCard cross-platform messaging | Foundation |
 | `casehub-iot` | [casehubio/iot](https://github.com/casehubio/iot) | Typed IoT device abstraction layer — DeviceEntity hierarchy (Matter-aligned) | Foundation |
 | `casehub-ras` | [casehubio/casehub-ras](https://github.com/casehubio/casehub-ras) | Reticular Activating System — situational awareness and reactive case creation | Foundation |
 | `casehub-desiredstate` | [casehubio/casehub-desiredstate](https://github.com/casehubio/casehub-desiredstate) | Generic desired-state management runtime | Foundation |
-| `casehub-blocks` | [casehubio/blocks](https://github.com/casehubio/blocks) | Reusable building blocks composed from qhorus, engine, work primitives | Foundation-adjacent |
-| `casehub-blocks-ui` | [casehubio/blocks-ui](https://github.com/casehubio/blocks-ui) | Shared UI components for CaseHub applications | Foundation-adjacent |
+| `casehub-blocks` | [casehubio/blocks](https://github.com/casehubio/blocks) | Agentic orchestration patterns (routing, decomposition, execution drivers), trust routing, oversight gates, summarisation, conversation management | Foundation-adjacent |
+| `casehub-blocks-ui` | [casehubio/blocks-ui](https://github.com/casehubio/blocks-ui) | 21 shared UI components — work-item inbox/workbench, trust-score-panel, channel-activity, approval-gate, SLA indicators, compliance, GDPR erasure, similarity, KPI metrics | Foundation-adjacent |
 | `casehub-engine` | [casehubio/engine](https://github.com/casehubio/engine) | Hybrid choreography+blackboard orchestration engine | Orchestration |
 | `claudony` | [casehubio/claudony](https://github.com/casehubio/claudony) | Remote Claude CLI sessions + unified ecosystem dashboard | Integration |
 | `casehub-openclaw` | [casehubio/openclaw](https://github.com/casehubio/openclaw) | CaseHub × OpenClaw integration | Integration |
-| `casehub-workers` | [casehubio/workers](https://github.com/casehubio/workers) | HTTP, Camel, and GitHub Actions worker dispatch adapters | Integration |
+| `casehub-workers` | [casehubio/workers](https://github.com/casehubio/workers) | Worker dispatch adapters — HTTP, Camel, GitHub Actions, MCP, Kubernetes Job, subprocess script | Integration |
 | `casehub-ops` | [casehubio/casehub-ops](https://github.com/casehubio/casehub-ops) | Domain implementations of casehub-desiredstate SPIs for CaseHub-specific deployment concerns | Integration |
 | `casehub-chat-app` | [casehubio/chat-app](https://github.com/casehubio/chat-app) | Chat workbench application — qhorus UI + SQLite backend | Integration |
-| `casehub-eidos` | [casehubio/eidos](https://github.com/casehubio/eidos) | Agent identity — descriptor, discovery registry, vocabulary system, system prompt generation | Foundation |
-| `casehub-neocortex` | [casehubio/neocortex](https://github.com/casehubio/neocortex) | ONNX neural text inference + LangChain4j RAG integration + agent memory SPI | Foundation |
-| `casehub-pages` | [casehubio/casehub-pages](https://github.com/casehubio/casehub-pages) | Web application framework (TypeScript/Yarn foundation module) | Foundation |
+| `casehub-eidos` | [casehubio/eidos](https://github.com/casehubio/eidos) | Agent identity — descriptor, discovery registry, vocabulary system, capability specialization, behavioral contracts, eval framework, system prompt generation | Foundation |
+| `casehub-neocortex` | [casehubio/neocortex](https://github.com/casehubio/neocortex) | ONNX neural text inference + LangChain4j RAG (hybrid search, CRAG, query expansion) + CBR (typed features, trend detection, plan adaptation) + agent memory SPI | Foundation |
+| `casehub-pages` | [casehubio/casehub-pages](https://github.com/casehubio/casehub-pages) | Web application framework — TypeScript/Yarn, data pipeline, push protocol SDK, a11y primitives, design tokens | Foundation |
 | `casehub-devtown` | [casehubio/devtown](https://github.com/casehubio/devtown) | PR review automation, merge queue management, GitHub integration | Application |
 | `casehub-aml` | [casehubio/aml](https://github.com/casehubio/aml) | Anti-money laundering case management | Application |
 | `casehub-clinical` | [casehubio/clinical](https://github.com/casehubio/clinical) | Clinical adverse event investigation | Application |

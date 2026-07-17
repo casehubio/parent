@@ -22,8 +22,11 @@ The design follows the Kubernetes controller pattern: desired state is declarati
 | `testing/` | `casehub-desiredstate-testing` | `MockNodeProvisioner`, `MockActualStateAdapter`, `MockPendingApprovalHandler`, `CannedEventSource`. Test scope only. |
 | `engine-adapter/` | `casehub-desiredstate-engine` | Bridges to casehub-engine: `CaseTransitionExecutor` (displaces `SimpleTransitionExecutor`), `TransitionWorkflowGenerator` (Serverless Workflow from steps), `DesiredStateWorkerFunction` (wraps `NodeProvisioner` as engine worker). |
 | `work-adapter/` | `casehub-desiredstate-work` | Bridges to casehub-work: `WorkItemHumanNodeHandler` implements `HumanNodeHandler` — creates WorkItems for nodes that require human provisioning. |
+| `ras-adapter/` | `casehub-desiredstate-ras` | Bridges to casehub-ras: `NodeFaultGanglion` (detects node faults — NODE_FAULTED → detected, NODE_RECOVERED → anti), `PersistentDriftGanglion` (detects persistent drift), `DesiredStateSituationDefinitionProvider` (3 situations: repeated-failure via Streak(3), persistent-drift via Count(3), zone-degradation via Rate(60%, 10)), `DesiredStateCorrelationKeyExtractor` (extracts `parentNodeId` for zone-level aggregation). |
 | `examples/dungeon/` | — | Dungeon domain example: rooms, creatures, traps as nodes; `GoblinProvisioner`, `HeroRaidFaultPolicy`, `DungeonGoalCompiler`, `DungeonVisualizer`. |
 | `examples/pipeline/` | — | Data pipeline domain example: medallion-layered data pipeline (sources, cleansers, enrichers, transformers, validators, sinks, AI review, human review) with `PipelineGoalCompiler`, multiple fault policies (`SchemaDriftFaultPolicy`, `QuarantineFaultPolicy`, `ProvisionEscalationFaultPolicy`), and `PipelineVisualizer`. Also demonstrates engine-adapter integration via `PipelineCaseTransitionTest`. |
+| `examples/spatial/` | — | Battlefield-themed spatial/vector POC. Graph sufficiency research exploring how desired-state reconciliation handles spatial domains: `TerrainGrid`/`TerrainCell`/`TerrainType`, `FogOfWar` (vision-based reveal), `BattlefieldWorld` (units, scouts, zone activation), `AttackGoalCompiler`, `DefenseGoalCompiler`, `DistributionGoalCompiler`, `ZoneRebalanceFaultPolicy`, `GridRenderer`. Tests include situation detection, force distribution, fog-of-war, defense posture. |
+| `examples/expansion/` | — | Build-then-defend lifecycle scenario — primary test vehicle for `CompilationResult.Lifecycle` phase transitions. `ExpansionGoalCompiler` produces lifecycle with "build" phase (probe → nexus → pylon → cannon) and "defend" phase (`CompletionCondition.never()`). `ExpansionSituationRecompiler` escalates defense posture to FORTIFY on situation. Node types: PROBE, NEXUS, PYLON, CANNON, PATROL, MONITOR, RESPONSE. |
 
 ---
 
@@ -69,7 +72,37 @@ Sealed interface with five variants: `AddNode`, `RemoveNode`, `UpdateNode`, `Add
 
 ### ReconciliationLoop
 
-Per-tenant event-driven reconciliation engine (`@ApplicationScoped`). Two trigger paths: event-driven (subscribes to `EventSource.stream()` with debouncing) and periodic re-sync (default 5 minutes). Each cycle: read actual state, detect drift, plan transitions, execute, apply fault feedback. The loop never dies on exception — a dead loop is worse than a failed cycle. OpenTelemetry spans on every phase.
+Per-tenant event-driven reconciliation engine (`@ApplicationScoped`). Two trigger paths: event-driven (subscribes to `EventSource.stream()` with debouncing) and periodic re-sync (default 5 minutes). Each cycle: read actual state, detect drift, plan transitions, execute, apply fault feedback, match CBR outcomes. The loop never dies on exception — a dead loop is worse than a failed cycle.
+
+**OpenTelemetry tracing:** Comprehensive span tree per cycle using `GlobalOpenTelemetry.getTracer("io.casehub.desiredstate")`. Spans: `reconcile` (full-graph or type-filtered with `desiredstate.reconcile.types`), `readActual` (with `desiredstate.node.count`), `detectDrift` (with `desiredstate.drift.count`), `plan` (with `desiredstate.additions`, `desiredstate.removals`), `execute`, `faultFeedback` (with `desiredstate.fault.count`, `desiredstate.mutation.count`). Errors set `StatusCode.ERROR` and call `recordException()`.
+
+Multi-provisioner support: `computeIntervalGroups()` creates separate scheduled timers per resync interval — `reconcileTypes(Set<NodeType>)` filters the graph to matching types only.
+
+### Case-Based Reasoning (CBR)
+
+Full CBR pipeline for fault and situation response:
+
+**API types:** `CbrConfiguration` (retrieval/adaptation confidence gates + maxCandidates), `CbrProposal` (sourceId, CbrPath, affectedNodeIds, timestamp), `CbrOutcomeData` (per-node outcomes, success/failure counts, success rate), `CbrPath` enum (`FAULT`, `SITUATION`), `CbrEventTypes` (`CBR_OUTCOME` CloudEvent type).
+
+**API SPIs:** `ConfigurationRetriever` (retrieve past configurations by context), `ConfigurationAdapter` (adapt retrieved config to current context), `RetrievalContext` (factory methods `forSituation()` and `forFault()`).
+
+**Runtime:** `CbrSituationRecompiler` (implements `SituationRecompiler` — retrieves, filters by confidence, adapts, tracks via `CbrProposalTracker`), `CbrFaultPolicy` (implements `FaultPolicy` — same pipeline for fault events).
+
+**CBR Revise (outcome feedback):** `CbrProposalTracker.matchOutcomes()` — called from `ReconciliationLoop` after execution completes. Maps affected nodeIds to outcomes (SUCCEEDED, FAILED, SKIPPED, REJECTED, SUPERSEDED, ALREADY_PRESENT), computes success rate, returns `CbrOutcomeData` records. Emitted as `io.casehub.cbr.outcome` CloudEvents with extensions for tenancyId, cbrPath, and successRate — closing the feedback loop.
+
+### Multi-Provisioner Dispatch
+
+`NodeProvisionerRouter` (API interface) / `DefaultNodeProvisionerRouter` (runtime impl): each `NodeProvisioner` declares `handledTypes()` and `resyncInterval()`. The router builds a `Map<NodeType, NodeProvisioner>` lookup table, enforcing no NodeType is claimed by two provisioners. Dispatches `provision()`/`deprovision()` by node type.
+
+`ReconciliationLoop` uses `computeIntervalGroups()` to group node types by resync interval and creates **separate `ScheduledFuture` timers per interval group**. Each timer fires `reconcileTypes(Set<NodeType>)` which filters the desired graph and reconciles only matching types — different node types can have different reconciliation frequencies.
+
+### Lifecycle Manager
+
+`LifecycleManager` manages multi-phase `CompilationResult.Lifecycle` deployments. Internal `TenantLifecycle` record tracks `(List<Phase>, phaseIndex)`. On `onCycleCompleted()`: checks if current phase's `completionCondition.isComplete()` against actual state, computes next phase index, and advances via **dual CAS**: `lifecycles.replace(tenancyId, current, next)` on the ConcurrentHashMap entry + `loop.compareAndSetDesired(tenancyId, desired, nextPhase.graph())` on the AtomicReference. If either CAS fails (concurrent update), rolls back. `casRetryMutations()` also uses a CAS retry loop for fault-policy mutations.
+
+### SituationRecompiler
+
+SPI: `SituationRecompiler.recompile(ActiveSituation, DesiredStateGraph) → List<GraphMutation>`. Chain-of-responsibility pattern via `SituationRecompilerEngine` in runtime. The ras-adapter module provides `NodeFaultGanglion` and `PersistentDriftGanglion` as situation detectors; `CbrSituationRecompiler` provides CBR-based recompilation.
 
 ### HumanNodeHandler vs PendingApprovalHandler
 
@@ -105,6 +138,7 @@ V1 reports outcomes optimistically — proper case completion observation is a f
 | `casehub-engine` | `engine-api`, `engine-common`, `engine-flow` | Engine-adapter only: `CaseHubRuntime`, `CaseDefinition`, `FlowWorkerFunction`, `Worker`, `Binding`. |
 | `casehub-worker` | `worker-api` | Engine-adapter only: `Worker`, `Capability`. |
 | `casehub-work` | `work-api` | Work-adapter only: `WorkItemCreator`, `WorkItemCreateRequest`, `WorkItemRef`. |
+| `casehub-ras` | `ras-api` | RAS-adapter only: `Ganglion`, `JavaSwitchGanglion`, `SituationDefinitionProvider`, `CorrelationKeyExtractor`. |
 
 ## Depended On By
 
@@ -122,13 +156,19 @@ V1 reports outcomes optimistically — proper case completion observation is a f
 - Provide stream infrastructure (Kafka, AMQP) — `EventSource` is an SPI; stream adapters live elsewhere
 - Multi-cluster orchestration — single-runtime reconciliation only
 - Constrain `NodeType` vocabulary — open string, domain-defined
+- Detect situations — that is `casehub-ras`; the ras-adapter bridges RAS detections to graph mutations
 
 ---
 
 ## Current State
 
-- Core framework complete: API, runtime, testing, engine-adapter, work-adapter all on main.
-- Two working examples (dungeon, pipeline) demonstrating the full SPI surface.
+- Core framework complete: API, runtime, testing, engine-adapter, work-adapter, ras-adapter all on main.
+- Four working examples (dungeon, pipeline, spatial, expansion) demonstrating the full SPI surface including lifecycle phases and spatial graph sufficiency.
 - Engine-adapter integration demonstrated in `PipelineCaseTransitionTest`.
+- CBR pipeline complete: retrieve, adapt, apply, outcome feedback via CloudEvents.
+- Multi-provisioner dispatch with per-type reconciliation scheduling.
+- `LifecycleManager` for multi-phase deployments with dual CAS phase transitions.
+- `SituationRecompiler` SPI with CBR and RAS-adapter implementations.
+- Comprehensive OTel tracing on all reconciliation phases.
 - No persistence module — graphs are in-memory only.
 - `CaseTransitionExecutor` reports outcomes optimistically (V1); proper case completion observation is a follow-up.

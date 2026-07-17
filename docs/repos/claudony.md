@@ -74,6 +74,23 @@ See `docs/DESIGN.md` for the endpoint inventory and authentication mechanism det
 - `WorkerContextProvider` — builds Claude startup prompt from ledger lineage + mesh system prompt (three-layer model: system + tenant + case)
 - Removes `WorkerCommandResolver` — consolidated into `ProviderConfigSource` SPI
 
+**casehub-qhorus-postgres-broadcaster migration** — Qhorus `casehub-qhorus-postgres-broadcaster` dependency added as compile-scope in `app/pom.xml` for LISTEN/NOTIFY cross-instance event fan-out.
+
+**Separate Claudony and Qhorus MCP endpoints** — two distinct MCP server endpoints: Claudony MCP at `/mcp` (8 tools via `ClaudonyMcpTools`, `quarkus.mcp.server.server-info.name=claudony`), Qhorus MCP at `/qhorus` (40+ Qhorus tools, `serverInfo.name=qhorus`). Multi-server routing handled by `HttpMcpServerProcessor` build step iterating `config.servers()`. `McpServerIntegrationTest.qhorusToolsAvailableAtSeparateEndpoint()` verifies isolation.
+
+**CasehubEnabledProfile** — test profile in `CaseEngineRoundTripTest` that implements `QuarkusTestProfile`; overrides config to enable CaseHub engine integration (`claudony.casehub.enabled=true`), configures agent command, fast poll intervals, agent mode, engine CDI indexing, and a custom `quarkus.arc.exclude-types` list that re-includes engine beans needed for round-trip tests.
+
+**CaseHubRuntimeCompat** (`claudony-casehub`) — reflection-based compat shim for `CaseHubRuntime.signal()` that handles both void and `CompletionStage` return types across SNAPSHOT builds.
+
+**Worker migration to `@WorkerBackend`** — `ClaudonyWorkerExecutionManager` annotated `@WorkerBackend @Priority(10) @ApplicationScoped` (qualifier from `io.casehub.engine.common.spi.scheduler.WorkerBackend`). Injected via `@Inject @WorkerBackend` in `ClaudonyLedgerEventCapture`, `ClaudonyReactiveWorkerProvisioner`, and `CaseEngineRoundTripTest`.
+
+**System prompt delivery — three-layer prompt model:**
+1. **`MeshSystemPromptTemplate`** — generates structured prompt based on `MeshParticipation` (ACTIVE: ROLE + MESH CHANNELS + STARTUP + PRIOR WORKERS + MESSAGE DISCIPLINE; REACTIVE: ROLE + MESH CHANNELS (respond when addressed) + PRIOR WORKERS; SILENT: no prompt)
+2. **`ClaudonyProviderConfig`** — per-agent `systemPrompt` (`--system-prompt` CLI flag) and `appendSystemPrompt` (`--append-system-prompt` CLI flag)
+3. **`WorkerCommandBuilder.mergeAppendPrompts()`** — merges static `appendSystemPrompt` config with dynamic mesh prompt into final CLI arguments
+
+Assembly path: `ClaudonyReactiveWorkerContextProvider.buildContext()` → queries lineage + channels → `MeshSystemPromptTemplate.generate()` → stores in `WorkerContext.properties()` → provisioner passes as `dynamicAppendPrompt` to `WorkerCommandBuilder.build()`.
+
 ---
 
 ## Depends On
@@ -81,7 +98,8 @@ See `docs/DESIGN.md` for the endpoint inventory and authentication mechanism det
 | Repo | How |
 |---|---|
 | `casehub-qhorus` | Embedded directly; named `qhorus` datasource |
-| `casehub-engine` | Implements its 4 worker provisioner SPIs |
+| `casehub-qhorus-postgres-broadcaster` | LISTEN/NOTIFY cross-instance event fan-out |
+| `casehub-engine` | Implements its 4 worker provisioner SPIs; `@WorkerBackend` qualifier |
 | `casehub-ledger` | Transitively via Qhorus (agent message ledger entries) and casehub-ledger |
 
 ## Depended On By

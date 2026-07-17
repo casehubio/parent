@@ -47,12 +47,12 @@ Every CaseHub application follows this pattern:
 
 | App | Layers | Trust | CBR | Oversight | Web UI | GDPR | Notifications | Notes |
 |---|---|---|---|---|---|---|---|---|
-| **AML** | 1–6, 8, 9 | ✅ L6 | ✅ L8 (memory) | ✅ L9 (`AmlActionRiskClassifier`) | pending | L4 erasure | L2 SLA | SAR filing gate; entity context injection |
-| **Clinical** | 1–10 | ✅ L7 | ✅ L8 (patient/site) | ✅ L8 (SUSAR criteria) | pending | ✅ L8 (Art.17) | ✅ (AE, PI) | IND deadline; regulatory submission |
-| **DevTown** | 1, 3, 4, 5, 6 | ✅ L6 | ✅ (contributor/reviewer) | ✅ L5 (PR actions) | ✅ (governance) | ✅ (actor erasure) | pending | PR review gates; incident feedback |
-| **Life** | 2, 3, 4, 5, 6, 8 | ✅ L6 | planned | ✅ L5 (actions) | pending | ✅ L4 (actor) | planned | Household task gates; RBAC |
-| **Drafthouse** | — | — | — | — | pending | — | — | Document review; qhorus channels |
-| **QuarkMind** | 2–7 | ✅ L6 (strategy) | — | — | ✅ (3D SC2) | — | — | Real-time game AI; living lab |
+| **AML** | 1–6, 8, 9 | ✅ L6 | ✅ L8 (memory) | ✅ L9 (`AmlActionRiskClassifier`) | ✅ (Lit + blocks-ui) | ✅ L4 (entity erasure) | L2 SLA | SAR filing gate; officer review lifecycle |
+| **Clinical** | 1–10 | ✅ L7 | ✅ L8 (patient/site/AE) | ✅ L8 (SUSAR criteria) | ✅ (Quinoa + blocks-ui demo) | ✅ L8 (Art.17 + withdraw) | ✅ (AE, PI, sponsor) | IND deadline; 4-role RBAC |
+| **DevTown** | 1, 3, 4, 5, 6 | ✅ L6 | ✅ (contributor/reviewer/CBR routing) | ✅ L5 (8 action types) | ✅ (governance workbench) | ✅ (actor + memory erasure) | pending | Merge queue; incident feedback; 5-role RBAC |
+| **Life** | 2–6, 8 | ✅ L6 | ✅ (6 domain schemas) | ✅ L5 (RBAC-differentiated) | pending | ✅ L4 (actor + ledger) | planned | CBR plan adaptation; read-side API; jurisdiction |
+| **Drafthouse** | — | — | — | — | ✅ (Quinoa + casehub-pages) | — | — | 7 brainstorm + 10 debate MCP tools; Eidos reviewer registry |
+| **QuarkMind** | 2–7 | ✅ L6 (strategy) | — | — | ✅ (3D SC2) | — | — | Real-time game AI; blocks summarisation |
 | **SOC** | scaffold | — | planned | planned | planned | planned | planned | Cyber incident response |
 | **FSI Trading** | scaffold | — | planned | planned | planned | planned | planned | Trading automation |
 
@@ -158,8 +158,8 @@ Every CaseHub application follows this pattern:
 **Per-app:**
 - **AML:** [casehub-aml.md](../repos/casehub-aml.md) §Layer 8 — prior entity context injected; SAR outcomes written to memory
 - **Clinical:** [casehub-clinical.md](../repos/casehub-clinical.md) §Layer 8 — patient/site domains; AE reports + outcomes, deviation reports + PI decisions
-- **DevTown:** [casehub-devtown.md](../repos/casehub-devtown.md) — contributor history, reviewer context, code-area history
-- **Life:** planned
+- **DevTown:** [casehub-devtown.md](../repos/casehub-devtown.md) — contributor history, reviewer context, code-area history; CBR-enhanced reviewer matching + merge queue precedent risk
+- **Life:** [casehub-life.md](../repos/casehub-life.md) — 6 domain feature schemas, dual-path architecture (routing + case outcomes), plan adaptation via `LifePlanAdapter`
 
 ---
 
@@ -227,12 +227,12 @@ Apps build capability by layer — each layer adds one foundation module. The tu
 
 **Per-app deep-dives with full layer details:**
 
-- **AML:** [casehub-aml.md](../repos/casehub-aml.md) — Layers 1–6, 8, 9 complete
-- **Clinical:** [casehub-clinical.md](../repos/casehub-clinical.md) — Layers 1–10 complete
-- **DevTown:** [casehub-devtown.md](../repos/casehub-devtown.md) — Layers 1, 3, 4, 5, 6 complete
-- **Life:** [casehub-life.md](../repos/casehub-life.md) — Layers 2, 3, 4, 5, 6, 8 complete
-- **Drafthouse:** [casehub-drafthouse.md](../repos/casehub-drafthouse.md) — early phase
-- **QuarkMind:** [quarkmind.md](../repos/quarkmind.md) — Layers 2–7 complete
+- **AML:** [casehub-aml.md](../repos/casehub-aml.md) — Layers 1–6, 8, 9 complete; GDPR erasure, investigation workbench UI
+- **Clinical:** [casehub-clinical.md](../repos/casehub-clinical.md) — Layers 1–10 complete; IND deadline, blocks-ui demo, 4-role RBAC, CBR Phase 1
+- **DevTown:** [casehub-devtown.md](../repos/casehub-devtown.md) — Layers 1, 3, 4, 5, 6 complete; merge queue, CBR routing, 5-role RBAC, governance workbench
+- **Life:** [casehub-life.md](../repos/casehub-life.md) — Layers 2–6, 8 complete; CBR (6 schemas + plan adaptation), read-side API, GDPR, jurisdiction, RBAC
+- **Drafthouse:** [casehub-drafthouse.md](../repos/casehub-drafthouse.md) — Brainstorming + debate MCP tools, casehub-pages adoption, Eidos reviewer registry, debate persistence
+- **QuarkMind:** [quarkmind.md](../repos/quarkmind.md) — Layers 2–7 complete; blocks summarisation
 
 **Cross-app learning:** Read the layer sections in each deep-dive to see how different domains solve the same integration challenges (CDI wiring, YAML bindings, preference loading).
 

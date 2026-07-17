@@ -21,32 +21,40 @@ Three related capabilities in one repo:
 
 | Module | artifactId | Type | Purpose |
 |--------|-----------|------|---------|
-| `inference-api/` | `casehub-neocortex-inference-api` | Pure Java, zero deps | `InferenceModel` SPI, `InferenceInput`, `InferenceOutput`, `InferenceException` |
+| `inference-api/` | `casehub-neocortex-inference-api` | Pure Java, zero deps | `InferenceModel` SPI, `InferenceInput`, `InferenceOutput`, `InferenceException`; `MultiModalEmbedder` interface (dense+sparse+ColBERT); `MultiModalEmbedding` value type; `EmbeddingMode` enum (DENSE, SPARSE, COLBERT) |
 | `inference-runtime/` | `casehub-neocortex-inference-runtime` | JVM library | ONNX Runtime JVM + HuggingFace Tokenizers JNI; `OnnxInferenceModel`, `ModelConfig`, `ModelLoadException`; session management, tokenization |
 | `inference-tasks/` | `casehub-neocortex-inference-tasks` | JVM library | `NliClassifier`, `TextClassifier`, `ScalarRegressor`, `CrossEncoderReranker` |
 | `inference-splade/` | `casehub-neocortex-inference-splade` | JVM library | SPLADE sparse embeddings (`Map<Integer, Float>`); log-saturation + threshold |
+| `inference-bge-m3/` | `casehub-neocortex-inference-bge-m3` | JVM library | `BgeM3Embedder` implements `MultiModalEmbedder` — produces dense (1024-dim), sparse (ReLU+threshold), and ColBERT multi-vector embeddings from a single ONNX `InferenceModel` run. Depends only on inference-api. |
 | `inference-inmem/` | `casehub-neocortex-inference-inmem` | Test library | Deterministic `InferenceModel` stubs; no JNI; safe in all test contexts |
 | `inference-quarkus/` | `casehub-neocortex-inference-quarkus` | Quarkus extension | CDI wiring, `@InferenceModel` qualifier, Dev Services, `@QuarkusTest` support |
-| `rag-api/` | `casehub-neocortex-rag-api` | Pure Java, Mutiny provided | `EmbeddingIngestor` SPI, `CaseRetriever` SPI (blocking); `ReactiveEmbeddingIngestor`, `ReactiveCaseRetriever` (Mutiny `Uni<T>` variants — Mutiny `provided` scope per module-tier-structure protocol); `RetrievedChunk`, `CorpusRef`; `MetadataExtractor` SPI — extracts body + metadata from document content; `CursorStore` SPI — pluggable cursor persistence |
-| `rag/` | `casehub-neocortex-rag` | Quarkus module | LangChain4j pipeline, Qdrant, hybrid RRF fusion, tenancy isolation; `BlockingToReactiveRagBridge @DefaultBean` wraps blocking adapters as reactive; `CorpusIngestionService` — `@Scheduled` polling bridge (`ChangeSource` → `CorpusReader` → `MetadataExtractor` → chunk → `EmbeddingIngestor`); `CorpusBindingProducer` — config-driven binding creation (design debt: extract to `corpus-quarkus/` when second consumer appears); `YamlFrontmatterExtractor @DefaultBean` `MetadataExtractor`; `FileCursorStore @DefaultBean` file-based cursor persistence. Dependency: `langchain4j` full artifact (replaces `langchain4j-core`) for `DocumentSplitters`; `quarkus-scheduler` for `@Scheduled` polling; `MatryoshkaEmbeddingModel` — truncating `EmbeddingModel` decorator (config-driven via `casehub.rag.matryoshka.dimension`); `DenseQuantization` enum — binary/scalar quantization config for Qdrant dense vector params; `RagBeanProducer` — CDI producer that conditionally wraps `EmbeddingModel` in `MatryoshkaEmbeddingModel` and passes quantization config to both `QdrantEmbeddingIngestor` (collection creation: type + alwaysRam) and `HybridCaseRetriever` (search-time: type + oversampling); `ReactiveRagBeanProducer` — same conditional Matryoshka wrapping and quantization wiring for reactive implementations (`ReactiveQdrantEmbeddingIngestor`, `ReactiveHybridCaseRetriever`), gated by `casehub.rag.reactive.enabled=true`. |
+| `fusion-api/` | `casehub-neocortex-fusion-api` | Pure Java, zero deps | `FusionStrategy` enum (RRF, DBSF, CC); `ScoreFusion` utility with `ScoredLeg`, `FusedResult` records — implements RRF and Convex Combination algorithms; `CamelCaseExpander` for BM25 text preprocessing |
+| `rag-api/` | `casehub-neocortex-rag-api` | Pure Java, Mutiny provided | `EmbeddingIngestor` SPI, `CaseRetriever` SPI (blocking); `ReactiveEmbeddingIngestor`, `ReactiveCaseRetriever` (Mutiny `Uni<T>` variants); `RetrievedChunk`, `CorpusRef`; `MetadataExtractor` SPI; `CursorStore` SPI; `RetrievalTracker` SPI — records retrieval events + feedback for usefulness measurement |
+| `rag/` | `casehub-neocortex-rag` | Quarkus module | LangChain4j pipeline, Qdrant, three-leg hybrid search (dense + sparse + BM25) with configurable fusion; tenancy isolation; `MatryoshkaEmbeddingModel` (truncating decorator); `DenseQuantization` (binary/scalar for dense and ColBERT vectors); `BM25Index` + `BM25IndexRegistry` (in-memory BM25 with `CodeDomainTokenizer`); `ConvexCombinationFusion` (client-side CC with per-leg weights); `RagBeanProducer` / `ReactiveRagBeanProducer` CDI wiring; `CorpusIngestionService` polling bridge; ColBERT multi-vector quantization config |
 | `rag-testing/` | `casehub-neocortex-rag-testing` | Test library | In-memory `EmbeddingIngestor` + `CaseRetriever` + reactive stubs for `@QuarkusTest`; `InMemoryCursorStore @Alternative @Priority(1)` test stub |
 | `rag-tika/` | `casehub-neocortex-rag-tika` | JVM library | Apache Tika document parser — `TikaDocumentParser` extracts text + metadata from binary documents (PDF, DOCX, etc.) for RAG ingestion |
-| `rag-crag/` | `casehub-neocortex-rag-crag` | JVM library | Corrective RAG — `CorrectiveCaseRetriever` + `ReactiveCorrectiveCaseRetriever` wrapping `CaseRetriever` with `CrossEncoderRelevanceEvaluator` relevance gating; irrelevant chunks filtered before LLM context injection. `CragBeanProducer` CDI wiring; `CragConfig` for threshold tuning |
-| `rag-expansion/` | `casehub-neocortex-rag-expansion` | JVM library | Query expansion — `QueryExpandingCaseRetriever` + `ReactiveQueryExpandingCaseRetriever` wrapping `CaseRetriever` with multi-query retrieval. Expander implementations: `LlmQueryExpander` (LLM-generated reformulations), `TemplateQueryExpander` (pattern-based), `StepBackQueryExpander` (abstraction-based). `ExpansionConfig` for tuning |
-| `corpus-api/` | `casehub-neocortex-corpus-api` | Pure Java, Mutiny provided | Corpus storage and change-tracking SPIs — `CorpusStore`, `CorpusReader`, `ChangeSource` (polling), `WatchableChangeSource` (push), `ChangeListener`; reactive mirrors: `ReactiveCorpusStore`, `ReactiveCorpusReader`, `ReactiveChangeSource`; types: `ChangeSet`, `ChangedEntry`, `ChangeType`, `VersionInfo`; `CorpusIntegrity` SPI + `IntegrityReport`, `IntegrityIssue`, `Severity` for corpus health checks |
-| `corpus/` | `casehub-neocortex-corpus` | JVM library | Corpus storage implementations — `ZipCorpusStore` (append-only zip archive with rollover + `MasterIndex` + `ChainManifest`), `FlatCorpusStore` (directory-based), `CompositeCorpusStore` (multi-backend); `ZipChangeSource`, `FlatChangeSource`, `CompositeChangeSource` change tracking; `Compactor` + `CompactionMode` for archive maintenance; `CorpusMigrator` for format upgrades; `ZipIntegrityChecker` for corpus health; blocking-to-reactive bridges |
-| `memory-api/` | `casehub-neocortex-memory-api` | Pure Java | `CaseMemoryStore`, `ReactiveCaseMemoryStore`, `GraphCaseMemoryStore` SPIs; value types: `Memory`, `MemoryInput`, `MemoryQuery`, `EraseRequest`, `MemoryDomain`, `MemoryCapability`; `MemoryPermissions` utility; `CbrCaseMemoryStore` in `cbr/` subpackage. Package: `io.casehub.neocortex.memory`. Migrated from `casehub-platform-api` (neocortex#56). |
-| `memory/` | `casehub-neocortex-memory` | CDI module | `NoOpCaseMemoryStore @DefaultBean`, `BlockingToReactiveBridge @DefaultBean`, `CaseEnrichmentDecorator`; `NoOpCbrCaseMemoryStore @DefaultBean` in `cbr/runtime/` |
+| `rag-crossencoder/` | `casehub-neocortex-rag-crossencoder` | JVM library | Cross-encoder powered RAG: corrective retrieval (`CorrectiveCaseRetriever` CDI Decorator Priority 100, grades chunks as correct/ambiguous/incorrect) + reranking (`RerankingCaseRetriever` Decorator Priority 75, cross-encoder score re-ordering). Reactive variants for both. Config-gated: `casehub.rag.crag.enabled`, `casehub.rag.reranking.enabled` |
+| `rag-expansion/` | `casehub-neocortex-rag-expansion` | JVM library | Query expansion — `QueryExpandingCaseRetriever` + reactive variant. Expanders: `LlmQueryExpander`, `TemplateQueryExpander`, `StepBackQueryExpander`. Multi-query fan-out with RRF fusion. `ExpansionConfig` for tuning |
+| `rag-tracking/` | `casehub-neocortex-rag-tracking` | JVM library | SQLite-backed retrieval tracking. `TrackingCaseRetriever` (Decorator Priority 50) stamps chunks with retrieval ID, records queries/results/scores. `SqliteRetrievalTracker` with HikariCP + Flyway. `RetentionScheduler` for trace purging. CDI events: `RetrievalRecorded`. Config-gated: `casehub.rag.tracking.enabled` |
+| `corpus-api/` | `casehub-neocortex-corpus-api` | Pure Java, Mutiny provided | Corpus storage and change-tracking SPIs — `CorpusStore`, `CorpusReader`, `ChangeSource`, `WatchableChangeSource`, `ChangeListener`; reactive mirrors; `CorpusIntegrity` SPI for health checks |
+| `corpus/` | `casehub-neocortex-corpus` | JVM library | Corpus storage implementations — `ZipCorpusStore`, `FlatCorpusStore`, `CompositeCorpusStore`; change tracking; `Compactor`; `CorpusMigrator`; `ZipIntegrityChecker`; blocking-to-reactive bridges |
+| `memory-api/` | `casehub-neocortex-memory-api` | Pure Java | `CaseMemoryStore`, `ReactiveCaseMemoryStore`, `GraphCaseMemoryStore` SPIs; `CbrCaseMemoryStore` with supersession SPI (`supersede`, `reinstate`); CBR typed feature values: `FeatureValue` sealed (StringVal, NumberVal, RangeVal, StringListVal, NumberListVal, StructVal, StructListVal); `FeatureField` sealed (Categorical, Numeric, Text, CategoricalList, NumericList, NestedObject, ObjectList, TimeSeries, DiscreteSequence); `SimilaritySpec` sealed (CategoricalTable, GaussianDecay, StepDecay, ExponentialDecay, DtwSpec, EditDistanceSpec); `CbrSimilarityScorer`; trend detection: `TrendAnalyzer`, `TrendSpec`, `TrendType`, `TrendProfile`, `TrendFieldNaming`; plan adaptation: `PlanAdapter`, `AdaptedPlan`, `AdaptedStep`; active memory: `TemporalDecay` sealed (HalfLife, Linear, Step) |
+| `memory/` | `casehub-neocortex-memory` | CDI module | `NoOpCaseMemoryStore @DefaultBean`, `BlockingToReactiveBridge`, `CaseEnrichmentDecorator`; `MemoryEmitter` (@ApplicationScoped fire-and-forget wrapper); `TrendEnrichmentCbrCaseMemoryStore` (Decorator Priority 90 — auto-enriches features with trend metrics); `TemporalDecayCbrCaseMemoryStore` (Decorator Priority 80 — applies temporal decay to retrieval scores) |
 | `memory-inmem/` | `casehub-neocortex-memory-inmem` | Backend | @Alternative @Priority(1) volatile ConcurrentHashMap — test-scope for isolation; compile for ephemeral |
 | `memory-jpa/` | `casehub-neocortex-memory-jpa` | Backend | @ApplicationScoped JPA/PostgreSQL + Flyway + FTS via websearch_to_tsquery |
 | `memory-sqlite/` | `casehub-neocortex-memory-sqlite` | Backend | @Alternative @Priority(1) SQLite + HikariCP WAL + FTS5 |
 | `memory-mem0/` | `casehub-neocortex-memory-mem0` | Backend | @Alternative @Priority(1) Mem0 REST adapter — vector embeddings + semantic search |
 | `memory-graphiti/` | `casehub-neocortex-memory-graphiti` | Backend | @Alternative @Priority(2) Graphiti REST GraphCaseMemoryStore — temporal knowledge graph |
-| `memory-qdrant/` | `casehub-neocortex-memory-qdrant` | Backend | Qdrant vector store backend |
+| `memory-qdrant/` | `casehub-neocortex-memory-qdrant` | Backend | Qdrant vector store backend; `CbrReconciliationService` — three-phase reconciliation (scan + orphan cleanup + batch reindex + vector enrichment backfill) with Micrometer metrics |
 | `memory-cbr-inmem/` | `casehub-neocortex-memory-cbr-inmem` | Backend | In-memory CBR case memory store |
+| `memory-cbr-embedding/` | `casehub-neocortex-memory-cbr-embedding` | Backend | `EmbeddingTextSimilarity` — LangChain4j `EmbeddingModel`-based semantic text similarity for CBR feature fields. Caches embeddings, computes cosine similarity between `StringVal` values |
+| `memory-cbr-crossencoder/` | `casehub-neocortex-memory-cbr-crossencoder` | Backend | `RerankingCbrCaseMemoryStore` (Decorator Priority 75) — cross-encoder reranking for CBR retrieval. Overfetches then reranks by cross-encoder score. Sigmoid normalization. Config-gated: `casehub.cbr.reranking.enabled` |
+| `memory-cbr-tracking/` | `casehub-neocortex-memory-cbr-tracking` | Backend | SQLite-backed CBR retrieval tracking. `TrackingCbrCaseMemoryStore` (Decorator Priority 50) records `CbrRetrievalTrace` entries. `TrackingPlanAdapter` records plan adaptation traces. Scheduled purge. CDI events: `CbrRetrievalRecorded`, `CbrAdaptationRecorded` |
+| `memory-cbr-jpa/` | `casehub-neocortex-memory-cbr-jpa` | Backend | JPA/PostgreSQL CBR store (@Alternative Priority 3). `CbrCaseEntity` with JSONB features, plan traces, outcome tracking, supersession metadata. Feature-only retrieval with schema validation and structural filters |
 | `memory-testing/` | `casehub-neocortex-memory-testing` | Test library | Test stubs for memory SPIs |
 | `examples/example-text-analysis` | — | Standalone Java demos | NLI, zero-shot classification, scoring, reranking, SPLADE demos (no Quarkus) |
 | `examples/example-rag-pipeline` | — | Quarkus demos | Corpus ingestion, hybrid search with RRF fusion, cross-encoder reranking. Maven profiles: `-Pexamples-smoke` (in-memory stubs), `-Pexamples` (real ONNX models + Testcontainers Qdrant) |
+| `examples/example-cbr` | — | Quarkus demos | Six-domain CBR demo: AML investigation, clinical adverse events, PR code review, life insurance contractor assessment, IoT situations, game battle strategy. Feature-vector and plan-based retrieval |
 
 ---
 
@@ -89,24 +97,65 @@ The decorator pattern is architecturally significant: `dimension()` returns the 
 
 Named `DenseQuantization` rather than `QuantizationType` because the Qdrant client already defines `io.qdrant.client.grpc.Collections.QuantizationType` — both enums appear in `ensureCollection()` / `buildCreateRequest()` and sharing the name would create ambiguous unqualified usage (see [`casehub-neocortex/ARC42STORIES.MD` §8](https://github.com/casehubio/neocortex/blob/main/ARC42STORIES.MD#8-crosscutting-concepts)).
 
-### Configurable Fusion Strategy (rag-api, neocortex#104)
+### Configurable Fusion Strategy (fusion-api, rag)
 
-`FusionStrategy` enum in `rag-api` — `RRF` (Reciprocal Rank Fusion, server-side), `DBSF` (Distribution-Based Score Fusion, server-side), `CC` (Convex Combination, client-side weighted score fusion). Config: `casehub.rag.retrieval.fusion-strategy` (default `RRF`). `ConvexCombinationFusion` in `rag/` implements client-side CC with configurable per-leg weights (`casehub.rag.retrieval.cc-weights.*`).
+`FusionStrategy` enum in `fusion-api` (tier-1 pure Java) — `RRF` (Reciprocal Rank Fusion), `DBSF` (Distribution-Based Score Fusion), `CC` (Convex Combination). `ScoreFusion` utility implements RRF and CC algorithms with `ScoredLeg`/`FusedResult` records. `ConvexCombinationFusion` in `rag/` provides client-side CC with configurable per-leg weights (`casehub.rag.retrieval.cc-weights.*`). Config: `casehub.rag.retrieval.fusion-strategy` (default `RRF`).
 
-### SeparateModelEmbedder (rag, neocortex#104)
+### MultiModalEmbedder and BgeM3 (inference-api, inference-bge-m3)
 
-`SeparateModelEmbedder` in `rag/` — bridges LangChain4j `EmbeddingModel` + optional `SparseEmbedder` into `MultiModalEmbedder` contract. `@DefaultBean` displaced by BgeM3 when configured.
+`MultiModalEmbedder` interface in `inference-api` — produces all three embedding modes (dense, sparse, ColBERT) from a single model. `BgeM3Embedder` in `inference-bge-m3` implements this for BGE-M3 ONNX models. `SeparateModelEmbedder` in `rag/` bridges LangChain4j `EmbeddingModel` + optional `SparseEmbedder` into the same contract — `@DefaultBean` displaced by BgeM3 when configured.
 
-### CBR Weighted Similarity Scoring (memory-api, neocortex#104, #107, #108)
+### CBR Typed Feature Values and Similarity (memory-api)
 
-`CbrSimilarityScorer` in `memory-api/cbr/` — pure-Java per-field similarity with configurable per-field weights and `SimilaritySpec` functions. Supports:
-- **Categorical:** exact match, or `CategoricalTable` rank-based similarity (e.g. severity HIGH→MEDIUM = 0.75)
-- **Numeric:** `GaussianDecay`, `StepDecay`, `ExponentialDecay` distance functions
-- **Text:** exact match
+**Feature values:** `FeatureValue` sealed interface with seven value types: `StringVal`, `NumberVal`, `RangeVal`, `StringListVal`, `NumberListVal`, `StructVal`, `StructListVal`. Booleans coerced to `StringVal` via `FeatureValue.of(Object)`.
 
-`CbrQuery` gains `weights`, `vectorWeight`, and per-field `SimilaritySpec` overrides. `FeatureField` sealed interface with exhaustive switches at all dispatch sites (neocortex#107). Replaces hard Qdrant payload filters with client-side graded scoring for more nuanced case retrieval.
+**Feature field schema:** `FeatureField` sealed interface with nine permits: `Categorical`, `Numeric`, `Text`, `CategoricalList`, `NumericList` (with min/max bounds), `NestedObject`, `ObjectList`, `TimeSeries` (compound with inner fields, timestamp, optional `DtwSpec` + `TrendSpec`), `DiscreteSequence` (ordered categorical sequences with `EditDistanceSpec`).
 
-**CBR reconciliation with RAG (neocortex#104, engine#671):** `CbrCaseMemoryStore` SPI in `memory-api/cbr/` enables case-based reasoning alongside RAG retrieval. Engine consumes this for typed fact space population — weighted similarity scoring over prior case features, combined with vector search. Cache optimization: case-lifetime retrieval caching controlled by `CbrConfig.enableCaching`. In-memory CBR implementation (`memory-cbr-inmem`) for test isolation.
+**Similarity specs:** `SimilaritySpec` sealed interface replaces lambdas on records:
+- `CategoricalTable` — lookup table with auto-mirroring and `CategoricalTableBuilder`
+- `GaussianDecay(sigma)`, `StepDecay(tolerance)`, `ExponentialDecay(decayRate)` — for Numeric fields
+- `DtwSpec(WarpingConstraint)` — Dynamic Time Warping for TimeSeries fields
+- `EditDistanceSpec(substitutions, insertCost, deleteCost)` — for DiscreteSequence fields
+
+`CbrSimilarityScorer` in `memory-api/cbr/` — pure-Java per-field similarity with configurable per-field weights. `CbrQuery` carries `weights`, `vectorWeight`, and per-field `SimilaritySpec` overrides. Exhaustive switches at all dispatch sites.
+
+### CBR Plan Adaptation (memory-api)
+
+`PlanAdapter` SPI — transforms retrieved plans for new case contexts. `adapt(ScoredCbrCase<PlanCbrCase>, Map<String, FeatureValue>)` returns `AdaptedPlan` (wrapping `List<AdaptedStep>`). `AdaptationTrace` record for tracking. Decoratable via `TrackingPlanAdapter` in `memory-cbr-tracking`.
+
+### CBR Active Memory Management (memory-api, memory)
+
+**Temporal decay:** `TemporalDecay` sealed interface with three implementations: `HalfLife(Duration)` (exponential), `Linear(Duration zeroAt)`, `Step(Duration cutoff, double afterCutoff)`. `TemporalDecayCbrCaseMemoryStore` (Decorator Priority 80) applies decay to retrieval scores based on case `storedAt`.
+
+**Supersession:** `CbrCaseMemoryStore` includes `supersede(caseId, tenantId, supersedingCaseId, reason)` and `reinstate(caseId, tenantId)`. JPA store filters `WHERE supersededAt IS NULL` on retrieval. All decorator stores delegate supersession calls.
+
+### Trend Detection (memory-api, memory)
+
+`TrendSpec` — record holding `Set<TrendType>` and `ChronoUnit`, attached optionally to `FeatureField.TimeSeries`. `TrendType` enum: SLOPE, DELTA, VOLATILITY, ACCELERATION, CHANGE_POINTS, DURATION, OBSERVATION_COUNT. `TrendAnalyzer` — static utility computing trend metrics (linear regression, CUSUM change-point detection). `TrendEnrichmentCbrCaseMemoryStore` (Decorator Priority 90) auto-enriches features with trend metrics on store/retrieve.
+
+### MemoryEmitter (memory)
+
+`MemoryEmitter` — `@ApplicationScoped` fire-and-forget `CaseMemoryStore` wrapper. Swallows non-security exceptions on emit failures (logs warnings). Provides `emit(MemoryInput)` and `emitAll(List<MemoryInput>)` with partial-failure reporting. Replaces boilerplate across repos.
+
+### CBR Reconciliation (memory-qdrant)
+
+`CbrReconciliationService` — `@ApplicationScoped` three-phase reconciliation: (1) paginated SCAN of delegate store, (2) orphan cleanup + consistency marking in Qdrant, (3) batch reindex of missing entries (pages of 100) + vector enrichment backfill (SPLADE/BM25 vectors on existing points). Supports `reconcile(caseType, tenantId)`, `reconcileAll(caseType)`, `discoverTenants(caseType)`. Micrometer metrics for orphans/reindexed/enriched/errors.
+
+### Cross-Encoder Reranking and Corrective RAG (rag-crossencoder)
+
+Replaces `rag-crag`. Two CDI decorator chains: corrective retrieval (`CorrectiveCaseRetriever`, Priority 100 — grades chunks as correct/ambiguous/incorrect, filters before LLM injection) and reranking (`RerankingCaseRetriever`, Priority 75 — cross-encoder score re-ordering). Both config-gated. Shared `CrossEncoderBeanProducer`.
+
+### Retrieval Tracking (rag-tracking)
+
+SQLite-backed retrieval tracking with frequency, outcome, and feedback measurement. `TrackingCaseRetriever` (Decorator Priority 50) stamps chunks with retrieval ID. `SqliteRetrievalTracker` with HikariCP + Flyway migrations. `RetentionScheduler` for trace purging. CDI events: `RetrievalRecorded`.
+
+### BM25 as Third Retrieval Leg (rag)
+
+`BM25Index` — thread-safe in-memory inverted index with `CodeDomainTokenizer` for camelCase/code-aware tokenization. Standard BM25 scoring (k1=1.2, b=0.75). `BM25IndexRegistry` manages per-corpus indexes. Three-leg hybrid search: dense + sparse + BM25, fused via configurable `FusionStrategy`. Default CC weights: dense=0.5, sparse=0.3, bm25=0.2. Config: `casehub.rag.bm25.enabled` (default true).
+
+### CBR Weighted Similarity with RAG Integration
+
+`CbrCaseMemoryStore` SPI in `memory-api/cbr/` enables case-based reasoning alongside RAG retrieval. Engine consumes this for typed fact space population — weighted similarity scoring over prior case features, combined with vector search. Cache optimization: case-lifetime retrieval caching controlled by `CbrConfig.enableCaching`. In-memory CBR implementation (`memory-cbr-inmem`) for test isolation. CBR-specific cross-encoder reranking (`memory-cbr-crossencoder`) and embedding-based text similarity (`memory-cbr-embedding`) add precision to retrieval.
 
 ### OnnxInferenceModel Input Name Alias Resolution (inference-runtime, neocortex#104)
 
@@ -144,11 +193,16 @@ This module sits **below** LangChain4j for inference, and **above** LangChain4j 
 | Dense float-vector embeddings | LangChain4j `OnnxEmbeddingModel` |
 | RAG pipeline, chunking, vector stores | LangChain4j |
 | Sparse embeddings (SPLADE) | `inference-splade` (this module) |
+| Multi-modal embeddings (dense+sparse+ColBERT) | `inference-bge-m3` (this module) |
 | NLI, classification, regression | `inference-tasks` (this module) |
-| Cross-encoder reranking | `inference-tasks` (this module) |
+| Cross-encoder reranking | `inference-tasks` + `rag-crossencoder` (this module) |
+| Score fusion algorithms (RRF, CC) | `fusion-api` (this module) — pure Java, zero deps |
+| BM25 text retrieval | `rag` (this module) — in-memory inverted index, third retrieval leg |
 | casehub-specific RAG wiring + tenancy | `rag` / `rag-api` (this module) |
 | Matryoshka dimension reduction + L2 renorm | `rag` (this module) — decorator above LangChain4j `EmbeddingModel` |
-| Dense vector quantization (binary/scalar) + search-time oversampling | `rag` (this module) — Qdrant collection config + search params |
+| Dense + ColBERT vector quantization (binary/scalar) + search-time oversampling | `rag` (this module) — Qdrant collection config + search params |
+| CBR typed feature similarity (DTW, edit distance, decay) | `memory-api` (this module) |
+| Retrieval tracking + feedback measurement | `rag-tracking` + `memory-cbr-tracking` (this module) |
 
 ---
 
@@ -175,10 +229,12 @@ The C2 native image gate passed (ONNX Runtime JNI + HuggingFace Tokenizers JNI b
 | Repo / Library | Module | How |
 |---|---|---|
 | `casehub-platform-api` | `rag` | `CurrentPrincipal`, `TenancyConstants` — tenant isolation |
-| LangChain4j (full artifact) | `rag` | RAG pipeline, `OnnxEmbeddingModel`, Qdrant `EmbeddingStore`, `DocumentSplitters` |
-| `io.qdrant:client` | `rag` | Qdrant REST client for direct named-vector-space queries (sparse leg of hybrid RRF search — until langchain4j#4994 ships) |
-| `quarkus-scheduler` | `rag` | `@Scheduled` polling for `CorpusIngestionService` |
+| LangChain4j (full artifact) | `rag`, `memory-cbr-embedding` | RAG pipeline, `OnnxEmbeddingModel`, Qdrant `EmbeddingStore`, `DocumentSplitters`, `EmbeddingModel` for CBR semantic text similarity |
+| `io.qdrant:client` | `rag`, `memory-qdrant` | Qdrant REST client for hybrid search + CBR reconciliation |
+| `quarkus-scheduler` | `rag`, `rag-tracking`, `memory-cbr-tracking` | `@Scheduled` polling and retention scheduling |
 | `casehub-neocortex-corpus` | `rag` | `CorpusBindingProducer` only (design debt — extract when second consumer appears) |
+| HikariCP | `rag-tracking`, `memory-cbr-tracking` | SQLite connection pooling for tracking stores |
+| Flyway | `memory-jpa`, `memory-cbr-jpa`, `rag-tracking`, `memory-cbr-tracking` | Schema migrations |
 | ONNX Runtime JVM | `inference-runtime` | Model session management |
 | HuggingFace Tokenizers JNI | `inference-runtime` | Tokenization |
 
@@ -195,17 +251,18 @@ The C2 native image gate passed (ONNX Runtime JNI + HuggingFace Tokenizers JNI b
 
 ## Current State
 
-C3–C7 complete (neocortex#3, neocortex#7). All inference and RAG modules shipped:
+All inference, RAG, and CBR modules shipped. Active development on CBR memory management and retrieval optimization.
 
-| Chapter | What shipped |
-|---------|-------------|
-| C3 — SPI Foundation | `InferenceModel` SPI, `InferenceInput`, `InferenceOutput`, `InferenceException`; `OnnxInferenceModel`, `ModelConfig`, `ModelLoadException`; `InMemoryInferenceModel` stubs; C2 bridge classes deleted |
-| C4 — Task Adapters | `NliClassifier`, `TextClassifier`, `ScalarRegressor`, `CrossEncoderReranker` in `inference-tasks` |
-| C5 — Quarkus CDI wiring | `@InferenceModel` qualifier, `InferenceModelProducer`, Dev Services, `@QuarkusTest` support in `inference-quarkus` |
-| C6 — SPLADE | `SparseEmbedder` in `inference-splade` — log-saturation output for Qdrant named vector spaces |
-| C7 — RAG Pipeline | `EmbeddingIngestor` SPI, `CaseRetriever` SPI, `QdrantEmbeddingIngestor`, `HybridCaseRetriever` in `rag`; `rag-testing` in-memory stubs; storage/search optimization (neocortex#31): `MatryoshkaEmbeddingModel` (truncating decorator), `DenseQuantization` (binary/scalar dense vector params config), search-time oversampling on quantized dense prefetch, `RagBeanProducer` / `ReactiveRagBeanProducer` CDI wiring — both blocking and reactive implementations carry all features |
+| Area | What shipped |
+|------|-------------|
+| Inference Foundation | `InferenceModel` SPI, ONNX runtime, task adapters (NLI, classification, regression, reranking), SPLADE sparse embeddings, BGE-M3 multi-modal embeddings (dense+sparse+ColBERT), Quarkus CDI extension |
+| RAG Pipeline | Three-leg hybrid search (dense + sparse + BM25) with configurable fusion (RRF/DBSF/CC); `MatryoshkaEmbeddingModel` truncating decorator; `DenseQuantization` (binary/scalar for dense and ColBERT); ColBERT multi-vector scalar quantization; per-leg embedding separation; corrective RAG + cross-encoder reranking (`rag-crossencoder`); query expansion (LLM, template, step-back); retrieval tracking (`rag-tracking`) |
+| CBR | Typed feature values (9 field types, 7 value types); `SimilaritySpec` sealed interface (6 similarity functions incl. DTW + edit distance); weighted per-field similarity scoring; plan adaptation SPI; temporal decay (3 strategies); supersession SPI; trend detection + enrichment; cross-encoder reranking for CBR; embedding-based text similarity; reconciliation with Qdrant; JPA/PostgreSQL backend; retrieval tracking |
+| Agent Memory | Five backends (in-memory, JPA, SQLite, Mem0, Graphiti, Qdrant); `MemoryEmitter` fire-and-forget wrapper; permission-aware queries |
+| Corpus | Append-only zip archives, flat filesystem, composite multi-backend; change tracking; compaction; integrity checks |
+| Score Fusion | `fusion-api` tier-1 module — RRF + CC algorithms, `CamelCaseExpander` for BM25 preprocessing |
 
-Native image gate passed (C2). Service deploys in JVM mode by design — long-running workloads benefit from HotSpot JIT over AOT. Reachability metadata retained for downstream native consumers.
+Native image gate passed. Service deploys in JVM mode by design — long-running workloads benefit from HotSpot JIT over AOT. Reachability metadata retained for downstream native consumers.
 
 Design specs:
 - `docs/specs/2026-06-03-ai-fusion-hybrid-fact-space.md` (typed fact space + RAG context)

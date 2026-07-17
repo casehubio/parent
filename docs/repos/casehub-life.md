@@ -48,6 +48,51 @@ The tutorial structure emerges from the natural adoption sequence. Each layer ad
 - Flyway V103 (`life_commitment_record`) at `db/life/migration/`
 - REST: `POST /life-tasks/{id}/commit`, `POST /life-oversight-gates`
 
+## CBR Integration
+
+6 domain feature schemas registered at startup by `LifeCbrFeatureSchemaRegistrar` (`@Observes StartupEvent`): `contractor-coordination`, `home-maintenance`, `appointment-cycle`, `care-coordination`, `financial-review`, `travel-plan`.
+
+**`LifeCbrDescriptionProvider` SPI** — interface with `caseType()`, `describeProblem()`, `describeSolution()`, `extractEntityId()`. 6 implementations in `cbr/describe/`: `AppointmentCycleDescriptionProvider`, `CareCoordinationDescriptionProvider`, `ContractorCoordinationDescriptionProvider`, `FinancialReviewDescriptionProvider`, `HomeMaintenanceDescriptionProvider`, `TravelPlanDescriptionProvider`.
+
+**Dual-path outcome recording**: `LifeRoutingOutcomeRecorder` (implements `RoutingOutcomeRecorder`) records agent-routing outcomes; `LifeCaseOutcomeCbrWriter` (implements `CaseOutcomeObserver`) records case-level outcomes. Both write to `CbrCaseMemoryStore`.
+
+**Dual-path architecture in `LifeCaseService.startCase()`**: calls `cbrSuggestionService.retrieveForAdaptation()`, injects `cbrCalibration` and `adaptedPlan` into initial context, fires `CbrAdaptationRecorded` event. `LifePlanAdapter` (implements `PlanAdapter`) and `LifeTrustFeatureEnricher` support CBR-adapted case plans. 6 adaptation rules in `cbr/adapt/`. Feature extraction via `LifeCbrFeatureExtractor` (JQ-based).
+
+## Read-Side API
+
+**Analytics** (`LifeAnalyticsResource`, `/analytics`):
+- `GET /analytics/cases` — `CaseStatisticsResponse` (per-type stats, resolution time percentiles, completion rate)
+- `GET /analytics/sla` — `SlaComplianceResponse` (breach count, compliance rate, avg breach latency)
+- `GET /analytics/trust` — `TrustAnalyticsResponse` (actor trust score summaries, dimension averages, lowest-scoring actors)
+- Service: `LifeAnalyticsService`
+
+**Pending actions** (`PendingActionsResource`, `/pending-actions`):
+- `GET /pending-actions` — paged, filterable by domain/candidateGroup/dueSoonHours, urgency-classified
+- Service: `PendingActionsService`
+
+**Actor search** (`ExternalActorResource`, `/external-actors`):
+- `GET /external-actors` — search by name, actorType, contactMethod, erasedOnly; paged
+- `GET /external-actors/{id}/trust-history` — actor trust score history
+- `GET /external-actors/{id}/activity` — actor activity timeline
+
+## LifeTaskVisibilityPolicy SPI
+
+`LifeTaskVisibilityPolicy` interface (`api/spi/`): `boolean isVisible(LifeTaskResponse task, String actorId, Set<String> groups)`.
+
+**`DefaultLifeTaskVisibilityPolicy`** (`@DefaultBean`): always returns `true` (permissive).
+
+**`JuniorLifeTaskVisibilityPolicy`** (`@Alternative @Priority(1)`): non-junior principals pass unconditionally; junior principals (`HouseholdGroups.JUNIOR`) visible only if assigned or in candidate pool. Implements household-junior scoping.
+
+## WorkerProvisioner Heartbeat Integration
+
+**`LifeReactiveWorkerProvisioner`** (implements `ReactiveWorkerProvisioner`): `provision()` resolves agent, reads `heartbeatInterval` from `LifeSentinelConfig`, calls `scheduleHeartbeat()` via Quartz scheduler, registers in `LifeSentinelRegistry`. `terminateAllForCase()` cancels heartbeat jobs and removes from registry.
+
+**`LifeHeartbeatJob`** (Quartz `Job`): queries case context, gathers channel context via `LifeChannelContextProvider.gatherContext()`, builds sentinel Agent, executes, signals `sentinelReport` back into the case. 7 sentinel types: contractor, maintenance, follow-up, care-quality, patient-status, anomaly, booking.
+
+## Per-Action Jurisdiction
+
+`LegalActionLedgerEntry` carries `@Column(name = "jurisdiction", length = 10)` (ISO 3166-1/2 format) alongside `workItemId`, `legalObligation`, `filingDeadline`, `eventType` (LifeDecisionEventType), `actionTaken`. Jurisdiction included in `domainContentBytes()` for Merkle digest integrity. Migration `V110__life_task_context_jurisdiction.sql` adds jurisdiction to task context. `V2106__jurisdiction_and_erasure_alignment.sql` aligns to VARCHAR(10).
+
 ## Current State
 
 Household tasks are now formal `WorkItem`s: SLA-enforced, delegable, auditable. `LifeTaskContext` supplements each task with life-specific fields. `LifeSlaBreachPolicy` escalates to `household-admin` on first breach, fails on second. Domain model correction in Layer 2: `HouseholdTask`, `LifeGoal`, `LifeEvent` removed — they duplicated `WorkItem`, case definitions, and ledger entries respectively.
@@ -91,6 +136,8 @@ casehub-life
   → casehub-work              (Layer 2: WorkItems with SLA and escalation)
   → casehub-qhorus            (Layer 3: commitment lifecycle, oversight channel)
   → casehub-connectors-core   (household notifications)
+  → casehub-neocortex         (CBR: CbrCaseMemoryStore, CbrFeatureSchema — 6 domain schemas)
+  → casehub-blocks            (CBR: RoutingOutcomeRecorder, PlanAdapter SPIs)
 ```
 
 ## Key Epics

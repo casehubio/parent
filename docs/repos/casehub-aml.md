@@ -50,10 +50,18 @@ Follows hexagonal architecture ([PP-20260512-9b8847](../protocols/casehub/hexago
 - `AmlMemoryService`, `AmlPriorContext`, `AmlMemoryDomains` — Layer 8 entity context injection before each investigation
 - `AmlSarOutcomeMemoryObserver`, `SarOutcomeRecordedEvent` — Layer 8 SAR outcome written to memory on case close
 - `AmlCaseOpenedLedgerEntry`, `AmlComplianceReviewLedgerEntry` — replace `AmlInvestigationLedgerEntry` (finer-grained audit trail)
+- `AmlSarOfficerReviewedLedgerEntry` — records compliance officer's SAR approval or rejection decision; `reviewDecision` ("APPROVED"/"REJECTED") + `rejectionReason` (nullable, free-text, V2012 migration). Written by `AmlWorkItemLifecycleObserver` on WorkItem completion/rejection. `causedByEntryId` points to `AmlComplianceReviewLedgerEntry`.
 - Test protocols: PP-20260604-f45c95 (hash-chain disabled in H2 test scope), PP-20260604-820c35 (drain pattern for async memory observers)
 - `AmlActionType`, `AmlGroups` — consequential action vocabulary; encodes gate policy (ALWAYS, RISK_SCORE_THRESHOLD, CONFIDENCE_THRESHOLD), reversible, candidateGroups, scope per action type
-- `AmlActionRiskClassifier @RiskClassifier` — Layer 9 `ActionRiskClassifier` SPI implementation; fail-closed paths derive all gate metadata from domain type
-- `AmlOversightCaseHub`, `AmlOversightCoordinator`, `AmlLayer9Resource` — Layer 9 oversight harness; demonstrates PEP entity gating and low-risk CORPORATE autonomous path
+- `AmlActionRiskClassifier @RiskClassifier` — Layer 9 `ActionRiskClassifier` SPI implementation (imports from `io.casehub.api.spi`); fail-closed paths derive all gate metadata from domain type
+- `AmlOversightCaseHub`, `AmlOversightCoordinator`, `AmlLayer9Resource` — Layer 9 oversight harness; demonstrates PEP entity gating and low-risk CORPORATE autonomous path. `AmlLayer9Resource`: `GET /api/layer9/investigations/{caseId}` (returns `Layer9InvestigationResponse` with outcome + failure context), `POST .../suspend`, `POST .../resume`
+- `InvestigationStatus` — expanded enum: `IN_PROGRESS`, `COMPLETED`, `FAILED`, `CANCELLED`, `SUSPENDED`. Mapped from engine `CaseStatus` by `AmlInvestigationOutcomeService`: `STARTING/RUNNING/WAITING → IN_PROGRESS`, `FAULTED → FAILED`. Wire format via `toWireFormat()`/`fromWireFormat()` (kebab-case)
+- `InvestigationOutcome` — `record(type, reason)` surfaced in Layer 6 and Layer 9 APIs. `fromReviewDecision()` maps: APPROVED → "sar-filed", REJECTED → "gate-rejected" (with rejectionReason), UNKNOWN → "decision-not-recorded"
+- `AmlInvestigationOutcomeService` — resolves `InvestigationResolution(status, outcome, failureContext)` from engine `CaseInstance` state + ledger `AmlSarOfficerReviewedLedgerEntry`. Outcome uses HUMAN_FIRST_LATEST_SEQ comparator. Failure context from engine event log (CASE_FAULTED, CASE_CANCELLED, WORKER_EXECUTION_FAILED, ACTION_GATE_REJECTED, ACTION_GATE_EXPIRED)
+- `InvestigationResolution`, `FailureContext`, `FailureEvent` — domain records for structured investigation status reporting
+- `SarDraftingService` SPI (`api/investigation/`) — pure function interface separated from compliance-review-opening. `DefaultSarDraftingService` assembles SAR narrative from specialist outcomes using sealed-interface pattern matching
+- `ComplianceReviewLifecycle` — consolidates WorkItem creation + `COMPLIANCE_REVIEW_OPENED` ledger write into single call. Previously these were split across callers (aml#56)
+- `AmlWorkItemLifecycleObserver` — observes `WorkItemLifecycleEvent` asynchronously; maps `COMPLETED → "APPROVED"`, `REJECTED → "REJECTED"`. Captures `event.detail()` as `rejectionReason` for rejected decisions. Writes `AmlSarOfficerReviewedLedgerEntry` via ledger service
 
 ## Web UI (aml#91)
 
@@ -77,12 +85,20 @@ Lit-based web UI built with casehub-blocks-ui components and casehub-pages. Thre
 
 All views use blocks-ui `data-table` for tabular data. Built with Quinoa (Quarkus frontend integration) — TypeScript compiled with esbuild, hot-reload in dev mode.
 
+## GDPR Art.17 Erasure (Layer 7)
+
+**`AmlErasureService`** (`@ApplicationScoped`): two erasure paths:
+- `erase(actorId, reason)` — actor-level erasure via `LedgerErasureService.erase()`, returns `ActorErasureResult(rawActorId, mappingFound, affectedEntryCount, receiptEntryId)`
+- `eraseEntity(entityId, reason)` — entity-level memory erasure via `CaseMemoryStore.eraseEntity()`, writes `AmlEntityErasureLedgerEntry` (JOINED, qhorus datasource), returns `EntityErasureResult(entityId, memoriesErased, receiptEntryId)`
+
+**REST**: `AmlLayer7Resource` exposes erasure endpoints. **Supporting types**: `GdprErasureRequirement` (api/), `AmlEntityErasureLedgerEntry` (app/ledger/).
+
 ## The Compliance Gap It Closes
 
 Current agentic AML systems cannot provide:
 - Auditable evidence chains (FinCEN requirement) — `causedByEntryId` chain per agent finding
 - Formal obligation per investigation task — COMMAND creates Commitment, DECLINE ≠ FAILED
-- GDPR Art.17 erasure on transaction PII — ledger erasure service. See docs/DESIGN.md for implementation detail.
+- GDPR Art.17 erasure on transaction PII — actor-level via `LedgerErasureService`, entity-level via `CaseMemoryStore` + `AmlEntityErasureLedgerEntry`
 - Tamper-evident investigation record — Merkle inclusion proofs, independently verifiable
 - Trust-weighted routing — experienced analysts on complex cases, auto-updated from SAR outcomes
 
@@ -97,10 +113,12 @@ casehub-aml
   → casehub-work            (compliance officer WorkItem, 30-day SLA, escalation)
   → casehub-qhorus          (COMMAND/RESPONSE per specialist agent, commitment lifecycle)
   → casehub-connectors      (Slack/Teams for SAR assignment notifications)
-  → casehub-platform-memory-jpa    (Layer 8: JPA-backed CaseMemoryStore for production)
-  → casehub-platform-memory-inmem  (Layer 8: in-memory CaseMemoryStore for test isolation)
-  → casehub-engine-work-adapter    (Layer 9: ActionGateWorkItemHandler + WorkItemLifecycleAdapter for oversight gate)
+  → casehub-neocortex-memory-jpa   (Layer 8: JPA-backed CaseMemoryStore for production)
+  → casehub-neocortex-memory-inmem (Layer 8: in-memory CaseMemoryStore for test isolation)
+  → casehub-blocks                 (reusable building blocks — routing, oversight, conversation)
+  → casehub-work-engine-adapter    (Layer 9: ActionGateWorkItemHandler + WorkItemLifecycleAdapter for oversight gate)
   → casehub-engine-blackboard      (Layer 9: BlackboardRegistry — required for gate signal routing; transitive via work-adapter)
+  → casehub-engine-actor-state     (GET /actors/{actorId}/state view)
 ```
 
 ## Key Epics

@@ -11,25 +11,54 @@ This document answers the question developers will always ask: *"Why does casehu
 ## The Three-Layer Model
 
 ```
-platform-api/   ← Tier 1: zero dependencies — pure Java interfaces and records
-platform/       ← Tier 3: Quarkus @DefaultBean mocks, @ConfigProperty
-testing/        ← companion: @Alternative @Priority(1) test fixtures (CDI API only)
-config/         ← optional: scope-aware YAML + SmallRye Config preference provider
-oidc/           ← optional: @RequestScoped CurrentPrincipal backed by SecurityIdentity + JWT
-memory-inmem/   ← LEGACY STUB — memory backends migrated to casehub-neocortex (neocortex#56); pending removal
-memory-jpa/     ← LEGACY STUB — see above
-memory-sqlite/  ← LEGACY STUB — see above
-memory-mem0/    ← LEGACY STUB — see above
-memory-graphiti/ ← LEGACY STUB — see above
-agent-api/      ← optional: AgentProvider SPI (Mutiny only, no Quarkus) — package: io.casehub.platform.agent
-agent-claude/   ← optional: ClaudeAgentProvider @ApplicationScoped + ClaudeAgentClient @Startup — activates by classpath presence; requires Claude CLI; concurrent-session semaphore. Two subprocess paths: invoke() → ClaudeOneShotProcess (direct ProcessBuilder, immediate destroyForcibly() on cancellation — fixes zombie subprocess accumulation, eidos#52); openSession(AgentSessionInit) → ClaudeAgentSession (SDK session mode, IDLE/ACTIVE/CLOSED state machine, per-turn wall-clock timeout, true-drain close(), interrupt() fire-and-forget, semaphore held for session lifetime). ClaudeAgentClient CDI constructor requires ObjectMapper alongside ClaudeAgentProperties.
-endpoints-memory/ ← optional: @Alternative @Priority(100) InMemoryEndpointRegistry — volatile tenant-scoped endpoint registry; CDI Tier 4; data lost on restart
-endpoints-config/ ← optional: @Startup @ApplicationScoped YAML-backed endpoint populator — reads casehub.platform.endpoints.files; calls EndpointRegistry.register(); populator not registry; path separator read directly from @ConfigProperty (no PathParserConfigurator dependency)
+platform-api/               ← Tier 1: zero dependencies — pure Java interfaces and records
+platform/                   ← Tier 3: Quarkus @DefaultBean mocks, @ConfigProperty
+testing/                    ← companion: @Alternative @Priority(1) test fixtures (CDI API only)
+config/                     ← optional: scope-aware YAML + SmallRye Config preference provider
+oidc/                       ← optional: @RequestScoped CurrentPrincipal backed by SecurityIdentity + JWT
+expression/                 ← optional: JQ + MVEL3 expression evaluation
+persistence-jpa/            ← optional: JPA-backed scoped preference overrides
+persistence-mongodb/        ← optional: MongoDB preference backend
+agent-api/                  ← optional: AgentProvider SPI (Mutiny only, no Quarkus)
+agent-claude/               ← optional: ClaudeAgentProvider — Claude CLI subprocess integration
+agent-langchain4j/          ← optional: bidirectional LangChain4j interop
+endpoints-memory/           ← optional: @Alternative @Priority(100) InMemoryEndpointRegistry
+endpoints-config/           ← optional: YAML-backed endpoint populator
+datasource-alpha/           ← Rete-style alpha network for event routing (AlphaDataSource)
+datasource-inmem/           ← @Alternative @Priority(100) in-memory DataSourceRegistry
+datasource-jpa/             ← @ApplicationScoped JPA DataSourceRegistry with startup reconciliation
+identity/                   ← DID infrastructure: did:key (secp256k1), did:web, SCIM resolver, composite ActorDIDProvider
+acl-inmem/                  ← @Alternative @Priority(100) in-memory ACL store
+acl-jpa/                    ← @ApplicationScoped JPA ACL store
+governance/                 ← platform governance module
+credentials-quarkus/        ← Quarkus CredentialsProvider-based CredentialResolver bridge
+scim/                       ← SCIM 2.0 GroupMembershipProvider
+notifications/              ← REST + SSE endpoints for notification presentation
+notifications-inmem/        ← @Alternative @Priority(100) in-memory NotificationStore
+notifications-jpa/          ← @ApplicationScoped JPA NotificationStore (Hibernate Reactive Panache)
+notification-dispatch/      ← three-path delivery: digest buffer, suppress, or deliver immediately
+notification-settings-inmem/ ← @Alternative @Priority(100) in-memory preference/suppression store
+notification-settings-jpa/  ← @ApplicationScoped JPA preference/suppression store
+delivery-channel-inmem/     ← @ApplicationScoped channel-to-deliverer registry (production implementation)
+delivery-tracking-inmem/    ← @Alternative @Priority(100) in-memory delivery attempt store
+delivery-tracking-jpa/      ← @ApplicationScoped JPA delivery attempt store (SKIP LOCKED claims)
+digest-inmem/               ← @Alternative @Priority(100) in-memory digest buffer
+digest-jpa/                 ← @ApplicationScoped JPA digest buffer
+subscriptions/              ← subscription matching engine + REST — wires DataSource alpha network
+subscriptions-inmem/        ← @Alternative @Priority(100) in-memory subscription store
+subscriptions-jpa/          ← @ApplicationScoped JPA subscription store (Hibernate Reactive Panache)
+streams-kafka/              ← Kafka event stream connector
+streams-amqp/               ← AMQP event stream connector
+streams-webhook/            ← Webhook event stream connector
+streams-poll/               ← Polling event stream connector
+streams-camel/              ← Apache Camel event stream connector
 ```
+
+**Removed from build:** `memory-inmem/`, `memory-jpa/`, `memory-sqlite/`, `memory-mem0/`, `memory-graphiti/` — memory backends migrated to casehub-neocortex (neocortex#56). Directories remain on disk but are no longer listed in `<modules>` in the parent POM.
 
 `platform-api/` must never import Quarkus, CDI, JPA, or any casehubio artifact. This constraint is what makes the SPIs useful to every module in the stack — including modules that have no Quarkus dependency of their own.
 
-**Package structure in `platform-api/`:** `identity` (`CurrentPrincipal`, `GroupMembershipProvider`, `GroupMember`, `ActorType`, `ActorTypeResolver`), `preferences` (`PreferenceProvider`, `PreferenceKey`, `Preferences`, `SettingsScope`), `path` (`Path`), `endpoints` (`EndpointRegistry`, `EndpointDescriptor`, `EndpointPermissions` (static: `assertTenant(tenancyId, principal)` — write-auth for runtime registration), `EndpointType`, `EndpointProtocol`, `EndpointCapability`, `EndpointQuery`, `EndpointPropertyKeys`), `memory` (`CaseMemoryStore`, `GraphCaseMemoryStore` (graph-native SPI extension — adds `graphQuery(GraphMemoryQuery)` for temporal queries), `MemoryCapability` (self-description enum — adapters declare `capabilities()`; callers use `requireCapability()` for typed exceptions), `MemoryInput`, `Memory`, `MemoryQuery`, `GraphMemoryQuery`, `EraseRequest`, `MemoryDomain`, `MemoryPermissions`). `ReactiveCaseMemoryStore` lives in `platform/`, not `platform-api/` — Mutiny is a Quarkus dep and would violate the zero-dep constraint.
+**Package structure in `platform-api/`:** `identity` (`CurrentPrincipal`, `GroupMembershipProvider`, `GroupMember`, `ActorType`, `ActorTypeResolver`, `SecurityIdentityAttributes`, `TenancyConstants`, `MissingTenancyException`, `DIDResolver`, `DIDMethod` (CDI qualifier), `DIDDocument`, `VerificationMethod`, `VerificationMethodType`, `ActorDIDProvider`, `ActorDIDSource` (CDI qualifier), `AgentCredentialValidator`, `CredentialValidationResult`, `IdentityVerificationResult`, `IdentityBindingStatus`, `AgentIdentityValidatedEvent`, `AgentIdentityViolationEvent`), `preferences` (`PreferenceProvider`, `PreferenceKey`, `Preferences`, `SettingsScope`), `path` (`Path`), `endpoints` (`EndpointRegistry`, `EndpointDescriptor`, `EndpointPermissions` (static: `assertTenant(tenancyId, principal)` — write-auth for runtime registration), `EndpointType`, `EndpointProtocol`, `EndpointCapability`, `EndpointQuery`, `EndpointPropertyKeys`), `datasource` (`DataSource<T>`, `DataProcessor<T>`, `DataSourceRegistry`, `DataSourceDescriptor`, `DataSourceQuery`, `ObjectType<T>`, `ClassObjectType<T>`, `SubscriptionHandle`, `Marshaller<I,O>`, `MarshallerRegistry`, `MarshalException`, `FilterExpression<T>`, `DataSourceRegistered`, `DataSourceDeregistered`, `DataSourceUpdated`), `delivery` (`DeliveryAttemptStore`, `DeliveryChannelRegistry`, `NotificationDeliverer`, `DigestBuffer`, `DeliveryAttempt`, `DeliveryAttemptPage`, `DeliveryAttemptQuery`, `DeliveryChannelDescriptor`, `DeliveryResult`, `DigestBufferKey`, `DigestSchedule`, `DigestSummary`, `DeliveryExhausted`, `DeliveryChannels`, `DeliveryStatus`, `DeliveryType`, `DigestGroupBy`), `notification.settings` (`NotificationPreferenceStore`, `SuppressionStore`, `NotificationPreferences`, `NotificationPreferenceUpdate`, `ChannelPreference`, `QuietHours`, `MuteRule`, `MuteRuleInput`, `Snooze`, `SnoozeInput`, `SuppressionResult`, `MuteScope`, `QuietHoursAction`), `subscription` (`SubscriptionStore`, `ReactiveSubscriptionStore`, `EventTypeRegistry`, `SubscribableEvent`, `EntityWatcherProvider`, `Subscription`, `SubscriptionInput`, `SubscriptionUpdate`, `SubscriptionQuery`, `SubscriptionPage`, `NotificationTarget`, `NotificationTemplate`, `EventTypeDescriptor`, `EventFieldDescriptor`, `SubscriptionMatched`, `SubscriptionCreated`, `SubscriptionUpdated`, `SubscriptionDeleted`, `SubscriptionScope`, `TargetType`), `notification` (`Notification`, `NotificationStore`, `ReactiveNotificationStore`, `NotificationInput`, `NotificationQuery`, `NotificationPage`, `NotificationSeverity`, `NotificationSource`, `NotificationStatus`), `routing` (`NamedStrategy` — marker interface for CDI-discoverable routing strategies with `String id()`, `StrategyResolver` — resolves `NamedStrategy` beans by `(type, id)` with `resolve`, `find`, `defaultStrategy`, `available`), `actor` (`ActorStateAccumulator` — visitor for assembling actor state (trustScore, capabilityScore, workItem, commitment, engineActiveCaseId), `ActorStateContributor` — SPI for contributing to unified actor state with `sourceName()` and `contribute(actorId, accumulator)`), `governance` (`ExecutionPolicy`, `RetryPolicy`, `BackoffStrategy`), `credentials` (`CredentialResolver`, `CredentialPropertyKeys`), `util` (`UUIDv7` — UUID v7 generator per RFC 9562 with thread-local monotonic counter, `Vectors` — stateless float[] vector operations: `dotProduct`, `magnitude`, `cosineSimilarity`), `memory` (`CaseMemoryStore`, `GraphCaseMemoryStore` (graph-native SPI extension — adds `graphQuery(GraphMemoryQuery)` for temporal queries), `MemoryCapability` (self-description enum — adapters declare `capabilities()`; callers use `requireCapability()` for typed exceptions), `MemoryInput`, `Memory`, `MemoryQuery`, `GraphMemoryQuery`, `EraseRequest`, `MemoryDomain`, `MemoryPermissions`). `ReactiveCaseMemoryStore` lives in `platform/`, not `platform-api/` — Mutiny is a Quarkus dep and would violate the zero-dep constraint.
 
 `config/` and `oidc/` are optional — consumers add them as compile-scope dependencies to activate the capability. Each displaces its corresponding `@DefaultBean` mock automatically via CDI without exclusion config.
 
@@ -193,19 +222,9 @@ This is an explicit design choice, not a missing feature. The two patterns serve
 **Reactive bridge:**
 `BlockingToReactiveBridge @DefaultBean` in `platform/` wraps any blocking `CaseMemoryStore` implementation as a `ReactiveCaseMemoryStore`. Native async adapters override with `@Alternative @Priority(N)` — the same CDI priority ladder used throughout the platform. See `casehub/garden: docs/protocols/universal/persistence-backend-cdi-priority.md`.
 
-**Adapter implementations (submodules in this repo — add as dependency to activate):**
+**Adapter implementations — migrated to casehub-neocortex (neocortex#56):**
 
-| Module | Artifact | CDI priority | Backend | Scope | Best for |
-|--------|----------|-------------|---------|-------|----------|
-| `memory-inmem/` | `casehub-platform-memory-inmem` | @Alternative @Priority(1) | ConcurrentHashMap — volatile | test or compile | Test isolation per @QuarkusTest; ephemeral installs without a database |
-| `memory-jpa/` | `casehub-platform-memory-jpa` | @ApplicationScoped | PostgreSQL + Flyway V1000 | compile | Default persistence; FTS via `websearch_to_tsquery` when `MemoryQuery.question` is set |
-| `memory-sqlite/` | `casehub-platform-memory-sqlite` | @Alternative @Priority(1) | SQLite + HikariCP WAL + FTS5 | compile | Durable single-process deployments. Configure `casehub.memory.sqlite.path` |
-| `memory-mem0/` | `casehub-platform-memory-mem0` | @Alternative @Priority(1) | Mem0 REST API + pgvector | compile | Vector embedding + semantic search. Configure `casehub.memory.mem0.api-key`, `quarkus.rest-client.mem0.url`. `infer=false` preserves 1:1 `store()`/memoryId contract. Do NOT combine with memory-inmem or memory-sqlite. |
-| `memory-graphiti/` | `casehub-platform-memory-graphiti` | @Alternative @Priority(2) | Graphiti REST API | compile | Temporal knowledge graph with LLM entity extraction (async). Extends `GraphCaseMemoryStore` SPI — adds `graphQuery(GraphMemoryQuery)` for temporal queries. Configure `quarkus.rest-client.graphiti.url`, `casehub.memory.graphiti.api-key`. Backend: Neo4j, FalkorDB, or Kuzu. |
-
-All adapters displace `NoOpCaseMemoryStore @DefaultBean` automatically by classpath presence. Do not combine adapters in the same scope — `@Priority(1)` wins and lower-priority stores are bypassed.
-
-Consumers must add `classpath:db/memory/migration` to `quarkus.flyway.locations` when using `memory-jpa/`. `memory-sqlite/` uses programmatic Flyway at `classpath:db/memory-sqlite/migration` — no `quarkus.flyway.locations` entry needed.
+The memory backend modules (`memory-inmem/`, `memory-jpa/`, `memory-sqlite/`, `memory-mem0/`, `memory-graphiti/`) have been removed from the platform build. Their directories remain on disk but are no longer listed in `<modules>`. Memory SPIs (`CaseMemoryStore`, `GraphCaseMemoryStore`, `MemoryCapability`, etc.) remain in `platform-api/` — the SPI contract is unchanged. Backend implementations now live in casehub-neocortex.
 
 ---
 
@@ -259,9 +278,234 @@ For Claude-native work, keep `agent-claude/` for direct CLI integration or `agen
 
 ---
 
+## DataSource SPI and Alpha Network
+
+**Problem:** casehub modules need to route domain events to subscribers based on type and predicate filters — without coupling producers to consumers. The DataSource SPI in `platform-api` provides a Rete-style alpha network for event ingestion, type discrimination, and predicate evaluation, with a self-pruning deregistration lifecycle.
+
+### Core SPI (`platform-api/`)
+
+| Type | Kind | Purpose |
+|------|------|---------|
+| `DataProcessor<T>` | interface | Single-method `add(T)` — the fundamental processing unit. Must be non-blocking. |
+| `DataSource<T>` | interface (extends `DataProcessor<T>`) | Ingestion entry point and subscription hub — four `subscribe()` overloads with increasing specificity |
+| `DataSourceRegistry` | interface | Tenant-scoped registry — `register`, `resolve`, `resolveSource`, `discover`, `deregister`, `update` |
+| `DataSourceDescriptor` | record | Immutable description: `path`, `tenancyId`, `objectType`, `endpointPath`, `acceptedEventTypes`, `properties`, `marshallerKeys` |
+| `DataSourceQuery` | record | Discovery criteria: `tenancyId` + optional `objectType` wildcard |
+| `ObjectType<T>` | interface | Type discriminator — `matches(Object)` + `getTypeKey()` for hash-based routing |
+| `ClassObjectType<T>` | class | Standard Java class-based `ObjectType` — uses `Class.isInstance()` for subtype matching |
+| `SubscriptionHandle` | interface | Returned by every subscribe — `unsubscribe()` (idempotent) + `isActive()` |
+| `Marshaller<I,O>` | interface | `@FunctionalInterface` for transforming objects — pre-processing decorator on `DataSource.add()` |
+| `MarshallerRegistry` | interface | Named marshaller lookup — populate in `@PostConstruct`, not `@Observes StartupEvent` |
+| `FilterExpression<T>` | record (implements `Predicate<T>`) | Compiled filter with metadata (`type`, `expression`, `predicate`) — enables filter node sharing in the alpha network |
+
+**CDI events:** `DataSourceRegistered`, `DataSourceDeregistered` (carries both descriptor and DataSource instance for identity-based comparison), `DataSourceUpdated` (carries old + new descriptor).
+
+**Subscription overloads on `DataSource<T>`:**
+1. `subscribe(DataProcessor<? super T>)` — all objects, no filter
+2. `subscribe(ObjectType<U>, DataProcessor<? super U>)` — type-filtered
+3. `subscribe(ObjectType<U>, Predicate<U>, DataProcessor<? super U>)` — type + predicate
+4. `subscribe(Class<U>, Predicate<U>, DataProcessor<? super U>)` — convenience wrapping `ClassObjectType`
+
+**Priority lookup:** `resolve(Path, tenancyId)` returns tenant-specific before platform-global. `discover(DataSourceQuery)` returns all matching descriptors without override semantics.
+
+### Alpha Network (`datasource-alpha/`)
+
+`AlphaDataSource<T>` implements `DataSource<T>` using the Rete algorithm's alpha network pattern:
+
+```
+add(object)
+  ├─→ directSubscribers (FanOutProcessor) — all objects, no filter
+  └─→ typeNodes (ConcurrentHashMap<Object, TypeNode>)
+        └─→ TypeNode: checks objectType.matches()
+              ├─→ noFilterSubscribers (FanOutProcessor) — type match only
+              └─→ filterNodes (List<FilterNode>)
+                    └─→ FilterNode: checks predicate.test()
+                          └─→ fanOut (FanOutProcessor) — type + filter match
+```
+
+**Node sharing:** TypeNodes are shared by `getTypeKey()`. FilterNodes are shared when wrapping `FilterExpression` instances with matching `type()` and `expression()`. Plain predicates use identity comparison only.
+
+**Self-pruning:** Empty TypeNodes are removed from the map when the last subscriber unsubscribes (both no-filter and filter subscribers gone).
+
+**Error isolation:** `FanOutProcessor` uses `CopyOnWriteArrayList` — exceptions are WARN-logged but never propagate to other subscribers.
+
+### Self-Pruning Deregistration Lifecycle
+
+1. `registry.deregister(path, tenancyId)` calls `source.markForRemoval(cleanupCallback)`
+2. If `shareCount == 0`, cleanup fires immediately
+3. Otherwise the DataSource enters "pending removal" — continues accepting `add()` and even new subscriptions
+4. Registry fires `DataSourceDeregistered` via `fireAsync()` — observers react by calling `handle.unsubscribe()`
+5. Each `unsubscribe()` decrements `shareCount` — when the last subscriber leaves, cleanup fires
+6. Cleanup uses `sources.remove(key, source)` (identity-based) — prevents corruption if a replacement was registered during the drain period
+7. Re-registration during drain creates a **new** `AlphaDataSource` — `compute()` treats a draining DataSource as absent
+
+### Modules
+
+| Module | Artifact | CDI | Purpose |
+|--------|----------|-----|---------|
+| `datasource-alpha/` | `casehub-platform-datasource-alpha` | (library) | Rete-style `AlphaDataSource` implementation — type nodes, filter nodes, fan-out, self-pruning |
+| `datasource-inmem/` | `casehub-platform-datasource-inmem` | `@Alternative @Priority(100) @ApplicationScoped` | In-memory `DataSourceRegistry` — dual ConcurrentHashMap stores; Tier 4; test or ephemeral installs |
+| `datasource-jpa/` | `casehub-platform-datasource-jpa` | `@ApplicationScoped` | JPA `DataSourceRegistry` — startup reconciliation from `datasource_descriptor` table; `@Transactional` register/deregister/update; same dual-map cache + JPA persistence |
+
+---
+
+## DID and Identity Infrastructure
+
+The `identity/` module implements Decentralized Identifier (DID) resolution, actor-to-DID mapping, and verifiable credential validation. The SPI types live in `platform-api/` (`io.casehub.platform.api.identity`); the implementations live in `identity/`.
+
+### DID Resolution — Composite Pattern
+
+Consumers inject the unqualified `DIDResolver` and get `CompositeDIDResolver`, which iterates all `@DIDMethod`-qualified resolvers by `@Priority` (ascending), returning the first non-empty result.
+
+| Resolver | `@Priority` | DID Method | How it works |
+|----------|-------------|------------|--------------|
+| `KeyDIDResolver` | 100 | `did:key:` | Decodes multibase key material, parses multicodec varint prefix, dispatches to `MulticodecKeyType` for SPKI conversion |
+| `WebDIDResolver` | 100 | `did:web:` | HTTPS GET to `/.well-known/did.json` or `/{path}/did.json`; SSRF protection (rejects RFC 1918, loopback, link-local); configurable max response size (default 1 MiB) and timeout (default 5000ms) |
+| `ScimDIDResolver` | 1000 | (any) | Constructs synthetic DID documents from SCIM2 `x509Certificates`; validates requested DID matches SCIM-stored DID; extracts SPKI from X.509 DER certificates |
+
+### secp256k1 did:key Support
+
+`MulticodecKeyType` handles three key types with full SPKI DER construction:
+
+| Variant | Multicodec | Raw Key | Verification Method Type |
+|---------|-----------|---------|--------------------------|
+| `ED25519` | `0xed` | 32 bytes | `Ed25519VerificationKey2020` |
+| `P256` | `0x1200` | 33 bytes (SEC1 compressed) | `EcdsaSecp256r1VerificationKey2019` |
+| `SECP256K1` | `0xe7` | 33 bytes (SEC1 compressed) | `EcdsaSecp256k1VerificationKey2019` |
+
+**Why manual ASN.1 for secp256k1:** JDK 15+ removed secp256k1 from SunEC (JDK-8235710). The implementation manually decompresses the SEC1 point using secp256k1 curve parameters and constructs an 88-byte SPKI by concatenating a pre-built ASN.1 header with the 64-byte uncompressed X/Y coordinates.
+
+### ActorDIDProvider — Composite Pattern
+
+Maps actorIds to DID URIs. Same composite pattern as DID resolution — inject unqualified `ActorDIDProvider`, get `CompositeActorDIDProvider`.
+
+| Provider | `@Priority` | Source |
+|----------|-------------|--------|
+| `ConfiguredActorDIDProvider` | 100 | Static config: `casehub.identity.dids."claude:reviewer@v1"=did:web:...` |
+| `ScimActorDIDProvider` | 200 | SCIM2 Agent endpoint via `ScimAgentLookup`; supports `invalidate(actorId)` for cache clearing |
+
+### Credential Validation
+
+`AgentCredentialValidator` — optional VC (Verifiable Credential) validation. `NoOpCredentialValidator @DefaultBean` returns `Optional.empty()` (VC validation is opt-in).
+
+`JwtVCValidator @ApplicationScoped` — reads VC JWT files from paths configured via `casehub.identity.credentials."actorId"`. Validates JWT structure, expiration, subject-DID match, issuer DID resolution, verification method lookup, and signature (EdDSA/ES256). EXPIRED results are never cached. Displaces the no-op when present.
+
+### Identity Verification Services
+
+`AgentIdentityVerificationService @ApplicationScoped` — read-path: checks stored agent public key against DID document verification methods and `alsoKnownAs` binding. Does NOT re-run VC validation.
+
+`ReactiveAgentIdentityVerificationService @DefaultBean` — Mutiny `Uni<>` bridge over the blocking service, offloads to Vert.x worker pool.
+
+**CDI events fired:** `AgentIdentityValidatedEvent` (success — carries actorId, tenancyId, actorDid, status, key/AKA verification details, credential result, DID method) and `AgentIdentityViolationEvent` (failure — carries actorId, tenancyId, actorDid, status).
+
+### Caching
+
+`AbstractCachingIdentityProvider<C>` — TTL cache used by `ScimAgentLookup` and `JwtVCValidator`. Atomic conditional remove on expired entries. Transient failures are NOT cached. Empty results ARE cached for full TTL.
+
+---
+
+## ACL, Governance, and Credentials
+
+### Access Control
+
+The ACL SPI in `platform-api/` (`io.casehub.platform.api.acl`) provides async access control with resource hierarchy inheritance. All `AccessControlProvider` methods return `CompletionStage` and default to permit-all (no-ops).
+
+| Type | Kind | Purpose |
+|------|------|---------|
+| `AccessControlProvider` | interface | Core ACL SPI — `canAccess`, `grant`, `revoke`, `revokeAll`, `registerParent`, `accessibleResources` |
+| `AclAction` | enum | `READ`, `WRITE`, `ADMIN`, `CLAIM` |
+| `AclEntry` | record | `(actorId, resourceId, AclAction, grantedAt, expiresAt, tenancyId)` with `isExpired()` |
+| `AclResourceType` | constants | `CASE`, `PLAN_ITEM`, `WORK_ITEM`, `EVENT_LOG`, `CASE_DEFINITION` |
+| `AccessDeniedException` | exception | Carries `actorId`, `resourceId`, `action` |
+
+**Group-based grants:** Both implementations resolve groups via `GroupMembershipProvider.groupsOf(actorId)` and build a candidate set including `"group:" + groupName`. Grants made to `"group:managers"` are resolved for any actor in that group.
+
+**Parent-child hierarchy:** `registerParent(child, parent)` enables ACL inheritance — `canAccess` walks the hierarchy recursively with a depth guard of 20.
+
+**Contract test:** `AccessControlProviderContractTest` in `platform-api/` provides 22 tests both implementations must pass (basic grant/revoke, group-based grants, parent-child inheritance, expiry, idempotent grants, resource type filtering, deduplication).
+
+| Module | Artifact | CDI | Purpose |
+|--------|----------|-----|---------|
+| `acl-inmem/` | `casehub-platform-acl-inmem` | `@Alternative @Priority(10) @ApplicationScoped` | ConcurrentHashMap-backed; synchronous wrapped in `CompletableFuture` |
+| `acl-jpa/` | `casehub-platform-acl-jpa` | `@ApplicationScoped` | Hibernate Reactive + Panache; audit logging (`acl_audit_log` table with GRANT/REVOKE ops, `performedBy` from `CurrentPrincipal`); three JPA entities: `AclEntryEntity`, `AclAuditLogEntity`, `ResourceParentEntity` |
+
+### Governance
+
+The governance module provides `PolicyEnforcer` for retry + timeout + backoff policy execution.
+
+| Type | Kind | Purpose |
+|------|------|---------|
+| `ExecutionPolicy` | record (in `platform-api/`) | `timeoutMs` + `RetryPolicy`; factory `noRetry()` |
+| `RetryPolicy` | record (in `platform-api/`) | `maxAttempts` (default 3), `delayMs` (default 10s), `BackoffStrategy`, `maxDelayMs` |
+| `BackoffStrategy` | enum (in `platform-api/`) | `FIXED`, `EXPONENTIAL`, `EXPONENTIAL_WITH_JITTER` |
+| `DefaultPolicyEnforcer` | class (in `governance/`) | `@ApplicationScoped`; uses virtual thread executor; FIXED/EXPONENTIAL/JITTER backoff with optional `maxDelayMs` cap |
+
+**Exception hierarchy:** `PolicyEnforcementException` (base) with subtypes `TimeoutPolicyException`, `RetryExhaustedException`, `InterruptedPolicyException`.
+
+| Module | Artifact | CDI | Purpose |
+|--------|----------|-----|---------|
+| `governance/` | `casehub-platform-governance` | `@ApplicationScoped` | `DefaultPolicyEnforcer` — blocking policy execution on worker threads; virtual thread executor; `@PreDestroy` shutdown |
+
+### Credentials
+
+The `CredentialResolver` SPI (`platform-api/`) resolves **outbound** endpoint credentials by logical reference name. Returns `Map<String, String>` keyed by `CredentialPropertyKeys` constants (`USER`, `PASSWORD`, `BEARER_TOKEN`, `API_KEY`, `EXPIRES_AT`, `SIGNING_SECRET`). Distinct from **inbound** Verifiable Credential validation in `io.casehub.platform.api.identity`.
+
+| Module | Artifact | CDI | Purpose |
+|--------|----------|-----|---------|
+| `credentials-quarkus/` | `casehub-platform-credentials-quarkus` | `@Alternative @Priority(1) @ApplicationScoped` | Bridge from `CredentialResolver` to Quarkus `CredentialsProvider`; `@PostConstruct` validates exactly one Quarkus provider exists; displaces `@DefaultBean` when on classpath |
+
+---
+
+## Expression Evaluation
+
+The `expression/` module provides pluggable expression evaluation through the `ExpressionEngine` SPI (defined in `platform-api/`).
+
+### SPI Types (`platform-api/`)
+
+| Type | Kind | Purpose |
+|------|------|---------|
+| `ExpressionEngine` | interface | Factory: `type()`, `compile(expression, contextType, resultType)`, `validate(expression)` |
+| `ExpressionEngineRegistry` | interface | Registry: `register()`, `resolve(type)`, `compile(type, ...)`, `validate(type, expression)` |
+| `CompiledExpression<C,R>` | interface | Compiled, type-safe expression: `type()`, `eval(C context)` |
+| `ExpressionEvaluator` | interface | Marker for uncompiled expression descriptors — `String type()` discriminator for registry dispatch |
+| `JQExpressionEvaluator` | record | `record(String expression) implements ExpressionEvaluator` — `type() = "jq"` |
+| `MvelExpressionEvaluator` | record | `record(String expression) implements ExpressionEvaluator` — `type() = "mvel"` |
+| `LambdaExpression<C,R>` | class | Wraps a `Function<C,R>` — `type() = "lambda"`; intentionally outside the registry flow (no `LambdaExpressionEngine` exists) |
+| `ConfigManager` | interface | Config access for JQ `$config` injection |
+| `SecretManager` | interface | Secret resolution for JQ `$secret` injection |
+
+### Engines
+
+| Engine | Type Key | Backend | Context Type | Notes |
+|--------|----------|---------|-------------|-------|
+| `JQExpressionEngine` | `"jq"` | jackson-jq 1.6 | `JsonNode` | Boolean and List compiled expression variants; `ConcurrentHashMap`-cached `JsonQuery` instances |
+| `MvelExpressionEngine` | `"mvel"` | MVEL3 3.0.0-SNAPSHOT transpiler | `Map<String, Object>` | Lazy compilation via double-checked locking — first `eval()` triggers MVEL3 compilation with runtime type context; `validate()` only checks for blank expressions |
+
+**Legacy:** `JQEvaluator @ApplicationScoped` — the "canonical Foundation-tier JQ evaluator" with `$secret` and `$config` scope injection via `SecretManager`/`ConfigManager`. Referenced by protocol `PP-20260522-jq-evaluation-canonical`.
+
+`DefaultExpressionEngineRegistry @ApplicationScoped` discovers all `ExpressionEngine` beans at `@PostConstruct` and dispatches `compile()`/`validate()` by type key. The subscription engine uses this to compile filter expressions into `FilterExpression<T>` predicates for DataSource alpha network routing.
+
+---
+
+## Event Streams
+
+Event stream connectors bridge external messaging systems into the platform. All five build `CloudEvent` instances, set the `tenancyid` extension, and fire via `Event<CloudEvent>.fireAsync()`. All resolve endpoint metadata from `EndpointRegistry` using `EndpointPropertyKeys` constants.
+
+| Module | Artifact | Transport | Binding | Notes |
+|--------|----------|-----------|---------|-------|
+| `streams-kafka/` | `casehub-platform-streams-kafka` | Apache Kafka | Static `@Incoming("casehub-kafka-stream")` | Correlates configured topics with `EndpointDescriptor` at startup; does NOT observe `EndpointRegistered`; mutually exclusive with Camel for same topic |
+| `streams-amqp/` | `casehub-platform-streams-amqp` | AMQP | Static `@Incoming("casehub-amqp-stream")` | One address per channel (SmallRye limitation); for multi-queue fan-in use streams-camel |
+| `streams-webhook/` | `casehub-platform-streams-webhook` | Inbound HTTP | `POST /streams/webhook/{tenancyId}/{streamId}` | Structured CloudEvents (`application/cloudevents+json`) only; self-registers platform-global endpoint; requires `casehub.streams.webhook.public-url` |
+| `streams-poll/` | `casehub-platform-streams-poll` | HTTP GET polling | `@Scheduled(every = "${casehub.streams.poll.interval:60s}")` | Discovers `HTTP` + `QUERY` endpoints; per-endpoint failure isolation; uses `java.net.http.HttpClient` |
+| `streams-camel/` | `casehub-platform-streams-camel` | Apache Camel | Dynamic routes via `camelContext.addRoutes()` | The only connector that observes `@ObservesAsync EndpointRegistered` for runtime-dynamic route addition; idempotent via `routedUris` set; consumer app must add Camel component dependencies |
+
+All stream connectors depend on `platform-api`, `platform`, and `endpoints-memory`.
+
+---
+
 ## Notification and Subscription System
 
-`casehub-platform-notification-dispatch` implements the platform-wide notification and subscription infrastructure. Channels receive notifications, apply suppression rules, deliver via connectors, or buffer into digest aggregations. All stored in a named `notifications` datasource — separate from application data. V1 and V2 Flyway migrations at `classpath:db/notifications/migration`.
+The notification and subscription system is a multi-module architecture spanning SPIs (in `platform-api/`), persistence backends, a subscription matching engine wired to the DataSource alpha network, a multi-path dispatch pipeline, and a REST+SSE presentation layer.
 
 ### Key Abstractions
 
@@ -292,17 +536,34 @@ For Claude-native work, keep `agent-claude/` for direct CLI integration or `agen
 
 **New in platform#157, #159, #161, #162, #163:** Digest groupBy, quiet hours buffering, digest status endpoint, additional schedule types, MethodHandles performance optimization.
 
+### Data Flow
+
+1. Domain modules produce `SubscribableEvent` objects and insert them into the notification DataSource (registered at path `casehub/platform/notifications`)
+2. `SubscriptionEngine` (in `subscriptions/`) evaluates wired subscriptions against the alpha network, fires `SubscriptionMatched` CDI event
+3. `NotificationDispatcher` (in `notification-dispatch/`) observes `SubscriptionMatched`, resolves targets, applies template, checks suppression, routes to channels
+4. `NotificationStore` (in `notifications-inmem/` or `notifications-jpa/`) persists the notification record, fires `NotificationCreated`
+5. `NotificationResource` and `NotificationSseResource` (in `notifications/`) expose stored notifications via REST and push real-time updates via SSE
+6. `DeliveryChannelRegistry` (in `delivery-channel-inmem/`) maps channels to `NotificationDeliverer` implementations
+7. Delivery attempts tracked by `DeliveryAttemptStore`; digests buffered by `DigestBuffer`; preferences/suppression by `NotificationPreferenceStore`/`SuppressionStore`
+
 ### Modules
 
-| Module | Artifact | Purpose |
-|--------|----------|---------|
-| `notification-api/` | `casehub-platform-notification-api` | Pure Java SPIs and domain types — `NotificationEvent`, `EventType`, `EventTypeRegistry`, `Channel`, `ChannelPreference`, `DigestSchedule`, `DigestBuffer`, `ChannelRouter`, `SuppressionEvaluator` |
-| `notification-dispatch/` | `casehub-platform-notification-dispatch` | Full Quarkus extension — CDI wiring, Flyway, JPA entities, `NotificationDispatcher`, `DigestFlushScheduler`, `SuppressionEvaluator`, `ChannelRouter` default |
-| `notification-memory/` | `casehub-platform-notification-memory` | In-memory channel, preference, event-type, and digest stores — `@Alternative @Priority(1)` for test isolation |
-
-`notification-dispatch` requires a named `notifications` datasource. Flyway migrations at `classpath:db/notifications/migration`.
-
-**DataSource SPI Integration:** casehub-platform ships `DataSource` SPI in `platform-api` for multi-datasource apps. Implementations provide named datasources; consumers inject via CDI qualifier. `notification-dispatch` depends on the `@Named("notifications")` DataSource.
+| Module | Artifact | CDI | Purpose |
+|--------|----------|-----|---------|
+| `notifications/` | `casehub-platform-notifications` | `@ApplicationScoped` | REST + SSE presentation layer — `NotificationResource` (list, mark-read, dismiss, unread-count), `NotificationSseResource` (push via SSE with stale emitter sweep), `NotificationPreferenceResource`, `SuppressionResource`, `DeliveryChannelResource`, `DigestStatusResource` |
+| `notifications-inmem/` | `casehub-platform-notifications-inmem` | `@Alternative @Priority(100)` | In-memory `NotificationStore` + `ReactiveNotificationStore` — bounded size eviction; Base64 cursor pagination; fires CDI events |
+| `notifications-jpa/` | `casehub-platform-notifications-jpa` | `@ApplicationScoped` | JPA `NotificationStore` + `ReactiveNotificationStore` (Hibernate Reactive Panache) — keyset cursor pagination; `NotificationRetentionScheduler` (purge READ/DISMISSED >90d, UNREAD >365d); Flyway at `classpath:db/notification/migration` |
+| `notification-dispatch/` | `casehub-platform-notification-dispatch` | `@ApplicationScoped` | Three-path delivery: digest buffer (external + schedule + non-URGENT), suppress (rules), or deliver (immediate). `NotificationDispatcher`, `DigestFlushScheduler`, `SuppressionEvaluator` |
+| `notification-settings-inmem/` | `casehub-platform-notification-settings-inmem` | `@Alternative @Priority(100)` | In-memory `NotificationPreferenceStore` + `SuppressionStore` — channel preferences, quiet hours, mute rules (with lazy expiry), snooze state |
+| `notification-settings-jpa/` | `casehub-platform-notification-settings-jpa` | `@ApplicationScoped` | JPA `NotificationPreferenceStore` + `SuppressionStore` (blocking ORM Panache) — channel defaults and quiet hours as JSON TEXT columns; `SuppressionRetentionScheduler` (daily 02:00 purge of expired mutes/snooze); Flyway at `classpath:db/notification-settings/migration` |
+| `delivery-channel-inmem/` | `casehub-platform-delivery-channel-inmem` | `@ApplicationScoped` | **Production implementation** (not a test double) — `DeliveryChannelRegistry` mapping channelId to `(DeliveryChannelDescriptor, NotificationDeliverer)` pairs; channels are static, not dynamic; no JPA variant needed |
+| `delivery-tracking-inmem/` | `casehub-platform-delivery-tracking-inmem` | `@Alternative @Priority(100)` | In-memory `DeliveryAttemptStore` — bounded size; synchronized `claimRetryable` |
+| `delivery-tracking-jpa/` | `casehub-platform-delivery-tracking-jpa` | `@ApplicationScoped` | JPA `DeliveryAttemptStore` — `claimRetryable` uses `PESSIMISTIC_WRITE` with `SKIP LOCKED` for concurrent-safe batch claim; built-in retention purge; Flyway at `classpath:db/delivery-tracking/migration` |
+| `digest-inmem/` | `casehub-platform-digest-inmem` | `@Alternative @Priority(100)` | In-memory `DigestBuffer` — bounded size; retention-based expiry; secondary user index |
+| `digest-jpa/` | `casehub-platform-digest-jpa` | `@ApplicationScoped` | JPA `DigestBuffer` — drain via SELECT+DELETE in transaction; Flyway at `classpath:db/digest/migration` |
+| `subscriptions/` | `casehub-platform-subscriptions` | `@ApplicationScoped` | Subscription matching engine + REST — `SubscriptionEngine` wires DataSource alpha network with filter expression compilation (JQ/MVEL via `ExpressionEngineRegistry`); `EventTypeObjectType` supports exact match and prefix glob; hot-wire/rewire/unwire via CDI event observers; REST CRUD at `/subscriptions` |
+| `subscriptions-inmem/` | `casehub-platform-subscriptions-inmem` | `@Alternative @Priority(100)` | In-memory `SubscriptionStore` + `ReactiveSubscriptionStore` — scope-aware (USER enforces ownerId, SYSTEM is tenant-only); fires CDI events |
+| `subscriptions-jpa/` | `casehub-platform-subscriptions-jpa` | `@ApplicationScoped` | JPA `SubscriptionStore` + `ReactiveSubscriptionStore` (Hibernate Reactive Panache) — OR-disjunction scope queries; filters/targets/template stored as JSON TEXT; Flyway at `classpath:db/subscription/migration` |
 
 ---
 
@@ -358,25 +619,52 @@ Add as a test-scoped dependency:
 
 | Module | Status | Purpose |
 |--------|--------|---------|
-| `platform-api/` | ✅ shipped | Zero-dep SPIs: `Path`, `PreferenceProvider`, `CurrentPrincipal`, `GroupMembershipProvider`, `CaseMemoryStore` + value types |
+| `platform-api/` | ✅ shipped | Zero-dep SPIs: `Path`, `PreferenceProvider`, `CurrentPrincipal`, `GroupMembershipProvider`, `CaseMemoryStore`, `DataSource`, `AccessControlProvider`, `CredentialResolver`, `ExpressionEngine`, `SubscriptionStore`, `NotificationStore`, `DeliveryAttemptStore`, `DigestBuffer`, `NamedStrategy`, `StrategyResolver`, `ActorStateContributor`, `ExecutionPolicy` + value types |
 | `platform/` | ✅ shipped | `@DefaultBean` mocks (configurable) and no-ops (silent); `ReactiveCaseMemoryStore` SPI; `BlockingToReactiveBridge @DefaultBean` |
 | `testing/` | ✅ shipped | `@Alternative @Priority(1)` identity fixtures |
 | `config/` | ✅ shipped | Scope-aware YAML + SmallRye Config overrides — displaces mock when on classpath |
 | `oidc/` | ✅ shipped | `@RequestScoped CurrentPrincipal` backed by `SecurityIdentity` + JWT — displaces mock when on classpath |
-| `expression/` | ✅ shipped | JQ expression evaluation (`JQEvaluator`) — used by casehub-engine and casehub-work-queues |
+| `expression/` | ✅ shipped | JQ + MVEL3 expression evaluation — `ExpressionEngineRegistry` dispatches by type; used by casehub-engine, casehub-work-queues, and subscription filter compilation |
 | `persistence-jpa/` | ✅ shipped (#6) | JPA-backed scoped preference overrides — Flyway, @ApplicationScoped, scope-aware hierarchy |
 | `persistence-mongodb/` | ✅ shipped (#7) | MongoDB alternative for preferences — @Alternative @Priority(1), beats JPA when co-deployed, no Flyway |
-| `memory-inmem/` | ✅ shipped (#32) | Volatile CaseMemoryStore — ConcurrentHashMap, @Alternative @Priority(1). Test-scope for isolation; compile for ephemeral installs |
-| `memory-jpa/` | ✅ shipped (#32) | JPA CaseMemoryStore — PostgreSQL, Flyway V1000 at `classpath:db/memory/migration`, FTS via websearch_to_tsquery |
-| `memory-sqlite/` | ✅ shipped (#37) | SQLite CaseMemoryStore — xerial JDBC + HikariCP WAL + FTS5, programmatic Flyway at `classpath:db/memory-sqlite/migration`. @Alternative @Priority(1). Configure `casehub.memory.sqlite.path` |
+| `datasource-alpha/` | ✅ shipped | Rete-style alpha network — `AlphaDataSource` with type nodes, filter nodes, fan-out delivery, self-pruning deregistration lifecycle |
+| `datasource-inmem/` | ✅ shipped | `@Alternative @Priority(100)` in-memory `DataSourceRegistry` — dual ConcurrentHashMap stores; Tier 4; test or ephemeral installs |
+| `datasource-jpa/` | ✅ shipped | `@ApplicationScoped` JPA `DataSourceRegistry` — startup reconciliation; `@Transactional` register/deregister/update; `datasource_descriptor` table |
+| `identity/` | ✅ shipped | DID infrastructure — `CompositeDIDResolver` (`did:key` with secp256k1, `did:web` with SSRF protection, SCIM resolver), `CompositeActorDIDProvider` (config + SCIM sources), `JwtVCValidator`, `AgentIdentityVerificationService`; TTL caching via `AbstractCachingIdentityProvider` |
+| `acl-inmem/` | ✅ shipped | `@Alternative @Priority(10)` in-memory `AccessControlProvider` — ConcurrentHashMap with group-based grants and parent-child hierarchy (depth guard 20) |
+| `acl-jpa/` | ✅ shipped | `@ApplicationScoped` JPA `AccessControlProvider` — Hibernate Reactive + Panache; audit logging (`acl_audit_log` table); `AclEntryEntity`, `AclAuditLogEntity`, `ResourceParentEntity` |
+| `governance/` | ✅ shipped | `DefaultPolicyEnforcer @ApplicationScoped` — retry + timeout + backoff (FIXED/EXPONENTIAL/JITTER) using virtual thread executor |
+| `credentials-quarkus/` | ✅ shipped | `@Alternative @Priority(1)` bridge from `CredentialResolver` to Quarkus `CredentialsProvider` — validates exactly one provider at `@PostConstruct` |
 | `scim/` | ✅ shipped (#45) | SCIM 2.0 GroupMembershipProvider — @ApplicationScoped, displaces mock by classpath presence |
-| `memory-mem0/` | ✅ shipped (#33) | Mem0 REST CaseMemoryStore — @Alternative @Priority(1); vector embeddings via Mem0 OSS (Docker + pgvector); infer:false; compound user_id for tenant isolation; RELEVANCE via POST /search with top_k + threshold |
-| `memory-graphiti/` | ✅ shipped (#34) | `@Alternative @Priority(2)` Graphiti REST `GraphCaseMemoryStore` — temporal knowledge graph (Neo4j/FalkorDB/Kuzu); LLM entity extraction (async); `graphQuery(GraphMemoryQuery)` for temporal queries; extends `CaseMemoryStore` with graph-native SPI |
+| `memory-inmem/` | ⛔ removed from build | Migrated to casehub-neocortex (neocortex#56). Directory remains on disk. |
+| `memory-jpa/` | ⛔ removed from build | Migrated to casehub-neocortex. Directory remains on disk. |
+| `memory-sqlite/` | ⛔ removed from build | Migrated to casehub-neocortex. Directory remains on disk. |
+| `memory-mem0/` | ⛔ removed from build | Migrated to casehub-neocortex. Directory remains on disk. |
+| `memory-graphiti/` | ⛔ removed from build | Migrated to casehub-neocortex. Directory remains on disk. |
 | `agent-api/` | ✅ shipped (#55, #58) | AgentProvider SPI — `run(AgentSessionConfig) → Multi<AgentEvent>`; Mutiny only, no Quarkus; package: `io.casehub.platform.agent`. **Multi-turn (#58):** `AgentSession` interface — serial `query()`/`interrupt()`/`close(Duration)`; `AgentProvider.openSession(AgentSessionInit)` factory. `AgentSessionInit` carries systemPrompt, mcpServers, timeout, correlationId (no userPrompt — prompts passed per-turn to `query()`). `NoOpAgentSession` in `platform/` returned by `NoOpAgentProvider.openSession()`. |
 | `agent-claude/` | ✅ shipped (#55, #58, eidos#52) | `ClaudeAgentProvider @ApplicationScoped` + `ClaudeAgentClient @Startup` — activates by classpath presence; requires Claude CLI; concurrent-session semaphore (configurable); wall-clock timeout; three exception types: `AgentProcessException`, `AgentSessionLimitException`, `AgentTimeoutException`. **Two subprocess paths:** `invoke()` → `ClaudeOneShotProcess` (direct `ProcessBuilder`, immediate `destroyForcibly()` — fixes zombie subprocess accumulation when parallel `invoke()` calls all timeout, eidos#52); `openSession()` → `ClaudeAgentSession` (SDK session mode). **Multi-turn (#58):** IDLE/ACTIVE/CLOSED state machine; per-turn wall-clock timeout; true-drain `close(Duration)`; `interrupt()` fire-and-forget (TOCTOU-guarded); semaphore held for session lifetime. `ClaudeAgentClient` CDI constructor requires `ObjectMapper` alongside `ClaudeAgentProperties`. |
 | `agent-langchain4j/` | ✅ shipped (#100, renamed #105) | Bidirectional LangChain4j interop — `ChatModelAgentProvider` (any ChatModel → AgentProvider) + `AgentProviderChatModel` (any AgentProvider → ChatModel). No longer Claude-specific. `@Alternative @Priority(10) @ApplicationScoped`. **Incompatible with `engine.Agent`** which forces `ResponseFormatType.JSON`. `casehub.platform.agent.langchain4j.closeTimeout` (default PT30S). No quarkus:build goal. |
 | `endpoints-memory/` | ✅ shipped (#73) | `InMemoryEndpointRegistry @Alternative @Priority(100)` — volatile ConcurrentHashMap `EndpointRegistry`; ephemeral (data lost on restart); Tier 4 CDI (beats future JPA and NoSQL adapters); add test scope for isolation, compile scope for ephemeral installs |
 | `endpoints-config/` | ✅ shipped (#88) | YAML-backed endpoint populator — `@Startup @ApplicationScoped`; reads `casehub.platform.endpoints.files`; `${VAR}` interpolation (system property → env var → startup failure if unresolved); multi-file support; path separator read via `@ConfigProperty` directly (no `PathParserConfigurator` cross-bean dependency); populator not registry |
+| `notifications/` | ✅ shipped | REST + SSE presentation layer — list, mark-read, dismiss, unread-count, real-time push via SSE |
+| `notifications-inmem/` | ✅ shipped | `@Alternative @Priority(100)` in-memory `NotificationStore` — bounded size eviction, cursor pagination, CDI events |
+| `notifications-jpa/` | ✅ shipped | `@ApplicationScoped` JPA `NotificationStore` (Hibernate Reactive Panache) — keyset cursor pagination, retention scheduler, Flyway |
+| `notification-dispatch/` | ✅ shipped | Three-path delivery: digest buffer, suppress, or deliver immediately. `NotificationDispatcher`, `DigestFlushScheduler`, `SuppressionEvaluator` |
+| `notification-settings-inmem/` | ✅ shipped | `@Alternative @Priority(100)` in-memory preference/suppression store — channel preferences, quiet hours, mute rules, snooze |
+| `notification-settings-jpa/` | ✅ shipped | `@ApplicationScoped` JPA preference/suppression store — JSON TEXT columns, retention scheduler, Flyway |
+| `delivery-channel-inmem/` | ✅ shipped | `@ApplicationScoped` channel-to-deliverer registry — **production implementation** (channels are static, no JPA variant needed) |
+| `delivery-tracking-inmem/` | ✅ shipped | `@Alternative @Priority(100)` in-memory `DeliveryAttemptStore` — bounded size, synchronized claim |
+| `delivery-tracking-jpa/` | ✅ shipped | `@ApplicationScoped` JPA `DeliveryAttemptStore` — `PESSIMISTIC_WRITE` with `SKIP LOCKED` for concurrent-safe batch claim; retention purge; Flyway |
+| `digest-inmem/` | ✅ shipped | `@Alternative @Priority(100)` in-memory `DigestBuffer` — bounded size, retention-based expiry, secondary user index |
+| `digest-jpa/` | ✅ shipped | `@ApplicationScoped` JPA `DigestBuffer` — drain via SELECT+DELETE in transaction; Flyway |
+| `subscriptions/` | ✅ shipped | Subscription matching engine + REST — `SubscriptionEngine` wires DataSource alpha network; `EventTypeObjectType` for exact match and prefix glob; expression compilation via `ExpressionEngineRegistry` |
+| `subscriptions-inmem/` | ✅ shipped | `@Alternative @Priority(100)` in-memory `SubscriptionStore` — scope-aware, CDI events |
+| `subscriptions-jpa/` | ✅ shipped | `@ApplicationScoped` JPA `SubscriptionStore` (Hibernate Reactive Panache) — OR-disjunction scope queries, JSON TEXT columns, Flyway |
+| `streams-kafka/` | ✅ shipped | Kafka event stream connector — static `@Incoming` binding; correlates topics with `EndpointDescriptor` at startup |
+| `streams-amqp/` | ✅ shipped | AMQP event stream connector — static `@Incoming` binding; one address per channel |
+| `streams-webhook/` | ✅ shipped | Webhook event stream connector — `POST /streams/webhook/{tenancyId}/{streamId}`; structured CloudEvents only |
+| `streams-poll/` | ✅ shipped | Polling event stream connector — `@Scheduled` HTTP GET; per-endpoint failure isolation |
+| `streams-camel/` | ✅ shipped | Apache Camel event stream connector — the only connector with runtime-dynamic route addition via `@ObservesAsync EndpointRegistered` |
 | `preferences-editor/` | 🔜 #8 | Admin write path for preferences — REST API, separate from providers |
 
 `PreferenceProvider` is permanently read-only. The editor module writes directly to the backend; providers never own the write path.

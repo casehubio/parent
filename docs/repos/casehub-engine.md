@@ -19,7 +19,7 @@ Hybrid choreography+orchestration coordination engine for multi-agent work. Impl
 | `casehub-engine-common` | `common` | Pure Java (no CDI) | Domain objects (`CaseMetaModel`, `CaseInstance`), persistence SPIs, `JQEvaluator`, `EventLog`. `ExpressionEngine.extractString(ExpressionEvaluator, CaseContext): Optional<String>` — new default method (engine#549): dispatches via `ExpressionEngineRegistry.extractString()`; registry catches `UnsupportedOperationException` (engine doesn't override) → `Optional.empty()` + WARN; `JQExpressionEngine` overrides: evaluates against WORKING panel, emptiness guard, `isTextual()` guard. |
 | `casehub-engine` | `runtime` | Quarkus module | Choreography handlers, orchestration, worker scheduling, expression engine |
 | `casehub-engine-blackboard` | `blackboard` | Optional module | CMMN/Blackboard orchestration — `BlackboardRegistry`, `PlanItem`, `SubCase` lifecycle |
-| `casehub-engine-work-adapter` | `work-adapter` | Module | Bridges casehub-work WorkItem lifecycle to blackboard PlanItem transitions |
+| ~~`casehub-engine-work-adapter`~~ | ~~`work-adapter`~~ | **Removed** | Relocated to `casehub-work` as `casehub-work-engine-adapter` (engine-adapter module) |
 | `casehub-engine-resilience` | `resilience` | Optional module | Dead Letter Queue, PoisonPill detection, backoff strategies, case timeout |
 | `casehub-engine-ledger` | `ledger` | Optional module | Tamper-evident case lifecycle ledger; extends `casehub-ledger` entry model; `TrustWeightedAgentStrategy` (`@Alternative @Priority(1)`) |
 | `casehub-engine-ai` | `ai` | Optional module | `AgentEmbeddingProvider` SPI + `SemanticAgentRoutingStrategy` (`@Alternative @Priority(2)`) — activates semantic agent routing by classpath presence. `AgentEmbeddingProvider` SPI lives here (not in `casehub-engine-api`) deliberately: the whole semantic routing feature — SPI + implementation — is opt-in together; placing the SPI in `casehub-engine-api` would force all deployments to declare an embedding provider even when no semantic routing is needed. |
@@ -32,14 +32,104 @@ Hybrid choreography+orchestration coordination engine for multi-agent work. Impl
 | `casehub-engine-flow` | `flow` | Optional module | Enables `Worker(Workflow)` to dispatch casehub workers from Serverless Workflow steps and await results reactively. `FlowWorkerExecutor @ApplicationScoped` wins over `NoOpWorkflowExecutor @DefaultBean` fallback in runtime by classpath presence. Depends on `casehub-engine-common` only (not runtime). Provides: `FlowWorkerExecutor`, `FlowExecutionRegistry`, `CasehubDispatch`, `CasehubCallableTaskBuilder` (`call: casehub:dispatch` YAML steps via Java SPI), `CasehubFlow` (FuncDSL helper, blocks on cached thread pool). |
 | `casehub-engine-testing` | `testing` | Test module | Shared test utilities |
 | `casehub-engine-inbound` | `inbound` | Optional module | Bridges qhorus `MessageReceivedEvent` to casehub-work WorkItems via `InboundWorkItemPolicy` SPI. Inert without a policy bean. Activated by classpath presence. |
+| `casehub-examples-typed-context` | `examples/typed-context` | Example module | Demonstrates `CaseContextStore` pluggability with a custom auditing store (`AuditingCaseContextStore`). `AuditingCaseContextStoreFactory` registers via `NamedStrategy` (id `"auditing"`). Test extends `CaseContextStoreContractTest`. Not published (`deploy.skip=true`). |
 
 ---
 
 ## Key Abstractions
 
+### Unified Execution Model (`api/model/`)
+
+Shared abstractions for any coordination model's unit of work — engine's blackboard PlanItems and (deferred) blocks' PlannedTasks implement the same interfaces.
+
+| Type | Kind | Purpose |
+|---|---|---|
+| `TaskStatus` | enum | Shared lifecycle states: active (`PENDING`, `RUNNING`, `DELEGATED`, `SUSPENDED`) and terminal (`COMPLETED`, `FAULTED`, `REJECTED`, `OBSOLETE`, `CANCELLED`). `isTerminal()`/`isActive()` helpers. Stored as STRING in JPA. |
+| `TaskDescriptor` | interface | Behavioral contract: `id()`, `description()`, `executor()` (returns `ExecutorRef`), `status()` (returns `TaskStatus`), `createdAt()`. Default `snapshot()` projects to `TaskSnapshot`. PlanItem implements this with `ExecutorRef`. |
+| `ExecutorRef` | interface | Shared executor identity: `name()`, `description()`. Factory: `of(name)`, `of(name, description)`, `fromWorker(Worker)`. Backed by `SimpleExecutorRef` record. |
+| `TaskSnapshot` | record | Immutable read model projected from `TaskDescriptor` — flat, serializable (uses String executor identity instead of `ExecutorRef` for transport). |
+
+### ContextBridge Protocol (`api/context/`)
+
+Typed context translation for Case-to-Worker, Signal, and SubCase boundaries.
+
+`ContextBridge<T>` — generic interface for bidirectional context mapping:
+- `initialise(CaseContext, JsonNode narrowedInput) → T` — creates typed context from case state
+- `extractOutput(T) → Map<String, Object>` — projects worker output back to case context (default null)
+- `serialise(T) → JsonNode` / `deserialise(JsonNode) → T` — persistence round-trip
+- `onWrite(String key, Object value, CaseContext enclosing)` — hook for cross-layer propagation
+- `isLiveView() → boolean` — whether the bridge maintains a live view of the underlying store
+- `contextType() → Class<T>` — runtime type token
+
+Known implementations: `MapBridge`, `JsonNodeBridge`, `JacksonPojoBridge`. `CaseDefinition.defaultWorkerBridge` configures the bridge per case definition.
+
+### CaseContextStore SPI (`api/context/`)
+
+Pluggable storage backend for context layers. Implementations handle where key-value pairs are stored (in-memory, Redis, database); `CaseContextImpl` adds versioning, CAS, change listeners, and layer management on top.
+
+- `CaseContextStore` (extends `AutoCloseable`) — `get`, `put` (returns previous), `remove`, `containsKey`, `keySet`, `snapshot` (immutable), `clear`, `putAll` (default iterates; persistent stores may batch), `size`, `isEmpty`. External change notification: `supportsExternalChangeNotification()` + `onExternalChange(Consumer<ContextChangeEvent>)` with self-echo filtering contract for Redis pub/sub.
+- `CaseContextStoreFactory` (extends `NamedStrategy`) — `createStore(layerName, caseId)`, `loadStore(layerName, caseId)` (default delegates to create), `isDurable()` (default false — when true, recovery uses `loadStore()` directly without EventLog replay). Resolved per case definition via `StrategyResolver`.
+- `ContextChangeEvent` (record) — `key`, `oldValue`, `newValue`. Old value captured atomically with the write (no TOCTOU race).
+- `Subscription` (functional interface) — `cancel()`. `Subscription.NOOP` constant. Callers must cancel to avoid unbounded memory growth.
+- `CaseDefinition.contextStoreFactory` — string key resolved via `EngineStrategyResolver` to select the factory per case.
+
+### DAG Parallel Execution (`common/plan/`)
+
+Dependency-graph-aware parallel execution driver for plan items.
+
+| Type | Kind | Purpose |
+|---|---|---|
+| `DagNode<T>` | record | `id`, `task`, `dependsOn` (Set<String>), `joinType` (default `ALL_OF`) |
+| `JoinType` | enum | `ALL_OF`, `ANY_OF` |
+| `DagPlan<T>` | record | Validated plan: `nodes` map, validates references and cycles, provides `entryNodeIds()`, `exitNodeIds()`, `topologicalSort()`. Factories: `singleton`, `sequence`, `parallel` |
+| `DagDriver<T, R>` | class | Single-use executor. `execute(Function<T, R>)` dispatches nodes respecting dependencies, using virtual threads by default. Two dispatch modes: `STREAMING` (fire-and-forget, dispatch immediately as predecessors complete) and `BARRIER` (wave-based: dispatch ready set, wait for all, repeat). `cancel()` marks pending nodes as Cancelled. |
+| `NodeState<R>` | sealed interface | `Pending`, `Dispatched`, `Completed(R)`, `Failed(reason, cause)`, `Skipped(reason)`, `Cancelled`. `isTerminal()`, `toTaskStatus()` maps to `TaskStatus`. |
+| `DagResult<R>` | record | `nodeStates`, `completedResults`, `allSucceeded`, `elapsed`. `taskStatuses()` converts all node states to `TaskStatus` map. |
+| `DagEventListener<T, R>` | interface | Callbacks: `onNodeDispatched`, `onNodeCompleted`, `onNodeFailed`, `onNodeSkipped`, `onNodeCancelled`, `onExecutionComplete` (all default no-op). |
+
+### RoutingSignalProvider SPI (`api/spi/routing/`)
+
+Structured enrichment signals for non-LLM routing strategies (counterpart to `RoutingPromptSection` for LLM-based strategies).
+
+- `RoutingSignalProvider` — `id()`, `signal(AgentRoutingContext, List<AgentCandidate>) → @Nullable RoutingSignal`. Scores must be in [0.0, 1.0]. Thread-safe.
+- `RoutingSignal` (record) — `candidates` (`Map<String, CandidateSignal>`). Inner `CandidateSignal(double score, @Nullable String reason)`. Signal maps may be sparse (not every candidate needs a signal).
+- `RoutingSignalAssembler` (`@ApplicationScoped`) — discovers providers via CDI, sorts by `@Priority`, clamps out-of-range scores, skips throwing providers. Returns `Map<String, RoutingSignal>` keyed by provider id.
+
+### GoalExpression + GoalBasedCompletion (`api/model/`)
+
+Composed goal trees for case completion — replaces flat goal lists with recursive boolean expressions.
+
+- `GoalExpression` (sealed interface) — `isSatisfiedBy(Set<String> reachedGoalNames)`, `goalNames()`, `satisfiedGoalName()`. Permits: `AllOfGoalExpression`, `AnyOfGoalExpression`, `SingleGoalExpression`. Factory methods: `allOf(Goal...)`, `anyOf(Goal...)`, `allOf(GoalExpression...)`, `anyOf(GoalExpression...)`, `goal(String)`.
+- `GoalBasedCompletion<K extends GoalKind>` (implements `CaseCompletion`) — maps goal kinds to goal expressions. `getGoals() → Map<K, GoalExpression>`. Builder enforces no duplicate kinds and at least one kind.
+- `GoalKind` (interface) — `value()`, `terminalStatus()` (returns `CaseStatus`). Constants: `GoalKind.SUCCESS`, `GoalKind.FAILURE`. Factory: `GoalKind.of(value, terminalStatus)`, `GoalKind.fromValue(value)`. `StandardGoalKind` enum: `SUCCESS(COMPLETED)`, `FAILURE(FAULTED)`.
+- `CaseDefinition.Builder.completion()` overloads: `completion(GoalExpression success)`, `completion(GoalExpression success, GoalExpression failure)`, `completion(GoalBasedCompletion<?>)`, `completion(String when)` (JQ predicate).
+
+### RoutingOutcome + RoutingOutcomeRecorder (`api/spi/routing/`)
+
+`RoutingOutcome` enum — outcome of a routing decision, recorded for trust scoring and CBR-enriched routing feedback:
+- `SUCCESS` — worker completed successfully (including gate-approved re-dispatch)
+- `FAILURE` — worker returned non-success outcome (Declined, Failed, or Expired)
+- `GATE_REJECTED` — worker's planned action rejected by human via oversight gate
+- `GATE_EXPIRED` — worker's planned action gate expired without review
+
+`RoutingOutcomeRecorder` (interface) — `record(AgentRoutingContext, workerId, bindingName, RoutingOutcome, @Nullable Duration executionDuration) → Uni<Void>`. Optional SPI — engine silently skips recording when no implementation is present.
+
+### NamedStrategy + EngineStrategyResolver
+
+`NamedStrategy` (from `casehub-platform-api`) — interface with `id()` method used as map key for strategy resolution. Extended by: `CaseContextStoreFactory`, `AgentRoutingStrategy`, `ImplementationRoutingStrategy`, `CandidateMatchingStrategy`, `CandidateSetStrategy`, and work SPIs (`WorkerSelectionStrategy`, `SlaBreachPolicy`, `ClaimSlaPolicy`, `InstanceAssignmentStrategy`).
+
+`EngineStrategyResolver` (`runtime`, `@Alternative @Priority(1) @ApplicationScoped`) — overrides platform's `DefaultStrategyResolver` because Quarkus ARC build-time pruning doesn't reliably discover all beans with `@Any Instance<NamedStrategy>`. Registers strategies from 7 typed Instance injections plus a catch-all. Methods: `resolve(Class<T>, String id)`, `find(Class<T>, String id)`, `defaultStrategy(Class<T>)`, `available(Class<T>)`. Detects `@DefaultBean` via `InjectableBean.isDefaultBean()`. Has `forTest()` factory for unit testing without CDI.
+
+### RoutingPromptSection (`api/spi/routing/`)
+
+Promoted to engine-api (previously runtime-internal). Pluggable SPI for composable LLM prompt enrichment in agent routing strategies.
+
+- `RoutingPromptSection` (interface) — `render(AgentRoutingContext, List<AgentCandidate>) → @Nullable String`. Implement as `@ApplicationScoped` with optional `@Priority(N)`. Thread-safe.
+- `RoutingPromptAssembler` (`@ApplicationScoped`) — discovers sections via CDI, sorts by `@Priority`, joins non-null/non-blank sections with `\n\n`. Skips throwing sections (logs warning).
+
 ### YAML DSL (`CaseDefinition.yaml`)
 
-Cases are defined declaratively: namespace, name, version, capabilities, workers, bindings, goals, milestones, completion conditions, `types` (Set<Path>), and `labels` (Set<Path>). `CaseDefinitionYamlMapper` converts the JSON Schema–generated model to the runtime API model.
+Cases are defined declaratively: namespace, name, version, capabilities, workers, bindings, goals, milestones, completion conditions, `types` (Set<Path>), `labels` (Set<Path>), `defaultWorkerBridge` (ContextBridge), `contextStoreFactory` (string key for NamedStrategy resolution), and `signals` (List<SignalType>). `CaseDefinitionYamlMapper` converts the JSON Schema–generated model to the runtime API model.
 
 **Classification:** `CaseDefinition.types` and `CaseDefinition.labels` (both `Set<Path>`) replace the legacy `category` field (engine#655). Types are hierarchical case classification paths (e.g. `casehubio/devtown/pr-review`); labels are arbitrary tags. Both are validated against vocabulary at registration time when vocabulary is configured. V28 migration adds `types` column; `category` deprecated.
 
@@ -111,7 +201,7 @@ All eight ship with `@DefaultBean @ApplicationScoped` no-op defaults that yield 
 
 **`WorkerExecutionManager.canExecute(WorkerFunction): boolean`** — `default true` method. `QuartzWorkerExecutionManager` overrides with positive handler delegation: iterates `WorkerFunctionHandler` instances, returns `true` only when a handler supports the function. External backends inherit `true`. Called by `FirstSupportedRoutingStrategy` alongside `supports()` to determine backend eligibility. Added for `WorkerFunction.None` support (engine#586–589).
 
-**`Worker.capabilityNames`** — `Worker` record carries `Set<String> capabilityNames` (not `List<Capability>`, engine#591). Workers declare support by name; the engine resolves authoritative `Capability` instances from `CaseDefinition.getCapabilities()`. Builder: `capabilityName(String)` (single) or `capabilityNames(String...)` (multiple). `YamlCaseHub.getDefinition()` is `final` with `protected void augment(CaseDefinition)` hook for subclasses to add programmatic workers.
+**`Worker.capabilityNames`** — `Worker` record (from `casehub-worker-api`) carries `Set<String> capabilityNames`. Workers declare support by name; the engine resolves authoritative `Capability` instances from `CaseDefinition.getCapabilities()`. `YamlCaseHub.getDefinition()` is `final` with `protected void augment(CaseDefinition)` hook for subclasses to add programmatic workers backed by CDI-injected services.
 
 **`CaseChannel.parseCaseId(String channelName): UUID`** — static utility in `casehub-engine-api` that parses a `case-{caseId}/{purpose}` channel name and returns the embedded `caseId`. Returns `null` for non-case channel names. Used by the actor-state module to resolve channels back to their originating case.
 
@@ -133,6 +223,7 @@ Key facts:
 - `Agent.execute()` returns `WorkerResult`
 - `@RiskClassifier @ApplicationScoped` for consumer implementations (e.g. `TextClassifier` from `casehub-neocortex`)
 - Gate resolved via `WorkItem` in casehub-work — requires `casehub-engine-work-adapter` on classpath
+- `PendingActionGate` record (`common/internal/model/`) — `gateId` (long, EventLog entry id), `workerId`, `idempotency`, `deferredOutput` (Map), `plannedAction` (PlannedAction), `bindingName` (@Nullable String), `capabilityName` (@Nullable String). `gateId` is embedded in WorkItem callerRef as `"case:{caseId}/gate:{gateId}"`.
 - `pendingActionGate` is in-memory only in v1 — a server restart loses pending gates (tracked engine#433)
 - Gate approval re-fires `WorkflowExecutionCompleted(plannedAction=null)` — normal completion path
 
@@ -150,11 +241,17 @@ Without this, a pending gate triggers `CONTEXT_CHANGED`, which re-evaluates the 
 
 `SubCase` lifecycle: parent PlanItem stays `DELEGATED` until child case completes; `SubCaseCompletionService` handles the callback.
 
-### Work Adapter (`casehub-work-adapter`)
+### Work Adapter (relocated to `casehub-work/engine-adapter`)
+
+**Module relocated:** `casehub-engine-work-adapter` was extracted from engine and moved to `casehub-work` as `casehub-work-engine-adapter` (artifact: `casehub-work-engine-adapter`). The module provides the same two-way bridge but now lives in the work repo.
 
 Two-way bridge:
-- **Outbound** (`HumanTaskScheduleHandler`) — creates WorkItems from `HumanTaskTarget` bindings (inline or template mode), sets `callerRef`, `scope`, `payload`. Atomicity: WorkItem creation + `planItemStore.save(DELEGATED)` + `markDelegated()` in single `@Transactional`. **`expiresAtExpression` (engine#549):** `HumanTaskTarget` carries a new `expiresAtExpression: ExpressionEvaluator` field — JQ expression evaluated at scheduling time against the case context WORKING panel. Result parsed as ISO-8601 Instant and set as `WorkItem.expiresAt` via `earliestOf(taskDeadline, expiresAtDeadline, caseBudgetDeadline)`. Requires `ExpressionEngine.extractString()` SPI. `HumanTaskScheduleEvent` BREAKING CHANGE: new `expiresAtDeadline: Instant` field (record now 9 args, was 8). YAML schema: `expiresAtExpression: string` in `HumanTask` definition, validated at load time (invalid JQ → `IllegalArgumentException` at startup). Consumer: casehubio/clinical#83 (IND reporting deadline enforcement).
-- **Inbound** (`WorkItemLifecycleAdapter`) — translates `WorkItemLifecycleEvent` (COMPLETED, REJECTED, CANCELLED, EXPIRED — ESCALATED excluded as non-terminal) to PlanItem transitions, evaluates `outputMapping`, fires `CONTEXT_CHANGED`. Also observes `WorkItemGroupLifecycleEvent` for M-of-N SpawnGroup outcomes.
+- **Outbound** (`HumanTaskScheduleHandler`) — creates WorkItems from `HumanTaskTarget` bindings (inline or template mode) via `WorkItemCreator` SPI, persists DELEGATED status to `JpaPlanItemStore`, sets `callerRef`, `scope`, `payload` — all in one `@Transactional` boundary. `CallerRef` is a sealed interface with `PlanItemCallerRef` (`case:{caseId}/pi:{planItemId}`) and `GateCallerRef` (`case:{caseId}/gate:{gateId}`) variants. **`expiresAtExpression` (engine#549):** `HumanTaskTarget` carries a new `expiresAtExpression: ExpressionEvaluator` field — JQ expression evaluated at scheduling time against the case context WORKING panel. Result parsed as ISO-8601 Instant and set as `WorkItem.expiresAt` via `earliestOf(taskDeadline, expiresAtDeadline, caseBudgetDeadline)`. Requires `ExpressionEngine.extractString()` SPI.
+- **Inbound** (`WorkItemLifecycleAdapter`) — translates `WorkItemEvent` (COMPLETED, REJECTED, CANCELLED, EXPIRED — ESCALATED excluded as non-terminal) to PlanItem transitions via `PlanItemCompletionApplier`, evaluates `outputMapping` (JQ), fires `CONTEXT_CHANGED` on Vert.x event bus. Handles SUSPENDED (marks PlanItem suspended) and resume. Also observes `WorkItemGroupLifecycleEvent` for M-of-N SpawnGroup outcomes.
+- **Action Gate Bridge** — `ActionGateWorkItemHandler` creates WorkItems when engine action gates fire. `ActionGateCompletionApplier` translates terminal gate WorkItem statuses to engine events (COMPLETED → ActionGateApprovedEvent, REJECTED/CANCELLED/OBSOLETE → ActionGateRejectedEvent, EXPIRED/FAULTED → ActionGateExpiredEvent). `ActionGateCancelledHandler` cancels orphaned gate WorkItems when the owning case terminates.
+- **Strategy Registration** — `WorkStrategyContributor` registers casehub-work strategy beans (`WorkerSelectionStrategy`, `ClaimSlaPolicy`, `SlaBreachPolicy`, `InstanceAssignmentStrategy`) with `EngineStrategyResolver` at startup, working around Quarkus ARC's inability to resolve transitive `NamedStrategy` relationships.
+- **Recovery** — `HumanTaskRecoveryService` (Priority 25, after Quartz at 20): scans all DELEGATED PlanItems at startup, checks if corresponding WorkItems completed while JVM was down, applies missed transitions. Idempotent.
+- **JPA** — `JpaPlanItemStore` uses the same blocking persistence unit as casehub-work for atomicity. `WorkAdapterPlanItemEntity` maps to `plan_item` table.
 
 **`workItemEscalated` context signal:** When a WorkItem is ESCALATED (SLA breach, all escalation groups exhausted), the adapter writes `{workItemId, newGroups, bindingName}` to the case context and fires `CONTEXT_CHANGED`. Case definitions can react via `contextChange(".workItemEscalated")` bindings — useful for audit, monitoring, or triggering a fallback worker. The PlanItem stays in its current state (ESCALATED is non-terminal for the PlanItem). Refs engine#338, engine#400.
 
@@ -178,6 +275,14 @@ Three external signal entry points that reach a running case:
 - **`WorkerOutcome.Expired`** — `DefaultWorkerExecutor` converts `TimeoutException` to `WorkerResult.expired()`. `handleSemanticFailure` routes EXPIRED through `OutcomePolicy.onExpired` (not `onFailure`) — preserves the distinction between timeout and functional failure for retry and escalation policy decisions.
 - **`CaseHubEventType.WORKER_OUTCOME_EXPIRED`** — CDI event fired on expiry; observers can trigger alternative routing, alerts, or audit writes.
 - **`OutcomePolicy.onExpired`** — consumer-defined handler; `DefaultOutcomePolicy` re-queues for retry up to `maxRetries`, then escalates.
+
+### CaseLifecycleEvent Enrichment (`common/spi/event/`)
+
+`CaseLifecycleEvent` — record enriched with case definition metadata and context snapshot:
+- Fields: `caseId` (UUID), `tenancyId`, `commandType`, `eventType`, `caseStatus`, `actorId`, `actorRole`, `traceId`, `caseDefinitionName`, `namespace`, `contextSnapshot` (JsonNode)
+- `caseDefinitionName` and `namespace` — enrichment from `CaseMetaModel` (null when meta model not yet associated)
+- `contextSnapshot` — working layer serialized as JsonNode at fire time (point-in-time, read-only)
+- Factory: `of(CaseInstance, ...)` extracts meta model + context snapshot; `of(UUID, ...)` minimal version
 
 ### RoutingOutcomeRecorder (engine#616, #617, #618)
 
@@ -238,14 +343,15 @@ Optional integration with `casehub-eidos-api`. `WorkOrchestrator` probes agent-b
 | `casehub-platform-api` | `ActorType`, `PreferenceProvider`, `Path` (transitive via ledger) |
 | `casehub-platform-expression` | `JQEvaluator` for expression evaluation |
 | `casehub-eidos-api` | Optional — `AgentDescriptor`, `CapabilityHealth` for agent health probing |
-| `casehub-work-api` | Compile scope — `CaseSignalSink` injection via work-adapter only; NOT a runtime routing dep |
+| `casehub-worker` | Foundation — `Worker`, `Capability`, `WorkerFunction<T>` types |
+| `casehub-work-api` | Compile scope — `CaseSignalSink` injection. Work-adapter now lives in casehub-work as `engine-adapter` module |
 
 ## Depended On By
 
 | Repo | Module | How |
 |---|---|---|
 | `claudony` | `claudony-casehub` | Implements the 4 worker provisioner SPIs, provides `ClaudonyReactiveCaseChannelProvider` |
-| `devtown` | `app` | Runtime dep — `casehub-engine-work-adapter` + `casehub-engine-blackboard` for HITL |
+| `devtown` | `app` | Runtime dep — `casehub-work-engine-adapter` + `casehub-engine-blackboard` for HITL |
 | `casehub-clinical` | `runtime` | Runtime dep — adverse event case coordination |
 
 ---
@@ -283,12 +389,20 @@ casehub-engine is Layer 4 (Enforcement) in the Qhorus normative accountability f
 - WAITING state durability (restart-safe): done
 - `casehub-ledger` integration: merged
 - Human worker integration (`humanTask` YAML binding): done — inline + template modes, `scope` for SLA preference routing
-- `casehub-work-adapter`: done — two-way bridge with atomicity guarantees
-- `CapabilityHealth` integration: in progress (engine#341)
-- `AgentRoutingStrategy` SPI: done — `casehub-work-core` removed from engine runtime routing; `TrustWeightedAgentStrategy` in ledger module (engine#337, engine#336)
-- `ActionRiskClassifier` SPI — platform-level oversight gate for consequential worker actions: done (engine#402)
+- Work-adapter: relocated to casehub-work as `engine-adapter` module
+- Unified execution model (TaskStatus, TaskDescriptor, ExecutorRef): done
+- ContextBridge protocol + CaseContextStore SPI: done
+- DAG parallel execution driver: done
+- RoutingSignalProvider + RoutingPromptSection SPIs: done (promoted to engine-api)
+- GoalExpression + GoalBasedCompletion (multi-kind goals): done
+- RoutingOutcome + RoutingOutcomeRecorder: done
+- NamedStrategy + EngineStrategyResolver: done
+- `AgentRoutingStrategy` SPI: done — `casehub-work-core` removed from engine runtime routing; `TrustWeightedAgentStrategy` in ledger module
+- `ActionRiskClassifier` SPI — platform-level oversight gate: done
+- PendingActionGate with bindingName + capabilityName: done
+- CaseLifecycleEvent enrichment (contextSnapshot, namespace, caseDefinitionName): done
 - Resilience module (DLQ, PoisonPill, timeout): done
-- Worker↔Session↔Channel triple correlation: not yet stored
+- Worker<->Session<->Channel triple correlation: not yet stored
 - Escalation rules, lineage-driven planning: ahead
 
 ---

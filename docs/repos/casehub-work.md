@@ -24,7 +24,7 @@ A `WorkItem` is deliberately NOT called `Task` — CNCF Serverless Workflow and 
 | `deployment` | Quarkus extension deployment | Build-time processor (`@BuildStep`); pairs with `runtime` |
 | `casehub-work-persistence-memory` (`persistence-memory/`) | Test utilities | In-memory stores (WorkItem, audit, notes, issue links, routing cursor) using `ConcurrentHashMap` (thread-safe); `@Alternative @Priority(100)` (Tier 3 — ephemeral); zero-datasource alternative to JPA stores |
 | `casehub-work-ledger` | Optional module | Attaches casehub-ledger for WorkItem ledger entries, trust scoring, and peer attestation. Requires both `db/migration` and `db/ledger/migration` Flyway locations in test config (since ledger#95 moved base migrations). |
-| `casehub-work-queues` | Optional module | Label-based queue views with JEXL/JQ filter expressions |
+| `casehub-work-queues` | Optional module | Label-based queue views with JEXL/JQ filter expressions, periodic trend snapshots (`QueueSnapshotJob`, Quartz-scheduled), `GET /queues/{id}/trend` and `GET /queues/{id}/summary` REST endpoints |
 | `casehub-work-queues-dashboard` | Optional module | SSE-based queue dashboard UI |
 | `casehub-work-queues-postgres-broadcaster` | Optional module | Distributed SSE for queue events via PostgreSQL LISTEN/NOTIFY |
 | `casehub-work-ai` | Optional module | Embedding-based semantic worker selection; confidence-gated filter routing |
@@ -32,10 +32,14 @@ A `WorkItem` is deliberately NOT called `Task` — CNCF Serverless Workflow and 
 | `casehub-work-reports` | Optional module | SLA compliance reporting (breach rates, actor performance, throughput, queue health) |
 | `casehub-work-issue-tracker` | Optional module | Links WorkItems to GitHub/Jira issues; inbound webhook handler for close/reopen events |
 | `casehub-work-postgres-broadcaster` | Optional module | Distributed SSE for WorkItem events via PostgreSQL LISTEN/NOTIFY |
-| `casehub-work-persistence-mongodb` | Optional module | MongoDB-backed `WorkItemStore` alternative |
+| `casehub-work-persistence-mongodb` | Optional module | MongoDB-backed persistence — 13 tenant-scoped stores + 3 cross-tenant stores (`@CrossTenant`). Unique compound indexes via `MongoIndexInitializer`. `MongoTenancyMigration` backfills default tenancy on existing documents at startup. |
 | `work-flow` | Optional module | Quarkus-Flow CDI bridge (`HumanTaskFlowBridge`, `PendingWorkItemRegistry`) |
+| `casehub-work-engine-adapter` (`engine-adapter/`) | Bridge module | Two-way bridge between casehub-work WorkItem lifecycle and CaseHub engine blackboard PlanItem transitions. Relocated from `casehub-engine/work-adapter`. Contains: `HumanTaskScheduleHandler` (outbound), `WorkItemLifecycleAdapter` (inbound), `ActionGateWorkItemHandler`/`ActionGateCompletionApplier` (gate bridge), `WorkStrategyContributor` (NamedStrategy registration), `HumanTaskRecoveryService` (startup recovery), `JpaPlanItemStore`. |
 | `casehub-work-examples` | Runnable scenarios | Demo scenarios (credit, moderation, audit search, spawn, business hours, etc.) |
+| `casehub-work-queues-examples` (`queues-examples/`) | Runnable scenarios | Queue pattern demonstrations: security escalation, queue lifecycle, support triage, document review, finance approval, legal routing |
+| `casehub-work-flow-examples` (`flow-examples/`) | Runnable scenarios | WorkItemsFlow DSL integration: contract review workflow with candidateGroups, assigneeId, priority, payloadFrom, suspension/resume cycle |
 | `integration-tests` | Black-box test suite | `@QuarkusIntegrationTest` + native image validation (25 tests) |
+| `integration-tests-memory` | Black-box test suite | Verifies boot and CRUD through in-memory stores (`casehub-work-persistence-memory`) with dummy H2 datasource — no Flyway, schema auto-generated. All persistence via `@Alternative @Priority(100)`. |
 
 ---
 
@@ -49,7 +53,7 @@ A `WorkItem` is deliberately NOT called `Task` — CNCF Serverless Workflow and 
 
 **Key fields:**
 - `scope VARCHAR(255)` (V31 migration) — hierarchical scope path for SLA preference resolution via `casehub-platform-api`'s `Path` type; null = org root. Set by callers; propagated from casehub-engine via `HumanTaskTarget.scope` (engine#330).
-- `types: Set<Path>` (V42 migration, work#291) — hierarchical type classification (replaces legacy `category` String). Embeddable `WorkItemType` value type. Tenancy-aware ancestor matching in JPA store. REST queries accept `type` param for filtering; responses include `types` and `typePaths` (CSV). `WorkItemLifecycleEvent` carries `types`. Migration from `category` complete across all modules (notifications, AI, reports, queues, MongoDB).
+- `types: List<String>` (work#291) — hierarchical type classification (replaces legacy `category` String). REST queries accept `type` param for filtering; responses include `types` and `typePaths` (CSV). `WorkItemLifecycleEvent` carries `types`. Migration from `category` complete across all modules (notifications, AI, reports, queues, MongoDB). `WorkItemCreateRequest.types` is `List<String>`; `SelectionContext` also uses `List<String> types`.
 
 See `docs/ARC42STORIES.MD` for status enumeration and field model.
 
@@ -75,9 +79,13 @@ See `docs/DESIGN.md` for the full endpoint inventory.
 
 ### WorkItem SPI Types (work#275)
 
-`WorkItemRef` — lightweight reference to a WorkItem carrying template, callerRef, and payload. Used as the creation argument for `WorkItemCreator.create()` — decouples callers from the full `WorkItem` entity.
+`WorkItemRef` — lightweight reference to a WorkItem carrying template, callerRef, payload, and `tenancyId`. Used as the creation argument for `WorkItemCreator.create()` — decouples callers from the full `WorkItem` entity.
 
-`WorkItemEvent` — interface for WorkItem lifecycle events consumed by SPI implementations. Carries the WorkItem state at transition time.
+`WorkItemEvent` — interface for WorkItem lifecycle events consumed by SPI implementations. Provides `ref()` (WorkItemRef), `eventType()` (WorkEventType), `occurredAt()`, `actor()`, `detail()`, plus default methods delegating to ref: `workItemId()`, `status()`, `callerRef()`, `assigneeId()`, `resolution()`, `candidateGroups()`, `outcome()`, `tenancyId()`.
+
+`WorkItemStatusEvent` — record carrying the SPI-visible subset: eventType, workItemId, status, actor, detail, callerRef, assigneeId, candidateGroups, outcome, tenancyId, occurredAt. This is what `WorkItemObserver.onStatusChange()` receives.
+
+`WorkEventType` — enum with 24+ values including: CREATED, ASSIGNED, STARTED, COMPLETED, REJECTED, FAULTED, DELEGATED, DELEGATION_ACCEPTED, DELEGATION_DECLINED, RELEASED, SUSPENDED, RESUMED, CANCELLED, OBSOLETE, EXPIRED, CLAIM_EXPIRED, SPAWNED, ESCALATED, DEADLINE_EXTENDED, SLA_REASSIGNED, SLA_EXTENDED, SIGNAL_RECEIVED, MANUALLY_ESCALATED, PROGRESS_UPDATE, LABEL_ADDED, LABEL_REMOVED.
 
 `WorkItemSpiAdapter` — adapter that bridges `WorkItemCreator` and `WorkItemLifecycle` SPI calls to the runtime `WorkItemService`. Lives in runtime; SPI consumers depend on `casehub-work-api` only. Template creation unified via `createFromTemplate()`.
 
@@ -87,20 +95,54 @@ A lifecycle event fires on every status transition, carrying the transition deta
 
 See `docs/DESIGN.md` for event payload shape.
 
-### SPI Reference (casehub-work-api)
+### GroupStatus Lifecycle (`casehub-work-api`)
+
+`GroupStatus` enum — aggregate lifecycle for multi-instance WorkItem groups:
+- `IN_PROGRESS` — group still accepting completions, threshold not yet reached
+- `COMPLETED` — threshold reached with majority approval
+- `REJECTED` — threshold reached with majority rejection or escalation
+
+`isTerminal()` (COMPLETED or REJECTED), `isActive()` (IN_PROGRESS). Used by `WorkItemGroupLifecycleEvent` which carries: parentId, groupId, instanceCount, requiredCount, completedCount, rejectedCount, groupStatus, callerRef, tenancyId, occurredAt. Persisted on `WorkItemSpawnGroup`.
+
+### Queue Trend Data (`casehub-work-queues`)
+
+Periodic queue snapshot system for historical trend analysis:
+
+- `QueueSnapshot` — JPA entity (`queue_snapshot` table): id, tenancyId, queueViewId, memberCount, snapshotAt
+- `QueueSnapshotJob` — Quartz-scheduled (5m cycle, 30s delay). Per tenant: reads all queues, takes snapshot if enough time elapsed since last (configurable interval via `QueueSnapshotInterval` preference, default 1h), deletes snapshots older than retention period (`QueueTrendRetention` preference, default 7d).
+- REST endpoints:
+  - `GET /queues/{id}/summary` — real-time summary of queue contents
+  - `GET /queues/{id}/trend?period=24h` — historical trend data from snapshots. `QueueTrendResponse` with `List<DataPoint>` (snapshotAt + memberCount). Supports `24h`, `7d`, or ISO Duration `PT24H`.
+  - `GET /queues/{id}/events` — SSE stream of queue membership events (ADDED/REMOVED/CHANGED)
+
+### Template Versioning
+
+`WorkItemCreateRequest.templateVersion` (`Long`) — version of the template used at instantiation; null for non-template WorkItems. Enables template evolution tracking: consumers can determine which template version was active when a WorkItem was created.
+
+### SPI Reference (casehub-work-api — 17 interfaces in `io.casehub.work.api.spi`)
 
 | SPI | Method | Description |
 |---|---|---|
-| `WorkerSelectionStrategy` | `select(SelectionContext, List<WorkerCandidate>)` | Pluggable routing — LeastLoaded (default), ClaimFirst, RoundRobin built-in |
+| `WorkerSelectionStrategy` | `select(SelectionContext, List<WorkerCandidate>)` | Pluggable routing — LeastLoaded (default), ClaimFirst, RoundRobin built-in. **Extends `NamedStrategy`** (id selects active strategy, default: "least-loaded"). |
 | `WorkerRegistry` | `resolveGroup(String)` | Resolves candidateGroup names to `WorkerCandidate` objects |
 | `WorkloadProvider` | `getActiveWorkCount(String)` | Active WorkItem count per worker (used by LeastLoaded) |
-| `SlaBreachPolicy` | `onBreach(SlaBreachContext) → BreachDecision` | SLA breach handling: returns `Fail`, `EscalateTo(groups, deadline)`, `Extend(by)`, `Chained`, or `Exhausted(String reason)` (all Chained branches fail — sets `WorkItemStatus.ESCALATED` terminal). Replaces removed `EscalationPolicy`. |
+| `SlaBreachPolicy` | `onBreach(SlaBreachContext) → BreachDecision` | SLA breach handling: returns `Fail`, `EscalateTo(groups, deadline)`, `Extend(by)`, `Chained`, or `Exhausted(String reason)` (all Chained branches fail — sets `WorkItemStatus.ESCALATED` terminal). **Extends `NamedStrategy`** (default: "no-op"). `SlaBreachContext` carries `BreachType` (CLAIM_EXPIRED / COMPLETION_EXPIRED), `BreachedTask`, `Path scope`, and `Preferences`. `SLA_ESCALATED` trigger fires after `EscalateTo` execution. |
+| `ClaimSlaPolicy` | `computeClaimDeadline(...)` | Computes pool-phase deadline. **Extends `NamedStrategy`** (default: "continuation"). |
+| `InstanceAssignmentStrategy` | `assign(...)` | Multi-instance assignment. **Extends `NamedStrategy`** (default: "pool"). |
 | `ExclusionPolicy` | `check(userId, excludedUsers) → PolicyDecision` | Conflict-of-interest user exclusion |
 | `SpawnPort` | `spawn(SpawnRequest) → SpawnResult` | Child WorkItem creation with idempotency |
 | `AssignmentTrigger` | enum | Values: `CREATED`, `RELEASED`, `DELEGATED`, `SLA_ESCALATED`, `DELEGATION_DECLINED` — strategies subscribe via `triggers()` |
-| `SlaBreachPolicy` | `onBreach(SlaBreachContext) → BreachDecision` | `SlaBreachContext` carries `BreachType` (CLAIM_EXPIRED / COMPLETION_EXPIRED), `BreachedTask`, `Path scope`, and `Preferences`. `SLA_ESCALATED` trigger fires after `EscalateTo` execution — strategies pre-assign before `put()`. |
-| `WorkItemCreator` | `create(WorkItemRef)`, `findByCallerRef(String)`, `findActiveByCallerRef(String)` | WorkItem creation and caller reference lookup SPI (work#275) |
-| `WorkItemLifecycle` | `cancel(UUID)`, `complete(UUID, ...)` | WorkItem lifecycle transition SPI (work#275) |
+| `WorkItemCreator` | `create(WorkItemCreateRequest)`, `findByCallerRef(String)`, `findActiveByCallerRef(String)`, `obsoleteByCallerRef(String)` | WorkItem creation and caller reference lookup SPI. `callerRef` is NOT unique across lifecycle; find methods return most recent match. `obsoleteByCallerRef` marks as OBSOLETE (idempotent). |
+| `WorkItemLifecycle` | `cancel(UUID)`, `complete(UUID, ...)` | WorkItem lifecycle transition SPI |
+| `WorkItemObserver` | `onStatusChange(WorkItemStatusEvent)` | Lifecycle event observation SPI — called synchronously in the emitter's transaction context. Multiple observers may be registered. Lives in work-api to avoid circular dependencies. |
+| `BusinessCalendar` | `addBusinessDuration(...)`, `isBusinessHour(...)` | Business-hours-aware deadline calculation |
+| `HolidayCalendar` | `isHoliday(...)` | Sub-SPI for holiday data |
+| `CapabilityRegistry` | (vocabulary validation) | Capability vocabulary validation |
+| `SkillMatcher` | `score(...)` | Scores worker skill profiles against work items |
+| `SkillProfileProvider` | `profile(...)` | Builds a worker's SkillProfile |
+| `NotificationChannel` | `channelType()`, `send(...)` | Outbound notification delivery |
+
+**NamedStrategy pattern:** Four SPIs extend `io.casehub.platform.api.routing.NamedStrategy` — `WorkerSelectionStrategy`, `SlaBreachPolicy`, `ClaimSlaPolicy`, `InstanceAssignmentStrategy`. The `WorkStrategyContributor` in engine-adapter registers all four with `EngineStrategyResolver` at startup, working around Quarkus ARC's inability to resolve transitive NamedStrategy relationships.
 
 ---
 
@@ -114,9 +156,9 @@ See `docs/DESIGN.md` for event payload shape.
 
 | Repo | How |
 |---|---|
-| `casehub-engine` | `casehub-work-api` only (compile, via work-adapter — `CaseSignalSink`, `WorkItemCreator`, `WorkItemLifecycle` injection; engine#578). Routing no longer uses `casehub-work-core`/`WorkBroker` — engine uses its own `AgentRoutingStrategy` SPI (engine#337). Receives `WorkItemLifecycleEvent` and `WorkItemGroupLifecycleEvent` via CDI adapter to drive plan-item transitions. |
+| `casehub-engine` | `casehub-work-api` (compile — `CaseSignalSink`, `WorkItemCreator`, `WorkItemLifecycle` injection). The engine-adapter bridge module now lives in this repo (`casehub-work-engine-adapter`) rather than in engine. Routing no longer uses `casehub-work-core`/`WorkBroker` — engine uses its own `AgentRoutingStrategy` SPI (engine#337). Receives `WorkItemEvent` and `WorkItemGroupLifecycleEvent` via CDI adapter to drive plan-item transitions. |
 | `claudony` | Future, via `casehub-work-casehub` adapter (currently blocked on CaseHub stability) |
-| `casehub-clinical` | Layer 2 — adverse event WorkItems with GCP SLA (24h Grade≥3, 1h Grade 5); first consumer of `SlaBreachPolicy` with DSMB escalation |
+| `casehub-clinical` | Layer 2 — adverse event WorkItems with GCP SLA (24h Grade>=3, 1h Grade 5); first consumer of `SlaBreachPolicy` with DSMB escalation |
 
 ---
 
@@ -124,7 +166,7 @@ See `docs/DESIGN.md` for event payload shape.
 
 - Orchestrate — it fires events and provides primitives. It does not decide what completing a WorkItem means.
 - **Heterogeneous plan-item completion** — whether named plan items A, B, and C have all completed to advance a Stage; that is CaseHub (see LAYERING.md). Homogeneous M-of-N group completion IS casehub-work (multi-instance coordinator).
-- Interpret `callerRef` — stored and echoed opaquely. **Convention:** `casehub-engine-work-adapter` sets `callerRef` to `"caseId:planItemId"` for engine-created WorkItems. `WorkItemCallerRef.parseCaseId()` in `casehub-work-api` is the canonical parser for this format.
+- Interpret `callerRef` — stored and echoed opaquely. **Convention:** `casehub-work-engine-adapter` uses `CallerRef` sealed interface with two formats: `PlanItemCallerRef` (`case:{caseId}/pi:{planItemId}`) and `GateCallerRef` (`case:{caseId}/gate:{gateId}`). `WorkItemCallerRef.parseCaseId()` in `casehub-work-api` is the canonical parser.
 - Provision or manage AI agents (that is CaseHub/Claudony).
 - Know when to spawn child WorkItems (callers drive spawn via `SpawnPort`).
 
@@ -135,6 +177,8 @@ See `docs/DESIGN.md` for event payload shape.
 `casehub-work-core` is a Jandex library (not a Quarkus extension) containing only `WorkBroker` and selection strategies. casehub-engine depends on this module — it gets worker routing without pulling in WorkItem entities, Flyway migrations, or datasource requirements. REST is now a separate opt-in module (`casehub-work-rest`) — the separation is explicit rather than implicit (work#292).
 
 The `WorkBroker` is generic: it routes any work unit, not just WorkItems.
+
+**Engine adapter relocation:** The two-way bridge between engine PlanItems and work WorkItems (`casehub-engine-work-adapter`) was relocated from the engine repo to this repo as `casehub-work-engine-adapter` (`engine-adapter/`). This places the bridge with the module that owns the WorkItem entity and transaction boundaries, while keeping the engine repo focused on coordination primitives.
 
 ---
 
@@ -150,7 +194,7 @@ Each optional module owns a dedicated V-number range to prevent collision when m
 
 | Range | Module |
 |---|---|
-| V1–V999 | `runtime` (sequential; currently at V40) |
+| V1–V999 | `runtime` (sequential) |
 | V2000–V2999 | `casehub-work-queues` and `casehub-work-ledger` |
 | V3000–V3999 | `casehub-work-notifications` |
 | V4000–V4999 | `casehub-work-ai` |
@@ -163,9 +207,10 @@ Each optional module owns a dedicated V-number range to prevent collision when m
 
 ## Current State
 
-- 2,089 tests total. Native image validated.
-- All major epics complete through #218 (CI fixes, platform-api scope rules)
-- Blocking: engine#330 — `HumanTaskTarget.scope` propagation (small, unblocked)
+- Core lifecycle, SPI extraction, MongoDB persistence, queue trends, engine-adapter: done
+- NamedStrategy retrofit on 4 work SPIs: done
+- WorkItemObserver SPI: done
+- Template versioning: done
 - Pending: `casehub-work-qhorus` adapter (MCP tools for agent-driven approval flows)
 
 ---

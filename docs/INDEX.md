@@ -15,7 +15,7 @@
   → [platform/cbr.md](platform/cbr.md)
 
 ## Agent Communication
-- **Qhorus** — speech acts, commitments, channels, message delivery
+- **Qhorus** — speech acts, commitments, channels, spaces (recursive hierarchy), presence, topic-aware projections, message delivery, OTel tracing
   → [repos/casehub-qhorus.md](repos/casehub-qhorus.md)
 - **Agent Mesh** — 3-channel normative layout, mesh participation
   → [platform/agent-mesh.md](platform/agent-mesh.md)
@@ -23,7 +23,7 @@
   → [CHANNELS.md](CHANNELS.md)
 
 ## Agent Identity & Behavior
-- **Eidos** — structured identity, capability health, vocabulary
+- **Eidos** — structured identity, capability health/specialization, vocabulary, behavioral contracts, eval framework
   → [repos/casehub-eidos.md](repos/casehub-eidos.md)
 - **Identity** — platform identity submodule (OIDC, SCIM, groups)
   → [repos/casehub-identity.md](repos/casehub-identity.md)
@@ -31,25 +31,25 @@
   → [platform/agent-identity.md](platform/agent-identity.md)
 
 ## AI & Knowledge
-- **Neocortex** — embeddings, vector stores, RAG pipelines, Matryoshka
+- **Neocortex** — embeddings, vector stores, RAG pipelines (hybrid search, CRAG, query expansion), CBR (typed features, trend detection, plan adaptation), agent memory SPI
   → [repos/casehub-neocortex.md](repos/casehub-neocortex.md)
 - **Quarkmind** — agentic orchestration strategies, trust routing
   → [repos/quarkmind.md](repos/quarkmind.md)
 
 ## UI & Frontend
-- **Pages** — web component framework, data pipelines, layouts
+- **Pages** — web component framework, data pipelines, push protocol SDK, a11y primitives, design tokens
   → [repos/casehub-pages.md](repos/casehub-pages.md)
-- **Blocks UI** — 14 shared domain components (work items, trust, SLA)
+- **Blocks UI** — 21 shared domain components (work items, trust, SLA, channel activity, oversight, compliance, GDPR, KPI)
   → [repos/casehub-blocks-ui.md](repos/casehub-blocks-ui.md)
 - **UI Architecture** — pages → blocks-ui → app UI layering
   → [platform/ui-architecture.md](platform/ui-architecture.md)
   → protocols: [custom-event-shadow-dom], [lit-immutable-collections]
 
 ## Shared Java Patterns
-- **Blocks** — agentic orchestration, routing, oversight, conversation
+- **Blocks** — agentic orchestration patterns (supervisor, sequence, loop, parallel, voting, debate, HTN), trust routing, oversight gates, conversation management, channel summarisation
   → [repos/casehub-blocks.md](repos/casehub-blocks.md)
   → scope criteria, consolidation epic, placement decisions
-- **Platform** — shared services, notification engine, datasources
+- **Platform** — shared services, notification pipeline (subscriptions, dispatch, digest, delivery), DataSource alpha network, expression engines, DID infrastructure
   → [repos/casehub-platform.md](repos/casehub-platform.md)
 
 ## Persistence & Data
@@ -61,16 +61,18 @@
   → [repos/casehub-ledger.md](repos/casehub-ledger.md)
 
 ## Infrastructure & Integration
-- **Connectors** — Slack, Teams, email, chat platform SPI
+- **Connectors** — Slack, Discord, Teams, email; ChatPlatform SPI, RichCard cross-platform messaging
   → [repos/casehub-connectors.md](repos/casehub-connectors.md)
-- **Workers** — HTTP, Camel, MCP, K8s, GitHub Actions dispatch
+- **Workers** — HTTP, Camel, MCP, K8s, GitHub Actions, Script dispatch + testing
   → [repos/casehub-workers.md](repos/casehub-workers.md)
-- **Worker API** — Worker, Capability, WorkerFunction primitives
+- **Worker API** — Worker, Capability, WorkerFunction primitives (capabilityNames convention)
   → [repos/casehub-worker.md](repos/casehub-worker.md)
 - **IoT** — device abstraction, Matter-aligned, HA/OpenHAB providers
   → [repos/casehub-iot.md](repos/casehub-iot.md)
 - **OpenClaw** — CaseHub ↔ OpenClaw bridge, worker provisioning
   → [repos/casehub-openclaw.md](repos/casehub-openclaw.md)
+- **Chat App** — chat workbench application (qhorus UI + SQLite backend)
+  → [repos/casehub-chat-app.md](repos/casehub-chat-app.md)
 - **Flow** — Serverless Workflow 1.0 orchestration runtime
   → [repos/casehub-flow.md](repos/casehub-flow.md) (when created)
 

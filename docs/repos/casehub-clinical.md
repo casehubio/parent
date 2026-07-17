@@ -66,7 +66,7 @@ The tutorial structure emerges from the natural adoption sequence. Each layer ad
 - **Deferred memory domains:** DRUG domain (clinical#72) and IRB domain (clinical#73) — design questions on entityId convention and cross-tenant pharmacovigilance tradeoff to be resolved before implementing.
 - **Test workaround (clinical#74):** `ClinicalTestLedgerRepository` (in `test/support/`) replaces `InMemoryLedgerEntryRepository` in `selected-alternatives` because `casehub-ledger-memory` 0.2-SNAPSHOT was not updated simultaneously with `LedgerEntryRepository`'s 2-arg API change. Remove when `casehub-ledger-memory` catches up.
 - **Layer 8 — SUSAR Oversight (clinical#77):** dedicated `ClinicalSusarOversightCaseHub` + `susar-oversight.yaml` (capability binding via `spec.capabilities` + programmatic `.function()` registration). Three-phase `SusarOversightCaseService` with idempotency guard. `SusarOversightStatus` enum (NONE/REQUESTED/COMPLETED/FAILED) mirrors `AeEscalationStatus`. `SusarGateDecisionListener` with DB-discriminated `@ConsumeEvent(blocking = true)` for all three gate outcomes (approved/rejected/expired). Writes `SusarDecisionLedgerEntry` (JOINED inheritance, qhorus datasource, V2021). Gate discrimination uses `AdverseEvent.findBySusarOversightCaseId` — avoids `CaseInstanceCache` race condition.
-- **Layer 8 — GDPR compliance (clinical#7):** `ConsentWithdrawalService` — GDPR Art.17: pseudonymizes `patientId`, calls `LedgerErasureService.erase()`, erases patient memories. Writes `ConsentWithdrawalLedgerEntry` (V2022). XA required. W3C PROV-DM export (`GET /audit/prov`) and Merkle inclusion proof (`GET /audit/entries/{id}/proof`) endpoints on `PatientResource`.
+- **Layer 8 — GDPR compliance (clinical#7):** `ConsentWithdrawalService` — GDPR Art.17: idempotent `withdraw(enrollmentId, tenantId)` returns `WithdrawalResult.ALREADY_WITHDRAWN` if consent already withdrawn (checks `ConsentStatus.WITHDRAWN` guard); otherwise pseudonymizes `patientId` (`"erased-" + UUID`), sets `consentStatus=WITHDRAWN`/`enrollmentStatus=WITHDRAWN`, calls `LedgerErasureService.erase()`, erases patient memories from `CaseMemoryStore` (best-effort). Writes `ConsentWithdrawalLedgerEntry` (V2022). REST: `POST /{enrollmentId}/withdraw-consent` returns 409 CONFLICT for already-withdrawn, 204 on success. XA required. W3C PROV-DM export (`GET /audit/prov`) and Merkle inclusion proof (`GET /audit/entries/{id}/proof`) endpoints on `PatientResource`.
 - **Layer 8 — EU AI Act Art.12 (clinical#76):** `ClinicalComplianceSupplement` factory attaches a `ComplianceSupplement` to all six AI-agent decision ledger entry writers via `entry.attach(supplement)`.
 - **Layer 7 — Trust routing (clinical#8):** `ClinicalTrustRoutingPolicyProvider @ApplicationScoped` — displaces `DefaultTrustRoutingPolicyProvider @DefaultBean` (casehub-engine-ledger); SAFETY_MONITORING threshold=0.75, 20-min observations, 0.70 safety-accuracy quality floor. `SusarAgentAttestationWriter` — observes gate approved/rejected/expired; writes `LedgerAttestation` anchored to `WorkerDecisionEntry`; TrustScoreJob ingests attestations into Bayesian Beta scores. `RegulatorySubmissionCaseService` + `ClinicalRegulatorySubmissionCaseHub` + `regulatory-submission.yaml` — Grade 3/4/5 + unexpected AE triggers IND expedited safety reporting case: Grade 3 → 15-day §(c)(1)(ii); Grade 4/5 → 7-day §(c)(1)(i), concurrent with AE escalation. `AeEscalationCompletedEvent.unexpected` — 7th field, marks AE as unexpected per ICH E2A criteria.
 - **Layer 9 — Showcase (clinical#10):** `EligibilityScreeningService` + `eligibility-screening.yaml` — eligibility screening case via engine IRB gate. `ProtocolAmendmentAdvisor` SPI in `api/spi/` — `@DefaultBean` stub always returns PROCEED; real LLM implementation pending engine#101 (tracked clinical#86). `ProtocolAmendmentCaseHub` + `protocol-amendment.yaml`. REST: `POST /trials/{t}/amendments` (propose amendment), `GET /trials/{t}/amendments/{id}`, `POST /trials/{t}/sites/{s}/patients/{e}/screen` (screen patient against eligibility criteria). `docs/comparison/clinicalagent.md` — 10-row GCP/FDA compliance gap table vs ClinicalAgent (arXiv 2404.14777).
@@ -97,6 +97,48 @@ Three precedent endpoints surface CBR similarity queries to the UI:
 
 **Security:** all three endpoints require `TrialMembership` check — user must be a member of the trial (PI, site coordinator, or safety officer).
 
+## Web UI (blocks-ui migration)
+
+Lit-based web UI built with casehub-blocks-ui components and casehub-pages. Served via Quinoa (esbuild, hot-reload in dev mode). Four views:
+
+**Work Queue** — compliance officer work queue with blocks-ui `work-item-inbox`.
+
+**Safety Workbench** — adverse event management with blocks-ui `approval-gate` for SUSAR oversight, `sla-indicator` for GCP deadlines, `data-table` for AE listings.
+
+**Protocol Workbench** — protocol deviation and amendment management.
+
+**Operations** — operational dashboard with `kpi-metric-row` for trial metrics.
+
+Frontend dependencies: `@casehubio/blocks-ui-core`, `blocks-ui-approval-gate`, `blocks-ui-sla-indicator`, `blocks-ui-kpi-metric-row`, `blocks-ui-data-table`, `blocks-ui-work-item-inbox`, plus `@casehubio/pages-runtime`, `pages-ui`, `pages-component`, `pages-data`, `pages-ui-tokens`.
+
+## RBAC (clinical#88)
+
+**`ClinicalGroups`** (`api/`): 4 role constants — `SPONSOR` ("trial-sponsor"), `INVESTIGATOR` ("principal-investigator"), `COORDINATOR` ("trial-coordinator"), `MONITOR` ("safety-monitor").
+
+**`casehub-platform-oidc`** dependency: `OidcCurrentPrincipal @RequestScoped` becomes sole active `CurrentPrincipal`; brings `quarkus-oidc` transitively.
+
+**`@RolesAllowed` enforcement** on all REST resources:
+- `TrialResource` — SPONSOR for register/activate/updateSponsorConfig; all 4 groups for GET
+- `PatientResource` — INVESTIGATOR+COORDINATOR for enroll/screen/reportAE; all 4 groups for reads; INVESTIGATOR only for withdraw-consent
+- `DeviationResource` — INVESTIGATOR+COORDINATOR for report; all 4 for read
+- `GdprErasureResource` — SPONSOR+COORDINATOR for erase
+
+Test security via `quarkus-test-security` with `@TestSecurity` annotations.
+
+## DemoDataSeeder (clinical#dev)
+
+`@ApplicationScoped @IfBuildProfile("dev")`, activated by `casehub.clinical.demo.seed-data=true`. Idempotent: checks if trial ONCO-2024-001 already exists before seeding. Uses deterministic UUIDs (`UUID.nameUUIDFromBytes()`) for reproducibility. 7-phase seed orchestration (each in separate `REQUIRES_NEW` transaction):
+
+1. Create trial (ONCO-2024-001, Phase III) + 3 sites (A, B, C) + 3 patients
+2. Activate trial
+3. Site A — eligibility screening + Grade 2 AE + 3 Grade 4 SUSAR lifecycles
+4. Site B — protocol deviation with PI approval
+5. Site C — protocol amendment
+6. Materialise Bayesian Beta trust scores via `TrustScoreJob.runComputation()`
+7. **Merkle chain verification** via `LedgerVerificationService.verify()` for all 3 patient subjects
+
+`DemoActionResource` (dev-profile-only, `/demo`): `POST /demo/deviations/{deviationId}/approve-pi` (triggers PI approval via channel gateway), `POST /demo/adverse-events/{aeId}/approve-susar-gate` (approves SUSAR gate via WorkItemService).
+
 ## The Compliance Gap It Closes
 
 ClinicalAgent (peer-reviewed baseline) structurally cannot provide:
@@ -124,6 +166,10 @@ casehub-clinical
   → casehub-platform-memory-jpa     (prod — JPA CaseMemoryStore; displaces NoOpCaseMemoryStore by classpath presence — clinical#33)
   → casehub-platform-memory-inmem   (test scope — @Alternative CaseMemoryStore for @QuarkusTest isolation — clinical#33)
   → casehub-engine-ledger           (Layer 7: TrustWeightedAgentStrategy, WorkerDecisionEventCapture, TrustScoreCache, CaseLedgerEntryRepository — classpath-presence activation)
+  → casehub-platform-oidc           (RBAC: OidcCurrentPrincipal @RequestScoped, @RolesAllowed enforcement — clinical#88)
+  → casehub-blocks                  (CBR: RoutingFeatureExtractor SPI — ClinicalRoutingFeatureExtractor — clinical#33)
+  → casehub-blocks-ui               (Web UI: data-table, approval-gate, sla-indicator, kpi-metric-row, work-item-inbox)
+  → casehub-pages                   (Web UI: page(), tree(), loadSite() — Quinoa frontend integration)
 ```
 
 ## Layer 5 Integration Notes (casehub-engine)

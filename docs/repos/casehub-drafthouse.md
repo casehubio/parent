@@ -15,8 +15,8 @@ MCP-driven document review tool. Any LLM (Claude Code, Claudony, or any MCP clie
 
 | Module | Artifact ID | Purpose |
 |--------|-------------|---------|
-| `api/` | `casehub-drafthouse-api` | Pure Java domain model — `ReviewSession`, `ReviewResult`, `DocumentSide`, `ReviewSessionRegistry` |
-| `runtime/` | `casehub-drafthouse` | Quarkus 3.34.3 app — MCP endpoints, Qhorus integration, LLM reviewer wiring |
+| `server/api/` | `casehub-drafthouse-api` | Pure Java domain model — `ReviewSession`, `ReviewResult`, `DocumentSide`, `BrainstormSession`, `DebateSessionStore` SPI, `DebateSessionSnapshot`, `ResolvedReviewer` |
+| `server/runtime/` | `casehub-drafthouse` | Quarkus app — MCP endpoints, Qhorus integration, LLM reviewer wiring, brainstorming tools, debate persistence, context tracking, terminal endpoint |
 
 ---
 
@@ -28,6 +28,10 @@ MCP-driven document review tool. Any LLM (Claude Code, Claudony, or any MCP clie
 | `DocumentSide` | One version of a document (before or after) within a review session |
 | `ReviewResult` | Structured feedback from a reviewer agent |
 | `ReviewSessionRegistry` | SPI for storing and retrieving active review sessions |
+| `BrainstormSession` | A brainstorming session context: options with states (EXPLORED, RECOMMENDED, ELIMINATED, SELECTED), lifecycle (ACTIVE → CONVERGED / ABANDONED) |
+| `DebateSessionStore` | Pluggable SPI for debate session persistence — `save(DebateSessionSnapshot)`, `load(UUID)`, `remove(UUID)`, `loadAll()` |
+| `DebateSessionSnapshot` | Serializable debate state: channel, documents, comparison, participants, agent ID |
+| `ResolvedReviewer` | Resolved reviewer identity: `agentId`, `name`, `instructions` — produced by `ReviewerResolver` via Eidos `AgentRegistry` |
 
 ---
 
@@ -37,9 +41,10 @@ MCP-driven document review tool. Any LLM (Claude Code, Claudony, or any MCP clie
 |------|--------|--------|
 | `casehub-qhorus-api` | `app` | `ChannelService`, `MessageService`, `ChannelGateway`, `DataService`, `InstanceService` — channel mesh SPIs |
 | `casehub-qhorus` (runtime) | `runtime` | Channel mesh runtime — commitment lifecycle, typed messages |
+| `casehub-eidos-api` | `runtime` | `AgentRegistry`, `AgentDescriptor`, `AgentQuery` — Eidos identity model for multi-LLM reviewer registry |
 | `quarkus-langchain4j-anthropic 1.9.1` | `runtime` | LLM calls via `@AiService` for reviewer agents (Phase 2) |
 
-Future additions: `casehub-engine`, `casehub-eidos`.
+Future additions: `casehub-engine`.
 
 ## Depended On By
 
@@ -59,6 +64,16 @@ Nothing in the casehubio ecosystem — application tier only.
 
 **Document timeline (drafthouse#98)** — version navigation UI across review rounds. Allows comparing any two versions from the review history.
 
+**Brainstorming MCP tools** — session model (`BrainstormSession` with ACTIVE/CONVERGED/ABANDONED states, `BrainstormOption` with EXPLORED/RECOMMENDED/ELIMINATED/SELECTED statuses) and 7 MCP tools: `start_brainstorm`, `present_options`, `update_option`, `set_recommendation`, `mark_eliminated`, `mark_selected`, `end_brainstorm`. `BrainstormSessionRegistry` manages active sessions. `TerminalEndpoint` WebSocket at `/api/terminal` provides PTY-based shell sessions via pty4j.
+
+**Multi-LLM reviewer registry** — `DraftHouseReviewerRegistry` implements `io.casehub.eidos.api.AgentRegistry`, backed by `ConcurrentHashMap<String, AgentDescriptor>`. `ReviewerDescriptorSeeder` (`@Startup`) seeds 4 reviewer personas: `drafthouse-structural-reviewer` (structural integrity), `drafthouse-content-reviewer` (accuracy, evidence), `drafthouse-readability-reviewer` (clarity, prose), `drafthouse-completeness-reviewer` (coverage, edge cases) — all share slot `document-reviewer`. `ReviewerResolver` resolves `agentId` → `ResolvedReviewer` via `AgentRegistry.findById()`, renders system prompt via `SystemPromptRenderer`.
+
+**Debate session persistence** — pluggable `DebateSessionStore` SPI with `save`/`load`/`remove`/`loadAll`. `JpaDebateSessionStore` (activated by `casehub.drafthouse.persistence.enabled=true` via `@IfBuildProperty`) persists `DebateSessionEntity` with `fromSnapshot()`/`toSnapshot()` conversion. `NoOpDebateSessionStore` (`@DefaultBean`) provides in-memory fallback. `DebateSession.fromSnapshot()` restores documents, comparison, and participants.
+
+**Context meter UI + report_context MCP tool** — `report_context` MCP tool in `DebateMcpTools` accepts `debateSessionId` and `usagePercent` (0-100), updates `ContextTracker`, pushes `ContextSnapshot` via WebSocket. `DebateEventResource.pushContextSnapshot()` sends `context-usage` events. `<context-gauge>` Lit web component displays percentage bar with three color states: normal (accent), warn (>=60%), error (>=80%), pulse animation on threshold breach. Tooltip shows server contribution chars, window size, message count.
+
+**Export debate summary MCP tool** — `export_debate_summary` MCP tool in `DebateMcpTools` accepts `debateSessionId` and `outputPath`, projects debate summary via `DebateChannelProjection`, appends active selection and working set, prepends reviewer info, writes to markdown file on disk.
+
 ---
 
 ## What This Repo Explicitly Does NOT Do
@@ -76,17 +91,25 @@ DraftHouse uses a single APPEND channel per review session with QUERY/RESPONSE. 
 
 ---
 
-## Planned MCP Tool Surface (Phase 2)
+## MCP Tool Surface
 
-`start_review`, `push_revision`, `get_cursor_context`, `get_diff`, `end_review`
+**Brainstorming:** `start_brainstorm`, `present_options`, `update_option`, `set_recommendation`, `mark_eliminated`, `mark_selected`, `end_brainstorm`
+
+**Debate:** `report_context`, `export_debate_summary`
+
+**Replay:** `casehubio-drafthouse:replay-design-review`
+
+**Planned (Phase 2):** `start_review`, `push_revision`, `get_cursor_context`, `get_diff`, `end_review`
 
 ---
 
 ## Current State
 
-- Two-module Maven project (`api/` + `runtime/`) — restructured in drafthouse#21
+- Two-module Maven project (`server/api/` + `server/runtime/`) — restructured in drafthouse#21
 - `casehub-qhorus 0.2-SNAPSHOT` dependency wired
+- `casehub-eidos-api` wired for multi-LLM reviewer registry
 - `quarkus-langchain4j-anthropic 1.9.1` added for Phase 2 LLM reviewer integration
+- Brainstorming MCP tools, debate persistence, context tracking, and export tools operational
 - No deployed production instances
 
 ---

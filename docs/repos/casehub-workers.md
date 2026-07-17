@@ -78,6 +78,10 @@ Generic SPI for resolving capability tags to transport-specific targets. `resolv
 
 JAX-RS resource in `workers-common`. Receives completion callbacks at `/workers/callback/{dispatchId}` from async worker transports. Completes the pending entry in `AsyncWorkerCompletionRegistry` and publishes completion via `WorkflowCompletionPublisher`.
 
+### @WorkerBackend Qualifier Migration
+
+`@WorkerBackend` (defined in `io.casehub.engine.common.spi.scheduler`) — CDI qualifier applied to all `WorkerExecutionManager` implementations. Each execution manager declares `@WorkerBackend @Priority(N)` and implements `supports(String capabilityName, String tenancyId)` to enable CDI-based dynamic dispatch to the correct backend. Replaced the previous pattern of overriding `schedulePersistedEvent()` with void no-ops. Applied to: `McpWorkerExecutionManager` (delegates to `serverResolver.canResolve()`), `HttpWorkerExecutionManager` (delegates to `httpEndpointResolver.canResolve()`), `ScriptWorkerExecutionManager`, `GitHubActionsWorkerExecutionManager`.
+
 ### BindingName Correlation (workers#18)
 
 `bindingName` propagation from casehub-engine through worker dispatch enables tracing which YAML binding triggered a worker execution. `WorkerCorrelationContext` carries `bindingName` alongside `caseId` and `eventLogId`. All 6 worker modules override the 6-arg `submit()` to thread `bindingName` through to transport-specific metadata:
@@ -105,7 +109,7 @@ Integrates with Apache Camel via the Quarkus Camel extension. Provides a custom 
 
 ### MCP (`workers-mcp`)
 
-Model Context Protocol dispatch over HTTP (Streamable HTTP transport). `McpSessionManager` manages sessions per server -- handles initialization handshake, `Mcp-Session-Id` tracking, and protocol version negotiation. `McpServerResolver` loads server configurations and optionally discovers capabilities via `tools/list` JSON-RPC call. Sessions are reused across dispatches. If any server fails initialization, others can still proceed -- the runtime reaches `RUNNING` if at least one server succeeds.
+Model Context Protocol dispatch over HTTP (Streamable HTTP transport). `McpSessionManager` manages sessions per server -- handles initialization handshake, `Mcp-Session-Id` tracking, and protocol version negotiation. `McpServerResolver` loads server configurations and discovers capabilities via `tools/list` JSON-RPC call. Discovery config per server: `casehub.workers.mcp.servers.<name>.discovery` — `auto` (default, null, or blank) runs `tools/list` at startup and registers discovered tools; `manual` skips discovery and uses only config-declared tools. Sessions are reused across dispatches. If any server fails initialization, others can still proceed -- the runtime reaches `RUNNING` if at least one server succeeds.
 
 ### GitHub Actions (`workers-github-actions`)
 
@@ -160,9 +164,11 @@ On restart, `processTerminal()` checks if the Job still exists in K8s. If `Pendi
 
 ## Current State
 
-- All 7 modules (common, http, camel, github-actions, mcp, script, testing) on main with tests.
+- All 8 modules (common, http, camel, github-actions, mcp, script, k8s, testing) on main with tests.
 - Consistent five-class pattern across all dispatch modules.
-- MCP module supports Streamable HTTP transport with `tools/list` capability discovery.
+- `@WorkerBackend` qualifier enables CDI-based dynamic dispatch — each execution manager declares `supports()` for capability resolution.
+- MCP module supports Streamable HTTP transport with configurable `tools/list` capability discovery (`discovery=auto|manual`).
 - Camel module includes a custom `casehub:` Camel component for bidirectional integration.
+- K8s module supports restart recovery via enriched Job labels and eager resolver initialization.
 - `AsyncWorkerCompletionRegistry` with TTL-based expiry for async dispatch patterns.
 - `WorkerFaultHandler` with configurable retry, backoff, `RetryAfterException` support, and permanent fault detection.

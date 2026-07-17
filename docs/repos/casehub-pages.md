@@ -22,12 +22,14 @@ Replaces GWT-based dashbuilder/melviz with a 100% TypeScript stack. Integrates w
 | Package | Purpose |
 |---------|---------|
 | `@casehubio/pages-ui-tokens` | OKLCH 12-step design tokens — color scales, spacing, typography, elevation, motion, radius. Theme generation and injection. Must build before `pages-viz`. |
-| `@casehubio/pages-data` | DataSet model, operations engine, external data extraction, JSONata. Push wire protocol (`EventConnection`, `PushSource`, `WebSocketSource`). General-purpose `SSEManager` (connection pooling, named event support, reconnection). |
-| `@casehubio/pages-ui` | YAML parser, DashBuilder backward compat layer, component model. |
+| `@casehubio/pages-data` | DataSet model (`TypedDataSet`, `TypedRow`, `Column`, `ColumnType`), operations engine (`FilterOp`/`GroupOp`/`SortOp` pipeline with `F*G*S?` ordering), external data extraction, JSONata. Push wire protocol (`EventStream`, `EventStreamPool` connection multiplexer). DataSource abstraction (`DataSource`/`DataSink`/`MutableDataSource` with source implementations: REST, SSE, WebSocket, CSV, inline, simulated, composite, replay, recording). `DataSetManager` (CRUD via `DataSetEvent`, typed lookups with pagination). Filter model type safety: per-type discriminated unions (`NumericFilter`/`StringFilter`/`DateFilter`) resolved via `resolveFilterTypes()`. `ScenarioController` for demo/scenario playback. |
+| `@casehubio/pages-ui` | YAML parser (including `grouped-view` desugar with group strategies: distinct, fixedCalendar, dynamicRange, dynamic), DashBuilder backward compat layer, component model. |
 | `@casehubio/pages-viz` | Web Component chart/table/metric wrappers (ECharts integration). |
-| `@casehubio/pages-component` | CSS grid layout renderer, interactive containers, panel hosting. Exports `ConfigurablePanel` and `DataReceiver` interfaces for hosted components. |
+| `@casehubio/pages-component` | CSS grid layout renderer, interactive containers, panel hosting. Exports `ConfigurablePanel` and `DataReceiver` interfaces, `DataSourceController`, expression evaluation (`evaluateExpression`, `createRowContext`), `RowStyleRule` for conditional row styling. |
+| `@casehubio/pages-primitives` | Accessibility mixins and modal infrastructure: `FocusTrapMixin` (slot-aware focus trap), `RovingTabindexMixin` (2D keyboard navigation with configurable direction), `KeyboardShortcutMixin`, `LiveRegionMixin`, `<pages-modal>` (dialog component). |
+| `@casehubio/pages-table` | Data table component (`<pages-table>`) — migrated from blocks-ui. Three display modes (auto/paginated/scroll), virtual scroll engine, CSS Grid rendering, `TableColumnConfig`/`ColumnRenderer` data model, multi-mode selection, client-side sorting and filtering, column visibility, ARIA grid, 2D keyboard navigation via `RovingTabindexMixin`, row-detail expansion (`getRowDetail`, `detailMode: single/multi`), jump-to-page, page size selector, tree/hierarchical data (`getChildren`, `buildTreeIndex`), CSV export, conditional row accent (`getRowAccent`). |
 | `@casehubio/pages-runtime` | Site orchestrator: `loadSite()` API, navigation, data pipeline, layout serialization (`LayoutStore`, `createLocalLayoutStore`). |
-| `@casehubio/pages-tsconfig` | Shared TypeScript config base (project references, strict mode). |
+| `@casehubio/pages-tsconfig` | Shared TypeScript config base (project references, maximum strict mode: `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `noImplicitOverride`, `verbatimModuleSyntax`). |
 | `@casehubio/pages-webpack-base` | Shared Webpack config presets. |
 
 ### Iframe Component API (`packages/`)
@@ -51,7 +53,8 @@ Replaces GWT-based dashbuilder/melviz with a 100% TypeScript stack. Integrates w
 
 | Module | Purpose |
 |--------|---------|
-| `casehub-pages-push` | Typed wire protocol SDK: `PushMessage` (server→client builders), `PushRequest` (sealed client→server parser with ack/error correlation), `TopicRegistry` (wildcard-aware connection tracking), `EventStore` SPI + `InMemoryEventStore` (bounded per-topic event replay). jackson-core only, no Quarkus. |
+| `casehub-pages-push` | Typed wire protocol SDK: `PushMessage` (server→client builders with event sequence numbers), `PushRequest` (sealed client→server parser with ack/error correlation), `TopicRegistry` (wildcard-aware connection tracking), `EventStore` SPI + `InMemoryEventStore` (bounded per-topic event replay), `EventBroadcaster` (store + fan-out to subscribed sessions via `SessionSender`), `SessionSender` SPI, `JsonWriter` SPI, `StoredEvent`, `PushColumn`. jackson-core only, no Quarkus. |
+| `casehub-pages-push-runtime` | Quarkus CDI producers for push infrastructure: `PushProducers` creates `TopicRegistry`, `EventStore` (@DefaultBean InMemoryEventStore, configurable `max-events-per-topic`), `JsonWriter` (@DefaultBean Jackson ObjectMapper), `EventBroadcaster`. Drop-in for any Quarkus app needing server-push. |
 | `casehub-pages-auth` | Authentication token handling for backend data providers. |
 | `casehub-pages-data` | Backend data provider adapters (SQL, relay proxy). |
 | `casehub-pages-data-sql` | SQL-based data provider with frontend push-down integration. |
@@ -223,7 +226,13 @@ Sealed parser in Java for inbound message validation:
 
 **Purpose:** new subscriptions receive the last N events for a topic immediately upon LISTEN, before any fresh pushes. Prevents "late joiner" data loss.
 
-**Capacity:** configurable per-topic, defaults to 100 events.
+**Capacity:** configurable per-topic, defaults to 100 events (push-runtime default: 1000).
+
+### EventBroadcaster
+
+`EventBroadcaster` (Java) — store-and-forward push broadcaster. `broadcast(topic, payload)` appends the event to `EventStore` (for replay on reconnect), then fans out the wire message to all sessions subscribed to the topic via `TopicRegistry.connections()`. Validates that broadcast topics contain no wildcards. Supports both raw JSON string and typed object broadcast (serialized via `JsonWriter` SPI).
+
+**CDI integration:** `casehub-pages-push-runtime` provides `PushProducers` — `@ApplicationScoped` CDI producers for `TopicRegistry`, `EventStore` (`@DefaultBean`, configurable `casehub.pages.push.max-events-per-topic`), `JsonWriter` (`@DefaultBean` Jackson ObjectMapper), and `EventBroadcaster`. Quarkus apps add the dependency and get server-push infrastructure with zero boilerplate.
 
 ### TypeScript Client
 
@@ -250,13 +259,40 @@ Forked from melviz (itself a fork of dashbuilder). Completed migration to 100% T
 - Repo: `melviz/pages` → `casehubio/casehub-pages`
 - Java group: `org.melviz` → `io.casehub`
 
-### Removal of pages-primitives
+### pages-primitives — Accessibility Mixins and Modal
 
-`@casehubio/pages-primitives` removed — `casehub-blocks-ui` is now the canonical source for shared UI components (case timelines, trust score panels, channel activity feeds).
+`@casehubio/pages-primitives` provides foundational a11y infrastructure consumed by both `pages-table` and `blocks-ui` components:
 
-**Migration:** applications importing `@casehubio/pages-primitives` components now import from `@casehubio/blocks-ui-core` instead. All primitives (schema forms, filter chips, scope selector) migrated to blocks-ui.
+- **FocusTrapMixin** — slot-aware focus trap that correctly handles slotted content in shadow DOM. Traps Tab/Shift+Tab within the component boundary.
+- **RovingTabindexMixin** — 2D keyboard navigation (Arrow keys) with configurable direction and selector. Used by `pages-table` for ARIA grid navigation.
+- **KeyboardShortcutMixin** — declarative keyboard shortcut binding for components.
+- **LiveRegionMixin** — ARIA live region management for screen reader announcements.
+- **`<pages-modal>`** — dialog component with focus trap, backdrop, close-on-escape.
 
-**Reason:** blocks-ui components are domain-aware (trust scores, case lifecycles) but app-agnostic. Primitives were too generic to be useful — better to compose from casehub-pages core APIs (`ConfigurablePanel`, `DataReceiver`, `pages-event`).
+Previously removed, pages-primitives was re-created with a narrower scope: pure a11y infrastructure rather than domain-aware UI components (those remain in blocks-ui).
+
+### pages-table — Data Table Migration
+
+`@casehubio/pages-table` (`<pages-table>`) migrated from `blocks-ui` `data-table` component. Now a pages-tier package, consumed by both blocks-ui components and application dashboards directly.
+
+Key capabilities:
+- Three display modes: auto (threshold-based), paginated, scroll (virtual)
+- Virtual scroll engine with viewport-ahead/behind calculation
+- CSS Grid rendering with `TableColumnConfig` / `ColumnRenderer` data model
+- Multi-mode selection (none/single/multi) with keyboard support
+- Row-detail expansion via `getRowDetail` callback, `detailMode` (single/multi)
+- Jump-to-page navigation and page-size selector
+- Tree/hierarchical data via `getChildren` + `buildTreeIndex` + expand state
+- CSV export (`tableToCsv`, `downloadCsv`, `copyToClipboard`)
+- Conditional row styling via `RowStyleRule` expressions and `getRowAccent`
+- 2D keyboard navigation via `RovingTabindexMixin` from pages-primitives
+- Client-side sorting (multi-column via sort stack) and filtering
+
+### PagesGroupedView — Grouped Tabular Data
+
+`GroupedViewProps` in `@casehubio/pages-component` defines the typed contract for grouped data display. Three presets: `spreadsheet` (group as table row), `sectioned` (group as section heading + table content), `list` (section heading + list content). Supports multi-level grouping (`GroupingKey | GroupingKey[]`), aggregation bindings per column, configurable group ordering, expand/collapse, row accent colouring, and optional `renderAfterHeader` callback for custom group decorations.
+
+`GroupNode` type provides the tree structure: name, depth, startRow, rowCount, children, and optional aggregates. Consumed by `blocks-ui`'s `<grouped-data-view>` component.
 
 ### OKLCH Token System
 
@@ -278,6 +314,22 @@ New interfaces (added recently) formalize the hosting contract for iframe and no
 
 **Impact:** Enables static type checking for component registration. Runtime validates interface conformance via `instanceof` before attaching to the pipeline.
 
+### Push Runtime Module
+
+`casehub-pages-push-runtime` (new backend module) — Quarkus CDI producers for the push infrastructure. `PushProducers` creates `@ApplicationScoped` beans for `TopicRegistry`, `EventStore` (configurable `casehub.pages.push.max-events-per-topic`, default 1000), `JsonWriter`, and `EventBroadcaster`. Drop-in dependency for any Quarkus app needing server-push — no boilerplate CDI wiring required.
+
+`EventBroadcaster` — store-and-forward push broadcaster. `broadcast(topic, payload)` appends to `EventStore` (for replay on reconnect), then fans out to all sessions matching the topic via `TopicRegistry.connections()`. Validates no wildcards in broadcast topics. Supports both raw JSON and typed object broadcast (serialized via `JsonWriter`).
+
+### DataSet Manager and Pipeline
+
+`DataSetManager` in `@casehubio/pages-data` — typed dataset management with `get`, `remove`, `has`, `apply` (event-driven updates), `lookup` (with pagination via `rowOffset`/`rowCount`), and `age` (staleness tracking). Lookup resolves filter types against column metadata before applying ops.
+
+`DataSetEvent` — typed event system for dataset mutations (replaces ad-hoc updates).
+
+### TypedDataSet Native
+
+The data model is now fully typed throughout the pipeline: `TypedDataSet`, `TypedRow`, `Column` with `ColumnType` (TEXT, NUMBER, DATE, LABEL), `ColumnId`. Filter expressions carry resolved types from column metadata. Sort operations use `SortColumn` with column reference. The pipeline operates on typed data end-to-end rather than converting at boundaries.
+
 ### Async Render Correctness
 
 Generation counter lift, staleness guard, rejection handling for ECharts rendering.
@@ -287,6 +339,18 @@ Generation counter lift, staleness guard, rejection handling for ECharts renderi
 **Fix:** Each render tagged with generation counter. Render completion checks if counter matches current — if stale, result discarded.
 
 **Refs:** commit `2582b21` — "async render correctness — generation counter lift, staleness guard, rejection handling".
+
+### DataSource Abstraction
+
+Unified data provider interface in `@casehubio/pages-data`. Three core types: `DataSource` (`connect(sink)`/`disconnect()`), `DataSink` (`apply(event)`/`error(err)`), and `MutableDataSource` (extends `DataSource` with `dispatch(action)` for CRUD). `DataAction` union: update/create/delete.
+
+Twelve source implementations: `restSource`, `sseSource`, `wsSource`, `csvSource`, `inlineSource`, `joinSource`, `postMessageSource`, `serverQuerySource`, `composite` (multi-source), `simulated` (with mutation operators: transition/increment/decrement/addRow/removeRow/when), `replay` (recorded event playback), `recording` (captures events for replay).
+
+`SourceFactory` creates sources from configuration. `ScenarioController` provides time-controllable scheduling for demo/scenario playback with play/pause/step/speed controls.
+
+### TypeScript Strict Mode Enforcement
+
+All packages share `@casehubio/pages-tsconfig` with maximum strictness: `strict`, `noUncheckedIndexedAccess` (array/map access yields `T | undefined`), `exactOptionalPropertyTypes` (no implicit `undefined` union), `noImplicitOverride`, `verbatimModuleSyntax`, `isolatedModules`. Applied consistently across all packages via project references.
 
 ---
 
@@ -316,6 +380,8 @@ All CaseHub web applications:
 **Integration path:** Each app includes `casehub-pages-*` Java modules in its POM, Quinoa extension for bundling, and a `src/main/webui/` workspace with TypeScript sources.
 
 **Component reuse:** Apps import `@casehubio/blocks-ui-*` components (case timeline, trust score panel, channel activity) and host them via `registerPanel()` + `hostPanel()` in their YAML dashboards.
+
+**blocks-ui dependency:** `casehub-blocks-ui` depends on `@casehubio/pages-primitives` (a11y mixins for focus trap, roving tabindex, live regions) and `@casehubio/pages-table` (data table component). The data table was originally in blocks-ui and migrated to pages as a foundation-tier component.
 
 ---
 
@@ -370,10 +436,12 @@ yarn workspace @casehubio/pages-data run test
 **Maturity:** Production-ready. Used by 8 CaseHub applications.
 
 **Active development areas:**
-- Push protocol maturation (topic wildcard patterns, event replay)
+- pages-table maturation (row-detail expansion, tree data, CSV export)
+- Push runtime CDI integration (EventBroadcaster as drop-in for Quarkus apps)
+- pages-primitives a11y infrastructure (focus trap, roving tabindex consumed by pages-table and blocks-ui)
+- Data pipeline type safety (TypedDataSet, filter model, dataset manager)
 - ECharts component expansion (new chart types)
 - Layout persistence (REST API backend)
-- Design token refinement (OKLCH scale tuning)
 
 **Known limitations:**
 - SSE push does not support client→server ack (WebSocket only)

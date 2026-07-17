@@ -21,6 +21,8 @@ Domain-agnostic, immutable, cryptographically tamper-evident audit ledger for an
 | `persistence-memory/` | `casehub-ledger-memory` | Zero-datasource in-memory `@Alternative @Priority(1)` implementations of all persistence SPIs — for `@QuarkusTest` isolation and ephemeral installs. Add as `compile`-scope dependency in consumer modules to activate. |
 | `rest/` | `casehub-ledger-rest` | JAX-RS REST API for ledger queries and admin operations — opt-in via explicit dependency (ledger#162). Provides `GET /ledger/entries`, `GET /ledger/entries/{id}`, `POST /ledger/entries/search` with pagination, filtering, and type discrimination. Exception mappers for ledger-specific errors. |
 | `testing/` | `casehub-ledger-testing` | NoOp SPI implementations for test isolation — `NoOpLedgerAppender`, `NoOpActorIdentityProvider`, `NoOpTrustScoreSource`, etc. (ledger#173). |
+| `consumer-compat-test/` | `casehub-ledger-consumer-compat-test` | Boot guard for CDI graph integrity. Standalone POM (not a child of ledger parent). Single `@QuarkusTest` with empty body — if CDI boots with no persistence infrastructure and no `quarkus.arc.exclude-types`, every injection point is satisfied by `@DefaultBean` no-ops. A failing build here means a new bean introduced an unsatisfied injection point that would break consumers. `maven.deploy.skip=true`. |
+| `signing/` | `casehub-ledger-signing` | Reactor POM for cloud-managed Ed25519 signing adapters. Each provider has a pure Java module (framework-free) and a Quarkus CDI adapter module. See [Cloud KMS Signers](#cloud-kms-signers) below. |
 
 ---
 
@@ -47,9 +49,17 @@ The ledger provides services for: cryptographic verification and inclusion proof
 **`TrustGateService` API (ledger#118):** now injects `TrustScoreSource` (not `ActorTrustScoreRepository`); returns `OptionalDouble` (was `Optional<Double>`); `findScore()` removed; `dimensionScores()` renamed to `allDimensionScores()`. `TrustGateService.allCapabilityScores(String actorId): Map<String, Double>` — returns all CAPABILITY-scoped trust scores as a capability-tag → score map (ledger#56 for actor state view).
 
 **Trust score architecture (ledger#118):** On-read computation via `TrustScoreSource` SPI — three implementations:
-- `MaterializedTrustScoreSource` — reads pre-computed scores from `ActorTrustScoreRepository` (original path)
+- `MaterializedTrustScoreSource` (`@DefaultBean`) — reads pre-computed scores from `ActorTrustScoreRepository` (original path). Overrides batch methods (`scoresFor`, `decisionCountsFor`) with single `WHERE actorId IN (...)` queries.
 - `CachedTrustScoreSource` — wraps `MaterializedTrustScoreSource` with in-memory TTL cache; replaces the engine-side `TrustScoreCache` (engine migration tracked in ledger#123)
 - `ComputedTrustScoreSource` — computes on demand via `TrustScoreCalculator` (pure computation extracted from `PerActorTrustComputer`)
+
+**Batch capability scoring API:** `TrustScoreSource` defines two batch default methods — `scoresFor(List<String> candidateIds, String capabilityTag) → Map<String, OptionalDouble>` and `decisionCountsFor(…) → Map<String, Integer>`. Defaults loop per-actor; `MaterializedTrustScoreSource` overrides with single `IN (…)` queries. Every candidate appears in the result map; `OptionalDouble.empty()` means the actor is in the BOOTSTRAP phase.
+
+**Trust-score materialization config gate:** `casehub.ledger.trust-score.materialization.enabled` (default `true`). When `false`, `TrustScoreJob` and `IncrementalTrustUpdateObserver` skip computation and persistence — `ComputedTrustScoreSource` still works for on-read computation.
+
+**Content-aware Merkle leaf hash:** `LedgerMerkleTree.leafHash()` computes `SHA-256(0x00 | entry.canonicalBytes())`. `canonicalBytes()` includes all core fields (subjectId, sequenceNumber, entryType, actorId, actorRole, occurredAt, tenancyId, actorType, causedByEntryId) plus `metadata`, `supplementJson`, and `domainContentBytes()`. Subclasses with persistent join-table fields MUST override `domainContentBytes()` — build-time enforcement via `LedgerProcessor` produces a deployment error if they do not.
+
+**`@CrossTenant` qualifier** (`io.casehub.ledger.runtime.qualifier`): CDI qualifier disambiguating `CrossTenantLedgerEntryRepository` / `CrossTenantReactiveLedgerEntryRepository` from their tenant-scoped counterparts. Unqualified injection fails at startup. Not applied to inherently cross-tenant repos (`ActorTrustScoreRepository`, `KeyRotationRepository`, `ActorIdentityBindingRepository`). Build-time enforcement: `LedgerProcessor` rejects `@RequestScoped` beans injecting `@CrossTenant`. TenancyId propagates through the CDI event chain via `LedgerEntry.tenancyId`, set at persist time by the repository.
 
 `LedgerEnricherPipeline` is an `@ApplicationScoped` CDI bean that owns enricher pipeline execution — shared by the JPA `@EntityListeners` path and the in-memory path. It is not an SPI (consumers do not implement it) but is the shared execution point for any consumer that adds enrichers.
 
@@ -72,6 +82,7 @@ See `docs/DESIGN.md` for service class structure.
 | `ActorTrustScoreRepository` | — | JPA default | Persistence for trust scores |
 | `TrustScoreSource` | `MaterializedTrustScoreSource` | `CachedTrustScoreSource`, `ComputedTrustScoreSource` | On-read trust score retrieval; injected into `TrustGateService` (ledger#118) |
 | `ActorIdentityProvider` | — | JPA default | Tokenise / resolve / erase actor identities (GDPR) |
+| `ErasureReceiptRepository` | — | JPA default (`JpaErasureReceiptRepository @Alternative`); `NoOpErasureReceiptRepository` | Query erasure receipt entries by actor/tenant; `countByTenant(tenancyId)` for compliance metrics |
 | `DecisionContextSanitiser` | no-op | — | Sanitise PII from decision context JSON before storage |
 | `LedgerTraceIdProvider` | OTel span | — | Override OTel trace ID extraction |
 | `TrustImportService` | no-op default | JPA default (seed-if-absent) | Import trust scores from external payload |
@@ -84,6 +95,14 @@ See `docs/DESIGN.md` for service class structure.
 |---|---|
 | `ComplianceSupplement` | GDPR Art.22 / EU AI Act Art.12 decision fields |
 | `ProvenanceSupplement` | Data lineage — source entity, workflow reference |
+
+### Metadata Field
+
+`LedgerEntry.metadata` — consumer-provided freeform JSON context (`TEXT` column). Included in `canonicalBytes()` for tamper evidence. Must be valid JSON, must NOT contain PII. Propagated through the write path via `AuditRecord.withMetadata(String)` and `OutcomeRecord.withMetadata(String)`. Config: `casehub.ledger.metadata.max-size` (default 65536).
+
+### @NamedQuery Migration
+
+All JPQL queries migrated from inline strings to `@NamedQuery` annotations on `JpaLedgerEntry`. 11 named queries: `LedgerEntry.listAll`, `findAllEvents`, `findEventsByActorId`, `findByTimeRange`, `findByIdAndTenancyId`, `findSequenceStats`, `findBySubjectId`, `findBySubjectIdAndTimeRange`, `findLatestBySubjectId`, `findByActorIdAndTimeRange`, `findByActorRoleAndTimeRange`, `findCausedBy`.
 
 ### Flyway Migrations
 
@@ -124,7 +143,7 @@ Nothing in the casehubio ecosystem. Quarkus + Hibernate ORM only.
 
 ## What This Repo Explicitly Does NOT Do
 
-- Provide REST endpoints (consumers define their own)
+- Provide REST endpoints by default — `ledger-rest` is opt-in via explicit dependency (consumers may still define their own)
 - Provide MCP tools (consumers define their own)
 - Capture domain events (consumers wire their own `@ObservesAsync` observers)
 - Replay events or project CQRS views
@@ -158,16 +177,18 @@ Bump criteria: model family change, persona behaviour change, scope change. Do N
 
 ### Cloud KMS Signers
 
-`casehub-ledger` supports cloud-managed Ed25519 signing keys via four cloud KMS implementations. All signers implement the `VaultTokenSource` SPI for credential acquisition.
+Cloud-managed Ed25519 signing lives in the `signing/` reactor. Each provider has a **pure Java module** (no framework deps — usable from `main()`) and a **Quarkus CDI adapter** module. The Vault module defines the `VaultTokenSource` SPI; cloud KMS modules use their own provider-native credential mechanisms.
 
-| Module | Cloud Provider | Auth Methods | Config Prefix |
-|--------|----------------|-------------|---------------|
-| `casehub-ledger-vault-aws` | AWS KMS | IAM credentials, STS AssumeRole | `casehub.ledger.vault.aws.*` |
-| `casehub-ledger-vault-gcp` | GCP Cloud KMS | Service Account JSON, Workload Identity | `casehub.ledger.vault.gcp.*` |
-| `casehub-ledger-vault-azure` | Azure Key Vault | Managed Identity, Service Principal | `casehub.ledger.vault.azure.*` |
-| `casehub-ledger-vault` | HashiCorp Vault | Token, AppRole, Kubernetes, JWT | `casehub.ledger.vault.*` |
+| Pure Java Module | Quarkus Adapter | Cloud Provider | Key Classes |
+|------------------|-----------------|----------------|-------------|
+| `signing/vault-transit` | `signing/vault-transit-quarkus` | HashiCorp Vault Transit | `VaultTransitSigningClient`, `VaultTokenSource` SPI, `AppRoleVaultTokenSource`, `JwtVaultTokenSource`, `StaticVaultTokenSource`, `LoginBasedVaultTokenSource` |
+| `signing/aws-kms` | `signing/aws-kms-quarkus` | AWS KMS | `AwsKmsSigningClient`, `AwsKmsContext`, `AwsKmsSigningConfig` |
+| `signing/gcp-kms` | `signing/gcp-kms-quarkus` | GCP Cloud KMS | `GcpKmsSigningClient`, `GcpKmsClientWrapper`, `GcpKmsContext` |
+| `signing/azure-keyvault` | `signing/azure-keyvault-quarkus` | Azure Key Vault | `AzureKeyVaultSigningClient`, `AzureKeyVaultClientWrapper`, `EcSignatureConverter` |
 
-**Vault auth unification (ledger#101, #102):** `VaultTokenSource` SPI abstracted credential acquisition. Vault module now supports `AuthMethod` enum with `TOKEN`, `APPROLE`, `KUBERNETES`, `JWT` variants. JWT auth method consolidates Kubernetes auth (ledger#101) — `JwtVaultTokenSource` replaces `KubernetesVaultTokenSource`, accepts a `Supplier<String>` for JWT acquisition. Kubernetes service account tokens are one JWT source; others include OIDC tokens, federated identity tokens, etc.
+**`VaultTokenSource` SPI** (`io.casehub.ledger.signing.vault`): `token()` and `invalidate()`. Three implementations extend `LoginBasedVaultTokenSource` (abstract — lazy login with lease-aware TTL, 30s buffer before expiry): `AppRoleVaultTokenSource`, `JwtVaultTokenSource` (consolidates Kubernetes auth — accepts any JWT source including OIDC, federated identity), `StaticVaultTokenSource` (constant token, no-op invalidate).
+
+**403-retry:** `VaultTransitAgentSigner` (Quarkus adapter) catches `VaultAuthenticationException` on both `fetchPublicKey()` and `sign()`, calls `tokenSource.invalidate()`, obtains a fresh token, and retries once. `VaultTransitSigningClient` throws `VaultAuthenticationException` on HTTP 403.
 
 ---
 
@@ -189,6 +210,7 @@ Config prefix: `casehub.ledger.agent-identity.scim.*`
 
 ## Current State
 
+- All modules on main: api, runtime, deployment, persistence-memory, rest, testing, consumer-compat-test, signing (8 sub-modules)
 - 962 tests passing, native image validated
 - Reactive/blocking service parity enforced at build time via `BlockingReactiveParityTest` (ArchUnit 1.4.1) — auto-discovers all `Reactive*Service` classes and asserts bidirectional method parity and `Uni<T>` returns
 - All epics complete: MMR, PROV-DM, privacy/pseudonymisation, EigenTrust, trust routing signals, OTel auto-wiring

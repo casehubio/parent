@@ -17,9 +17,10 @@ The biological metaphor is deliberate: a ganglion is a neural cluster that detec
 
 | Module | artifactId | Contents |
 |--------|-----------|----------|
-| `api/` | `casehub-ras-api` | Core SPIs and domain types: `Ganglion`, `SituationStore`, `CaseTrigger`, `RasTriggerPolicy`; records: `SituationDefinition`, `SituationContext`, `DetectionResult`, `CaseTriggerConfig`; sealed `ChainMode` (5 variants); enums: `DetectionSignal`, `TriggerDecision`; base class: `JavaSwitchGanglion`. Depends on CloudEvents SDK + Mutiny. No CDI. |
+| `api/` | `casehub-ras-api` | Core SPIs and domain types: `Ganglion`, `SituationStore`, `GanglionStateStore`, `CaseTrigger`, `RasTriggerPolicy`, `CaseInputContributor`; records: `SituationDefinition`, `SituationContext`, `DetectionResult`, `CaseTriggerConfig`, `GanglionState`, `GanglionStateKey`; sealed `ChainMode` (7 variants); sealed `TriggerMode` (FireOnce, Repeating); sealed `TriggerAction` (CreateCase, NotifyOnly); enum `TriggerDecision` (5 outcomes); enum `DetectionSignal`; base class: `JavaSwitchGanglion`. Depends on CloudEvents SDK + Mutiny. No CDI. |
 | `runtime/` | `casehub-ras` | CDI runtime: `RasEngine` (CloudEvent observer), `SituationEvaluator` (two-phase detection + OCC retry), `SituationDefinitionRegistry`, `DefaultRasTriggerPolicy`, `DefaultCaseTrigger`, `YamlSituationDefinitionProvider`, `NaiveBayesGanglion`, scheduled expiry + buffer flush jobs. |
-| `ras-drools/` | `casehub-ras-drools` | `DroolsGanglion` -- Drools CEP stream-mode ganglion with long-lived/ephemeral sessions, pseudo/realtime clock, hot rule reload, `DroolsObjectExtractor` SPI, `ResultCollectionStrategy` enum. |
+| `ras-drools/` | `casehub-ras-drools` | `DroolsGanglion` -- Drools CEP stream-mode ganglion with long-lived/ephemeral sessions, pseudo/realtime clock, hot rule reload, `DroolsObjectExtractor` SPI, `ResultCollectionStrategy` enum. Uses classic kie-api (`KieServices`, `KieBase`, `KieSession`, `KieBuilder`, `KieFileSystem`, `ExecutableModelProject`). |
+| `drools-reliability/` | `casehub-ras-drools-reliability` | `ReliableDroolsSessionStore` -- `@ApplicationScoped` `DroolsSessionStore` backed by `drools-reliability-h2mvstore`. ConcurrentHashMap hot cache with generation-based eviction. Corrupt store auto-recovery (probes MVStore file, renames corrupt files). `STORES_ONLY` persistence strategy with `AFTER_FIRE` safepoints. Includes `DroolsReliabilityMetrics` (Micrometer) and `ReliableDroolsSessionStoreHealthCheck` (MicroProfile readiness). |
 | `ras-llm/` | `casehub-ras-llm` | POM-only placeholder. Intended: LLM-based ganglion via `casehub-platform-agent-api` for narrative and ambiguous signal detection. No source yet. |
 | `persistence-memory/` | `casehub-ras-memory` | `InMemorySituationStore` (`@Alternative @Priority(100)`) -- ConcurrentHashMap-backed. Zero-config. |
 | `persistence-jpa/` | `casehub-ras-jpa` | `JpaSituationStore` -- JPA-backed with dual-layer OCC (application-level `storeVersion` + JPA `@Version`). `SituationEntity` (table `ras_situation`, JSONB detections). Flyway V1-V2. |
@@ -54,7 +55,7 @@ Record: `(situationId, eventTypes, correlationWindow, eventBufferDelay, chainMod
 
 ### ChainMode
 
-Sealed interface with 5 composition strategies. Each variant has `referencedGanglia()` returning the ganglion IDs involved.
+Sealed interface with 7 composition strategies. Each variant has `referencedGanglia()` returning the ganglion IDs involved.
 
 | Variant | Semantics |
 |---------|-----------|
@@ -62,11 +63,29 @@ Sealed interface with 5 composition strategies. Each variant has `referencedGang
 | `Or(ganglia)` | Any ganglion with WEAK+ detection suffices |
 | `Threshold(ganglia, minConfidence)` | Sum of confidences (ANTI subtracts) must reach threshold |
 | `Sequence(orderedGanglia)` | Ganglia must fire in temporal order |
-| `Count(ganglionId, requiredCount)` | Single ganglion must fire N times |
+| `Count(ganglionId, requiredCount)` | Single ganglion must fire N times (non-consecutive) |
+| `Streak(ganglionId, requiredCount)` | Single ganglion must fire N **consecutive** positive detections |
+| `Rate(ganglia, minRate, windowSize)` | Ratio of positive detections in a sliding window of `windowSize` evaluations must reach `minRate` (0.0–1.0]; windowSize >= 1 |
 
 ### SituationContext
 
 Immutable record accumulating detections for a correlation key: `(situationId, correlationKey, tenancyId, firstSignal, lastSignal, detections, storeVersion)`. `storeVersion` (`OptionalLong`) enables optimistic concurrency. `withDetection()` returns a new instance.
+
+### GanglionStateStore
+
+SPI: `load(GanglionStateKey)`, `save(GanglionStateKey, GanglionState)`, `remove(GanglionStateKey)`, `removeForSituation(String)`, default `removeOrphaned()`. `GanglionState` record holds `double[] values` and `OptionalLong storeVersion` (OCC). `GanglionStateKey` record: `(ganglionId, situationId, correlationKey, tenancyId)`. Three implementations: `InMemoryGanglionStateStore` (`@DefaultBean`, ConcurrentHashMap), `JpaGanglionStateStore` (full OCC with 3-way version checking — concurrent insert/delete/modification detection). JPA impl overrides `removeOrphaned()` with a native SQL anti-join.
+
+### CaseInputContributor
+
+SPI: `Map<String, Object> contribute(CaseTriggerConfig, SituationContext)`. Discovered via CDI. `DefaultCaseTrigger.buildInputData()` calls each contributor and merges its output into the case input map after static base data and correlation metadata. Enables domain-specific case seeding at trigger time without modifying RAS internals.
+
+### Trigger Lifecycle
+
+**`TriggerDecision`** enum: `TRIGGER`, `TRIGGER_AND_CONTINUE`, `CONTINUE_ACCUMULATING`, `DISCARD`, `RESOLVE` — five possible outcomes from `RasTriggerPolicy.evaluate()`. `TRIGGER_AND_CONTINUE` allows the situation to persist after case creation (for recurring patterns). `RESOLVE` closes the situation without creating a case.
+
+**`TriggerMode`** sealed interface: `FireOnce()` and `Repeating(Duration cooldown)`. `Repeating` mode re-arms the situation after trigger with a cooldown interval before the next trigger is allowed.
+
+**`TriggerAction`** sealed interface: `CreateCase(CaseTriggerConfig config)` and `NotifyOnly()`. `SituationEvaluator` dispatches based on the action type — `NotifyOnly` skips case creation.
 
 ### RasEngine (Entry Point)
 
@@ -78,7 +97,9 @@ Two-phase processing per event:
 1. **Detect** (Phase 1, never retried) -- calls `ganglion.detect()` for all relevant ganglia.
 2. **Apply + persist** (Phase 2, retried on `SituationConflictException` up to `ras.evaluator.max-conflict-retries=3`) -- applies detections to context, evaluates trigger policy, executes decision.
 
-Decisions: `CREATE_CASE` fires `CaseTrigger` then removes the situation; `CONTINUE_ACCUMULATING` optionally compacts then saves; `DISCARD` removes.
+Decisions: `TRIGGER` fires `CaseTrigger` then removes the situation; `TRIGGER_AND_CONTINUE` fires `CaseTrigger` but keeps the situation; `CONTINUE_ACCUMULATING` optionally compacts then saves; `DISCARD` removes; `RESOLVE` removes without creating a case.
+
+**OCC conflict detection:** Dual-layer OCC in both situation and ganglion state persistence. `SituationConflictException` triggers Phase 2 retry (up to `ras.evaluator.max-conflict-retries=3`). `GanglionStateConflictException` handles concurrent ganglion state modifications with 3-way version checking: concurrent insert (entity-exists-but-no-storeVersion), concurrent delete (entity-removed-but-has-storeVersion), and version mismatch. JPA `OptimisticLockException` and constraint violations are also caught.
 
 Handles event reorder buffers (TreeMap-based, drains when watermark advances past `eventBufferDelay`) and correlation window expiry.
 
@@ -148,10 +169,14 @@ RAS is a pure CloudEvent consumer. Platform stream modules (Kafka, AMQP, webhook
 
 ## Current State
 
-- Core framework complete: API, runtime, persistence-memory, persistence-jpa, ras-drools, testing all on main.
+- All modules on main: API, runtime, ras-drools, drools-reliability, persistence-memory, persistence-jpa, testing. `ras-llm` scaffolded (POM only, no source).
 - `NaiveBayesGanglion` built into runtime with full incremental Bayesian classification.
-- `DroolsGanglion` supports CEP stream mode with long-lived sessions and hot rule reload.
-- JPA persistence with dual-layer OCC (application + JPA `@Version`).
+- `DroolsGanglion` supports CEP stream mode with long-lived sessions, hot rule reload, and classic kie-api.
+- `ReliableDroolsSessionStore` backed by H2MVStore with Micrometer metrics and MicroProfile health check.
+- `GanglionStateStore` SPI with InMemory and JPA implementations (full OCC).
+- JPA persistence with dual-layer OCC (application + JPA `@Version`) for both situations and ganglion state.
+- 7 ChainMode variants: And, Or, Threshold, Sequence, Count, Streak, Rate.
+- Trigger lifecycle: `TriggerDecision` (5 outcomes), `TriggerMode` (FireOnce/Repeating with cooldown), `TriggerAction` (CreateCase/NotifyOnly).
+- `CaseInputContributor` SPI for domain-specific case seeding at trigger time.
 - YAML-based situation definition via `YamlSituationDefinitionProvider`.
-- `ras-llm` module scaffolded (POM only, no source).
 - API module publishes a test-jar with `AbstractGanglionContractTest` for implementation verification.

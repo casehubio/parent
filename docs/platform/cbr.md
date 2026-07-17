@@ -34,15 +34,21 @@ Problem (CaseFile features)
 └──────────────────────────────┘
         ↓ chosen solution
 ┌──────────────────────────────┐
-│ 3. REVISE                    │  casehub-engine (future)
-│    Adapt solution to current │  Adaptive plan templates
-│    context                   │
+│ 3. REUSE (Plan Adaptation)   │  casehub-neocortex
+│    Adapt retrieved plan to   │  PlanAdapter SPI
+│    current context           │  AdaptedPlan
 └──────────────────────────────┘
         ↓ adapted solution + outcome
 ┌──────────────────────────────┐
-│ 4. RETAIN                    │  casehub-ledger
-│    Record outcome as new     │  casehub-platform
-│    retrievable case          │  (CaseMemoryStore)
+│ 4. REVISE (Outcome Feedback) │  Application tier
+│    Record outcome, adjust    │  RoutingOutcomeRecorder
+│    case memory               │  CaseOutcomeObserver
+└──────────────────────────────┘
+        ↓ outcome recorded
+┌──────────────────────────────┐
+│ 5. RETAIN                    │  casehub-neocortex
+│    Record as new retrievable │  CaseMemoryStore
+│    case via MemoryEmitter    │  (memory backends)
 └──────────────────────────────┘
 ```
 
@@ -53,16 +59,21 @@ Problem (CaseFile features)
 **Key classes:**
 - `HybridCaseRetriever` / `ReactiveHybridCaseRetriever` — hybrid retrieval: semantic search + metadata filtering
 - `CbrRetrievalService` (casehub-engine) — routing-specific wrapper, queries `CaseMemoryStore` with feature vectors
-- `CbrSimilarityScorer` — pluggable similarity function (cosine, Euclidean, categorical + decay)
+- `CbrSimilarityScorer` — pluggable per-field similarity with configurable weights (categorical exact match, numeric linear decay, text exact match)
+- `FeatureValue` — sealed type hierarchy: `Boolean`, `NumericList`, `TimeSeries`, `DiscreteSequence` (replaces `Map<String, Object>`)
+- `SimilaritySpec` — sealed interface for per-type similarity computation (DTW for `TimeSeries`, edit distance for `DiscreteSequence`, Jaccard for sets)
+- `TrendAnalyzer` — derives Numeric features from TimeSeries data; `TrendSpec` declares extraction rules; `TrendEnrichmentDecorator` injects trends at retrieval time
+- `CbrQuery` — gains `weights` and `vectorWeight` for per-field weight configuration
 
 **How it works:**
 
-1. Extract features from the current case via `RoutingFeatureExtractor.extractFeatures(context)`
-2. Query `CaseMemoryStore` for cases with similar feature vectors
-3. Rank by similarity score (cosine similarity by default, configurable per feature)
-4. Return top-k cases with their features, solution, and outcome
+1. Extract features from the current case via `RoutingFeatureExtractor.extractFeatures(context)` — returns typed `FeatureValue` instances
+2. Query `CaseMemoryStore` for cases with similar feature vectors (semantic + metadata hybrid search)
+3. Rank by weighted per-field similarity score — each field uses its appropriate `SimilaritySpec` (exact match for categoricals, DTW for temporal sequences, linear decay for numerics)
+4. Apply trend enrichment — `TrendEnrichmentDecorator` derives trend features from `TimeSeries` values before scoring
+5. Return top-k cases with their features, solution, and outcome
 
-**Feature extraction:** Domain-specific. Apps implement `RoutingFeatureExtractor` to extract features relevant to their domain.
+**Feature extraction:** Domain-specific. Apps implement `RoutingFeatureExtractor` to extract features relevant to their domain. Features are now typed via `FeatureValue` sealed hierarchy — structured case fields support nested objects and list containment.
 
 **Examples:**
 
@@ -129,39 +140,67 @@ The LLM sees this evidence and makes the final selection.
 
 **Status:** Tracked via casehubio/engine (pending issue creation).
 
-### 3. Revise — Adapt the Solution to Current Context
+### 3. Reuse (Plan Adaptation) — Adapt the Solution to Current Context
 
-**Owner:** casehub-engine (target) — adaptive plan templates
+**Owner:** casehub-neocortex (`PlanAdapter` SPI)
 
-**Current gap:** Today, solution selection is binary: one implementation is chosen, it runs its full plan. There is no mechanism to take a retrieved past solution and *adapt* it — blend parameters from the top-k retrievals, weight sub-tasks differently based on context, or parameterise a plan template.
+**Key classes:**
+- `PlanAdapter` SPI — transforms a retrieved plan for the current context. Domain-specific — each app provides its own adapter.
+- `AdaptedPlan` — the result of adaptation, carrying the modified plan and rationale.
+- `LifePlanAdapter` (casehub-life) — reference implementation with 6 domain-specific `LifeAdaptationRule` implementations (appointment, contractor, financial, health, home-maintenance, travel).
 
-**Target:** Adaptive plan templates — plan instances that are parameterised at runtime rather than fixed at compile time. The adaptation function is domain-specific (pluggable SPI) and operates on the retrieved cases to produce a concrete plan.
+**How it works:**
 
-**Example (QuarkMind):** Given that the top-3 similar past games used `EarlyPressure` (2 wins, 1 loss) and `Economic` (3 wins), blend their opening build orders weighted by outcome. Rather than choosing one strategy, parameterise a hybrid. This cannot be expressed in static DRL files.
+1. Top-k retrieved cases are passed to the domain's `PlanAdapter`
+2. The adapter evaluates the current context against retrieved solutions
+3. Domain-specific adaptation rules modify plan parameters (e.g., adjust SLA, substitute workers, re-weight priorities)
+4. The `AdaptedPlan` is injected into the case context before engine execution
 
-**Status:** Long-term gap. No design yet. Adaptive plan templates require rethinking how plans are authored (currently: static DRL files).
+**Status:** ✅ Shipped. `PlanAdapter` SPI in casehub-neocortex. Reference implementation in casehub-life with 6 adaptation rules. The previous gap (binary solution selection, no parameterisation) is closed.
+
+### 3b. Revise (Outcome Feedback) — Record and Learn from Outcomes
+
+**Owner:** Application tier + casehub-blocks
+
+**Key classes:**
+- `RoutingOutcomeRecorder` (blocks) — records agent routing outcomes into CBR memory
+- `CaseOutcomeObserver` (blocks) — records case-level completion outcomes
+- `CbrCaseMemoryStore` (neocortex) — CBR-specific memory store wrapper for outcome recording
+
+**How it works:**
+
+1. After task completion, the outcome recorder captures the result (success/failure/confidence)
+2. Features extracted at decision time are stored alongside the outcome
+3. Active memory management applies temporal decay — older cases lose relevance over time
+4. Supersession SPI allows newer cases to explicitly supersede older ones
+
+**Adopted by:** devtown (contributor/reviewer history), aml (entity context + SAR outcomes), clinical (patient/site/AE), life (6 domain schemas), iot (device situations), desiredstate (fault/situation response).
 
 ### 4. Retain — Store the Outcome as a Retrievable Case
 
-**Owner:** casehub-ledger (trust scores) + casehub-platform (`CaseMemoryStore`)
+**Owner:** casehub-ledger (trust scores) + casehub-neocortex (`CaseMemoryStore`)
 
 Two complementary stores:
 
 | Store | What it holds | Use for CBR |
 |-------|--------------|-------------|
 | `casehub-ledger` | Tamper-evident outcome attestations, trust scores (Bayesian Beta), decision records | Trust credence — "this strategy won 70% of similar games" |
-| `CaseMemoryStore` (platform) | Queryable, permission-aware case memories; adapters: `memory-jpa`, `memory-mem0`, `memory-graphiti` | Full case representation — problem features + solution + outcome, retrievable by semantic similarity |
+| `CaseMemoryStore` (neocortex) | Queryable, permission-aware case memories; adapters: `memory-jpa`, `memory-mem0`, `memory-graphiti`, `memory-qdrant`, `memory-cbr-inmem` | Full case representation — problem features + solution + outcome, retrievable by semantic similarity |
 
 **Both are needed.** The ledger provides the compliance record and trust signal. The memory store provides the rich case representation for retrieval.
 
 **What gets recorded:**
 
-- **Features** — extracted via `RoutingFeatureExtractor` at decision time
+- **Features** — extracted via `RoutingFeatureExtractor` at decision time as typed `FeatureValue` instances
 - **Solution** — which agent/implementation was chosen, with rationale
 - **Outcome** — success/failure, confidence, compliance (if available)
 - **Timestamp** — when the decision was made
 
-**Outcome recording:** `CbrRoutingOutcomeRecorder` (blocks) writes outcomes to `CbrRetrievalService` (backed by `CaseMemoryStore`). The recorder is invoked after task completion, not at routing time.
+**MemoryEmitter (neocortex):** `@ApplicationScoped` fire-and-forget CDI wrapper around `CaseMemoryStore.store()`. Replaces boilerplate (null-check, build `MemoryInput`, try-catch) with a single `emit()` call. Used by aml, clinical, devtown, life, and iot for CBR outcome recording.
+
+**Outcome recording:** `RoutingOutcomeRecorder` (blocks) and `CaseOutcomeObserver` (blocks) write outcomes to CBR memory. The recorder is invoked after task completion, not at routing time.
+
+**Active memory management:** Temporal decay — older case memories lose relevance over time. Supersession SPI — newer cases explicitly supersede older ones. CBR reconciliation provides batch upsert, orphan cleanup, and disaster recovery for Qdrant-backed stores.
 
 **Ledger integration:** When ledger is present, trust scores are also recorded. The trust score is a credence signal (Bayesian Beta posterior mean). The case memory is the full case representation.
 

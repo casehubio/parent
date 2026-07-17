@@ -39,6 +39,7 @@ The `DeviceRegistry` CDI SPI is the consumer contract. Methods: `findById(String
 | `CoverDevice` | `COVER` | `position`, `moving` |
 | `MediaPlayerDevice` | `MEDIA_PLAYER` | `volume` |
 | `FanDevice` | `FAN` | `on` |
+| `CameraDevice` | `CAMERA` | `streaming` |
 
 Every `DeviceEntity` carries `deviceId`, `deviceClass`, `label`, `available`, `lastUpdated`, and `tenancyId`. The `capabilities()` method returns a `Map<String, Object>` used by `StateChangeEvent.deriveChangedCapabilities()` to compute change sets.
 
@@ -66,7 +67,7 @@ Immutable command record: `targetDeviceId`, `action`, `parameters`, `source`, `c
 |--------|----------|----------|
 | `api` | `casehub-iot-api` | Core SPIs (`DeviceProvider`, `DeviceRegistry`), device class hierarchy, `StateChangeEvent`, `DeviceCommand`, `CommandResult`, enums (`DeviceClass`, `SensorType`, `ThermostatMode`, `ProviderStatus`), `CdiDeviceRegistry @ApplicationScoped`. Pure Java + Mutiny `provided`. **Note:** Jackson annotations added for `DeviceTypeIdResolver` polymorphic serialization (iot#5) — `api` is no longer a zero-framework-dependency module. |
 | `homeassistant` | `casehub-iot-homeassistant` | `HomeAssistantProvider @ApplicationScoped` — REST API + WebSocket event stream. `HomeAssistantEntityMapper` maps HA states to device hierarchy. `HomeAssistantWebSocketClient` for real-time state subscriptions with exponential backoff reconnection. `HomeAssistantRestClient` for service calls (command dispatch). Supplement types: `HomeAssistantThermostat`, `HomeAssistantLight`, `HomeAssistantLock`. Config via `@ConfigMapping`: url, token, tenancyId, reconnect params. |
-| `openhab` | `casehub-iot-openhab` | `OpenHabProvider @ApplicationScoped` — REST API + SSE event stream. `OpenHabEntityMapper` maps Equipment Groups (semantic model) to device hierarchy. `OpenHabSseClient` for real-time state with Equipment-level coalescing (batches rapid item-level changes into a single Equipment-level event). `OpenHabRestClient` for item commands. Supplement types: `OpenHabThermostat`, `OpenHabLight`, `OpenHabRollershutter`. Auth: token or basic auth via `OpenHabAuthHeadersFactory` (`ClientHeadersFactory`). Config via `@ConfigMapping`: url, token, optional basicAuth, tenancyId, reconnect params, coalescing window. |
+| `openhab` | `casehub-iot-openhab` | `OpenHabProvider @ApplicationScoped` — REST API + SSE event stream. Layered Equipment+Thing discovery: `OpenHabEntityMapper` maps Equipment Groups (semantic model), `OpenHabThingResolver` maps Things via two-signal model (thing-type category + channel itemType inference). `OpenHabSseClient` 4-phase pipeline with dual cache layers and `ThingStatusInfoChangedEvent` tracking. `OpenHabDeviceBuilder` shared between paths. `OpenHabRestClient` for item commands. Supplement types: `OpenHabThermostat`, `OpenHabLight`, `OpenHabRollershutter`. Auth: token or basic auth via `OpenHabAuthHeadersFactory` (`ClientHeadersFactory`). Config via `@ConfigMapping`: url, token, optional basicAuth, tenancyId, reconnect params, coalescing window, `thingDiscoveryEnabled` (default true). |
 | `testing` | `casehub-iot-testing` | `MockDeviceProvider`, `MockDeviceRegistry`, `Fixtures` (Java-built fixture devices), `DeviceFixtureLoader` (YAML fixture loading), `DeviceTypeHandler` SPI (16 handlers for all device types including vendor supplements), `StateChangeEventPublisher`. Test scope only — never a compile or runtime dependency for downstream consumers. Provider modules use `<optional>true</optional>` for `DeviceTypeHandler` SPI compilation. |
 | `bridge-persistence-memory` | `casehub-iot-bridge-persistence-memory` | In-memory `BridgeAuditStore` implementation — relocates original in-memory store with correct CDI priority. Used for testing and ephemeral deployments. |
 | `bridge-persistence-jpa` | `casehub-iot-bridge-persistence-jpa` | JPA `BridgeAuditStore` — durable audit persistence with JSONB message storage (iot#38). Flyway migrations, Testcontainers PostgreSQL for tests. Configurable `@Scheduled` purge job for audit data retention (iot#40). |
@@ -90,6 +91,14 @@ Equipment Group mapping — one OpenHAB Equipment Group with multiple member Poi
 
 Auth: Bearer token (default) or HTTP Basic auth. Basic auth uses a CDI `ClientHeadersFactory` registered via `@RegisterProvider` on the REST clients.
 
+### Thing-Scoped Discovery (Layered Equipment + Thing)
+
+OpenHAB discovery now operates in two layers. Phase 1 discovers Equipment Groups (semantic model). Phase 2 discovers Things directly via `OpenHabThingResolver` — resolves `OpenHabThingDto` and its linked items to `ResolvedDeviceFields` using a two-signal model: thing-type category (binding metadata) merged with channel itemType inference. Priority-based channel scanning (Color > Dimmer > Rollershutter > Player > Power/Energy > Thermostat > Temperature > Humidity > Switch > Contact > Number). `OpenHabDeviceBuilder` is shared between Equipment and Thing paths. `OpenHabSseClient.connect()` runs a 4-phase pipeline: Equipment mapping → Thing index build (enhancing Equipment availability from Thing status) → Thing mapping for unmapped Things (`thingDiscoveryEnabled()` config, default `true`) → item state fetch for unmapped Things. Dual cache layers: `equipmentCache`/`deviceCache` (Equipment path) and `thingCache`/`thingDeviceCache` (Thing path). SSE `ThingStatusInfoChangedEvent` updates availability on both layers.
+
+### SSE Device Status Streaming
+
+`DeviceSseResource` (`GET /api/devices/stream`) produces `SERVER_SENT_EVENTS`. Sends initial "snapshot" operation with all devices, then streams "replace" operations on `@ObservesAsync StateChangeEvent`. Filters by tenancy ID.
+
 ---
 
 ## Testing Infrastructure
@@ -108,9 +117,35 @@ Test utility that fires `StateChangeEvent` instances via CDI `fireAsync()` and c
 
 ---
 
+## CBR Infrastructure
+
+IoT situation resolution via case-based reasoning. Implemented across `webapp-api` (pure logic) and `webapp` (CDI wiring).
+
+**Feature schemas** (`IoTCbrFeatureSchemas`): 4 `CbrFeatureSchema` instances — `hvacAnomaly()`, `safetyAlert()`, `securityAlert()`, `genericResponse()`. Each includes common fields (deviceClass, roomType, hourOfDay, dayType, season) plus schema-specific fields. Uses `CbrFeatureSchema`, `FeatureField`, `SimilaritySpec` from `io.casehub.neocortex.memory.cbr`.
+
+**Retrieval** (`IoTCbrRetrievalService`): wraps `CbrCaseMemoryStore`, builds `CbrQuery`, returns `List<ResolutionSuggestion>` with `caseId`, `similarityScore`, `problem`, `solution`, `outcome`, `confidence`, `matchedFeatures`, `featureSimilarities`, `planSteps`.
+
+**Feature extractors** (`IoTCbrFeatureExtractors`): static extractors per case type — `extractHvacAnomalyFeatures`, `extractSafetyAlertFeatures`, `extractSecurityAlertFeatures`, `extractGenericResponseFeatures`. Derives temporal features (hourOfDay, dayType, season) from `eventTimestamp`.
+
+**Confidence model** (`ResolutionConfidence`): `bestSimilarity`, `outcomeConsistency`, `matchCount`, `ConfidenceLevel` (HIGH/MEDIUM/LOW/NONE). Static `compute()` method.
+
+**CDI wiring**: `IoTCbrSchemaRegistration` (`@ApplicationScoped`) registers all schemas on `@Observes StartupEvent`. `IoTCbrRetrievalServiceProducer` CDI `@Produces` method.
+
+**REST**: `GET /api/cases/{caseId}/suggestions` retrieves CBR suggestions. `POST /api/cases/{caseId}/suggestions/{pastCaseId}/accept` accepts a suggestion and writes `suggestedPlan` into the CaseContext.
+
+---
+
+## Bridge Deployment
+
+**Docker**: `bridge/src/main/docker/Dockerfile.jvm` — based on `eclipse-temurin:21-jre-alpine`, non-root user (UID 1001), Quarkus app layout, port 8080. `bridge/docker-compose.yml` — single-service compose (image `ghcr.io/casehubio/iot-bridge:latest`, host network, env_file `.env`, volume mount for event persistence, health check via `/q/health/ready`).
+
+**Deployment guide**: `bridge/DEPLOYMENT.md` — architecture diagram, prerequisites, quick start, full configuration reference (bridge agent, event store, Home Assistant, OpenHAB config tables), network requirements, data persistence, updating, troubleshooting (health check failures, auto-discovery, cloud connection, event replay, memory), security considerations, multi-platform support (amd64, arm64).
+
+---
+
 ## Depends On
 
-Nothing in the casehubio ecosystem. `api` module: Pure Java SPIs + Mutiny (`provided` scope) + Jackson annotations for `DeviceTypeIdResolver` (iot#5). Provider modules depend on Quarkus REST Client, Jackson, and WebSocket/SSE extensions.
+Nothing in the casehubio ecosystem (except `casehub-neocortex` for CBR — `CbrCaseMemoryStore`, `CbrFeatureSchema`, `FeatureField`, `SimilaritySpec` used by webapp-api). `api` module: Pure Java SPIs + Mutiny (`provided` scope) + Jackson annotations for `DeviceTypeIdResolver` (iot#5). Provider modules depend on Quarkus REST Client, Jackson, and WebSocket/SSE extensions.
 
 ## Depended On By
 
@@ -147,3 +182,4 @@ Nothing in the casehubio ecosystem. `api` module: Pure Java SPIs + Mutiny (`prov
 | `casehub.iot.openhab.reconnect-base-seconds` | no | `5` | Backoff base |
 | `casehub.iot.openhab.reconnect-max-seconds` | no | `300` | Backoff cap |
 | `casehub.iot.openhab.coalesce-window-ms` | no | `50` | SSE event coalescing window |
+| `casehub.iot.openhab.thing-discovery-enabled` | no | `true` | Enable Thing-scoped discovery (Phase 3 of layered pipeline) |
