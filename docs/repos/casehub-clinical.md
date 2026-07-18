@@ -81,7 +81,7 @@ The tutorial structure emerges from the natural adoption sequence. Each layer ad
 
 **ClinicalCbrDomains**: domain constants for CBR storage — ADVERSE_EVENT, PROTOCOL_DEVIATION, PROTOCOL_AMENDMENT. Each domain stores precedent cases with outcome, features, and problem text.
 
-**Precedent storage**: observes CDI events (`AdverseEventReportedEvent`, `DeviationResolvedEvent`, `AmendmentResolvedEvent`) and persists precedent cases via `CbrCaseMemoryStore`. Structured features (CTCAE grade, deviation severity, amendment type) enable hybrid similarity (feature vector + semantic text).
+**Precedent storage**: `ClinicalCaseOutcomeObserver` implements engine `CaseOutcomeObserver` SPI — stores `PlanCbrCase` (with plan traces for routing enrichment) for adverse events via `CbrCaseMemoryStore`. Deviation and amendment writers still use CDI event observers (`DeviationResolvedEvent`, `AmendmentResolvedEvent`). Structured features (CTCAE grade, deviation severity, amendment type) enable hybrid similarity (feature vector + semantic text).
 
 ## REST Precedent Endpoints
 
@@ -89,7 +89,7 @@ Three precedent endpoints surface CBR similarity queries to the UI:
 
 | Endpoint | What it returns |
 |----------|-----------------|
-| `GET /trials/{t}/adverse-events/{aeId}/precedents` | Similar past AEs — feature vector similarity (CTCAE grade, AE type, demographics) + semantic text. Returns `AePrecedentResponse` with score, outcome, features, safety officer decision. |
+| `GET /trials/{t}/adverse-events/{aeId}/precedents` | Similar past AEs — feature vector similarity (CTCAE grade, AE type, demographics) + semantic text. Returns `AePrecedentResponse` with score, outcome, features, safety officer decision, `treatmentArm`, `priorAeCount`, and `List<PlanStepResponse> steps` (plan traces). |
 | `GET /trials/{t}/deviations/{devId}/precedents` | Similar past protocol deviations — plan-based similarity (PlanCbrCase) with deviation type, severity, PI decision, IRB outcome. Returns `DeviationPrecedentResponse`. |
 | `GET /trials/{t}/amendments/{amendmentId}/precedents` | Similar past protocol amendments — textual similarity (amendment description, IRB decision rationale). Returns `AmendmentPrecedentResponse`. |
 
