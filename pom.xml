@@ -1203,11 +1203,11 @@
                 <rules>
                   <bannedDependencies>
                     <excludes>
-                      <exclude>io.quarkus:quarkus-junit</exclude>
+                      <exclude>io.quarkus:quarkus-junit5</exclude>
                     </excludes>
                     <message>
-Banned dependency detected. Common typos:
-  io.quarkus:quarkus-junit → use io.quarkus:quarkus-junit5
+Banned dependency detected:
+  io.quarkus:quarkus-junit5 → renamed to io.quarkus:quarkus-junit in Quarkus 3.31+
                     </message>
                   </bannedDependencies>
                 </rules>
