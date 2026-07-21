@@ -1210,6 +1210,7 @@ Banned dependency detected:
   io.quarkus:quarkus-junit5 → renamed to io.quarkus:quarkus-junit in Quarkus 3.31+
                     </message>
                   </bannedDependencies>
+                  <dependencyConvergence/>
                 </rules>
               </configuration>
             </execution>
