@@ -1,8 +1,8 @@
 # Authentication & Authorization
 
-> **Scope:** Gateway topology, role conventions, outbound credential tiers, secrets management
+> **Scope:** Gateway topology, role conventions, resource ACL, outbound credential tiers, secrets management
 > **Audience:** All
-> **Key repos:** claudony (gateway), casehub-platform (OIDC), casehub-qhorus (channel ACL)
+> **Key repos:** claudony (gateway), casehub-platform (OIDC, ACL), casehub-qhorus (channel ACL)
 > **Protocols:** [auth-retrofit-readiness](https://github.com/casehubio/garden/blob/main/docs/protocols/casehub/auth-retrofit-readiness.md), [per-binding-credential-reference](https://github.com/casehubio/garden/blob/main/docs/protocols/casehub/per-binding-credential-reference.md)
 
 ## Gateway Topology
@@ -73,6 +73,46 @@ Role names used in `@RolesAllowed` annotations are CaseHub group names. Role nam
 **Convention:** role names are lowercase, domain-prefixed when ambiguous (e.g. `devtown-admin` if `admin` becomes overloaded).
 
 `@RolesAllowed` is inert until `casehub-platform-oidc` is on classpath and OIDC is configured.
+
+## Resource-Level ACL (`AccessControlProvider`)
+
+`@RolesAllowed` gates **endpoint** access by role. `AccessControlProvider` gates **resource** access by grant. They are complementary — an actor may have the `case-worker` role (endpoint access) but not a READ grant on `case:abc` (resource access).
+
+**SPI** (`casehub-platform-api`): 6 blocking methods on `AccessControlProvider`:
+
+| Method | Returns | Purpose |
+|---|---|---|
+| `canAccess(actorId, resourceId, action)` | `boolean` | Check if actor has the grant |
+| `grant(actorId, resourceId, action, expires)` | `void` | Create or update a grant (nullable expiry) |
+| `revoke(actorId, resourceId, action)` | `void` | Remove a specific grant |
+| `revokeAll(actorId, resourceId)` | `void` | Remove all grants for actor+resource |
+| `registerParent(childResourceId, parentResourceId)` | `void` | Set up parent inheritance |
+| `accessibleResources(actorId, resourceType, action)` | `List<String>` | List all resources of a type the actor can access |
+
+`AclAction` enum: `READ`, `WRITE`, `ADMIN`, `CLAIM`.
+
+**Resource IDs** follow `type:id` convention — `case:abc`, `planitem:pi1`, `workitem:w42`. `AclResourceType` holds the type constants.
+
+**Group-based grants:** grant to `"group:managers"` — at query time, `GroupMembershipProvider.groupsOf(actorId)` expands the actor's groups and checks grants for each.
+
+**Parent inheritance:** `registerParent("planitem:child", "case:parent")` — a grant on `case:parent` automatically covers `planitem:child`. Recursive traversal up to depth 20.
+
+**Default behavior:** `NoOpAccessControlProvider @DefaultBean` allows all — `canAccess()` returns `true`, other methods are no-ops. ACL enforcement is opt-in.
+
+### Wiring
+
+| Need | Add as compile dep |
+|---|---|
+| Testing | `casehub-platform-acl-inmem` — `@Alternative @Priority(10)`, volatile ConcurrentHashMap |
+| Production | `casehub-platform-acl-jpa` — Hibernate ORM Panache, PostgreSQL, audit logging |
+
+JPA backend requires Flyway location: `classpath:db/acl/migration`.
+
+Do NOT combine `acl-inmem` and `acl-jpa` in the same scope.
+
+### Known Gaps
+
+Tenant isolation on ACL queries is tracked in platform#203 (GroupMembershipProvider tenancyId) and platform#204 (AccessControlProvider query filtering). These are pre-release issues being addressed.
 
 ### Current Principal Identity
 
