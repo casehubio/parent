@@ -18,3 +18,5 @@ wksp
 .claude/settings.local.json
 
 .idea/
+.claude
+package-lock.json
