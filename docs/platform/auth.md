@@ -110,10 +110,6 @@ JPA backend requires Flyway location: `classpath:db/acl/migration`.
 
 Do NOT combine `acl-inmem` and `acl-jpa` in the same scope.
 
-### Known Gaps
-
-Tenant isolation on ACL queries is tracked in platform#203 (GroupMembershipProvider tenancyId) and platform#204 (AccessControlProvider query filtering). These are pre-release issues being addressed.
-
 ### Current Principal Identity
 
 `CurrentPrincipal` SPI in `casehub-platform-api`:
