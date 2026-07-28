@@ -259,6 +259,21 @@
         <artifactId>casehub-platform-subscriptions</artifactId>
         <version>${casehub.version}</version>
       </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-platform-view</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-platform-view-inmem</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-platform-view-jpa</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
 
       <!-- ================================================================ -->
       <!-- casehub-worker                                                   -->
