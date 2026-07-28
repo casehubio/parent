@@ -355,13 +355,38 @@ yarn test
 yarn typecheck
 ```
 
-### App Integration
+### App Integration — Maven SNAPSHOT (ADR-0001)
 
-Apps consume pages + blocks-ui via:
+Apps consume pages + blocks-ui via **Maven SNAPSHOT artifacts**, not npm packages directly. See [casehub-pages ADR-0001](https://github.com/casehubio/casehub-pages/blob/main/docs/adr/0001-cross-repo-frontend-dependency-management.md).
 
-1. **NPM packages:** `@casehubio/pages-runtime`, `@casehubio/pages-data`, `@casehubio/blocks-ui-core`, `@casehubio/data-table`, etc.
-2. **Quinoa:** Quarkus extension that serves the webapp bundle
-3. **registerPanel():** Apps register their panels at webapp startup
+**Three-tier consumption model:**
+
+| Boundary | Mechanism |
+|----------|-----------|
+| Within pages/blocks-ui monorepo | Yarn `workspace:*` (instant linking) |
+| Cross-repo (CaseHub apps ← pages/blocks-ui) | Maven SNAPSHOT via `portal:` resolutions |
+| External consumers (non-CaseHub) | Published npm packages |
+
+**How it works:**
+
+1. Pages and blocks-ui CI runs `yarn pack` on each package (resolves `workspace:*` → real versions), packages into Maven artifacts (`casehub-pages-npm`, `casehub-blocks-ui-npm`), and deploys to GitHub Maven Packages
+2. Consumer app's `pom.xml` declares Maven dependencies + `maven-dependency-plugin:unpack` extracts packages to `src/main/webui/.casehub-packages/`
+3. Consumer app's `package.json` uses `portal:` resolutions pointing to `.casehub-packages/`, preventing any npm registry lookups
+4. **Quinoa** runs `yarn install` (resolves from local portals) → `yarn build` → serves from `META-INF/resources/`
+
+**Local development:**
+
+```bash
+# In pages (or blocks-ui):
+yarn build && mvn -f npm-packages/pom.xml install
+
+# In consumer app:
+mvn quarkus:dev    # Maven unpacks packages from ~/.m2, Quinoa builds frontend
+```
+
+**Why Maven, not npm registry:** GitHub Packages npm requires auth even for public packages. Maven uses `GITHUB_TOKEN` (CI) or `~/.m2` (local) — no npm auth needed.
+
+**Releases:** Version bump → `mvn deploy` release artifact → consumer updates version in `pom.xml`. npm packages also published for external consumers.
 
 ## Extension Points
 

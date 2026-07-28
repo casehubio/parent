@@ -160,13 +160,13 @@ Backend Java module `casehub-pages-layout-sqlite` provides SQLite-backed persist
 
 ### Quinoa Integration Pattern
 
-Quarkus apps embed casehub-pages via the Quinoa extension. Zero-config bundling and hot reload.
+Quarkus apps embed casehub-pages via Quinoa + Maven SNAPSHOT dependency resolution ([ADR-0001](https://github.com/casehubio/casehub-pages/blob/main/docs/adr/0001-cross-repo-frontend-dependency-management.md)).
 
 **Typical Quarkus app structure:**
 ```
-src/main/webui/           # casehub-pages workspace
-  package.json
-  webpack.config.js
+src/main/webui/
+  package.json            # portal: resolutions to .casehub-packages/
+  .casehub-packages/      # Maven-unpacked @casehubio packages (gitignored)
   src/
     index.ts              # loadSite() entry point
     dashboards/
@@ -174,12 +174,13 @@ src/main/webui/           # casehub-pages workspace
 ```
 
 **Build flow:**
-1. Quinoa detects `package.json` in `src/main/webui/`
-2. Runs `yarn build` during Quarkus build
-3. Copies dist output to `META-INF/resources/`
-4. Serves as static assets at runtime
+1. Maven `initialize` phase unpacks `casehub-pages-npm` (and `casehub-blocks-ui-npm`) to `.casehub-packages/`
+2. Quinoa detects `package.json`, runs `yarn install` (resolves `@casehubio` packages from local portals — no npm registry)
+3. Quinoa runs `yarn build`, copies dist to `META-INF/resources/`
 
-**Hot reload:** Quinoa proxies Webpack dev server during `quarkus:dev` — changes to `main.yaml` or TypeScript sources trigger instant browser refresh.
+**Local dev:** `yarn build && mvn -f npm-packages/pom.xml install` in casehub-pages first, then `mvn quarkus:dev` in the consumer app.
+
+**Hot reload:** Quinoa proxies the dev server during `quarkus:dev` — changes to `main.yaml` or TypeScript sources trigger instant browser refresh.
 
 ---
 
