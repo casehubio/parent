@@ -179,6 +179,14 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: mvn install -N --batch-mode -q
 
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Enable Corepack
+        run: corepack enable
+
       # ── Module builds ────────────────────────────────────────────────────────
       #
       # Each step:
@@ -483,7 +491,7 @@ jobs:
           case "$D" in
             SKIP) echo "⏭️  pages: SKIP" ;;
             TEST) echo "⏭️  pages: SKIP (yarn-only, no separate test phase)" ;;
-            BUILD) cd casehub/pages && yarn install && yarn build || RC=$? ;;
+            BUILD) cd casehub/pages && yarn install && yarn build && mvn -f npm-packages/pom.xml --batch-mode install || RC=$? ;;
           esac
           [ $RC -eq 0 ] && echo "success" > .build-outcomes/pages || echo "failure" > .build-outcomes/pages
           echo $((SECONDS - START)) > .build-times/pages
@@ -506,7 +514,7 @@ jobs:
           case "$D" in
             SKIP) echo "⏭️  blocks-ui: SKIP" ;;
             TEST) echo "⏭️  blocks-ui: SKIP (yarn-only, no separate test phase)" ;;
-            BUILD) cd casehub/blocks-ui && yarn install && yarn build || RC=$? ;;
+            BUILD) cd casehub/blocks-ui && mvn -f npm-packages/pom.xml --batch-mode initialize && yarn install && yarn build || RC=$? ;;
           esac
           [ $RC -eq 0 ] && echo "success" > .build-outcomes/blocks-ui || echo "failure" > .build-outcomes/blocks-ui
           echo $((SECONDS - START)) > .build-times/blocks-ui
