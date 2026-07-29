@@ -112,6 +112,27 @@ Household tasks are now formal `WorkItem`s: SLA-enforced, delegable, auditable. 
 - Entity package: `io.casehub.life.app.ledger` (not `entity/ledger` — multi-PU prefix matching constraint forces app-level package)
 - 90 tests pass (life#5). Design spec: `docs/specs/2026-05-30-layer4-casehub-ledger-design.md`
 
+## Frontend — life-ui
+
+Lit 3.x single-page application served via Quarkus Quinoa (2.8.3). Hash-routed app shell with two views.
+
+| View | What it shows |
+|------|--------------|
+| Dashboard (`home-view`) | KPI metrics (active cases by domain, SLA compliance, pending actions), case statistics |
+| Inbox (`inbox-view`) | Work-item-workbench composition — filterable inbox with detail pane |
+
+**Build:** Vite with aliases resolving `@casehubio/blocks-ui-*` and `@casehubio/pages-*` from Maven SNAPSHOT artifacts (extracted to `.casehub-packages/` via `mvn initialize`). No npm cross-repo `file:` references — see [casehub-pages ADR-0001](https://github.com/casehubio/casehub-pages/blob/main/docs/adr/0001-cross-repo-frontend-dependency-management.md).
+
+**blocks-ui components consumed:** work-item-workbench, work-item-inbox, work-item-detail, work-item-row, kpi-metric-row, sla-indicator, grouped-data-view, split-workbench, detail-pane, list-pane, notification-inbox, sla-breach-policy.
+
+**pages packages consumed:** pages-component, pages-data, pages-primitives, pages-table, pages-ui-tokens.
+
+**Profiles:** Quinoa disabled by default (`quarkus.quinoa.enabled=false`) and in tests. Enabled in `dev` and `demo` profiles only.
+
+**Demo mode:** `quarkus.profile=demo` — H2 in-memory, Flyway demo seeds at `db/life/demo/` (V9000+ range), OIDC disabled. Start with: `JAVA_HOME=$(/usr/libexec/java_home -v 26) mvn quarkus:dev -pl app -Dquarkus.profile=demo`
+
+Delivered in life#74 (Household Hub UI — Phase 1 MVP).
+
 ## What It Does NOT Own
 
 Foundation capabilities that casehub-life consumes but does not implement:
