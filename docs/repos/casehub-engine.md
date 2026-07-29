@@ -18,7 +18,7 @@ Hybrid choreography+orchestration coordination engine for multi-agent work. Impl
 | `casehub-engine-api` | `api` | Pure Java + langchain4j | SPI interfaces, domain model (`Worker`, `Binding`, `Capability`, `HumanTaskTarget`), `Agent` wrapper, `AgentRoutingStrategy` SPI |
 | `casehub-engine-common` | `common` | Pure Java (no CDI) | Domain objects (`CaseMetaModel`, `CaseInstance`), persistence SPIs, `JQEvaluator`, `EventLog`. `ExpressionEngine.extractString(ExpressionEvaluator, CaseContext): Optional<String>` — new default method (engine#549): dispatches via `ExpressionEngineRegistry.extractString()`; registry catches `UnsupportedOperationException` (engine doesn't override) → `Optional.empty()` + WARN; `JQExpressionEngine` overrides: evaluates against WORKING panel, emptiness guard, `isTextual()` guard. |
 | `casehub-engine` | `runtime` | Quarkus module | Choreography handlers, orchestration, worker scheduling, expression engine |
-| `casehub-engine-blackboard` | `blackboard` | Optional module | CMMN/Blackboard orchestration — `BlackboardRegistry`, `PlanItem`, `SubCase` lifecycle |
+| `casehub-engine-planning` | `planning` | Optional module | CMMN planning orchestration — `PlanningRegistry`, `PlanItem`, `SubCase` lifecycle |
 | ~~`casehub-engine-work-adapter`~~ | ~~`work-adapter`~~ | **Removed** | Relocated to `casehub-work` as `casehub-work-engine-adapter` (engine-adapter module) |
 | `casehub-engine-resilience` | `resilience` | Optional module | Dead Letter Queue, PoisonPill detection, backoff strategies, case timeout |
 | `casehub-engine-ledger` | `ledger` | Optional module | Tamper-evident case lifecycle ledger; extends `casehub-ledger` entry model; `TrustWeightedAgentStrategy` (`@Alternative @Priority(1)`) |
@@ -213,7 +213,7 @@ Optional module that bridges qhorus `MessageReceivedEvent` to casehub-work WorkI
 - `InboundWorkItemPolicy @FunctionalInterface` — SPI in the bridge module (not in `api/spi/` — references `WorkItemCreateRequest` from casehub-work); policies must self-filter by channel/messageType
 - `createdBy` stamped unconditionally as `"casehub-engine-inbound"`
 - At-most-once delivery via qhorus `afterCompletion` callback
-- Test setup: `StubWorkloadProvider` required (`WorkItemAssignmentService` direct-injects `WorkloadProvider`); no `casehub-engine-persistence-memory` or `casehub-engine-blackboard` needed (10 tests green)
+- Test setup: `StubWorkloadProvider` required (`WorkItemAssignmentService` direct-injects `WorkloadProvider`); no `casehub-engine-persistence-memory` or `casehub-engine-planning` needed (10 tests green)
 
 ### ActionRiskClassifier SPI (`api/spi/` — engine#402)
 
@@ -351,7 +351,7 @@ Optional integration with `casehub-eidos-api`. `WorkOrchestrator` probes agent-b
 | Repo | Module | How |
 |---|---|---|
 | `claudony` | `claudony-casehub` | Implements the 4 worker provisioner SPIs, provides `ClaudonyReactiveCaseChannelProvider` |
-| `devtown` | `app` | Runtime dep — `casehub-work-engine-adapter` + `casehub-engine-blackboard` for HITL |
+| `devtown` | `app` | Runtime dep — `casehub-work-engine-adapter` + `casehub-engine-planning` for HITL |
 | `casehub-clinical` | `runtime` | Runtime dep — adverse event case coordination |
 
 ---

@@ -68,7 +68,7 @@ casehub-parent              (BOM — publish first; all others import it)
   — Application tier (opt-in, off by default in CI): see APPLICATIONS.md —
   casehub-life              (depends on full foundation stack + casehub-openclaw as WorkerProvisioner)
   casehub-drafthouse        (depends on casehub-qhorus; engine + ledger + work added later)
-  quarkmind                 (depends on casehub-poc + casehub-engine-api + casehub-engine-blackboard; migrating from poc to engine — casehubio/quarkmind#193)
+  quarkmind                 (depends on casehub-poc + casehub-engine-api + casehub-engine-planning; migrating from poc to engine — casehubio/quarkmind#193)
   casehub-soc               (depends on full foundation stack — engine, ledger, work, qhorus, worker, platform)
   casehub-fsitrading        (depends on full foundation stack — engine, ledger, work, qhorus, worker, platform)
 ```
@@ -125,7 +125,7 @@ casehub-parent              (BOM — publish first; all others import it)
 | `casehub-engine-api` | `devtown` | `review` | engine types |
 | `casehub-engine` (runtime) | `devtown` | `app` | YamlCaseHub, CaseHubRuntime |
 | `casehub-engine-work-adapter` | `devtown` | `app` | HITL bridge — HumanTaskScheduleHandler + WorkItemLifecycleAdapter |
-| `casehub-engine-blackboard` | `devtown` | `app` | BlackboardRegistry — transitive via work-adapter; required for plan item tracking |
+| `casehub-engine-planning` | `devtown` | `app` | BlackboardRegistry — transitive via work-adapter; required for plan item tracking |
 | `casehub-engine-ledger` | `claudony` | `casehub` | lineage queries |
 | `casehub-engine-ledger` | `devtown` | `app` | trust-weighted agent routing — activates `TrustWeightedAgentStrategy` + `WorkerDecisionEventCapture` |
 | `casehub-platform-config` | `devtown` | `app` | YAML-backed preference provider for trust routing policies (`trust-routing.yaml`) |
@@ -135,7 +135,7 @@ casehub-parent              (BOM — publish first; all others import it)
 | `casehub-neocortex-inference-api` | `casehub-eidos` | `runtime` | `ScalarRegressor` — dynamic epistemic domain confidence estimation (future) |
 | `casehub-neocortex-inference-api` | `casehub-engine` | `runtime` | `NliClassifier` — hallucination detection hook (future, #154) |
 | `casehub-engine-api` | `quarkmind` | `quarkmind-agent` | `CaseContext` interface — Phase 1 plugin API migration (quarkmind#193) |
-| `casehub-engine-blackboard` | `quarkmind` | `quarkmind-agent` | `CaseContextImpl` — test scope only, for synthetic `CaseContext` construction |
+| `casehub-engine-planning` | `quarkmind` | `quarkmind-agent` | `CaseContextImpl` — test scope only, for synthetic `CaseContext` construction |
 | `casehub-neocortex-rag-api` | `casehub-engine` | `runtime` | `CaseRetriever`, `ReactiveCaseRetriever` — fact space prompt compiler context injection (future) |
 | `casehub-neocortex-rag-api` | `Hortora/engine` | garden retrieval engine | `CaseRetriever`, `EmbeddingIngestor` SPIs — replaces duplicated Qdrant/ingestion code; tenancy via `TenantGuard` (neocortex#35, #36) |
 | `casehub-neocortex-rag` | `Hortora/engine` | garden retrieval engine | RAG pipeline implementation (Qdrant, hybrid RRF, ingestion bridge) |
@@ -170,7 +170,7 @@ casehub-parent              (BOM — publish first; all others import it)
 | `casehub-platform` | `casehub-drafthouse` | `runtime` | `MockCurrentPrincipal @DefaultBean` — satisfies `CurrentPrincipal` injection in Qhorus JPA stores at Quarkus augmentation time (drafthouse#44) |
 | `casehub-engine-ledger` | `casehub-aml` | `app` | Layer 6: trust-weighted routing — activates `TrustWeightedAgentStrategy @ApplicationScoped` and `WorkerDecisionEventCapture`; local V2002/V2003 migrations for `case_ledger_entry` and `worker_decision_entry` join tables (pending engine#395 scoping fix) |
 | `casehub-engine-work-adapter` | `casehub-aml` | `app` | Layer 9: `ActionGateWorkItemHandler` + `WorkItemLifecycleAdapter` — oversight gate WorkItem creation and gate approval routing |
-| `casehub-engine-blackboard` | `casehub-aml` | `app` | Layer 9: `BlackboardRegistry` — required for gate signal routing; transitive via work-adapter |
+| `casehub-engine-planning` | `casehub-aml` | `app` | Layer 9: `BlackboardRegistry` — required for gate signal routing; transitive via work-adapter |
 
 | `casehub-platform` | `casehub-clinical` | `runtime` | `@DefaultBean` mocks for casehub-engine CDI wiring |
 | `casehub-platform-expression` | `casehub-clinical` | `runtime` | `JQEvaluator` for engine expression evaluation |

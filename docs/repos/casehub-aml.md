@@ -117,7 +117,7 @@ casehub-aml
   → casehub-neocortex-memory-inmem (Layer 8: in-memory CaseMemoryStore for test isolation)
   → casehub-blocks                 (reusable building blocks — routing, oversight, conversation)
   → casehub-work-engine-adapter    (Layer 9: ActionGateWorkItemHandler + WorkItemLifecycleAdapter for oversight gate)
-  → casehub-engine-blackboard      (Layer 9: BlackboardRegistry — required for gate signal routing; transitive via work-adapter)
+  → casehub-engine-planning        (Layer 9: PlanningRegistry — required for gate signal routing; transitive via work-adapter)
   → casehub-engine-actor-state     (GET /actors/{actorId}/state view)
 ```
 
