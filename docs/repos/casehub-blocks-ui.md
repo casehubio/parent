@@ -32,7 +32,7 @@ Domain-aware but app-agnostic — components know about trust scores, case timel
 | `components/split-workbench` | Generic split-pane layout shell — draggable divider, localStorage-persisted ratio, CSS container query responsive mode (single-panel below 768px), selection coordination via pages-event topics | Beta |
 | `components/list-pane` | Data list wrapping `<pages-table>` — paginated mode, single selection, client-sort/filter, emits selection events on topic. Uses DataSourceMixin for endpoint-driven data. | Beta |
 | `components/detail-pane` | Tabbed detail view — lazily creates tab panels via `TabDefinition[]`, receives selected item via topic events, keyboard tab navigation | Beta |
-| `components/grouped-data-view` | Grouped tabular data — wraps `<pages-grouped-view>`, three presets (sectioned/spreadsheet/list), configurable group ordering/styling, expand/collapse | Beta |
+| `components/grouped-data-view` | Grouped data view — items grouped by column key with per-group pages-table rendering | Beta |
 | `components/work-item-inbox` | Work item inbox — queue pill bar, scope context, filter bar, SSE lifecycle, three-tab perspective (My Work / Claimable / All) | Beta |
 | `components/work-item-row` | Single work item row component (legacy — inbox now uses pages-table) | Deprecated |
 | `components/work-item-detail` | Work item detail panel — action bar, activity tab, relations tab with semantic type inverses | Beta |
@@ -42,14 +42,22 @@ Domain-aware but app-agnostic — components know about trust scores, case timel
 | `components/kpi-metric-row` | KPI metric cards — responsive grid with sparklines, trends, status colours, density property (comfortable/compact/dense), reactive endpoint | Stable |
 | `components/approval-gate` | Approval gate — structured decision point with quorum, evidence slots, SLA integration, confirmation dialog | Beta |
 | `components/audit-trail-viewer` | Audit trail viewer — ledger entries with pages-table, Merkle verification banner, attestations, actor/type/date filters, GDPR erasure handling | Beta |
-| `components/blocks-timeline` | Pluggable timeline — strategy-based content (event chronology, state progression, commitment lifecycle), three layouts (vertical, horizontal, compact), render callbacks. Replaces case-timeline. | Beta |
-| `components/trust-score-panel` | Trust score panel — SVG gauge, per-capability breakdown table, trend sparkline, maturity badges, compact badge mode | Beta |
-| `components/channel-activity` | Qhorus channel activity — 8 sub-elements (feed, message, reaction-bar, input, emoji-picker, thread, nav, member-panel). Message grouping (2-min window), speech-act types (QUERY, COMMAND, RESPONSE, etc.), commitment states, DOMPurify + marked rendering. Promoted from connectors. | Beta |
-| `components/similarity-panel` | Similar past cases — similarity bar + outcome badges via pages-table. Uses DataSourceMixin or direct data. Promoted from clinical. | Beta |
-| `components/compliance-summary` | Regulation compliance grid — status badges (MET/PARTIAL/GAP/BREACHED), evidence links via pages-table. Uses DataSourceMixin. Promoted from clinical. | Beta |
-| `components/trust-feedback-display` | Post-gate trust score delta — decision/attestation badges, trust before→after, full card and compact modes. Promoted from clinical. | Beta |
-| `components/sla-breach-policy` | SLA breach escalation tiers — active tier highlighting, pulseAnimation on active tier, optional embedded sla-indicator countdown. Promoted from clinical. | Beta |
-| `components/gdpr-erasure-action` | GDPR data erasure form — two-phase (input → confirmation dialog → receipt), blocks-confirm-dialog with persistent/danger variant, ALREADY_WITHDRAWN handling. Promoted from clinical. | Beta |
+| `components/blocks-timeline` | Pluggable timeline — vertical, horizontal, compact layouts with strategy-based content | Beta |
+| `components/trust-score-panel` | Agent trust score visualisation — Bayesian Beta scores, trend lines, per-capability breakdown | Beta |
+| `components/channel-activity` | Qhorus channel activity — message feed, channel nav, member panel, speech-act badges | Beta |
+| `components/commitment-viz` | Commitment lifecycle visualization — state pills, transition badges, range bars | Beta |
+| `components/similarity-panel` | Similar past cases — similarity scores, outcomes, resolution times via pages-table | Beta |
+| `components/compliance-summary` | Regulation compliance grid — status badges, evidence links via pages-table | Beta |
+| `components/trust-feedback-display` | Post-gate trust score delta — decision, attestation, trust before/after with compact mode | Beta |
+| `components/sla-breach-policy` | SLA breach escalation tiers — active tier highlighting, optional live countdown via sla-indicator | Beta |
+| `components/gdpr-erasure-action` | GDPR data erasure form — subject lookup, reason selection, confirmation dialog, receipt | Beta |
+| `components/case-explorer` | Composable case explorer — universal entity browser with registration, state/command SPI, and management actions | Beta |
+| `components/preferences-editor` | Preferences editor — tree-table UI for scope-aware preference management | Beta |
+| `components/routing-rationale` | Trust-weighted routing decision explanation — score vs threshold, alternatives, phases | Beta |
+| `components/session-detail` | Session detail panel — session metadata, activity log, state display | Beta |
+| `components/session-list` | Session list — filterable session table with status badges | Beta |
+| `components/session-workbench` | Session workbench — split-pane layout with session list and detail panels | Beta |
+| `components/trust-workbench` | Composite trust visibility — score panel, routing history, feedback display | Beta |
 
 **Maturity levels:**
 - **Stable** — API locked, used in production apps, full test coverage

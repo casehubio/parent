@@ -37,8 +37,9 @@ The tutorial structure emerges from the natural adoption sequence. Each layer ad
 - Capability tags: `eligibility-screening`, `safety-monitoring`, `protocol-review`, `irb-consultation`, `pi-authorisation`, `data-safety-monitoring`, `regulatory-submission`, `trial-supervisor`
 - Trust dimensions: `safety-accuracy`, `eligibility-precision`, `protocol-adherence`
 - Multi-site trial `CasePlanModel` — site-level sub-cases with trial-level aggregation
-- Adverse event escalation — 24h/7d GCP SLA WorkItems with CTCAE grading
+- Adverse event escalation — 24h/7d GCP SLA WorkItems with CTCAE grading; endpoint `POST /trials/{t}/escalation-plans` (clinical#116)
 - PI authorisation — formal COMMAND creates Commitment; deviation requires named PI approval; MAJOR deviations trigger GCP §4.5 sponsor notification via `SponsorNotifier` SPI (`api/spi/`) — durable delivery via `DurableSponsorNotifier` (clinical#21)
+- `ClinicalPlanAdapter` — adopts `PlanAdapter` SPI for CBR plan reuse; adapts clinical plan steps based on patient features and context
 - `SafetyOfficerNotifier` SPI (`api/spi/`) — observes `AdverseEventReportedEvent` (Grade 3+ only); dispatches via casehub-connectors-core; writes `SafetyOfficerNotificationLedgerEntry` for GCP/FDA audit — clinical#11 ✅
 
   **`DurableSponsorNotifier`** (replaces `DefaultSponsorNotifier`): `notify()` persists a `SponsorNotification` entity in PENDING state and returns immediately; async delivery via `SponsorNotificationRetryJob` (@Scheduled, poll-based). `SponsorNotificationRetryPolicy` (SingleValuePreference, casehub-platform-config) controls `maxAttempts`, `retryInterval`, optional `backoffMultiplier` (≥1.0, default 1.0 = fixed interval), and optional `maxInterval` (cap on computed delay). Config format: `"3,30"` or `"3,15,2.0"` or `"3,15,2.0,120"`. `SponsorNotificationLedgerEntry` (qhorus datasource, V2020) records per-attempt outcomes; `subjectId = notificationId` for GDPR-independent erasure. `SponsorNotificationDeliveryService` three-phase pattern (load → connector → record). New deps: `casehub-platform-api` in `api/pom.xml`, `casehub-platform-config` + `casehub-ledger-memory` (test) in `runtime/pom.xml`.
@@ -79,23 +80,28 @@ The tutorial structure emerges from the natural adoption sequence. Each layer ad
 
 **ClinicalCbrService** (clinical#116): central facade for CBR `CbrCaseMemoryStore` operations. Owns domain-specific feature extraction and precedent query logic. Used by REST resources for precedent retrieval.
 
-**ClinicalCbrDomains**: domain constants for CBR storage — ADVERSE_EVENT, PROTOCOL_DEVIATION, PROTOCOL_AMENDMENT. Each domain stores precedent cases with outcome, features, and problem text.
+**ClinicalCbrDomains**: domain constants for CBR storage — ADVERSE_EVENT, PROTOCOL_DEVIATION, PROTOCOL_AMENDMENT, CLINICAL_AE_TRAJECTORY, CLINICAL_SITE_ENROLLMENT. Each domain stores precedent cases with outcome, features, and problem text.
+
+**Trajectory tracking** (clinical#117): `AeTrajectoryBuilder` and `SiteEnrollmentTrajectoryBuilder` generate trajectory data; `AeTrajectoryAlertService` and `SiteEnrollmentAlertService` detect deviation from expected patterns; `TrialCompletionSiteTrajectoryWriter` records site-level trajectories for trial completion CBR. `AeTrajectoryAlertEvent`, `SiteEnrollmentAlertEvent`, `TrialStatusChangedEvent` carry alert notifications.
 
 **Precedent storage**: `ClinicalCaseOutcomeObserver` implements engine `CaseOutcomeObserver` SPI — stores `PlanCbrCase` (with plan traces for routing enrichment) for adverse events via `CbrCaseMemoryStore`. Deviation and amendment writers still use CDI event observers (`DeviationResolvedEvent`, `AmendmentResolvedEvent`). Structured features (CTCAE grade, deviation severity, amendment type) enable hybrid similarity (feature vector + semantic text).
 
 ## REST Precedent Endpoints
 
-Three precedent endpoints surface CBR similarity queries to the UI:
+Five precedent endpoints surface CBR similarity queries to the UI:
 
 | Endpoint | What it returns |
 |----------|-----------------|
 | `GET /trials/{t}/adverse-events/{aeId}/precedents` | Similar past AEs — feature vector similarity (CTCAE grade, AE type, demographics) + semantic text. Returns `AePrecedentResponse` with score, outcome, features, safety officer decision, `treatmentArm`, `priorAeCount`, and `List<PlanStepResponse> steps` (plan traces). |
 | `GET /trials/{t}/deviations/{devId}/precedents` | Similar past protocol deviations — plan-based similarity (PlanCbrCase) with deviation type, severity, PI decision, IRB outcome. Returns `DeviationPrecedentResponse`. |
 | `GET /trials/{t}/amendments/{amendmentId}/precedents` | Similar past protocol amendments — textual similarity (amendment description, IRB decision rationale). Returns `AmendmentPrecedentResponse`. |
+| `GET /trajectory` | AE trajectory precedents — returns `AeTrajectoryPrecedentResponse` with similar past AE trajectories, deviation alerts, and outcome patterns. |
+| `GET /trajectory/matches` | Site enrollment trajectory matches — returns `SiteEnrollmentTrajectoryMatch` with similar enrollment patterns across sites. |
+| `GET /enrollment-trajectory` | Trial completion site trajectory precedents — returns `TrialCompletionSiteTrajectoryResponse` with past trial completion patterns by site. |
 
 **Query parameters:** `limit` (default 5, max 20), `minScore` (default 0.5).
 
-**Security:** all three endpoints require `TrialMembership` check — user must be a member of the trial (PI, site coordinator, or safety officer).
+**Security:** all endpoints require `TrialMembership` check — user must be a member of the trial (PI, site coordinator, or safety officer).
 
 ## Web UI (blocks-ui migration)
 
