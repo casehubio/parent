@@ -27,6 +27,7 @@ The design follows the Kubernetes controller pattern: desired state is declarati
 | `examples/pipeline/` | — | Data pipeline domain example: medallion-layered data pipeline (sources, cleansers, enrichers, transformers, validators, sinks, AI review, human review) with `PipelineGoalCompiler`, multiple fault policies (`SchemaDriftFaultPolicy`, `QuarantineFaultPolicy`, `ProvisionEscalationFaultPolicy`), and `PipelineVisualizer`. Also demonstrates engine-adapter integration via `PipelineCaseTransitionTest`. |
 | `examples/spatial/` | — | Battlefield-themed spatial/vector POC. Graph sufficiency research exploring how desired-state reconciliation handles spatial domains: `TerrainGrid`/`TerrainCell`/`TerrainType`, `FogOfWar` (vision-based reveal), `BattlefieldWorld` (units, scouts, zone activation), `AttackGoalCompiler`, `DefenseGoalCompiler`, `DistributionGoalCompiler`, `ZoneRebalanceFaultPolicy`, `GridRenderer`. Tests include situation detection, force distribution, fog-of-war, defense posture. |
 | `examples/expansion/` | — | Build-then-defend lifecycle scenario — primary test vehicle for `CompilationResult.Lifecycle` phase transitions. `ExpansionGoalCompiler` produces lifecycle with "build" phase (probe → nexus → pylon → cannon) and "defend" phase (`CompletionCondition.never()`). `ExpansionSituationRecompiler` escalates defense posture to FORTIFY on situation. Node types: PROBE, NEXUS, PYLON, CANNON, PATROL, MONITOR, RESPONSE. |
+| `persistence-jpa/` | `casehub-desiredstate-persistence-jpa` | JPA-backed persistence tier: `JpaFaultCountStore` implements `FaultCountStore` with Flyway migration at `db/desiredstate/migration/`. Tier 2 in CDI priority ladder — yields to application-provided stores. |
 
 ---
 
@@ -113,6 +114,18 @@ Two distinct human-in-the-loop patterns:
 ### EventSource
 
 SPI: `stream() → Multi<StateEvent>`. The reconciliation loop subscribes to this for event-driven triggers. `StateEvent` carries `nodeId`, `newStatus`, and optional `detail`.
+
+### GlobalReconciliationListener
+
+SPI: `onReconciliationCompleted(ReconciliationEvent)`. Application-scoped listener fired for all tenants on every reconciliation cycle. `ReconciliationEvent` carries `tenancyId`, `timestamp`, `cycleResult` (SUCCESS, PARTIAL_FAILURE, FAILED), and `reconciliationMetrics` (node counts, drift counts, transition counts). Use for cross-tenant analytics, auditing, and metric aggregation.
+
+### FaultCountStore / DefaultFaultCountStore
+
+SPI: `FaultCountStore` — persistence abstraction for tracking fault counts per node. Used by `FaultPolicyEngine` to enforce retry limits and backoff policies. Two implementations:
+- `InMemoryFaultCountStore` (API module) — simple in-memory map, resets on restart.
+- `JpaFaultCountStore` (persistence-jpa module) — durable JPA-backed storage with Flyway migration.
+
+`DefaultFaultCountStore` (runtime module) — `@DefaultBean` wrapper that yields to `JpaFaultCountStore` when persistence-jpa is on classpath. Wraps `InMemoryFaultCountStore` by default. CDI priority ladder: custom app store (highest) → JPA store (tier 2) → in-memory default (tier 3).
 
 ---
 
