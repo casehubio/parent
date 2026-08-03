@@ -92,11 +92,11 @@ foundation, not as a shared application library.
 
 | Repo | Raw URL |
 |------|---------|
-| `casehub-devtown` | https://raw.githubusercontent.com/casehubio/parent/main/docs/repos/casehub-devtown.md |
-| `casehub-aml` | https://raw.githubusercontent.com/casehubio/parent/main/docs/repos/casehub-aml.md |
-| `casehub-clinical` | https://raw.githubusercontent.com/casehubio/parent/main/docs/repos/casehub-clinical.md |
-| `casehub-life` | https://raw.githubusercontent.com/casehubio/parent/main/docs/repos/casehub-life.md |
-| `casehub-drafthouse` | https://raw.githubusercontent.com/casehubio/parent/main/docs/repos/casehub-drafthouse.md |
-| `quarkmind` | https://raw.githubusercontent.com/casehubio/parent/main/docs/repos/quarkmind.md |
-| `casehub-soc` | https://raw.githubusercontent.com/casehubio/parent/main/docs/repos/casehub-soc.md |
-| `casehub-fsitrading` | https://raw.githubusercontent.com/casehubio/parent/main/docs/repos/casehub-fsitrading.md |
+| `casehub-devtown` | https://raw.githubusercontent.com/casehubio/parent/main/docs/repos/casehub-devtown/consumer-guide.md |
+| `casehub-aml` | https://raw.githubusercontent.com/casehubio/parent/main/docs/repos/casehub-aml/consumer-guide.md |
+| `casehub-clinical` | https://raw.githubusercontent.com/casehubio/parent/main/docs/repos/casehub-clinical/consumer-guide.md |
+| `casehub-life` | https://raw.githubusercontent.com/casehubio/parent/main/docs/repos/casehub-life/consumer-guide.md |
+| `casehub-drafthouse` | https://raw.githubusercontent.com/casehubio/parent/main/docs/repos/casehub-drafthouse/consumer-guide.md |
+| `quarkmind` | https://raw.githubusercontent.com/casehubio/parent/main/docs/repos/quarkmind/consumer-guide.md |
+| `casehub-soc` | https://raw.githubusercontent.com/casehubio/parent/main/docs/repos/casehub-soc/consumer-guide.md |
+| `casehub-fsitrading` | https://raw.githubusercontent.com/casehubio/parent/main/docs/repos/casehub-fsitrading/consumer-guide.md |

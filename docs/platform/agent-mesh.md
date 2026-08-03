@@ -141,7 +141,7 @@ Implementations register for a specific channel and receive `post()` calls when 
 
 For cluster-scoped delivery across fleet nodes, use `ChannelActivityBroadcaster` SPI with PostgreSQL LISTEN/NOTIFY implementation (`casehub-qhorus-postgres-broadcaster`).
 
-See [qhorus messaging architecture](https://github.com/casehubio/qhorus/blob/main/docs/messaging-architecture.md) and [casehub-qhorus deep-dive](repos/casehub-qhorus.md).
+See [qhorus messaging architecture](https://github.com/casehubio/qhorus/blob/main/docs/messaging-architecture.md) and [casehub-qhorus deep-dive](repos/casehub-qhorus/consumer-guide.md).
 
 ## Service Facade Interfaces
 

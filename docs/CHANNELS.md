@@ -444,7 +444,7 @@ The channel taxonomy draws on established multi-agent systems research:
 
 - `docs/platform/capability-ownership.md` — channel SPIs, mesh primitives
 - `docs/LIFECYCLE.md` — state machine taxonomy (companion document)
-- `docs/repos/casehub-qhorus.md` — qhorus deep-dive (normative layout detail)
+- `docs/repos/casehub-qhorus/consumer-guide.md` — qhorus deep-dive (normative layout detail)
 - parent#93 — coordination channel extraction (CLOSED — shipped)
 - parent#294 — Reusable Platform Primitives epic
 - `casehub/garden: docs/protocols/casehub/qhorus-consumer-integration-pattern.md`

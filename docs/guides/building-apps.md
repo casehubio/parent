@@ -66,7 +66,7 @@ Every CaseHub application follows this pattern:
    - **Real-time agent coordination** (no human gates) → start from QuarkMind
    - **Content review / deliberation** → start from Drafthouse or DevTown
 
-2. **Read the deep-dive** — [repos/casehub-{closest-app}.md](../repos/)
+2. **Read the deep-dive** — [repos/casehub-{closest-app}/consumer-guide.md](../repos/)
 
 3. **Follow the layer progression** — see §Layer Progression below
 
@@ -79,14 +79,14 @@ Every CaseHub application follows this pattern:
 ### Case Types
 
 **Shared pattern:** CaseHub apps define case models via YAML (`YamlCaseHub`) or Java DSL (`TypedCaseHub`). Engine executes them.  
-→ [repos/casehub-engine.md](../repos/casehub-engine.md)
+→ [repos/casehub-engine/consumer-guide.md](../repos/casehub-engine/consumer-guide.md)
 
 **Per-app:**
-- **AML:** [casehub-aml.md](../repos/casehub-aml.md) — investigation case with adaptive paths (entity type, PEP detection)
-- **Clinical:** [casehub-clinical.md](../repos/casehub-clinical.md) — trial coordination, AE escalation, protocol deviation, eligibility screening, regulatory submission, protocol amendment
-- **DevTown:** [casehub-devtown.md](../repos/casehub-devtown.md) — PR review with content-driven routing (security flags, architecture changes)
-- **Life:** [casehub-life.md](../repos/casehub-life.md) — 6 case hubs (appointment, home maintenance, travel, care, contractor, financial review)
-- **QuarkMind:** [quarkmind.md](../repos/quarkmind.md) — per-tick agent dispatch via blackboard
+- **AML:** [casehub-aml.md](../repos/casehub-aml/consumer-guide.md) — investigation case with adaptive paths (entity type, PEP detection)
+- **Clinical:** [casehub-clinical.md](../repos/casehub-clinical/consumer-guide.md) — trial coordination, AE escalation, protocol deviation, eligibility screening, regulatory submission, protocol amendment
+- **DevTown:** [casehub-devtown.md](../repos/casehub-devtown/consumer-guide.md) — PR review with content-driven routing (security flags, architecture changes)
+- **Life:** [casehub-life.md](../repos/casehub-life/consumer-guide.md) — 6 case hubs (appointment, home maintenance, travel, care, contractor, financial review)
+- **QuarkMind:** [quarkmind.md](../repos/quarkmind/consumer-guide.md) — per-tick agent dispatch via blackboard
 
 ### Trust Routing
 
@@ -94,22 +94,22 @@ Every CaseHub application follows this pattern:
 → [platform/routing.md](../platform/routing.md)
 
 **Per-app:**
-- **AML:** [casehub-aml.md](../repos/casehub-aml.md) §Layer 6 — `AmlTrustRoutingPolicyProvider`, per-capability thresholds
-- **Clinical:** [casehub-clinical.md](../repos/casehub-clinical.md) §Layer 7 — safety monitoring threshold 0.75, quality floor 0.70
-- **DevTown:** [casehub-devtown.md](../repos/casehub-devtown.md) §Layer 6 — `review-thoroughness`, `false-positive-rate`
-- **Life:** [casehub-life.md](../repos/casehub-life.md) §Layer 6 — `deadline-reliability`, `cost-accuracy`
-- **QuarkMind:** [quarkmind.md](../repos/quarkmind.md) §Layer 6 — strategy routing by opponent context
+- **AML:** [casehub-aml.md](../repos/casehub-aml/consumer-guide.md) §Layer 6 — `AmlTrustRoutingPolicyProvider`, per-capability thresholds
+- **Clinical:** [casehub-clinical.md](../repos/casehub-clinical/consumer-guide.md) §Layer 7 — safety monitoring threshold 0.75, quality floor 0.70
+- **DevTown:** [casehub-devtown.md](../repos/casehub-devtown/consumer-guide.md) §Layer 6 — `review-thoroughness`, `false-positive-rate`
+- **Life:** [casehub-life.md](../repos/casehub-life/consumer-guide.md) §Layer 6 — `deadline-reliability`, `cost-accuracy`
+- **QuarkMind:** [quarkmind.md](../repos/quarkmind/consumer-guide.md) §Layer 6 — strategy routing by opponent context
 
 ### Oversight Gates
 
 **Shared pattern:** `ActionRiskClassifier` SPI (blocks) → `ActionGateWorkItemHandler` (engine-work-adapter) → WorkItem → resume.  
-→ [repos/casehub-blocks.md](../repos/casehub-blocks.md) §Oversight package
+→ [repos/casehub-blocks/consumer-guide.md](../repos/casehub-blocks/consumer-guide.md) §Oversight package
 
 **Per-app:**
-- **AML:** [casehub-aml.md](../repos/casehub-aml.md) §Layer 9 — PEP entities gate to compliance review; TRANSACTION_BLOCKING inverts (gates on low confidence)
-- **Clinical:** [casehub-clinical.md](../repos/casehub-clinical.md) §Layer 8 — SUSAR criteria evaluation; `ClinicalActionRiskClassifier`
-- **DevTown:** [casehub-devtown.md](../repos/casehub-devtown.md) §Layer 5 — 8 action types (merge, deploy, schema, infra, secrets, approve-pr, label-pr, comment); 4 categories
-- **Life:** [casehub-life.md](../repos/casehub-life.md) §Layer 8 — RBAC-differentiated thresholds (admin elevated, junior always-gate)
+- **AML:** [casehub-aml.md](../repos/casehub-aml/consumer-guide.md) §Layer 9 — PEP entities gate to compliance review; TRANSACTION_BLOCKING inverts (gates on low confidence)
+- **Clinical:** [casehub-clinical.md](../repos/casehub-clinical/consumer-guide.md) §Layer 8 — SUSAR criteria evaluation; `ClinicalActionRiskClassifier`
+- **DevTown:** [casehub-devtown.md](../repos/casehub-devtown/consumer-guide.md) §Layer 5 — 8 action types (merge, deploy, schema, infra, secrets, approve-pr, label-pr, comment); 4 categories
+- **Life:** [casehub-life.md](../repos/casehub-life/consumer-guide.md) §Layer 8 — RBAC-differentiated thresholds (admin elevated, junior always-gate)
 - **SOC:** planned — containment actions (block IP, quarantine host, revoke creds)
 
 ### Web UI Composition
@@ -118,11 +118,11 @@ Every CaseHub application follows this pattern:
 → [platform/ui-architecture.md](../platform/ui-architecture.md)
 
 **Per-app:**
-- **AML:** [casehub-aml.md](../repos/casehub-aml.md) — planned: operations, accountability, investigations views
+- **AML:** [casehub-aml.md](../repos/casehub-aml/consumer-guide.md) — planned: operations, accountability, investigations views
 - **Clinical:** pending
-- **DevTown:** [casehub-devtown.md](../repos/casehub-devtown.md) — governance workbench, WebSocket bridge
-- **Drafthouse:** [casehub-drafthouse.md](../repos/casehub-drafthouse.md) — document review panels (before/after, diff viewer, reviewer LLM agents)
-- **QuarkMind:** [quarkmind.md](../repos/quarkmind.md) — Three.js 3D visualiser, 65+ sprites, Electron wrapper
+- **DevTown:** [casehub-devtown.md](../repos/casehub-devtown/consumer-guide.md) — governance workbench, WebSocket bridge
+- **Drafthouse:** [casehub-drafthouse.md](../repos/casehub-drafthouse/consumer-guide.md) — document review panels (before/after, diff viewer, reviewer LLM agents)
+- **QuarkMind:** [quarkmind.md](../repos/quarkmind/consumer-guide.md) — Three.js 3D visualiser, 65+ sprites, Electron wrapper
 
 **Component examples:**
 - **AML:** `work-item-inbox` (blocks-ui) + `aml-transaction-graph` (aml-specific) + `trust-score-panel` (blocks-ui) + `approval-gate` (blocks-ui)
@@ -135,10 +135,10 @@ Every CaseHub application follows this pattern:
 → [platform/privacy.md](../platform/privacy.md)
 
 **Per-app:**
-- **AML:** [casehub-aml.md](../repos/casehub-aml.md) §Layer 4 — transaction PII erasure
-- **Clinical:** [casehub-clinical.md](../repos/casehub-clinical.md) §Layer 8 — patient ID pseudonymisation, memory erasure, `ConsentWithdrawalLedgerEntry`
-- **DevTown:** [casehub-devtown.md](../repos/casehub-devtown.md) §Layer 4 — actor erasure: ledger + `CaseMemoryStore` (`contributor:` + `reviewer:` prefixes)
-- **Life:** [casehub-life.md](../repos/casehub-life.md) §Layer 4 — external actor erasure, `LifeGdprErasureService`
+- **AML:** [casehub-aml.md](../repos/casehub-aml/consumer-guide.md) §Layer 4 — transaction PII erasure
+- **Clinical:** [casehub-clinical.md](../repos/casehub-clinical/consumer-guide.md) §Layer 8 — patient ID pseudonymisation, memory erasure, `ConsentWithdrawalLedgerEntry`
+- **DevTown:** [casehub-devtown.md](../repos/casehub-devtown/consumer-guide.md) §Layer 4 — actor erasure: ledger + `CaseMemoryStore` (`contributor:` + `reviewer:` prefixes)
+- **Life:** [casehub-life.md](../repos/casehub-life/consumer-guide.md) §Layer 4 — external actor erasure, `LifeGdprErasureService`
 
 ### Notifications
 
@@ -146,8 +146,8 @@ Every CaseHub application follows this pattern:
 → [platform/notifications.md](../platform/notifications.md)
 
 **Per-app:**
-- **AML:** [casehub-aml.md](../repos/casehub-aml.md) §Layer 2 — SAR assignment notifications
-- **Clinical:** [casehub-clinical.md](../repos/casehub-clinical.md) §Layer 2 — AE to safety officers, PI deviation to sponsor (durable retry), exhausted retries → WorkItem
+- **AML:** [casehub-aml.md](../repos/casehub-aml/consumer-guide.md) §Layer 2 — SAR assignment notifications
+- **Clinical:** [casehub-clinical.md](../repos/casehub-clinical/consumer-guide.md) §Layer 2 — AE to safety officers, PI deviation to sponsor (durable retry), exhausted retries → WorkItem
 - **Life:** planned
 
 ### CBR (Case-Based Reasoning)
@@ -156,10 +156,10 @@ Every CaseHub application follows this pattern:
 → [platform/cbr.md](../platform/cbr.md)
 
 **Per-app:**
-- **AML:** [casehub-aml.md](../repos/casehub-aml.md) §Layer 8 — prior entity context injected; SAR outcomes written to memory
-- **Clinical:** [casehub-clinical.md](../repos/casehub-clinical.md) §Layer 8 — patient/site domains; AE reports + outcomes, deviation reports + PI decisions
-- **DevTown:** [casehub-devtown.md](../repos/casehub-devtown.md) — contributor history, reviewer context, code-area history; CBR-enhanced reviewer matching + merge queue precedent risk
-- **Life:** [casehub-life.md](../repos/casehub-life.md) — 6 domain feature schemas, dual-path architecture (routing + case outcomes), plan adaptation via `LifePlanAdapter`
+- **AML:** [casehub-aml.md](../repos/casehub-aml/consumer-guide.md) §Layer 8 — prior entity context injected; SAR outcomes written to memory
+- **Clinical:** [casehub-clinical.md](../repos/casehub-clinical/consumer-guide.md) §Layer 8 — patient/site domains; AE reports + outcomes, deviation reports + PI decisions
+- **DevTown:** [casehub-devtown.md](../repos/casehub-devtown/consumer-guide.md) — contributor history, reviewer context, code-area history; CBR-enhanced reviewer matching + merge queue precedent risk
+- **Life:** [casehub-life.md](../repos/casehub-life/consumer-guide.md) — 6 domain feature schemas, dual-path architecture (routing + case outcomes), plan adaptation via `LifePlanAdapter`
 
 ---
 
@@ -184,7 +184,7 @@ Every CaseHub application follows this pattern:
 | Oversight gate lifecycle | openclaw, engine-api | blocks (oversight package) | blocks#23 |
 | AI routing strategies (LLM, CBR) | — | blocks (routing.agent package) | blocks#30 |
 
-**Reference:** [casehub-blocks.md](../repos/casehub-blocks.md) §Blocks Scope Criteria
+**Reference:** [casehub-blocks.md](../repos/casehub-blocks/consumer-guide.md) §Blocks Scope Criteria
 
 ---
 
@@ -227,12 +227,12 @@ Apps build capability by layer — each layer adds one foundation module. The tu
 
 **Per-app deep-dives with full layer details:**
 
-- **AML:** [casehub-aml.md](../repos/casehub-aml.md) — Layers 1–6, 8, 9 complete; GDPR erasure, investigation workbench UI
-- **Clinical:** [casehub-clinical.md](../repos/casehub-clinical.md) — Layers 1–10 complete; IND deadline, blocks-ui demo, 4-role RBAC, CBR Phase 1
-- **DevTown:** [casehub-devtown.md](../repos/casehub-devtown.md) — Layers 1, 3, 4, 5, 6 complete; merge queue, CBR routing, 5-role RBAC, governance workbench
-- **Life:** [casehub-life.md](../repos/casehub-life.md) — Layers 2–6, 8 complete; CBR (6 schemas + plan adaptation), read-side API, GDPR, jurisdiction, RBAC
-- **Drafthouse:** [casehub-drafthouse.md](../repos/casehub-drafthouse.md) — Brainstorming + debate MCP tools, casehub-pages adoption, Eidos reviewer registry, debate persistence
-- **QuarkMind:** [quarkmind.md](../repos/quarkmind.md) — Layers 2–7 complete; blocks summarisation
+- **AML:** [casehub-aml.md](../repos/casehub-aml/consumer-guide.md) — Layers 1–6, 8, 9 complete; GDPR erasure, investigation workbench UI
+- **Clinical:** [casehub-clinical.md](../repos/casehub-clinical/consumer-guide.md) — Layers 1–10 complete; IND deadline, blocks-ui demo, 4-role RBAC, CBR Phase 1
+- **DevTown:** [casehub-devtown.md](../repos/casehub-devtown/consumer-guide.md) — Layers 1, 3, 4, 5, 6 complete; merge queue, CBR routing, 5-role RBAC, governance workbench
+- **Life:** [casehub-life.md](../repos/casehub-life/consumer-guide.md) — Layers 2–6, 8 complete; CBR (6 schemas + plan adaptation), read-side API, GDPR, jurisdiction, RBAC
+- **Drafthouse:** [casehub-drafthouse.md](../repos/casehub-drafthouse/consumer-guide.md) — Brainstorming + debate MCP tools, casehub-pages adoption, Eidos reviewer registry, debate persistence
+- **QuarkMind:** [quarkmind.md](../repos/quarkmind/consumer-guide.md) — Layers 2–7 complete; blocks summarisation
 
 **Cross-app learning:** Read the layer sections in each deep-dive to see how different domains solve the same integration challenges (CDI wiring, YAML bindings, preference loading).
 
@@ -245,8 +245,8 @@ Apps build capability by layer — each layer adds one foundation module. The tu
 - **Boundary rules:** [platform/boundary-rules.md](../platform/boundary-rules.md)
 - **Session conventions:** [AGENTIC-HARNESS-GUIDE.md](../AGENTIC-HARNESS-GUIDE.md)
 - **Application inventory:** [APPLICATIONS.md](../APPLICATIONS.md)
-- **blocks scope criteria:** [casehub-blocks.md](../repos/casehub-blocks.md) §Blocks Scope Criteria
-- **blocks-ui design philosophy:** [casehub-blocks-ui.md](../repos/casehub-blocks-ui.md) §Design Philosophy
+- **blocks scope criteria:** [casehub-blocks.md](../repos/casehub-blocks/consumer-guide.md) §Blocks Scope Criteria
+- **blocks-ui design philosophy:** [casehub-blocks-ui.md](../repos/casehub-blocks-ui/consumer-guide.md) §Design Philosophy
 - **UI architecture:** [platform/ui-architecture.md](../platform/ui-architecture.md)
 - **Routing:** [platform/routing.md](../platform/routing.md)
 - **CBR:** [platform/cbr.md](../platform/cbr.md)

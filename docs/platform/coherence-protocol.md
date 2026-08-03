@@ -112,7 +112,7 @@ See [`casehub/garden: docs/protocols/universal/rest-adapter-module.md`](../../..
 **Agent mesh alignment**
 > When implementing a new MCP tool or channel interaction, verify it aligns with the normative 3-channel layout (work/observe/oversight) and 4-layer accountability framework.
 
-See [`docs/repos/claudony.md`](../repos/claudony.md) §Agent Mesh Framework and the [Claudony mesh spec](https://github.com/casehubio/claudony/blob/main/docs/superpowers/specs/2026-04-27-claudony-agent-mesh-framework.md)
+See [`docs/repos/claudony/consumer-guide.md`](../repos/claudony/consumer-guide.md) §Agent Mesh Framework and the [Claudony mesh spec](https://github.com/casehubio/claudony/blob/main/docs/superpowers/specs/2026-04-27-claudony-agent-mesh-framework.md)
 
 **Trust routing cold-start**
 > Any application using trust-based routing must implement the four-phase maturity model — Phase 0 is availability routing (Gastown parity), phases advance automatically as `minimumObservations` thresholds are crossed, every capability must declare a `fallbackType`. Never block on missing trust data.
