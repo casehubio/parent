@@ -1,0 +1,32 @@
+{
+  "repos": [
+    {"name": "platform",     "org": "casehubio"},
+    {"name": "worker",       "org": "casehubio", "repo": "casehub-worker"},
+    {"name": "ledger",       "org": "casehubio"},
+    {"name": "work",         "org": "casehubio"},
+    {"name": "qhorus",       "org": "casehubio"},
+    {"name": "connectors",   "org": "casehubio"},
+    {"name": "iot",          "org": "casehubio"},
+    {"name": "ras",          "org": "casehubio", "repo": "casehub-ras"},
+    {"name": "desiredstate", "org": "casehubio", "repo": "casehub-desiredstate"},
+    {"name": "blocks",       "org": "casehubio"},
+    {"name": "blocks-ui",    "org": "casehubio"},
+    {"name": "engine",       "org": "casehubio"},
+    {"name": "eidos",        "org": "casehubio"},
+    {"name": "neocortex",    "org": "casehubio"},
+    {"name": "pages",        "org": "casehubio", "repo": "casehub-pages"},
+    {"name": "workers",      "org": "casehubio"},
+    {"name": "ops",          "org": "casehubio", "repo": "casehub-ops"},
+    {"name": "claudony",     "org": "casehubio", "target_base": "claudony"},
+    {"name": "openclaw",     "org": "casehubio"},
+    {"name": "chat-app",     "org": "casehubio"},
+    {"name": "devtown",      "org": "casehubio"},
+    {"name": "aml",          "org": "casehubio"},
+    {"name": "clinical",     "org": "casehubio"},
+    {"name": "life",         "org": "casehubio"},
+    {"name": "drafthouse",   "org": "casehubio"},
+    {"name": "soc",          "org": "casehubio"},
+    {"name": "fsitrading",   "org": "casehubio"},
+    {"name": "quarkmind",    "org": "casehubio", "target_base": "quarkmind"}
+  ]
+}

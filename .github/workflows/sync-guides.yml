@@ -1,0 +1,42 @@
+name: Sync repo guides
+
+on:
+  repository_dispatch:
+    types: [guide-updated]
+  workflow_dispatch:
+    inputs:
+      repo:
+        description: 'Sync a single repo (e.g. "work") or leave blank for all'
+        required: false
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Sync guide from dispatch
+        if: github.event_name == 'repository_dispatch'
+        env:
+          REPO: ${{ github.event.client_payload.repo }}
+        run: |
+          NAME="${REPO#casehubio/}"
+          NAME="${NAME#casehub-}"
+          scripts/sync-guides.sh --repo "$NAME"
+
+      - name: Sync all guides (manual)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          if [ -n "${{ github.event.inputs.repo }}" ]; then
+            scripts/sync-guides.sh --repo "${{ github.event.inputs.repo }}"
+          else
+            scripts/sync-guides.sh
+          fi
+
+      - name: Push subtree merges
+        run: git push
