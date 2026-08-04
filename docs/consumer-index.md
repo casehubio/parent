@@ -2,6 +2,8 @@
 
 > For app builders. What modules to depend on, what APIs to call, what SPIs to implement.
 > Each link goes to a repo's `consumer-guide.md` — aggregated from child repos via git subtree.
+>
+> For exact type signatures and method contracts, see the [API Reference](api/INDEX.md).
 
 ---
 

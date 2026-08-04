@@ -21,3 +21,4 @@ wksp
 .claude
 package-lock.json
 proj
+__pycache__/

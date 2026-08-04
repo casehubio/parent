@@ -46,6 +46,7 @@ Each repo owns its own `docs/guides/consumer-guide.md` and `docs/guides/contribu
 - [UI Architecture](platform/ui-architecture.md) — pages → blocks-ui → app UI layering
 
 ### Guides & Tools
+- [API Reference](api/INDEX.md) — machine-generated type signatures, method contracts (per-repo + cross-repo SPI matrix)
 - [Building Apps](guides/building-apps.md) — capability matrix, pattern catalogue, placement criteria
 - [Building Platform](guides/building-platform.md) — adding capabilities, SPI design, boundary enforcement
 - [Agentic Harness](AGENTIC-HARNESS-GUIDE.md) — session conventions for LLM work in app repos

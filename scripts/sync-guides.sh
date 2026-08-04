@@ -81,8 +81,8 @@ for r in config['repos']:
     }
   fi
 
-  if [ ! -f "$clone_dir/docs/guides/consumer-guide.md" ] && [ ! -f "$clone_dir/docs/guides/contributor-guide.md" ]; then
-    echo "  SKIP $name: no docs/guides/consumer-guide.md or docs/guides/contributor-guide.md"
+  if [ ! -f "$clone_dir/docs/guides/consumer-guide.md" ] && [ ! -f "$clone_dir/docs/guides/contributor-guide.md" ] && [ ! -d "$clone_dir/docs/guides/api" ]; then
+    echo "  SKIP $name: no docs/guides/ content (consumer-guide.md, contributor-guide.md, or api/)"
     [ ! $LOCAL_MODE ] && rm -rf "$clone_dir"
     continue
   fi
