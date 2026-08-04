@@ -22,3 +22,4 @@ wksp
 package-lock.json
 proj
 __pycache__/
+.playwright-mcp/
