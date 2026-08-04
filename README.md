@@ -52,8 +52,25 @@ Org-level parent POM and BOM for the [casehubio](https://github.com/casehubio) e
 
 ---
 
+## Platform Documentation
+
+Start here for understanding the CaseHub platform:
+
+| What you need | Where to go |
+|---------------|------------|
+| **Overview** — what the platform offers, how repos connect | [docs/INDEX.md](docs/INDEX.md) |
+| **Building apps** — modules to depend on, SPIs to implement, key types | [docs/consumer-index.md](docs/consumer-index.md) |
+| **Building platform** — architecture, internal SPIs, extension points | [docs/contributor-index.md](docs/contributor-index.md) |
+| **API reference** — machine-generated type signatures, method contracts | [docs/api/INDEX.md](docs/api/INDEX.md) |
+| **Cross-repo SPI matrix** — who implements what across the platform | [docs/api/cross-repo-implementations.md](docs/api/cross-repo-implementations.md) |
+
+Each repo also has its own guides at `docs/guides/consumer-guide.md` and `docs/guides/contributor-guide.md`, aggregated into this repo at `docs/repos/<name>/`.
+
+---
+
 ## Contents
 
+- [Platform Documentation](#platform-documentation)
 - [The BOM](#the-bom)
 - [Ecosystem projects](#ecosystem-projects)
 - [Local full-stack build](#local-full-stack-build)
