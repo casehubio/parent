@@ -9,7 +9,11 @@ the interface and every implementation found across the platform.
 | Repo | Implementation |
 |------|---------------|
 | api | `ChainedActionRiskClassifier` |
+| app | `AmlActionRiskClassifier` |
 | app | `DemoGateClassifier` |
+| app | `LifeActionRiskClassifier` |
+| app | `SocActionRiskClassifier` |
+| runtime | `ClinicalActionRiskClassifier` |
 | webapp-api | `IoTActionRiskClassifier` |
 
 ## ActualStateAdapter
@@ -23,6 +27,21 @@ the interface and every implementation found across the platform.
 | infra | `InfraActualStateAdapter` |
 | iot | `IoTActualStateAdapter` |
 | testing | `MockActualStateAdapter` |
+
+## AgentChannelBackend
+
+| Repo | Implementation |
+|------|---------------|
+| app | `PushAgentDispatch` |
+| runtime | `QhorusChannelBackend` |
+
+## AgentDescriptorRegistrar
+
+| Repo | Implementation |
+|------|---------------|
+| app | `SocAgentRegistrar` |
+| quarkmind | `QuarkMindAgentRegistrar` |
+| runtime | `ClasspathYamlDescriptorRegistrar` |
 
 ## AgentGraphBackfill
 
@@ -58,6 +77,7 @@ the interface and every implementation found across the platform.
 |------|---------------|
 | blocks | `CbrAgentRoutingStrategy` |
 | blocks | `LlmAgentRoutingStrategy` |
+| quarkmind | `DispositionAwareRoutingStrategy` |
 | runtime | `ComposableAgentRoutingStrategy` |
 
 ## AgentStateStore
@@ -110,6 +130,14 @@ the interface and every implementation found across the platform.
 | casehub | `OpenClawCaseChannelProvider` |
 | runtime | `NoOpCaseChannelProvider` |
 
+## CaseContext
+
+| Repo | Implementation |
+|------|---------------|
+| quarkmind | `MapCaseContext` |
+| quarkmind | `MutableMapCaseContext` |
+| runtime | `SnapshotCaseContext` |
+
 ## CaseEventRecorder
 
 | Repo | Implementation |
@@ -117,12 +145,24 @@ the interface and every implementation found across the platform.
 | api | `NoOpCaseEventRecorder` |
 | runtime | `DefaultCaseEventRecorder` |
 
+## CaseInputContributor
+
+| Repo | Implementation |
+|------|---------------|
+| app | `SocCaseInputContributor` |
+| webapp | `IoTCaseInputContributor` |
+
 ## CaseOutcomeObserver
 
 | Repo | Implementation |
 |------|---------------|
 | api | `ScreeningOrchestrator` |
+| app | `AmlCaseProfileStoreObserver` |
+| app | `LifeCaseOutcomeCbrWriter` |
+| app | `SocFaultedCaseReviewCreator` |
+| quarkmind | `SC2CbrRetentionObserver` |
 | runtime | `CbrCaseRetainObserver` |
+| runtime | `ClinicalCaseOutcomeObserver` |
 | runtime | `NoOpCaseOutcomeObserver` |
 
 ## CaseTrigger
@@ -375,6 +415,14 @@ the interface and every implementation found across the platform.
 | persistence-memory | `InMemoryGoalSignalStore` |
 | runtime | `NoOpGoalSignalStore` |
 
+## HumanObserverChannelBackend
+
+| Repo | Implementation |
+|------|---------------|
+| app | `ClaudonyChannelBackend` |
+| quarkmind | `AdvisoryChannelBackend` |
+| quarkmind | `CommentaryChannelBackend` |
+
 ## HumanParticipatingChannelBackend
 
 | Repo | Implementation |
@@ -387,12 +435,14 @@ the interface and every implementation found across the platform.
 | Repo | Implementation |
 |------|---------------|
 | ledger | `TrustWeightedImplementationRoutingStrategy` |
+| quarkmind | `SC2ImplementationRoutingStrategy` |
 | runtime | `NoOpImplementationRoutingStrategy` |
 
 ## InboundNormaliser
 
 | Repo | Implementation |
 |------|---------------|
+| runtime | `ClinicalInboundNormaliser` |
 | runtime | `DefaultInboundNormaliser` |
 | slack-channel | `SlackInboundNormaliser` |
 
@@ -431,6 +481,7 @@ the interface and every implementation found across the platform.
 
 | Repo | Implementation |
 |------|---------------|
+| app | `LifeOversightResponseObserver` |
 | blocks | `ChannelEventAdapter` |
 | casehub | `ChannelContextWindowObserver` |
 | casehub | `ScenarioObserver` |
@@ -440,6 +491,7 @@ the interface and every implementation found across the platform.
 | runtime | `InProcessMessageBus` |
 | runtime | `PeerReviewAutoTrigger` |
 | runtime | `PeerReviewResponseHandler` |
+| runtime | `PiResponseListener` |
 | webhook-observer | `WebhookMessageObserver` |
 | websocket-observer | `WebSocketMessageObserver` |
 
@@ -570,12 +622,29 @@ the interface and every implementation found across the platform.
 | ai | `EmbeddingSkillMatcher` |
 | examples | `KeywordSkillMatcher` |
 
+## SlaBreachPolicy
+
+| Repo | Implementation |
+|------|---------------|
+| app | `LifeSlaBreachPolicy` |
+| app | `SocSlaBreachPolicy` |
+| runtime | `ClinicalIndReportingBreachPolicy` |
+| runtime | `NoOpSlaBreachPolicy` |
+
 ## SpaceStore
 
 | Repo | Implementation |
 |------|---------------|
 | persistence-memory | `InMemorySpaceStore` |
 | runtime | `JpaSpaceStore` |
+
+## Summariser
+
+| Repo | Implementation |
+|------|---------------|
+| blocks | `ContentSummariserToSummariser` |
+| quarkmind | `GameArcSummariser` |
+| quarkmind | `GamePhaseSummariser` |
 
 ## SummaryUpdateHook
 
@@ -606,12 +675,48 @@ the interface and every implementation found across the platform.
 | runtime | `SimpleTransitionExecutor` |
 | testing | `MockTransitionExecutor` |
 
+## TrustRoutingPolicyProvider
+
+| Repo | Implementation |
+|------|---------------|
+| app | `AmlTrustRoutingPolicyProvider` |
+| app | `LifeTrustRoutingPolicyProvider` |
+| deployment | `DeploymentTrustRoutingPolicyProvider` |
+| quarkmind | `QuarkMindTrustRoutingPolicyProvider` |
+| runtime | `ClinicalTrustRoutingPolicyProvider` |
+
+## VocabularyRegistrar
+
+| Repo | Implementation |
+|------|---------------|
+| quarkmind | `CoachingDispositionRegistrar` |
+| quarkmind | `CommentaryDispositionRegistrar` |
+| vocab | `BelbinVocabRegistrar` |
+| vocab | `BigFiveVocabRegistrar` |
+| vocab | `CasehubCapabilityRegistrar` |
+| vocab | `CasehubSlotVocabRegistrar` |
+| vocab | `ConscientiousnessVocabRegistrar` |
+| vocab | `DiscVocabRegistrar` |
+| vocab | `EnneagramVocabRegistrar` |
+| vocab | `JungianVocabRegistrar` |
+| vocab | `MbtiVocabRegistrar` |
+| vocab | `SdiVocabRegistrar` |
+| vocab | `SvoVocabRegistrar` |
+| vocab | `ThomasKilmannVocabRegistrar` |
+
 ## WatchdogStore
 
 | Repo | Implementation |
 |------|---------------|
 | persistence-memory | `InMemoryWatchdogStore` |
 | runtime | `JpaWatchdogStore` |
+
+## WorkItemObserver
+
+| Repo | Implementation |
+|------|---------------|
+| qhorus | `QhorusWorkItemLifecycleAdapter` |
+| webapp | `WorkItemOutcomeRecorder` |
 
 ## WorkerContextProvider
 
@@ -626,6 +731,14 @@ the interface and every implementation found across the platform.
 |------|---------------|
 | resilience | `PoisonPillWorkerExecutionGuard` |
 | runtime | `AllowAllWorkerExecutionGuard` |
+
+## WorkerFunctionProvider
+
+| Repo | Implementation |
+|------|---------------|
+| a2a | `A2AWorkerFunctionProvider` |
+| flow | `FlowWorkerFunctionProvider` |
+| mcp | `McpWorkerFunctionProvider` |
 
 ## WorkerProvisioner
 

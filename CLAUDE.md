@@ -100,6 +100,8 @@ mvn --batch-mode deploy -DskipTests
 | `build-all.yml` | manual only | Deleted — use build-all.yml with force_rebuild=true |
 | `incremental-build-all.yml` | manual only | SHA-keyed incremental build — BUILD/TEST/SKIP per module based on what changed |
 | `clear-snapshot-packages.yml` | manual only | Delete SNAPSHOT artifacts from GitHub Packages |
+| `generate-api-catalogue.yml` | push (docs/repos/*/api/**), weekly, manual | Regenerate cross-repo SPI overlay from aggregated API docs |
+| `sync-guides.yml` | repository_dispatch, manual | Sync `docs/guides/` from child repos via subtree |
 
 **Key rule:** Cross-repo `repository_dispatch` requires `GH_TOKEN: ${{ secrets.GH_PAT }}` (classic PAT). `GITHUB_TOKEN` is repo-scoped only and returns 403 on cross-repo calls.
 
@@ -116,6 +118,10 @@ Conventions shared across all modules live in the **casehub garden** (`../garden
 `scripts/tests/build-all-decision.bats` — bats test suite (49 tests) covering all BUILD/TEST/SKIP scenarios. Run with: `bats scripts/tests/build-all-decision.bats`
 
 Prereq: `brew install bats-core`
+
+`scripts/generate-api-docs.sh` — generates markdown API docs from a repo's `-api` module using jmarkdoc. Downloads jmarkdoc.jar on first run (cached in `.build/`). Requires JDK 25+ (auto-detects). Usage: `generate-api-docs.sh <repo-root> [<api-source-dir>]`. Default source: `api/src/main/java`.
+
+`scripts/api-catalogue/generate_overlay.py` — reads aggregated API docs from `docs/repos/*/api/`, greps source for cross-repo SPI implementations, generates `docs/api/cross-repo-implementations.md`. Tests: `scripts/tests/test_generate_overlay.py`
 
 ## Testing
 
