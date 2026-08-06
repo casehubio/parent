@@ -11,7 +11,7 @@
 
 3. **`CommitmentState.DELEGATED` (Qhorus) ≠ `WorkItemStatus.DELEGATED` (work)** — same word, opposite terminal semantics. Qhorus DELEGATED is **terminal** for the original obligor (obligation transferred, closed, child Commitment created for the named target). Work DELEGATED is **non-terminal** (`isTerminal()` returns false — work reassigned to a named actor, item stays active). Integration code bridging a Qhorus HANDOFF to WorkItem delegation will misapply terminal semantics. A developer reasoning about a HANDOFF-then-DELEGATED path expects the obligation to end — it does not. See javadoc on `CommitmentState.DELEGATED` and `WorkItemStatus.DELEGATED`.
 
-4. **Notification duplication** — `casehub-connectors` and `casehub-work-notifications` both provide Slack/Teams. Must converge (parent#5, open).
+4. ~~**Notification duplication**~~ — **Resolved.** `casehub-work-notifications` deleted (casehubio/work#315). WorkItem lifecycle notifications now flow through the platform subscription engine via `WorkItemSubscriptionBridge`.
 
 5. **`callerRef` format is implicit** — carries `case:{caseId}/pi:{planItemId}`. casehub-work treats it as opaque. Consumers must know this format out of band.
 
