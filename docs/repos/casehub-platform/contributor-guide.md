@@ -74,6 +74,10 @@ testing/                    <- companion: @Alternative @Priority(200) test fixtu
 | `streams-poll/` | `casehub-platform-streams-poll` | `@Startup` | HTTP GET poller -- `@Scheduled`, per-endpoint failure isolation |
 | `streams-camel/` | `casehub-platform-streams-camel` | `@ApplicationScoped` | Camel dynamic routes -- the only connector with runtime route addition |
 | `preferences-editor/` | `casehub-platform-preferences-editor` | `@ApplicationScoped` | REST API for preference writes + schema discovery + validation; `InMemoryPreferenceSchemaRegistry`; `PreferenceValidator` |
+| `pdf/` | `casehub-platform-pdf` | `@Alternative @Priority(10)` | `OpenHtmlToPdfGenerator` -- HTML-to-PDF with PDF/A-2b conformance, bundled Liberation Sans + Mono fonts |
+| `yaml-core/` | `casehub-platform-yaml-core` | (none) | Pure Java, zero deps, J2CL-transpilable: `Truthiness`, `VariableResolver`, `CsvParser`, `ForEachExpander`, `IterationGroup` |
+| `ts-core/` | `casehub-platform-ts-core` | (none) | `TsExecutor` SPI, `NodeTsExecutor` (npx tsx subprocess), `TsEvalResult`/`TsError` |
+| `signing/` | `casehub-platform-signing` | `@DefaultBean` | `NoOpSigningProvider`; `SigningProvider` SPI, `SignatureVerifier` |
 | `platform-view/` | `casehub-platform-view` | `@ApplicationScoped` | `SubjectViewEvaluator` + `SubjectViewOrchestrator` -- label-path view evaluation with caching |
 | `platform-view-inmem/` | `casehub-platform-view-inmem` | `@Alternative @Priority(100)` | In-memory view store + membership tracker + `InMemorySubjectViewQuerySupport` abstract helper |
 | `platform-view-jpa/` | `casehub-platform-view-jpa` | `@ApplicationScoped` | JPA view store -- `JpaLabelPatternQuerySupport` for domain consumers, `LabelPatternPredicates` for SQL LIKE |
@@ -95,7 +99,7 @@ Two patterns exist:
 | Pattern | Used by | Behaviour |
 |---------|---------|-----------|
 | **Configurable mock** | `PreferenceProvider`, `CurrentPrincipal`, `GroupMembershipProvider` | Returns `@ConfigProperty` values -- tests set specific returns |
-| **Silent no-op** | `CaseMemoryStore`, `AgentProvider`, `AccessControlProvider`, `ExpressionEngineRegistry`, `PreferenceStore`, `PreferenceSchemaRegistry`, `CredentialResolver`, `DataSourceRegistry`, `EndpointRegistry`, `MarshallerRegistry`, `NotificationStore`, `SubscriptionStore`, `SuppressionStore`, `NotificationPreferenceStore`, `DeliveryAttemptStore`, `DigestBuffer`, `DeliveryChannelRegistry`, `SubjectViewStore`, `ViewMembershipTracker`, `CrossTenantSubjectViewStore`, `DIDResolver`, `ActorDIDProvider`, `EventTypeRegistry`, `EntityWatcherProvider`, `StrategyResolver` | Returns empty/void -- system works without the capability |
+| **Silent no-op** | `CaseMemoryStore`, `AgentProvider`, `AccessControlProvider`, `ExpressionEngineRegistry`, `PreferenceStore`, `PreferenceSchemaRegistry`, `CredentialResolver`, `DataSourceRegistry`, `EndpointRegistry`, `MarshallerRegistry`, `NotificationStore`, `SubscriptionStore`, `SuppressionStore`, `NotificationPreferenceStore`, `DeliveryAttemptStore`, `DigestBuffer`, `DeliveryChannelRegistry`, `SubjectViewStore`, `ViewMembershipTracker`, `CrossTenantSubjectViewStore`, `DIDResolver`, `ActorDIDProvider`, `EventTypeRegistry`, `EntityWatcherProvider`, `StrategyResolver`, `PdfGenerator`, `SigningProvider`, `SessionIsolator` | Returns empty/void -- system works without the capability |
 
 ### CDI Priority Ladder
 
@@ -209,6 +213,16 @@ CDI tier for `AgentProvider`:
 - `ChatModelAgentProvider` wraps any LangChain4j `ChatModel` as `AgentProvider`. Discovers `@Default ChatModel` beans, filters out `AgentProviderChatModel` to avoid circular injection. Supports streaming via `StreamingChatModel` detection.
 - `AgentProviderChatModel` / `AgentSessionChatModel` wrap `AgentProvider` as LangChain4j `ChatModel`. Blocks on Mutiny pipeline, collects text deltas, maps to `AiMessage`.
 - `AgentEventBridge` converts LangChain4j streaming responses into `Multi<AgentEvent>`.
+
+**Session leak detection:** `GatedAgentSession` maintains a registry of open sessions. An `@Scheduled` reaper detects sessions exceeding their timeout without being closed, logs a warning, and performs idempotent cleanup.
+
+**MCP infrastructure (#240-245):**
+- `casehub_activate` -- on-demand per-operation tool registration. Agents discover and activate tools at runtime instead of exposing all tools at startup.
+- MCP resource subscription and notification infrastructure for reactive resource updates.
+- Dynamic tool schema -- operation catalog injected into `casehub_action` tool definition at runtime.
+- `@McpDomain` interfaces discovered directly with `@PlatformQuery`/`@PlatformMutation` annotations.
+
+**SessionIsolator SPI:** Virtual-thread-safe Hibernate session isolation. Wraps JPA calls that would otherwise fail on virtual threads due to Hibernate's thread-local session management. Used by `NotificationSseResource` and other `@RunOnVirtualThread` endpoints.
 
 ### Access Control Architecture
 
