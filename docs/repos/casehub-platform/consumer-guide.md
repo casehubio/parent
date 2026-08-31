@@ -163,18 +163,7 @@ Callers inject `AgentProvider` — the `RoutingAgentProvider` dispatches to `Age
 
 ### Identity
 
-| SPI | Purpose | Mock behaviour |
-|-----|---------|----------------|
-| `CurrentPrincipal` | Who is acting -- `actorId()`, `groups()`, `roles()`, `tenancyId()`, `actorType()`, `isSystem()`, `isAuthenticated()`, `isCrossTenantAdmin()` | `@ApplicationScoped` with `@ConfigProperty` values |
-| `GroupMembershipProvider` | Inverse membership -- "who is in group X?" | Returns configured groups |
-
-`CurrentPrincipal` is not `SecurityIdentity`. casehub actors include AI agents, system actors, and internal services that operate outside HTTP request context. Real implementations are `@RequestScoped` and delegate to `SecurityIdentity`; the mock is `@ApplicationScoped` (no request context in dev/test).
-
-`GroupMembershipProvider.membersOf(groupName, tenancyId)` is tenant-scoped -- every call requires a `tenancyId` parameter for tenant isolation. `groupsOf(actorId, tenancyId)` provides the reverse lookup.
-
-**Tenancy:** `tenancyId()` is abstract -- every implementor must provide it. Single-tenant deployments return `TenancyConstants.DEFAULT_TENANT_ID`. `isCrossTenantAdmin()` controls cross-tenant data access.
-
-**Actor types:** `ActorType` enum with `HUMAN`, `AGENT`, `SYSTEM`. `ActorTypeResolver.resolve(actorId)` derives the type from the actor ID string. `actorType()` and `isSystem()` use this.
+→ [capabilities/identity.md](capabilities/identity.md) — CurrentPrincipal, groups, tenancy, OIDC, SCIM
 
 ### Path
 
@@ -257,50 +246,13 @@ Rete-style event routing: `DataSource<T>` ingests objects, `ObjectType<T>` discr
 
 **CloudEventTypeDispatcher** (in `platform/`): Routes unqualified `@ObservesAsync CloudEvent` events to observers qualified with `@CloudEventType("io.casehub.some.type")`. Enables type-specific CloudEvent handling without raw type string comparisons.
 
-### Notifications and Subscriptions
+### Notifications, Subscriptions & Delivery
 
-Domain modules produce `SubscribableEvent` objects into the notification DataSource. The subscription engine evaluates them against the alpha network, fires `SubscriptionMatched`, and the dispatch pipeline handles delivery (immediate, digest, or suppressed). REST + SSE endpoints expose notifications to clients.
-
-**SubscribableEvent interface:** Compile-time contract for subscription POJOs. Must implement `type()` (reverse-DNS event type string, e.g. `"io.casehub.work.workitem.completed"`) and `tenancyId()`. POJOs not implementing this interface are silently rejected by the subscription engine.
-
-**SubscriptionScope:** `USER` (per-user subscriptions) or `SYSTEM` (admin-managed, system-wide subscriptions with admin authorization).
-
-**Event type glob matching:** Subscription `eventType` fields support prefix patterns (e.g. `"io.casehub.work.*"`) for matching groups of event types.
-
-### Notification Delivery
-
-**Delivery channels:** Well-known constants in `DeliveryChannels`: `IN_APP`, `EMAIL`, `SMS`, `PUSH`, `WHATSAPP`.
-
-**NotificationDeliverer SPI:** Implement to deliver notifications via a specific channel. Methods: `channelId()`, `deliver(NotificationInput)`, `deliverDigest(DigestSummary)`. Self-registers its `DeliveryChannelDescriptor` in the `DeliveryChannelRegistry` at `@PostConstruct`.
-
-**DestinationResolver SPI:** Resolves a user's delivery destination for a specific channel. Methods: `channelId()`, `resolve(userId, tenancyId)`. One implementation per channel type.
-
-**DestinationScope:** `PER_USER` (email, SMS, WhatsApp -- resolves to user contact attribute) or `PER_TENANT` (future -- Slack, Teams -- resolves to shared webhook URL).
-
-**Digest system:** Configurable digest schedules via `DigestSchedule` sealed interface:
-- `DigestSchedule.Interval(Duration period)` -- fixed period (minimum 1 minute)
-- `DigestSchedule.DailyAt(LocalTime time, ZoneId timezone)` -- once per day
-- `DigestSchedule.WeeklyAt(DayOfWeek day, LocalTime time, ZoneId timezone)` -- once per week
-
-**DigestGroupBy:** `FLAT` (no grouping), `CATEGORY` (by notification category), `ENTITY` (by entity type and ID).
-
-**Engagement tracking:** `EngagementType` enum: `OPENED`, `CLICKED`, `DISMISSED`, `REPLIED`, `CONVERTED`. `EngagementCallbackHandler` SPI translates provider-specific webhook payloads into platform engagement events (must verify request signatures via provider-specific headers).
+→ [capabilities/notifications.md](capabilities/notifications.md) — delivery pipeline, subscriptions, digest, engagement tracking
 
 ### Expression Evaluation
 
-`ExpressionEngineRegistry` dispatches by type key. Three engines are available:
-
-| Engine | Type Key | Backend | Context Type | Notes |
-|--------|----------|---------|-------------|-------|
-| `JQExpressionEngine` | `"jq"` | jackson-jq 1.6 | `JsonNode` or `Map<String, Object>` (auto-adapted) | Boolean, List, and Scalar result types. `$config` and `$secret` scope injection. |
-| `MvelExpressionEngine` | `"mvel"` | MVEL3 3.0.0-SNAPSHOT | `Map<String, Object>` or POJO (auto-adapted via BeanInfo) | Block expressions (semicolon-delimited). Lazy compilation on first eval. |
-| `JexlExpressionEngine` | `"jexl"` | Commons JEXL 3.4.0 | `Map<String, Object>` | MapContext-based. Strict mode off, silent mode off. Cached compilation. |
-
-**ConfigManager SPI:** Provides access to configuration properties in JQ expressions via `$config.{configMapName}.{property}`. Default implementation reads from SmallRye Config (MicroProfile Config API). Supports Kubernetes ConfigMaps via optional `quarkus-kubernetes-config` dependency.
-
-**SecretManager SPI:** Resolves secrets in JQ expressions via `$secret.{secretName}.{property}`. Default reads from `casehub.platform.secrets.{secretName}.{property}` config keys. Supports Kubernetes Secrets via optional `quarkus-kubernetes-config`.
-
-**StringExpressionEvaluator:** Sub-interface of `ExpressionEvaluator` for string-based evaluators (carries `expression()` string). Concrete records: `JQExpressionEvaluator`, `MvelExpressionEvaluator`.
+→ [capabilities/expressions.md](capabilities/expressions.md) — JQ, MVEL3, JEXL3 engines, config/secret injection
 
 ### Signing
 
