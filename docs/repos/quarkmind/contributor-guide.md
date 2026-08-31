@@ -303,6 +303,45 @@ Three.js 3D visualizer renders game state each tick, served over WebSocket, wrap
 
 **Canvas testing:** `window.__test` semantic API exposed from `visualizer.js` -- provides semantic assertions (sprite counts, positions, panel text, pixel samples) for Playwright E2E tests.
 
+## Chat Agency System (quarkmind-chat)
+
+New module with `protocol` and `agent` sub-modules for multi-character AI orchestration in Discord.
+
+### ChatAgencyLoop
+
+Stateless multi-character orchestration loop. Integrates perception, attention classification, need thresholds, and output governance. Each character runs through the loop independently with its own `CharacterContext`.
+
+### Character Management
+
+`ChatCharacterManager` coordinates multiple AI characters with distinct personalities. `CharacterContext` maintains thread-safe per-character state (`ConcurrentHashMap.newKeySet()` for `participatedThreadIds`). Bounded buffers for message history and identity detection (#284/#285).
+
+### Chat Protocol Types
+
+- `ChatIntent` sealed interface + `ChatPerception` + `WakeReason` — core chat abstractions
+- `AttentionClassifier`, `ChatDeltaReport`, `OutputGovernor`, `ProactiveDecisionGate`, `NeedThresholdWake` — perception pipeline
+- `ChatNeedDefinitions` + `ChatChannelPacing` — configurable need thresholds and channel timing
+- `ChatObservationRenderer` + `ChatWorldBridge` — Discord adapter layer
+
+### Personality Evolution Pipeline
+
+Personalities evolve based on gameplay reflections:
+- `ReflectionDispositionActivator` SPI + `PersonalityEvolutionPipeline` — extension point for trait classification
+- `LlmReflectionDispositionActivator` — async LLM-based trait classification
+- `DispositionAwareReflectionSynthesizer` — intercepts insights for personality activation
+
+### Memory Integration
+
+- `ChatMemoryFacade` — `recall()`, `ingest()`, `scoreImportance()` for chat-scoped memory operations
+- `LlmReflectionSynthesizer` — LLM-based memory consolidation from heartbeat reflections
+- `IdleReflectionTrigger` — triggers reflection during idle periods
+- Commentary-CBR integration: narrates learning from past games (#287)
+
+### Blocks-UI Migration
+
+Workbench migrated to Lit web components via blocks-ui integration. Commentary pipeline and Playwright test suite rewritten for the new component architecture.
+
+---
+
 ## Dependencies
 
 ### Depends On

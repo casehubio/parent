@@ -137,6 +137,24 @@ Async builder methods were removed -- virtual threads supersede CompletionStage 
 
 ---
 
+## Recent API Changes
+
+**Renames:**
+- `Worker.capabilityNames` → `Worker.capabilities`
+- `Capability.inputSchema` → `Capability.inputProjection`
+
+**FailureClass:** `WorkerOutcome.Failed` now carries an optional `FailureClass` hint for upstream retry/routing decisions.
+
+### DataChannel and ChannelRef
+
+`DataChannel` interface provides channel-based data access within `WorkerScope`. `ChannelRef` is a type-safe reference to a named channel. `WorkerScope.channel(ChannelRef)` returns the associated `DataChannel` for reading and writing data during worker execution.
+
+### Exchange Composition
+
+`Exchange` record wraps input data with metadata for worker-to-worker data flow. `ExchangeAwareFunction` extends `WorkerFunction` with exchange-level access. `ExchangeProcessor` supports composition via `andThen()` — chain processors into pipelines where the output of one feeds the input of the next.
+
+---
+
 ## Dependency Graph
 
 ```

@@ -493,6 +493,32 @@ Three of four domain modules use `ThresholdFaultPolicy` (deployment, infra, IoT)
 
 ---
 
+## RAS Health Monitoring
+
+37 ganglia and 15 situations wired for operational health detection. CDI observer bridges `SituationChangeEvent` from casehub-ras to ops case lifecycle — triggered situations create or update operational cases.
+
+## Case Descriptors
+
+- `ServiceUpgradeCaseDescriptor` — four-phase service upgrade lifecycle (plan, pre-check, execute, verify)
+- `CveResponseCaseDescriptor` — four-phase CVE remediation lifecycle
+- `ComplianceRemediationCaseDescriptor` — child case for compliance-driven remediation
+
+## CVE Persistence
+
+`CveStore` interface + `JpaCveStore` implementation (Flyway V6). `CveStatusObserver` tracks CVE status transitions for case lifecycle integration.
+
+## Application Event Broadcasting
+
+`ApplicationEventBroadcaster` — SSE with ring buffer and gap detection. Publishes lifecycle events (deployments, scaling, drift) to UI clients with catchup support for reconnecting clients.
+
+## Service Lifecycle Extensions
+
+- `updateServiceImage(serviceId, imageRef)` — update a service's container image
+- `rollbackToDeployment(serviceId, deploymentId)` — rollback to a specific deployment version
+- Operational efficiency: lazy reconstruction for service lifecycle state
+
+---
+
 ## Dependencies Map
 
 ### Compile Dependencies (api module)

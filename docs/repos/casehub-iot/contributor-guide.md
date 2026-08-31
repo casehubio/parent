@@ -402,6 +402,35 @@ Single root property: `casehub.iot.tenancy-id` (env var `CASEHUB_IOT_TENANCY_ID`
 
 ---
 
+## MCP Resource Subscriptions
+
+IoT device state exposed as subscribable MCP resources via platform's `McpResourceRegistry` SPI:
+- `iot://devices/{deviceId}/state` — per-device state with subscription support
+- `iot://devices/changes` — global change feed (bounded ring buffer)
+
+`IoTResourceRegistrar` registers resources at startup with template completion. `IoTStateChangeResourceObserver` fires MCP notifications on each `StateChangeEvent`.
+
+## KPI and UI Integration
+
+**KPI endpoints:** `KpiResource` REST endpoints (`/api/devices/kpi`, `/api/health/kpi`) provide device statistics and health metrics for dashboard integration.
+
+**blocks-ui hostPanel integration:** Manual webapp UI replaced with blocks-ui web components via `hostPanel()`:
+- KPI rows: `hostPanel("blocks-kpi-metric-row")` with auto-refresh (`refreshInterval` property — devices: 30s, health: 10s)
+- Work items: `split()` layout with `hostPanel("blocks-work-item-detail")`
+- Device/case detail: `hostPanel("blocks-detail-pane")` with tab content elements
+
+**VALID_ACTIONS:** `DeviceCommand.VALID_ACTIONS` (`Set<String>`) for REST boundary validation — returns 400 with the valid actions list on invalid input.
+
+## Household Notifications
+
+Platform subscription engine integration: device state changes produce `SubscribableEvent` instances into the notification DataSource. Users subscribe to device events (e.g. "notify me when the front door unlocks").
+
+## Multi-Turn LLM Conversations
+
+Complex device resolutions (ambiguous commands, multi-step sequences) use multi-turn LLM conversation via `AgentProvider` SPI for interactive problem solving.
+
+---
+
 ## Current State
 
 - All SPIs are blocking (virtual-thread-aligned per ADR-0005)
