@@ -304,12 +304,6 @@ Key implementation details:
 |------|-------------|
 | Application-tier repos that need worker dispatch | Add specific worker modules as classpath dependencies; `WorkerLifecycleOrchestrator` auto-discovers them |
 
-## Exchange-Aware Camel Dispatch
-
-The Camel worker runtime adapts platform `Exchange` records for Camel route dispatch (engine#633). `ExchangeAwareFunction` workers receive the full exchange context within Camel routes, enabling `ExchangeProcessor.andThen()` composition pipelines where the output of one processor feeds the input of the next.
-
----
-
 ## Current State
 
 - All 8 modules (common, http, camel, github-actions, mcp, script, k8s, testing) on main with tests

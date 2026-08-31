@@ -313,24 +313,6 @@ These are NOT modules in this repo but are relevant for understanding the ecosys
 
 ---
 
-## GraphQL / MCP Domain Surface
-
-The `connectors-graphql` module exposes connector operations as a `@McpDomain("connectors")` SPI:
-
-**ConnectorOperations** — 4 operations:
-- `injectChat` — constructs `InboundMessage` and fires via `InboundConnectorService`
-- `sendNotification` — delegates to `ConnectorService.send()`
-- `connectorStatus` — aggregates outbound, chat platform, and inbound connector counts
-- `sentMessages` — queries `SentMessageCapture` (profile-gated, non-prod only)
-
-**SentMessage CDI event:** `ConnectorService.send()` fires `Event<SentMessage>` on every outbound delivery. The `SentMessage` record carries connector ID, recipient, content, and timestamp.
-
-**SentMessageCapture:** `@UnlessBuildProfile("prod")` CDI observer that captures sent messages for test assertions. Methods: `capture()`, `filter()`, `limit()`.
-
-**ConnectorsModelEnricher:** Provides `summary()` and `state()` for the connectors MCP domain — counts outbound, chat, and inbound connectors for LLM context.
-
----
-
 ## Current State
 
 - 16 active modules in pom.xml

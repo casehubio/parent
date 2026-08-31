@@ -185,27 +185,6 @@ Outcomes are emitted as `io.casehub.cbr.outcome` CloudEvents with extensions for
 
 ---
 
-## Cardinality Constraints
-
-`@Match`, `@DirectDep`, and `@Reaches` annotations support `minCount`/`maxCount` cardinality fields. `PatternParameterDescriptor` carries cardinality metadata. `GraphInvariantEngine` validates both match-level and expansion-level cardinality at build time.
-
-YAML patterns support `minCount`/`maxCount` via `YamlPattern` converter + validation. Cardinality invariants enforced during graph construction.
-
-## TypeScript SDK (ts-core)
-
-`TsGraphRecorder` enables graph definitions in TypeScript via `defineGraph()`, `defineLifecycle()`, and `node()` helpers. Produces a JSON envelope consumed by `GoalCompiler`.
-
-`TsDesiredStateProcessor` processes TypeScript graph definitions with cross-surface filter broadening. Cross-surface `@GraphRule` annotations apply rules across Java and TypeScript graph surfaces — a rule defined in Java can constrain a TypeScript-defined graph and vice versa.
-
-## YAML Lifecycle Hooks
-
-Declarative lifecycle management via three hook types in YAML definitions:
-- `verify` — assert a condition before proceeding
-- `notify` — send a notification at a lifecycle point
-- `wait` — pause for a duration or external event before continuing
-
----
-
 ## Dependencies
 
 ### Depends On

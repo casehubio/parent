@@ -127,8 +127,6 @@ public interface CamelWorkerRoute {
 }
 ```
 
-**Exchange-aware dispatch:** The Camel worker runtime adapts platform `Exchange` records for Camel route dispatch. `ExchangeAwareFunction` workers receive the full exchange context, enabling composition via `ExchangeProcessor.andThen()` pipelines within Camel routes.
-
 Exchange pattern determines dispatch mode:
 - `InOut` -- Synchronous via `ProducerTemplate.request()`. Response body (`Map`) becomes output.
 - `InOnly` -- Asynchronous via `ProducerTemplate.send()`. Registers `PendingCompletion` entry.

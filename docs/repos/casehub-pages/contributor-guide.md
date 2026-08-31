@@ -357,21 +357,6 @@ All CaseHub web applications:
 
 ---
 
-## Tutorial System
-
-Interactive tutorial framework:
-- `<pages-tutorial>` host component with catalog, runner, and controller
-- **Catalog → Runner → Controller** pipeline: select a tutorial, run it step-by-step, manage navigation
-- **Slide navigation** with forward/back/skip controls
-- **YAML syntax highlighting** in tutorial code blocks via dedicated highlighter
-- **SVG block preservation** — SVG diagrams in tutorial slides render without mangling
-
-## Interactive Configuration Controls
-
-Live-editable config controls that respond to user input and update the underlying component in real-time. Used for demo/tutorial scenarios where users experiment with component properties.
-
----
-
 ## Current State
 
 **Maturity:** Production-ready. Used by 10+ CaseHub applications.

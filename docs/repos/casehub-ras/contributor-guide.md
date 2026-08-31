@@ -401,24 +401,6 @@ All metrics use Micrometer and degrade to no-ops when `MeterRegistry` is unavail
 
 ---
 
-## Meta-Situations
-
-Meta-situations compose multiple situations into higher-order detections. Cycle detection prevents infinite composition loops. Deadline triggers fire when accumulated evidence exceeds time thresholds. `SituationReplayRunner.drainAllDeadlines()` enables deterministic replay of detection sequences in tests — advances all pending deadline triggers without real-time waits.
-
-## Missed Detection and Feedback Tuning
-
-**MissedDetectionRecorder:** Records situations that should have been detected but were missed. REST endpoint: `POST /api/ras/feedback/missed`. JPA persistence via `MissedDetectionEntity` (Flyway V9). `InMemoryOutcomeLedger` provides dedup, statistics, and retention for dev/test.
-
-**Recall metrics:** `OutcomeStatistics.recall()` computes the ratio of true detections to total expected (detected + missed). `GanglionOutcomeStatistics.missedCount` tracks per-ganglion miss counts. Ganglion IDs stored as JSONB (Flyway V10).
-
-**Drift classification:** `FeedbackTuningStrategy.classifyDrift()` default method detects when detection rates diverge from historical baselines. `DriftDirection` enum: `RISING`, `FALLING`, `STABLE`, `BOTH_DRIFTING`. `FeedbackConfig` carries drift thresholds and `crossRefWindow`.
-
-**Feedback metrics:** Per-ganglion recall gauge + drift state-gauge. `FeedbackUpdateJob` publishes drift assessments with `BOTH_DRIFTING` guard and YAML parsing.
-
-**Cross-reference:** Missed detection records cross-referenced with trigger history for root cause analysis.
-
----
-
 ## Current State
 
 - All modules on main: API, runtime, ras-drools, drools-reliability, persistence-memory, persistence-jpa, testing. `ras-llm` scaffolded (POM only, no source directory).

@@ -255,21 +255,6 @@ Unified data provider interface in `@casehubio/pages-data`. Three core types:
 
 ---
 
-## Tutorial System
-
-Interactive tutorial framework built into pages:
-- **Host component** -- `<pages-tutorial>` web component with catalog, runner, and controller
-- **Catalog → Runner → Controller** pipeline -- select a tutorial, run it step-by-step, manage navigation
-- **Slide navigation** -- step-by-step progression with forward/back/skip controls
-- **YAML syntax highlighting** -- code blocks in tutorial content rendered with YAML-aware highlighting
-- **SVG block preservation** -- SVG diagrams in tutorial slides render correctly without mangling
-
-## Interactive Configuration Controls
-
-Live-editable config controls that respond to user input and update the underlying component in real-time. Used for demo/tutorial scenarios where users experiment with component properties.
-
----
-
 ## What It Does NOT Do
 
 - **SSE push does not support client->server ack** -- WebSocket only for bidirectional communication.
