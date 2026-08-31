@@ -97,6 +97,30 @@ Callers inject `AgentProvider` — the `RoutingAgentProvider` dispatches to `Age
 | `casehub-platform-agent-langchain4j` | AgentBackend "langchain4j" -- catch-all fallback; bidirectional LangChain4j interop |
 | `casehub-platform-agent-gate` | CDI `@Decorator` rate limiter -- wraps `RoutingAgentProvider` transparently |
 
+### PDF generation
+
+| Artifact | What it provides |
+|----------|------------------|
+| `casehub-platform-pdf` | `PdfGenerator` SPI (HTML-to-PDF with PDF/A-2b conformance); `OpenHtmlToPdfGenerator` with bundled Liberation Sans + Mono fonts |
+
+### YAML processing (yaml-core)
+
+| Artifact | What it provides |
+|----------|------------------|
+| `casehub-platform-yaml-core` | Pure Java YAML processing: `Truthiness` (boolean string evaluation), `VariableResolver` (pluggable prefix dispatch, deferred prefixes), `CsvParser` (typed columns with parse-time validation), `ForEachExpander` (adapter pattern with when conditions and JSON Schema fragments), `IterationGroup` |
+
+### TypeScript execution (ts-core)
+
+| Artifact | What it provides |
+|----------|------------------|
+| `casehub-platform-ts-core` | `TsExecutor` SPI for JVM-hosted TypeScript evaluation; `NodeTsExecutor` (npx tsx subprocess); `TsEvalResult`/`TsError` result types |
+
+### Signing
+
+| Artifact | What it provides |
+|----------|------------------|
+| `casehub-platform-signing` | `SigningProvider` SPI for cryptographic signing; `SignatureVerifier` for verification; `NoOpSigningProvider` `@DefaultBean` |
+
 ### Access control
 
 | Artifact | What it provides |
@@ -346,6 +370,37 @@ The `CaseMemoryStore` SPI and related types (`MemoryDomain`, `MemoryPermissions`
 - **Resource subscriptions:** `McpResourceRegistry` SPI for registering subscribable MCP resources. `McpResourceRegistryBridge` tracks subscriptions and fires notifications on resource changes.
 - **Dynamic tool schema:** The operation catalog is injected into the `casehub_action` tool definition at runtime, providing contextual tool descriptions.
 - `@McpDomain` interfaces discovered directly with `@PlatformQuery`/`@PlatformMutation` annotations.
+
+**Session leak detection:** `GatedAgentSession` maintains a registry of open sessions. An `@Scheduled` reaper detects sessions that exceed their timeout without being closed, logs a warning, and performs idempotent cleanup. Sessions implement `AutoCloseable` with idempotent close semantics.
+
+**MCP infrastructure:**
+- `casehub_activate` -- on-demand per-operation tool registration. Instead of exposing all tools at startup, agents discover and activate tools as needed during execution.
+- **Resource subscriptions:** MCP resource subscription and notification infrastructure for reactive resource updates.
+- **Dynamic tool schema:** The operation catalog is injected into the `casehub_action` tool definition at runtime, providing contextual tool descriptions.
+
+### PDF Generation
+
+`PdfGenerator` SPI generates PDF documents from HTML content. `PdfOptions` record configures paper size, margins, and `PdfAConformance` (PDF/A-2b for archival). `NoOpPdfGenerator` `@DefaultBean` returns empty bytes. `OpenHtmlToPdfGenerator` (in `platform-pdf`) provides the production implementation with bundled Liberation Sans and Mono fonts.
+
+### Signing
+
+`SigningProvider` SPI for cryptographic signing operations. `SignatureVerifier` for verification. `NoOpSigningProvider` `@DefaultBean` is a silent no-op -- the system functions correctly without a signing backend.
+
+### SessionIsolator
+
+`SessionIsolator` SPI -- virtual-thread-safe Hibernate session isolation. Wraps JPA calls that would otherwise fail on virtual threads due to Hibernate's thread-local session management. Use for any blocking JPA operations in `@RunOnVirtualThread` contexts.
+
+### YAML Processing (yaml-core)
+
+Pure Java, zero dependencies, J2CL-transpilable:
+- `Truthiness` -- boolean string evaluation (truthy/falsy)
+- `VariableResolver` -- pluggable prefix-to-source dispatch with deferred prefixes, each-context (simple strings), each-row-context (CSV field drilling), immutable child resolvers via `withScope`/`withEachContext`/`withEachRowContext`
+- `CsvParser` -- typed columns (`STRING`/`INTEGER`/`BOOLEAN`/`DECIMAL`) with parse-time validation and row+column error context
+- `ForEachExpander<E>` -- generic expansion via `ForEachAdapter<E>` with `when` conditions and composable JSON Schema fragments
+
+### TypeScript Execution (ts-core)
+
+`TsExecutor` SPI for JVM-hosted TypeScript evaluation. `NodeTsExecutor` spawns `npx tsx` subprocess as the fallback executor. Returns `TsEvalResult` (success with stdout/stderr) or `TsError` (failure with error message and exit code).
 
 ---
 
