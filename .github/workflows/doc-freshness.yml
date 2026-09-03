@@ -12,10 +12,7 @@ jobs:
           fetch-depth: 0
 
       - name: Checkout parent for detection scripts
-        uses: actions/checkout@v4
-        with:
-          repository: casehubio/parent
-          path: .parent
+        run: git clone --depth 1 https://github.com/casehubio/parent.git .parent
 
       - name: Set up Python
         uses: actions/setup-python@v5
