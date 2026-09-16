@@ -27,13 +27,13 @@ jobs:
           server-password: GITHUB_TOKEN
 
       - name: Publish to GitHub Packages
-        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' && github.repository_owner == 'casehubio'
         run: mvn --batch-mode deploy -DskipTests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Trigger downstream CI
-        if: github.event_name != 'pull_request' && success()
+        if: github.event_name != 'pull_request' && github.repository_owner == 'casehubio' && success()
         run: |
           for repo in platform ledger connectors; do
             gh api repos/casehubio/$repo/dispatches \
