@@ -6,8 +6,8 @@ worker,parent,platform
 ledger,parent,platform
 connectors,parent,platform
 neocortex,platform
-eidos,platform,ledger,desiredstate,engine
-desiredstate,platform,engine,neocortex,ras,work,worker
+eidos,platform,ledger,engine
+desiredstate,platform,eidos,engine,neocortex,ras,work,worker
 ras,platform,engine
 qhorus,platform,ledger,connectors,eidos
 work,platform,ledger,engine,qhorus
