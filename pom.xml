@@ -38,6 +38,7 @@
     <spring-boot.version>4.1.1</spring-boot.version>
     <jackson3.version>3.0.3</jackson3.version>
     <json-schema-validator.version>1.5.4</json-schema-validator.version>
+    <rest-assured.version>6.0.1</rest-assured.version>
   </properties>
 
   <dependencyManagement>
@@ -83,6 +84,32 @@
         <groupId>com.networknt</groupId>
         <artifactId>json-schema-validator</artifactId>
         <version>${json-schema-validator.version}</version>
+      </dependency>
+
+      <!-- REST Assured 6.0 — overrides Quarkus BOM's 5.5 (incompatible with Groovy 5) -->
+      <dependency>
+        <groupId>io.rest-assured</groupId>
+        <artifactId>rest-assured</artifactId>
+        <version>${rest-assured.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>io.rest-assured</groupId>
+        <artifactId>rest-assured-common</artifactId>
+        <version>${rest-assured.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>io.rest-assured</groupId>
+        <artifactId>json-path</artifactId>
+        <version>${rest-assured.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>io.rest-assured</groupId>
+        <artifactId>xml-path</artifactId>
+        <version>${rest-assured.version}</version>
+        <scope>test</scope>
       </dependency>
 
       <!-- CloudEvents SDK — overrides Quarkus BOM's cloudevents-api:3.0.0 -->
