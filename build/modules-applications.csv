@@ -5,7 +5,7 @@ openclaw,platform,ledger,engine,life,qhorus
 devtown,platform,ledger,connectors,engine,blocks,life,neocortex,qhorus,work,worker
 aml,platform,ledger,engine,blocks,eidos,life,neocortex,qhorus,work
 clinical,platform,ledger,connectors,engine,blocks,eidos,life,neocortex,qhorus,work,worker
-life,platform,ledger,connectors,engine,iot,neocortex,openclaw,qhorus,work
+life,platform,ledger,connectors,engine,neocortex,openclaw,qhorus,work
 drafthouse,parent,qhorus
 soc,platform,ledger,desiredstate,eidos,engine,neocortex,qhorus,ras,work,worker
 fsitrading,platform,ledger,engine,blocks,eidos,neocortex,qhorus,work,worker
