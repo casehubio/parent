@@ -55,6 +55,7 @@ Each repo owns its own `docs/guides/consumer-guide.md` and `docs/guides/contribu
 - [Agentic Harness](AGENTIC-HARNESS-GUIDE.md) — session conventions for LLM work in app repos
 - [arc42stories spec](arc42stories-spec.md) — standard architecture documentation format
 - [Config Architecture](config-architecture.md) — topic ownership, what's authoritative where
+- [Documentation Alignment](guides/documentation-alignment.md) — per-repo doc structure, alignment procedure, audit checklist
 - [New Repo Checklist](new-repo-checklist.md) — setup steps for adding a new repository
 - [Applications](APPLICATIONS.md) — all domain applications with status
 
