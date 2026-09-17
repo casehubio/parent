@@ -1,20 +1,22 @@
 # name,dep1,dep2,...  (order = build order)
-platform,parent
-worker,parent
-ledger,parent
-eidos,ledger
-neocortex,platform
-connectors,parent
-iot,platform
-work,parent,ledger,connectors
-qhorus,parent,ledger,work
-desiredstate,platform
+# deps reflect actual pom.xml cross-repo dependencies as of 2026-09-17
+# KNOWN CYCLES: platform↔neocortex, engine↔work, eidos↔desiredstate↔engine
+platform,parent,neocortex
+worker,parent,platform
+ledger,parent,platform
+connectors,parent,platform
+neocortex,platform,ledger,desiredstate,blocks
+eidos,platform,ledger,desiredstate,engine
+desiredstate,platform,engine,ras,work,worker
+ras,platform,engine
+qhorus,platform,ledger,connectors,eidos
+work,platform,ledger,engine,qhorus
+engine,platform,ledger,connectors,eidos,neocortex,qhorus,work,worker
 pages
-engine,parent,ledger,work
-blocks,parent,qhorus,work,engine
+blocks,platform,ledger,neocortex,eidos,engine,qhorus,work,worker
 blocks-ui,pages,engine,work,qhorus,ledger,blocks
-ras,platform
-workers,platform,engine
-claudony,parent,ledger,work,qhorus
-ops,platform,desiredstate
-chat-app,connectors,pages
+workers,platform,engine,worker
+claudony,platform,ledger,engine,qhorus,work,worker
+ops,platform,ledger,desiredstate,eidos,engine,iot,qhorus,ras,work,blocks
+iot,platform,ledger,connectors,engine,life,neocortex,ras,work,worker
+chat-app,platform,qhorus,life

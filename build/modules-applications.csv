@@ -1,12 +1,13 @@
 # name,dep1,dep2,...  (order = build order)
 # repos under mdproctor/ (not casehubio/): fsitrading, soc
-openclaw,parent,platform,ledger,qhorus,engine
-devtown,parent,ledger,work,qhorus,engine
-aml,parent,ledger,work,qhorus,engine
-clinical,parent,ledger,work,qhorus,engine
-life,parent,ledger,work,qhorus,engine,openclaw
+# deps reflect actual pom.xml cross-repo dependencies as of 2026-09-17
+openclaw,platform,ledger,engine,life,qhorus
+devtown,platform,ledger,connectors,engine,blocks,life,neocortex,qhorus,work,worker
+aml,platform,ledger,engine,blocks,eidos,life,neocortex,qhorus,work
+clinical,platform,ledger,connectors,engine,blocks,eidos,life,neocortex,qhorus,work,worker
+life,platform,ledger,connectors,engine,iot,neocortex,openclaw,qhorus,work
 drafthouse,parent,qhorus
-soc,parent,platform,ledger,work,qhorus,engine
-fsitrading,parent,platform,ledger,work,qhorus,engine
-quarkmind,parent,ledger,work,qhorus,engine
-scaffold,parent,engine
+soc,platform,ledger,desiredstate,eidos,engine,neocortex,qhorus,ras,work,worker
+fsitrading,platform,ledger,engine,blocks,eidos,neocortex,qhorus,work,worker
+quarkmind,platform,ledger,connectors,engine,blocks,eidos,life,neocortex,qhorus
+scaffold,platform,engine,life,work
