@@ -5,7 +5,7 @@ platform,parent,neocortex
 worker,parent,platform
 ledger,parent,platform
 connectors,parent,platform
-neocortex,platform,ledger,blocks
+neocortex,platform
 eidos,platform,ledger,desiredstate,engine
 desiredstate,platform,engine,neocortex,ras,work,worker
 ras,platform,engine
