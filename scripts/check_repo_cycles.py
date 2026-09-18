@@ -18,7 +18,7 @@ from pathlib import Path
 
 NS = '{http://maven.apache.org/POM/4.0.0}'
 GROUP = 'io.casehub'
-SKIP_PARTS = frozenset({'target', '.git', '.claude', 'node_modules', '.mvn', 'src'})
+SKIP_PARTS = frozenset({'target', '.git', '.claude', 'node_modules', '.mvn', 'src', '.casehub-packages'})
 
 
 def load_csv_graph(parent: Path) -> dict[str, set[str]]:
