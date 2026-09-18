@@ -111,6 +111,13 @@ jobs:
 
           echo "::endgroup::"
 
+      - name: Check for circular repo dependencies
+        run: |
+          # Parent repo is at '.', cloned repos are at 'casehub/'.
+          # Symlink parent into casehub/ so the script sees all repos.
+          ln -sf "$(pwd)" casehub/parent
+          python3 scripts/check_repo_cycles.py casehub
+
       # Restore state from last run on this branch.
       # Key includes run_id so each run writes its own entry; restore-keys
       # falls back to the most recent prior run on the same branch.
