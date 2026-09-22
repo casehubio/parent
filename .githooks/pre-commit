@@ -1,0 +1,26 @@
+#!/bin/bash
+# Block direct edits to docs/repos/ — these files are subtree-synced from
+# child repos. Edit the source in the child repo's docs/guides/ instead,
+# then run scripts/sync-guides.sh --local to update parent.
+#
+# Bypass with: git commit --no-verify (e.g. when running sync-guides.sh)
+
+staged=$(git diff --cached --name-only -- 'docs/repos/')
+
+if [ -n "$staged" ]; then
+  echo ""
+  echo "╔══════════════════════════════════════════════════════════╗"
+  echo "║  BLOCKED: direct edits to docs/repos/ are not allowed   ║"
+  echo "╠══════════════════════════════════════════════════════════╣"
+  echo "║  These files are synced from child repos.               ║"
+  echo "║  Edit docs/guides/ in the child repo instead, then run: ║"
+  echo "║    scripts/sync-guides.sh --local --repo <name>         ║"
+  echo "║                                                         ║"
+  echo "║  Bypass: git commit --no-verify                         ║"
+  echo "╚══════════════════════════════════════════════════════════╝"
+  echo ""
+  echo "Staged files in docs/repos/:"
+  echo "$staged" | sed 's/^/  /'
+  echo ""
+  exit 1
+fi

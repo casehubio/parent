@@ -39,13 +39,14 @@ for arg in "$@"; do
 done
 
 # Re-parse --repo since the above loop is fragile with shift
-for i in $(seq 1 $#); do
-  arg="${!i}"
-  if [ "$arg" = "--repo" ]; then
-    next=$((i + 1))
-    SINGLE_REPO="${!next}"
-  fi
-done
+if [ $# -gt 0 ]; then
+  args=("$@")
+  for i in $(seq 0 $(($# - 1))); do
+    if [ "${args[$i]}" = "--repo" ] && [ $((i + 1)) -lt $# ]; then
+      SINGLE_REPO="${args[$((i + 1))]}"
+    fi
+  done
+fi
 
 synced=0
 skipped=0
@@ -102,7 +103,10 @@ for r in config['repos']:
   if $LOCAL_MODE; then
     # For local repos, clone to temp first to avoid modifying the working repo
     split_dir="$TMPDIR/$name-split"
-    git clone --quiet "$clone_dir" "$split_dir" 2>/dev/null
+    git clone --quiet --branch main "$clone_dir" "$split_dir" 2>/dev/null || {
+      echo "  SKIP $name: could not clone local repo on main"
+      continue
+    }
   fi
 
   (cd "$split_dir" && git subtree split --prefix=docs/guides -b docs-guides --quiet 2>/dev/null) || {
