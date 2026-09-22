@@ -19,7 +19,7 @@ No Camel, no vendor SDKs -- pure `java.net.http.HttpClient` for HTTP-based conne
 
 ## Module Structure
 
-There are 17 active modules in the build (pom.xml `<modules>`):
+There are 21 active modules in the build (pom.xml `<modules>`):
 
 | Module (artifactId prefix: `casehub-connectors-`) | What consumers need to know |
 |----------------------------------------------------|-----------------------------|
@@ -30,15 +30,19 @@ There are 17 active modules in the build (pom.xml `<modules>`):
 | `mcp` | MCP tool surface for LLM agents: `send_slack`, `send_teams`, `send_sms`, `send_whatsapp`, `send_email`, `send_chat`, `list_channels`, `list_chat_channels`, plus 6 calendar tools |
 | `slack-bot` | `SlackBotClient` -- pure `java.net.http` client for the Slack Web API (16 methods including 2 `postMessage` overloads). Pagination via generic `paginateGet<T>` with fail-soft partial results |
 | `discord` | `DiscordClient` (REST API v10), `DiscordGateway` (Gateway v10 WebSocket via Vert.x), `DiscordGatewayPresenceCache`, `DiscordDiscovery` |
-| `chat-spi` | `ChatPlatform` SPI, 9 capability interfaces, `ChatPlatformService` routing, `ChatInboundAdapter`, `InboundTranslator` SPI, model records (`RichCard`, `Channel`, `ChatContent`, `ReceivedMessage`, `SendResult`, `Member`, `PresenceStatus`) |
+| `chat-spi` | `ChatPlatform` SPI with `@SimulationEligible` (capability-based), 9 capability interfaces, `ChatPlatformService` routing, `ChatInboundAdapter`, `InboundTranslator` SPI, `NoOpChatPlatform` `@DefaultBean` fallback, model records (`RichCard`, `Channel`, `ChatContent`, `ReceivedMessage`, `SendResult`, `Member`, `PresenceStatus`) |
 | `chat-ref` | In-memory reference `ChatPlatform` for testing (`RefChatPlatform`) |
 | `chat-irc` | IRC `ChatPlatform` (3 native capabilities: Messaging, Discovery, Members) |
 | `chat-discord` | Discord `ChatPlatform` (8 native capabilities), `DiscordInboundConnector` (Gateway-based), RichCard-to-DiscordEmbed translation |
 | `chat-slack` | Slack `ChatPlatform` (9 native capabilities -- most complete), RichCard-to-Block Kit translation |
+| `signal-cli` | `SignalClient` HTTP client + `SignalWebSocket` WebSocket client for `signal-cli-rest-api`. Pure `java.net.http` -- no AGPL dependencies |
+| `chat-signal` | Signal `ChatPlatform` (6 native capabilities: Messaging, Discovery, Members, Reactions, ChannelManagement, MemberManagement), `SignalInboundConnector` (WebSocket-based), `SignalInboundTranslator` |
 | `notification-bridge` | Bridges platform notification delivery system to connector SPI. `NotificationBridgeStartup`, `ConnectorNotificationDeliverer`, `DigestFormatter` SPI, `ConfigDestinationResolver` |
-| `calendar-spi` | `CalendarPlatform` SPI, `CalendarPlatformService` routing, model records (`CalendarEvent`, `CalendarInfo`, `EventDetails`), sealed `EventTiming` (Timed/AllDay) |
+| `calendar-spi` | `CalendarPlatform` SPI with `@SimulationEligible`, `CalendarPlatformService` routing, `NoOpCalendarPlatform` `@DefaultBean` fallback, model records (`CalendarEvent`, `CalendarInfo`, `EventDetails`), sealed `EventTiming` (Timed/AllDay with Jackson `@JsonTypeInfo`) |
 | `calendar-ref` | In-memory reference `CalendarPlatform` for testing (`RefCalendarPlatform`) |
 | `calendar-google` | Google Calendar API provider with OAuth2 refresh token auth, paginated `listEvents` |
+| `bank-spi` | `BankFeedPlatform` SPI with `@SimulationEligible`, model records (`AccountInfo`, `AccountBalance`, `Transaction`), `BankFeedPlatformService` routing, `NoOpBankFeedPlatform` `@DefaultBean` fallback |
+| `email-spi` | `EmailPlatform` SPI with `@SimulationEligible`, model records (`Mailbox`, `EmailSummary`, `EmailMessage`, `EmailAttachment`), `EmailPlatformService` routing. Complements `email` (outbound) and `email-inbound` (push) |
 | `graphql` | `ConnectorOperations` `@McpDomain("connectors")` SPI — GraphQL/MCP surface with 4 operations: `injectChat` (constructs `InboundMessage`, fires via `InboundConnectorService`), `sendNotification` (delegates to `ConnectorService.send()`), `connectorStatus` (aggregates outbound + chat + inbound connectors), `sentMessages` (queries `SentMessageCapture`, profile-gated). `ConnectorsModelEnricher` provides domain summary/state for MCP. `SentMessageCapture` (`@UnlessBuildProfile("prod")`) CDI observer for test/dev message capture. |
 
 **CDI events:** `ConnectorService.send()` fires `Event<SentMessage>` on every outbound delivery. `SentMessage` record carries the connector ID, recipient, message content, and timestamp. Observe with `@ObservesAsync SentMessage` for delivery tracking.
@@ -78,6 +82,7 @@ connectorService.send("slack", new ConnectorMessage(webhookUrl, "Title", "Body")
 | `teams` | `TeamsConnector` | core | Webhook URL in `destination` | Renders as Adaptive Card (v1.4) |
 | `twilio-sms` | `TwilioSmsConnector` | core | Account SID + Auth Token + From number in MP Config | `channelType()` returns `"sms"`. E.164 phone number in `destination` |
 | `whatsapp` | `WhatsAppConnector` | core | API Token + Phone Number ID in MP Config | Template messages via `attributes("templateName")` + `attributes("templateLanguage")` (default `en_US`) |
+| `signal` | `SignalConnector` | core | signal-cli-rest-api URL + sender number in MP Config | Backed by external `signal-cli-rest-api` Docker container |
 | `email` | `EmailConnector` | `email` | SMTP via `quarkus-mailer` config | Supports `format=html` attribute for HTML rendering via `Mail.withHtml()` |
 
 ### ConnectorMessage Record
@@ -156,6 +161,7 @@ Constants for connector types: `InboundConnectorTypes` (e.g. `SLACK = "slack"`, 
 | `twilio-sms-inbound` | `TwilioSmsInboundConnector` | `webhook` | Webhook POST | HMAC-SHA1 (Twilio algorithm), form-encoded |
 | `discord-inbound` | `DiscordInboundConnector` | `chat-discord` | Discord Gateway WebSocket | Discord bot token |
 | `irc-inbound` | `IrcInboundConnector` | `chat-irc` | IRC connection | IRC server config |
+| `signal-inbound` | `SignalInboundConnector` | `chat-signal` | signal-cli-rest-api WebSocket | signal-cli URL + registered number |
 
 ### ConnectorDiscovery SPI
 
@@ -220,6 +226,7 @@ ChatPlatform.builder("my-platform")
 | `IrcChatPlatform` | `irc` | 3 (Messaging, Discovery, Members) |
 | `DiscordChatPlatform` | `discord` | 8 (all except MemberManagement, which is degraded) |
 | `SlackChatPlatform` | `slack` | 9 (most complete) |
+| `SignalChatPlatform` | `signal` | 6 (Messaging, Discovery, Members, Reactions, ChannelManagement, MemberManagement) |
 
 ### CalendarPlatform SPI
 
@@ -249,6 +256,93 @@ public interface CalendarPlatform {
 |----------------|------------|-------|
 | `RefCalendarPlatform` | `ref` | In-memory reference for testing |
 | `GoogleCalendarPlatform` | `google` | Google Calendar API with OAuth2 refresh token auth, paginated listEvents (max 20 pages) |
+
+### BankFeedPlatform SPI
+
+Financial data integration -- account listing, balance queries, paginated transaction history.
+
+```java
+@SimulationEligible(name = "bank-feed-platform")
+public interface BankFeedPlatform {
+    String id();
+    List<AccountInfo> listAccounts();
+    AccountBalance balance(String accountId);
+    Page<Transaction> listTransactions(String accountId, Instant from, Instant to, PageRequest pagination);
+    Transaction getTransaction(String accountId, String transactionId);
+}
+```
+
+**BankFeedPlatformService** -- inject for routing. Same pattern as `CalendarPlatformService`.
+
+**Model records:**
+- `AccountInfo(id, name, type, currency)` -- `type` is `AccountType` enum (CURRENT, SAVINGS, CREDIT_CARD, LOAN, MORTGAGE, OTHER)
+- `AccountBalance(accountId, available, current, currency, asOf)` -- `BigDecimal` amounts; `available` = spendable, `current` = ledger balance
+- `Transaction(id, accountId, amount, direction, currency, description, merchantName, category, date, status)` -- `amount` always positive, `direction` is DEBIT/CREDIT; `merchantName` and `category` nullable
+
+**Pagination:** Uses `Page<T>` and `PageRequest` from `connectors-api`. Call `PageRequest.first(25)` for the first page, then use `page.nextCursor()` for subsequent pages.
+
+**Error contract:** `balance()` and `getTransaction()` throw `NoSuchElementException` on not-found. List operations return empty collections.
+
+**Simulation:** Annotated with `@SimulationEligible` -- the platform simulation framework generates a CDI decorator at build time. Configure strategies and corpus data via `Simulation.forTest()` or scenario YAML. Qualified names: `bank-feed-platform.listAccounts`, `bank-feed-platform.balance`, `bank-feed-platform.listTransactions`, `bank-feed-platform.getTransaction`.
+
+**Shipped corpus data:** The module includes example corpus YAML files on the classpath under `simulation/bank-feed/`:
+- `accounts-corpus.yaml` -- 3 accounts (current, savings, credit card) with balances
+- `transactions-corpus.yaml` -- 12 transactions with UK merchants, categories, pending/booked status
+- `simulation.yaml` -- ready-to-use simulation config with strategies and key extractors
+
+To use in your app: add `bank-spi` as a dependency -- the corpus files are on the classpath automatically. Point your simulation config's `corpus-files` at `classpath:simulation/bank-feed/accounts-corpus.yaml` etc., or copy `simulation/bank-feed/simulation.yaml` as a starting point. A combined config for both SPIs is available at `docs/examples/simulation/household-finance/simulation.yaml`.
+
+**Dependency:**
+```xml
+<dependency>
+    <groupId>io.casehub</groupId>
+    <artifactId>casehub-connectors-bank-spi</artifactId>
+    <version>${casehub.version}</version>
+</dependency>
+```
+
+### EmailPlatform SPI
+
+Email query/read integration -- mailbox listing, paginated message listing, message retrieval, attachment content. Complements `EmailConnector` (outbound) and `EmailInboundConnector` (push inbound).
+
+```java
+@SimulationEligible(name = "email-platform")
+public interface EmailPlatform {
+    String id();
+    List<Mailbox> listMailboxes();
+    Page<EmailSummary> listMessages(String mailboxId, Instant from, Instant to, PageRequest pagination);
+    EmailMessage getMessage(String mailboxId, String messageId);
+    byte[] getAttachmentContent(String mailboxId, String messageId, String attachmentId);
+}
+```
+
+**EmailPlatformService** -- inject for routing. Same pattern as `CalendarPlatformService`.
+
+**Model records:**
+- `Mailbox(id, name, unreadCount)`
+- `EmailSummary(id, mailboxId, messageId, from, subject, receivedAt, read)` -- `messageId` (RFC 2822 Message-ID) nullable
+- `EmailMessage(id, mailboxId, messageId, from, to, cc, subject, bodyText, bodyHtml, receivedAt, read, attachments)` -- `bodyText`/`bodyHtml` nullable (at least one non-null); `messageId` nullable
+- `EmailAttachment(id, filename, contentType, size)` -- `id` is provider-assigned part identifier (always non-null); `filename` nullable
+
+**Error contract:** `getMessage()` and `getAttachmentContent()` throw `NoSuchElementException` on not-found.
+
+**Correlation with EmailInboundConnector:** RFC 2822 `Message-ID` correlates queries with push events (`InboundMessage.metadata["message-id"]`). Consumers observing both paths must be idempotent. Messages with null `messageId` cannot be deduplicated.
+
+**Simulation:** Same as BankFeedPlatform. Qualified names: `email-platform.listMailboxes`, `email-platform.listMessages`, `email-platform.getMessage`, `email-platform.getAttachmentContent`.
+
+**Shipped corpus data:** Under `simulation/email/` on the classpath:
+- `mailbox-corpus.yaml` -- 2 mailboxes, 6 messages with realistic UK senders/subjects
+- `messages-corpus.yaml` -- full message bodies, attachments, RFC 2822 Message-IDs
+- `simulation.yaml` -- ready-to-use simulation config
+
+**Dependency:**
+```xml
+<dependency>
+    <groupId>io.casehub</groupId>
+    <artifactId>casehub-connectors-email-spi</artifactId>
+    <version>${casehub.version}</version>
+</dependency>
+```
 
 ### Notification Bridge
 
@@ -310,6 +404,8 @@ Slack and Teams webhook connectors require no configuration -- the webhook URL i
 | `casehub.connectors.calendar.google.client-id` | calendar-google | Google OAuth2 client ID |
 | `casehub.connectors.calendar.google.client-secret` | calendar-google | Google OAuth2 client secret |
 | `casehub.connectors.calendar.google.refresh-token` | calendar-google | Google OAuth2 refresh token |
+| `casehub.connectors.signal.api-url` | signal-cli | signal-cli-rest-api base URL (e.g. `http://localhost:8080`) |
+| `casehub.connectors.signal.sender` | signal-cli | Registered Signal phone number (E.164) |
 | `quarkus.mailer.*` | email | SMTP configuration (host, port, from, username, password) |
 | IMAP host, port, username, password | email-inbound | Email inbound polling (via `EmailInboundAccountProvider` SPI) |
 | `casehub.notification.destinations.<channel>.<userId>` | notification-bridge | Config-based destination resolution fallback |
@@ -320,7 +416,7 @@ Connectors with blank credentials are no-ops -- they log a warning and return `f
 
 ## Dependencies
 
-Nothing in the casehubio ecosystem except `casehub-platform-api` (for `notification-bridge` only). Core module: `java.net.http.HttpClient`, `cloudevents-core` (CNCF CloudEvents SDK), `jackson-databind`. Optional modules: `quarkus-mailer` (email), `jakarta.mail` (email inbound), `quarkus-mcp-server` (MCP tools), Google Calendar API client (calendar-google), Vert.x WebSocket (Discord Gateway).
+Nothing in the casehubio ecosystem except `casehub-platform-api` (for `notification-bridge` only). Core module: `java.net.http.HttpClient`, `cloudevents-core` (CNCF CloudEvents SDK), `jackson-databind`. Optional modules: `quarkus-mailer` (email), `jakarta.mail` (email inbound), `quarkus-mcp-server` (MCP tools), Google Calendar API client (calendar-google), Vert.x WebSocket (Discord Gateway). Signal connector uses `java.net.http.HttpClient` and `java.net.http.WebSocket` -- no AGPL signal-cli dependencies in the JVM.
 
 GroupId: `io.casehub` -- published to GitHub Packages at `0.2-SNAPSHOT`.
 
@@ -333,4 +429,4 @@ GroupId: `io.casehub` -- published to GitHub Packages at `0.2-SNAPSHOT`.
 - Depend on casehub-work, casehub-ledger, or casehub-engine
 - Include vendor SDKs (Slack SDK, Twilio SDK) -- all HTTP-based connectors use `java.net.http.HttpClient` directly
 
-**Consolidation rule:** Do not implement a new Slack, Teams, SMS, email, WhatsApp, Discord, IRC, or inbound connector in any other repo. All outbound and inbound messaging routes through these SPIs. If a new channel type is needed, add it here.
+**Consolidation rule:** Do not implement a new Slack, Teams, SMS, email, WhatsApp, Discord, IRC, Signal, or inbound connector in any other repo. All outbound and inbound messaging routes through these SPIs. If a new channel type is needed, add it here.

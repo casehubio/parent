@@ -15,9 +15,9 @@ Four related capabilities in one repo:
 
 **RAG Integration** — casehub-specific LangChain4j RAG pipeline wiring. Tenancy-isolated Qdrant corpus storage, hybrid dense+sparse+BM25 search via configurable fusion (RRF, DBSF, CC). Exposes `EmbeddingIngestor` and `CaseRetriever` SPIs for use by engine case steps and the typed fact space. Pre-ingestion dedup gate, retrieval tracking, corrective RAG, cross-encoder reranking, and query expansion.
 
-**CBR Memory** — case-based reasoning with typed feature-vector similarity search over prior cases. `CbrCaseMemoryStore` SPI with multiple backends (in-memory, JPA/PostgreSQL, Qdrant). Typed feature values (7 value types, 9 field types), weighted similarity scoring, plan adaptation, ensemble analysis, temporal decay, trust-weighted retrieval, hierarchical scoping, and outcome feedback loops.
+**CBR Memory** — case-based reasoning with typed feature-vector similarity search over prior cases. `CbrRecordStore` SPI with multiple backends (in-memory, JPA/PostgreSQL, Qdrant). Typed feature values (7 value types, 9 field types), weighted similarity scoring, plan adaptation, ensemble analysis, temporal decay, trust-weighted retrieval, hierarchical scoping, and outcome feedback loops.
 
-**Agent Memory** — queryable, permission-aware, persistent agent memory. `CaseMemoryStore` SPI with multiple backends (in-memory, JPA/PostgreSQL, SQLite, Mem0, Graphiti). Salience-based ranking, importance-aware retention, fire-and-forget emission via `MemoryEmitter`.
+**Agent Memory** — queryable, permission-aware, persistent agent memory. `CaseMemoryStore` SPI with multiple backends (in-memory, JPA/PostgreSQL, SQLite, Mem0, Graphiti). Salience-based ranking, confidence-aware retention, fire-and-forget emission via `MemoryEmitter`.
 
 ---
 
@@ -38,7 +38,7 @@ Four related capabilities in one repo:
 
 | Module | artifactId | What you get |
 |--------|-----------|-------------|
-| `rag-api` | `casehub-neocortex-rag-api` | `EmbeddingIngestor`, `CaseRetriever`, `RetrievalTracker`, `RelevanceEvaluator`, `QueryExpander`, `RetrievalAnalyzer` SPIs — pure Java |
+| `rag-api` | `casehub-neocortex-rag-api` | `EmbeddingIngestor`, `CaseRetriever`, `RetrievalTracker`, `RelevanceEvaluator`, `QueryExpander`, `QueryExtractionStrategy`, `RetrievalAnalyzer` SPIs; `CaseContextRetriever` (multi-corpus retrieval with dedup and per-corpus error isolation; strategy-driven overload accepts `QueryExtractionStrategy` for domain-specific case context → query extraction) — pure Java |
 | `rag` | `casehub-neocortex-rag` | LangChain4j pipeline, Qdrant, three-leg hybrid search, `MatryoshkaEmbeddingModel`, `DenseQuantization`, `DedupEmbeddingIngestor`, `PayloadBoostCaseRetriever` |
 | `rag-tika` | `casehub-neocortex-rag-tika` | Apache Tika document parser — extracts text + metadata from binary documents (PDF, DOCX) for RAG ingestion |
 | `rag-crossencoder` | `casehub-neocortex-rag-crossencoder` | Corrective RAG quality-gating + cross-encoder reranking. Config-gated decorators |
@@ -56,27 +56,50 @@ Four related capabilities in one repo:
 
 | Module | artifactId | What you get |
 |--------|-----------|-------------|
-| `memory-api` | `casehub-neocortex-memory-api` | `CaseMemoryStore`, `GraphCaseMemoryStore` SPIs, `MemoryOrder` (CHRONOLOGICAL, RELEVANCE, SALIENCE), `MemoryInput` with importance, `MemoryRetentionPolicy`, `MemoryScanRequest` — pure Java |
+| `memory-api` | `casehub-neocortex-memory-api` | `CaseMemoryStore`, `GraphCaseMemoryStore` SPIs, `DelegatingCaseMemoryStore` (forwarding base for decorators), `MemoryOrder` (CHRONOLOGICAL, RELEVANCE, SALIENCE), `MemoryInput` with confidence, `MemoryRetentionPolicy`, `MemoryScanRequest` — pure Java |
 | `memory` | `casehub-neocortex-memory` | CDI wiring, `MemoryEmitter` fire-and-forget wrapper, `CaseEnrichmentDecorator`, `MemoryRetentionScheduler` |
 | `memory-inmem` | `casehub-neocortex-memory-inmem` | In-memory volatile backend — test + ephemeral |
 | `memory-jpa` | `casehub-neocortex-memory-jpa` | PostgreSQL + Flyway + FTS via `websearch_to_tsquery` |
 | `memory-sqlite` | `casehub-neocortex-memory-sqlite` | SQLite + HikariCP WAL + FTS5 |
 | `memory-mem0` | `casehub-neocortex-memory-mem0` | Mem0 REST adapter — vector embeddings + semantic search |
 | `memory-graphiti` | `casehub-neocortex-memory-graphiti` | Graphiti REST adapter — temporal knowledge graph |
+| `memory-spring` | `casehub-neocortex-memory-spring` | Spring Boot auto-configuration for memory core beans (enrichment, retention, CBR runtime) |
+| `memory-spring-jpa` | `casehub-neocortex-memory-spring-jpa` | Spring Data JPA `CaseMemoryStore` — PostgreSQL + Flyway + FTS. Configure: `casehub.memory.jpa.fts.enabled` (default `true`), `casehub.memory.jpa.fts.language` (default `english`) |
 | `memory-testing` | `casehub-neocortex-memory-testing` | Test stubs for memory SPIs |
 
 ### CBR Memory
 
 | Module | artifactId | What you get |
 |--------|-----------|-------------|
-| `memory-api` | `casehub-neocortex-memory-api` | `CbrCaseMemoryStore` SPI, typed feature values, field schema, similarity specs, `PlanAdapter`, `PlanEnsembleAnalyzer`, `AgentTrustProvider`, `CbrRetrievalTracker`, `PersonalityTransitionSchema` — pure Java |
+| `memory-api` | `casehub-neocortex-memory-api` | `CbrRecordStore` SPI, typed feature values, field schema, similarity specs, `CbrCbrPlanAdapter`, `CbrCbrPlanEnsembleAnalyzer`, `AgentTrustProvider`, `CbrRetrievalTracker`, `PersonalityTransitionSchema` — pure Java |
 | `memory` | `casehub-neocortex-memory` | CBR CDI decorator chain — outcome weighting, trust-weighted retrieval, scope decay, temporal decay, trend enrichment, erasure notification. `CbrRetentionScheduler`, `TrustRetentionService`, `CbrOutcomeConsumer` |
 | `memory-cbr-inmem` | `casehub-neocortex-memory-cbr-inmem` | In-memory CBR case store for tests |
 | `memory-cbr-jpa` | `casehub-neocortex-memory-cbr-jpa` | JPA/PostgreSQL CBR store with JSONB features, plan traces, outcome tracking |
 | `memory-qdrant` | `casehub-neocortex-memory-qdrant` | Qdrant vector store backend + multi-leg hybrid fusion + `CbrReconciliationService` |
 | `memory-cbr-embedding` | `casehub-neocortex-memory-cbr-embedding` | `EmbeddingTextSimilarity` — LangChain4j `EmbeddingModel`-based semantic text similarity for CBR fields |
 | `memory-cbr-crossencoder` | `casehub-neocortex-memory-cbr-crossencoder` | Cross-encoder reranking for CBR retrieval. Config-gated decorator |
+| `memory-cbr-spring-jpa` | `casehub-neocortex-memory-cbr-spring-jpa` | Spring Data JPA `CbrRecordStore` — PostgreSQL + Flyway, shared filter matching via `CbrRecordFilterMatcher` |
 | `memory-cbr-tracking` | `casehub-neocortex-memory-cbr-tracking` | SQLite-backed CBR retrieval tracking + plan adaptation tracking + ensemble tracking |
+
+### Knowledge Model
+
+| Module | artifactId | What you get |
+|--------|-----------|-------------|
+| `thing-api` | `casehub-neocortex-thing-api` | `Thing` interface — id, name, type, properties, traits, `is()`/`as()`. Zero deps. Consumer-facing module |
+| `cognitive-api` | `casehub-neocortex-cognitive-api` | `Confidence` record, `ConfidenceOrigin` enum, `TemporalMark` sealed hierarchy — cross-cutting cognitive types. Zero deps |
+| `mindmap-api` | `casehub-neocortex-mindmap-api` | `MindMapStore` SPI, `MindMapNode` (extends Thing with confidence, PAD, temporal bounds), `MindMapQuery`, `SubgraphTypes`, `SchemaField`, `NodeRef`, `EdgeTypeDefinition` |
+| `mindmap` | `casehub-neocortex-mindmap` | CDI wiring, `ConfidenceDecayDecorator`, `VocabularyNormalizationDecorator`, `DerivedEdgeDecorator`, `MindMapAnalyzer` graph analytics |
+| `mindmap-inmem` | `casehub-neocortex-mindmap-inmem` | In-memory `MindMapStore` for tests |
+| `mindmap-sqlite` | `casehub-neocortex-mindmap-sqlite` | SQLite + HikariCP WAL + FTS5 — production backend for single-node deployments |
+| `mindmap-intelligence` | `casehub-neocortex-mindmap-intelligence` | `TypeRegistry`, trait interfaces (`Personable`, `Projectlike`, `Organisational`, `Eventlike`), `TraitRule` implementations, `MindMapExtractor` (parse/apply decomposition), `ConversationBridge` (principalId + confidence params) |
+| `mindmap-testing` | `casehub-neocortex-mindmap-testing` | `MindMapStoreContractTest` abstract base (72 tests) |
+
+### Cognitive Index
+
+| Module | artifactId | What you get |
+|--------|-----------|-------------|
+| `cognitive-index` | `casehub-neocortex-cognitive-index` | `TemporalIndex` (cross-store chronological aggregation), `CognitiveProfile` (entity resolution + multi-agent comparison), `SocialComparison` (perspectival divergence metrics), `DomainActivation` (cross-domain DTW correlation + mood/experience context correlation), `CognitiveDefaultsRegistry` (YAML-driven per-agent config), `CognitiveProfileWatcher` (file-watch hot-reload for profiles + rules via `casehub.cognitive.profiles-dir` / `casehub.cognitive.rules-dir`) |
+| `schema-generator` | `casehub-neocortex-schema-generator` | JSON Schema generation (Draft 2020-12) for cognitive types — sealed hierarchy `oneOf`, enum inlining, shorthand patterns, YAML output |
 
 ### Corpus
 
@@ -159,26 +182,28 @@ Static utility for analytics over retrieval tracking data. Pure computation — 
 ### CaseMemoryStore (memory-api)
 
 Queryable, permission-aware, persistent memory. Key operations:
-- `store(MemoryInput)` — store with optional `importance` field (0.0-1.0)
+- `store(MemoryInput)` — store with optional `Confidence` field (origin + value [0.0-1.0])
 - `query(MemoryQuery)` — retrieve with `MemoryOrder` ranking (CHRONOLOGICAL, RELEVANCE, SALIENCE)
 - `erase(EraseRequest)`, `eraseEntity()`, `eraseById()`, `eraseEntityAcrossTenants()` — GDPR-compliant deletion
 - `scan(MemoryScanRequest)` — paginated admin scan
-- `purge(MemoryRetentionPolicy)` — importance-based retention purge
+- `purge(MemoryRetentionPolicy)` — confidence-based retention purge
 - `discoverTenants()` — cross-tenant admin operation
 
-`MemoryOrder.SALIENCE` — recency x importance query-time scoring. Non-semantic adapters compute salience from `createdAt` and `importance`; semantic adapters fall back to RELEVANCE.
+`MemoryOrder.SALIENCE` — recency x confidence query-time scoring. Non-semantic adapters compute salience from `createdAt` and `confidence`; semantic adapters fall back to RELEVANCE.
 
-`MemoryRetentionScheduler` — scheduled importance-based purge across discovered tenants. Config-driven: `casehub.memory.retention.enabled`, `casehub.memory.retention.min-importance`, `casehub.memory.retention.max-age-days`.
+`MemoryRetentionScheduler` — scheduled confidence-based purge across discovered tenants. Config-driven: `casehub.memory.retention.enabled`, `casehub.memory.retention.min-confidence`, `casehub.memory.retention.max-age-days`.
 
-### CbrCaseMemoryStore (memory-api)
+### CbrRecordStore (memory-api)
 
-Structured feature-vector similarity search over past cases. Open `CbrCase` type hierarchy with `cbrType()` discriminator: `TextualCbrCase`, `FeatureVectorCbrCase`, `PlanCbrCase`.
+Structured feature-vector similarity search over past cases. Open `CbrRecord` type hierarchy with `recordType()` discriminator: `CbrGuidanceRecord` (with optional `features` and structured `CbrCbrGuidanceStep` list), `CbrFeatureRecord`, `CbrPlanRecord`.
 
 **Typed feature values:** `FeatureValue` sealed interface with seven value types: `StringVal`, `NumberVal`, `RangeVal`, `StringListVal`, `NumberListVal`, `StructVal`, `StructListVal`. Booleans coerced via `FeatureValue.of(Object)`.
 
 **Feature field schema:** `FeatureField` sealed interface with nine permits: `Categorical`, `Numeric`, `Text` (with `semantic` flag), `CategoricalList`, `NumericList`, `NestedObject`, `ObjectList`, `TimeSeries`, `DiscreteSequence`.
 
 **Similarity scoring:** `CbrSimilarityScorer` — pure-Java weighted composite scoring with three-level precedence: caller override, field `SimilaritySpec`, type default. `SimilaritySpec` sealed interface: `CategoricalTable`, `GaussianDecay`, `StepDecay`, `ExponentialDecay`, `DtwSpec`, `EditDistanceSpec`.
+
+**Cross-type retrieval:** `CaseTypeScope` sealed interface — `Specific(caseType)` for single-type queries, `AllInDomain()` for cross-type. `CbrQuery.crossType(tenantId, domain, scope, features, topK)` factory. Results carry `CbrMatch.caseType()` for type identification. Qdrant backend fans out across all collections matching the prefix.
 
 **Retrieval modes:** `CbrQuery.RetrievalMode` — `FEATURE_ONLY`, `SEMANTIC_ONLY`, `HYBRID`. `FusionStrategy` from `fusion-api` for result merging.
 
@@ -192,19 +217,21 @@ Structured feature-vector similarity search over past cases. Open `CbrCase` type
 
 **Outcome feedback:** `recordOutcome(CbrOutcome)` — CBR Revise feedback loop with EMA confidence adjustment.
 
+**Retrieval feedback:** `CbrRetrievalTracker.feedback(traceId, List<CbrRetrievalFeedback>)` — per-result relevance signals with `CbrFeedbackOutcome` (RELEVANT, NOT_RELEVANT, PARTIALLY_RELEVANT, HIGHLY_RELEVANT, OUTDATED). Independent of rag-api's `RetrievalOutcome`.
+
 **Retention:** `purge(CbrRetentionPolicy)` — age + count + trust-based purge. `CbrRetentionScheduler` for scheduled purging. `TrustRetentionService` — evaluates agent trust trajectories via `AgentTrustProvider` and purges cases below `minCurrentTrust`.
 
-**Scan:** `scan(CbrScanRequest)` — paginated scan with tenant/domain/caseType filtering. Returns `List<CbrCaseSummary>` (caseId, entityId, caseType, producerAgentId, trustScore, storedAt).
+**Scan:** `scan(CbrScanRequest)` — paginated scan with tenant/domain/caseType filtering. Returns `List<CbrRecordSummary>` (caseId, entityId, caseType, producerAgentId, trustScore, storedAt).
 
-### PlanAdapter / PlanEnsembleAnalyzer (memory-api)
+### CbrPlanAdapter / CbrPlanEnsembleAnalyzer (memory-api)
 
-`PlanAdapter` SPI — transforms retrieved plans for new case contexts. `adapt(caseType, ScoredCbrCase<PlanCbrCase>, features)` returns `AdaptedPlan` with `AdaptedStep` entries tagged by `AdaptationAction` (RETAINED, SUBSTITUTED, BOOSTED, SUPPRESSED, ADDED, REMOVED). `PlanTrace` records audit data with optional `variantId`.
+`CbrCbrPlanAdapter` SPI — transforms retrieved plans for new case contexts. `adapt(caseType, CbrMatch<PlanCbrRecord>, features)` returns `AdaptedPlan` with `AdaptedStep` entries tagged by `AdaptationAction` (RETAINED, SUBSTITUTED, BOOSTED, SUPPRESSED, ADDED, REMOVED). `CbrPlanStep` records audit data with optional `variantId`.
 
-`PlanEnsembleAnalyzer` SPI — cross-plan structural analysis. After per-plan adaptation, examines multiple adapted plans for consensus/divergence and synthesizes an `EnsemblePlan`. `StepConsensus` classifies agreement as UNANIMOUS, CONSENSUS, CONTESTED, MINORITY, or UNIQUE.
+`CbrCbrPlanEnsembleAnalyzer` SPI — cross-plan structural analysis. After per-plan adaptation, examines multiple adapted plans for consensus/divergence and synthesizes an `EnsemblePlan`. `StepConsensus` classifies agreement as UNANIMOUS, CONSENSUS, CONTESTED, MINORITY, or UNIQUE.
 
 ### Trust-Weighted Retrieval (memory)
 
-`TrustWeightedCbrCaseMemoryStore` (Decorator Priority 60) — modulates retrieval scores by source trust authority + optional trust trajectory via `AgentTrustProvider` SPI. `TrustWeightingFunction` SPI for pluggable score modulation. Default: linear interpolation `score*(1-alpha+alpha*trustScore)` with declining trajectory penalty.
+`TrustWeightedCbrRecordStore` (Decorator Priority 60) — modulates retrieval scores by source trust authority + optional trust trajectory via `AgentTrustProvider` SPI. `TrustWeightingFunction` SPI for pluggable score modulation. Default: linear interpolation `score*(1-alpha+alpha*trustScore)` with declining trajectory penalty.
 
 Config-gated: `casehub.cbr.trust-weighting.enabled`, `casehub.cbr.trust-weighting.influence` (default 0.3).
 
@@ -215,6 +242,252 @@ Built-in CBR schema for personality evolution memory. Records when an agent's co
 ### Corpus Ingestion Bridge (rag)
 
 Config-driven bridge that populates a RAG corpus from external sources. `CorpusIngestionService` orchestrates both event-driven ingestion (directory-watcher for filesystem corpora) and scheduled polling (for ZIP-based corpora). `MetadataExtractor` SPI extracts body + metadata from document content. `CursorStore` SPI provides pluggable cursor persistence for incremental polling.
+
+### Thing — The Universal Entity Base (thing-api)
+
+Every entity in the knowledge graph is a `Thing`. The interface provides identity, properties, traits, and a dynamic type system with `instanceof`-style checking and typed property access via JDK Proxy.
+
+```java
+Thing entity = store.getNode(nodeId, tenantId);
+entity.id();               // unique identifier
+entity.name();             // "Emily"
+entity.type();             // "person" — derived from subgraph membership
+entity.properties();       // {role: "mum", email: "emily@example.com"}
+entity.traits();           // {"Personable"}
+entity.is("person");       // true — creation type
+entity.is("Personable");   // true — trait type
+entity.is("project");      // false — neither
+```
+
+`thing-api` has zero dependencies. App builders depend on `thing-api` for entity access without pulling in MindMap internals. `MindMapNode extends Thing` — any MindMapNode can be used wherever a Thing is expected.
+
+### is() / as() — Dynamic Type Checking and Typed Access (thing-api)
+
+`is()` checks both the entity's creation type (from subgraph membership) and its trait set. `as()` creates a JDK Proxy that maps interface method names to `property(methodName)` calls:
+
+```java
+if (emily.is("Personable")) {
+    Personable p = emily.as(Personable.class);
+    p.role();     // Optional.of("mum")
+    p.email();    // Optional.of("emily@example.com")
+    p.birthday(); // Optional.empty() — not set yet
+}
+```
+
+Return types are coerced automatically:
+
+| Return type | Behaviour |
+|-------------|----------|
+| `Optional<String>` | `Optional.ofNullable(property value)` |
+| `String` | value or `null` |
+| `int`, `long`, `double`, `boolean` | parsed, or type default (0, 0L, 0.0, false) |
+| `Integer`, `Long`, `Double`, `Boolean` | parsed, or `null` |
+
+### Custom Trait Interfaces (thing-api)
+
+`as()` works with any interface — no platform dependency required. Method names map to property keys:
+
+```java
+interface PartyGuest {
+    Optional<String> dietary();
+    Optional<String> rsvpStatus();
+}
+
+PartyGuest guest = john.as(PartyGuest.class);
+guest.dietary();    // Optional.of("nut allergy")
+guest.rsvpStatus(); // Optional.empty()
+```
+
+The platform provides `Personable`, `Projectlike`, `Organisational`, and `Eventlike` in `mindmap-intelligence`. These are conveniences — consumers define domain-specific traits the same way.
+
+**Convention:** trait names are PascalCase (matching Java interface simple names). Type names are lowercase. Traits come from code; types come from data.
+
+### Types and SubgraphTypes (mindmap-api)
+
+Entity types are dynamic strings, not a fixed enum. A node's type comes from its subgraph membership — a node in a "person" subgraph has type `"person"`.
+
+Well-known types are constants in `SubgraphTypes`:
+
+| Constant | Value |
+|----------|-------|
+| `PERSON` | `"person"` |
+| `PROJECT` | `"project"` |
+| `RESEARCH_AREA` | `"research-area"` |
+| `ORGANISATION` | `"organisation"` |
+| `CONCEPT` | `"concept"` |
+| `GENERAL` | `"general"` |
+| `TYPE_SYSTEM` | `"type-system"` |
+
+The LLM can discover new types at runtime without recompilation:
+
+```java
+// Well-known type
+store.createSubgraph(new SubgraphInput("People", SubgraphTypes.PERSON, null), tenant);
+
+// LLM-discovered type — works identically
+store.createSubgraph(new SubgraphInput("Emily's Party", "birthday-party", null), tenant);
+```
+
+Type strings are lowercase-normalized in `SubgraphInput`'s constructor — `"Person"`, `"PERSON"`, and `"person"` all resolve to `"person"`.
+
+### TypeRegistry (mindmap-intelligence)
+
+Types are first-class data stored as nodes in a `TYPE_SYSTEM` subgraph. `TypeRegistry` mediates type operations:
+
+```java
+@Inject TypeRegistry registry;
+
+registry.typeExists("person", tenant);          // true — core type
+registry.javaClass("person", tenant);           // Optional.of(Personable.class)
+
+registry.registerType("birthday-party", "general", tenant);
+registry.subtypesOf("general", tenant);         // [..., "birthday-party"]
+registry.javaClass("birthday-party", tenant);   // Optional.empty() — no Java interface yet
+
+Map<String, SchemaField> schema = registry.schemaFor("person", tenant);
+// {birthday: SchemaField(name=birthday, type=string, required=false),
+//  role:     SchemaField(name=role, type=string, required=false), ...}
+```
+
+Core types derive their schema from Java trait interfaces via reflection. Dynamic types start with no schema — as the LLM discovers consistent property patterns, schema can be added to the type node. Schema validation is advisory — it documents expectations but doesn't reject novel properties.
+
+The type hierarchy is graph-native. `subtype-of` edges between type nodes. Hierarchy queries are graph traversal. Adding a type is adding a node.
+
+### MindMapNode — Cognitive Extension of Thing (mindmap-api)
+
+`MindMapNode extends Thing`, adding cognitive features for reasoning:
+
+| Field | Purpose |
+|-------|---------|
+| `confidence()` | Epistemic certainty — `Confidence(origin, value, decayReference)` with `ConfidenceOrigin` (STATED/INFERRED/SPECULATED/UNKNOWN) |
+| `pleasure()`, `arousal()`, `dominance()` | PAD emotional dimensions — how the agent feels about this entity |
+| `validFrom()`, `validUntil()` | Temporal validity — when this knowledge applies |
+| `provenance()` | Where this knowledge came from |
+| `refs()` | External references via `NodeRef(scheme, id, qualifier)` |
+| `principalId()`, `sharedWith()` | Visibility controls — who can see this node |
+
+Consumers who only need entity access depend on `thing-api`. The cognitive machinery lives in `mindmap-api` and is relevant when building reasoning or agent subsystems.
+
+### Subject Bridge — Cross-Store Entity References (memory-api)
+
+`Subject(String type, String id)` references a Thing by convention. Same type string, same id — no code dependency between modules:
+
+```java
+Subject ref = Subject.of("person", emilyId);
+
+Thing resolved = store.getNode(ref.id(), tenantId);
+assert resolved.type().equals(ref.type()); // both "person"
+```
+
+Memories stored via `CaseMemoryStore` can reference MindMap entities through `Subject` without coupling `memory-api` to `mindmap-api`. The Subject type is lowercase-normalized to match `SubgraphInput`'s convention.
+
+### Knowledge Lifecycle
+
+Knowledge evolves through phases — from raw conversation to structured, retrievable entities:
+
+```
+Notes ──→ Entities ──→ Traits ──→ Types
+(prose)   (extracted)   (discovered) (named)
+```
+
+| Phase | What happens | Speed |
+|-------|-------------|-------|
+| **Notes** | Conversation captured as "general" nodes with freeform properties | Real-time (during conversation) |
+| **Extraction** | Entities identified, typed, and connected with edges | Near-time (after conversation) |
+| **Trait discovery** | `TraitRule` implementations evaluate nodes — matching properties/edges assign traits | Near-time |
+| **Type registration** | Recurring entity patterns registered as named types via `TypeRegistry` | Background |
+
+In production, the `ConversationBridge` handles real-time capture (creating initial "general" nodes), and the `ConsolidationScheduler` runs near-time and background phases automatically via a four-phase pipeline: access-frequency tracking, merge detection, community summaries, and curiosity refresh.
+
+**The promotion path:** when a dynamic type crystallises — stable schema, frequently queried, consistent properties — a developer creates a Java trait interface for it. The type node gains a `java-class` property, and consumers get typed access via `as()`.
+
+### CognitiveProfile — Entity Resolution and Multi-Agent Comparison (cognitive-index)
+
+`CognitiveProfile` resolves a unified `EntityKnowledge` record for a single entity across MindMap + Memory stores. Configurable domain set, edge inclusion, memory limit.
+
+**Single-entity resolution:**
+
+```java
+@Inject CognitiveProfile profile;
+
+// Shared view (no perspective)
+var query = CognitiveProfileQuery.byId(nodeId, tenantId);
+Optional<EntityKnowledge> ek = profile.resolve(query);
+
+// Perspectival view — applies agent's overlay before trajectory computation
+var query = CognitiveProfileQuery.byId(nodeId, tenantId)
+    .withAsSeenBy(PrincipalId.agent("alice"));
+Optional<EntityKnowledge> ek = profile.resolve(query);
+// ek.get().perceiver() == alice
+// ek.get().node().pleasure() reflects alice's overlay PAD
+// ek.get().trajectory() computed from alice's principal-scoped affect memories
+```
+
+When `asSeenBy` is set, perspective is applied before any derived computation — the overlay merges onto the shared node before trajectory analysis, and memory queries are scoped to the requesting agent via `withCallerPrincipalId`.
+
+**Multi-agent comparison:**
+
+```java
+Map<PrincipalId, EntityKnowledge> views = profile.compare(
+    CognitiveProfileQuery.byId(nodeId, tenantId),
+    Set.of(PrincipalId.agent("alice"), PrincipalId.agent("bob")));
+// Single overlay scan for all agents — each gets perspectival node + scoped memories
+```
+
+### SocialComparison — Perspectival Divergence Metrics (cognitive-index)
+
+Pure static utility for computing divergence between agents' perspectives on the same entity. Takes the output of `CognitiveProfile.compare()`:
+
+```java
+Map<PrincipalId, EntityKnowledge> views = profile.compare(query, agents);
+PerspectivalComparison result = SocialComparison.compare(views);
+
+// PAD distance matrix — pairwise Euclidean distances
+double dist = result.distances().distance(alice, bob);
+
+// Per-dimension signed differences
+double pleasureDiff = result.dimensionDifferences()
+    .get(PadDimension.PLEASURE).difference(alice, bob);
+
+// Trajectory alignment — 3D slope vector cosine similarity
+TrendAgreement agreement = result.trajectoryAlignment()
+    .agreements().get(AgentPair.of(alice, bob));
+// ALIGNED, DIVERGENT, MIXED, or INSUFFICIENT
+```
+
+Agents with any null PAD dimension are excluded from distance/difference computations and listed in `unassessedAgents`. Trajectory alignment is computed independently — agents with trajectory data but null PAD still participate.
+
+### DomainActivation — Cross-Domain Correlation (cognitive-index)
+
+CDI bean for correlating affect signals across life domains (subgraphs). Uses Dynamic Time Warping on time-bucketed 3D PAD time series to detect cross-domain emotional patterns. Optionally correlates agent mood and experience events against per-subgraph affect trajectories.
+
+```java
+@Inject DomainActivation domainActivation;
+
+// Affect-only correlation (existing)
+var query = DomainActivationQuery.between(
+    PrincipalId.agent("alice"), tenantId, workSubgraphId, familySubgraphId)
+    .withFrom(windowStart)
+    .withTo(windowEnd)
+    .withBucketDuration(Duration.ofHours(24));
+
+Optional<DomainActivationResult> result = domainActivation.correlate(query);
+// result.get().correlations() — pairwise DTW similarity per DomainPair
+// result.get().domains() — per-subgraph DomainSignal (trajectory, entity/memory counts)
+
+// With mood + experience context correlation (opt-in)
+var contextQuery = DomainActivationQuery.between(
+    PrincipalId.agent("alice"), tenantId, workSubgraphId, familySubgraphId)
+    .withFrom(windowStart).withTo(windowEnd)
+    .withContextDomains(Set.of(MoodEvents.DOMAIN, ExperienceEvents.DOMAIN))
+    .withEventWindow(Duration.ofDays(1));
+
+Optional<DomainActivationResult> contextResult = domainActivation.correlate(contextQuery);
+// contextResult.get().contextCorrelations() — mood ↔ affect DTW per subgraph (with pValue)
+// contextResult.get().eventImpacts() — experience → affect Δ(PAD) per subgraph per event type
+```
+
+Privacy by construction — `PrincipalId` is required and non-nullable. Only the specified agent's affect memories are queried. Returns `Optional.empty()` when any subgraph has zero entities or zero affect memories. Context correlations degrade gracefully — empty maps when no mood/experience data exists.
 
 ---
 
@@ -289,10 +562,10 @@ The C2 native image gate passed (ONNX Runtime JNI + HuggingFace Tokenizers JNI b
 
 | Property | Default | Description |
 |----------|---------|-------------|
-| `casehub.memory.retention.enabled` | — | Enable scheduled importance-based retention purge |
+| `casehub.memory.retention.enabled` | — | Enable scheduled confidence-based retention purge |
 | `casehub.memory.retention.domain` | — | Memory domain for retention scheduling |
 | `casehub.memory.retention.max-age-days` | — | Maximum age before purge eligibility |
-| `casehub.memory.retention.min-importance` | — | Minimum importance to retain |
+| `casehub.memory.retention.min-confidence` | — | Minimum confidence to retain |
 
 ### CBR Configuration
 

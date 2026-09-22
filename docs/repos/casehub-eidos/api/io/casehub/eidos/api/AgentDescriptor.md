@@ -8,6 +8,12 @@
 
 ### `agentId` (`java.lang.String`)
 
+### `archetype` (`java.lang.String`)
+
+### `archetypeAdjectives` (`java.util.List<java.lang.String>`)
+
+### `avatar` (`java.lang.String`)
+
 ### `axisVocabularies` (`java.util.Map<io.casehub.eidos.api.DispositionAxis,java.lang.String>`)
 
 ### `briefing` (`java.lang.String`)
@@ -24,6 +30,8 @@
 
 ### `domainVocabulary` (`java.lang.String`)
 
+### `extensionData` (`java.util.Map<java.lang.String,java.lang.Object>`)
+
 ### `goals` (`java.util.List<io.casehub.eidos.api.AgentGoal>`)
 
 ### `jurisdiction` (`java.lang.String`)
@@ -39,6 +47,8 @@
 ### `slot` (`java.lang.String`)
 
 ### `slotVocabulary` (`java.lang.String`)
+
+### `styleVocabulary` (`java.lang.String`)
 
 ### `templates` (`java.util.List<io.casehub.eidos.api.TemplateRef>`)
 
@@ -52,6 +62,12 @@
 
 ### `agentId` (`java.lang.String`)
 
+### `archetype` (`java.lang.String`)
+
+### `archetypeAdjectives` (`java.util.List<java.lang.String>`)
+
+### `avatar` (`java.lang.String`)
+
 ### `axisVocabularies` (`java.util.Map<io.casehub.eidos.api.DispositionAxis,java.lang.String>`)
 
 ### `briefing` (`java.lang.String`)
@@ -67,6 +83,8 @@
 ### `dispositionVocabulary` (`java.lang.String`)
 
 ### `domainVocabulary` (`java.lang.String`)
+
+### `extensionData` (`java.util.Map<java.lang.String,java.lang.Object>`)
 
 ### `goals` (`java.util.List<io.casehub.eidos.api.AgentGoal>`)
 
@@ -84,6 +102,8 @@
 
 ### `slotVocabulary` (`java.lang.String`)
 
+### `styleVocabulary` (`java.lang.String`)
+
 ### `templates` (`java.util.List<io.casehub.eidos.api.TemplateRef>`)
 
 ### `tenancyId` (`java.lang.String`)
@@ -94,7 +114,7 @@
 
 ## Constructors
 
-### `public AgentDescriptor(java.lang.String agentId, java.lang.String name, java.lang.String version, java.lang.String provider, java.lang.String modelFamily, java.lang.String modelVersion, java.lang.String weightsFingerprint, java.lang.String domainVocabulary, java.lang.String slotVocabulary, java.lang.String dispositionVocabulary, java.util.Map<io.casehub.eidos.api.DispositionAxis,java.lang.String> axisVocabularies, java.lang.String slot, java.util.List<io.casehub.eidos.api.AgentCapability> capabilities, io.casehub.eidos.api.AgentDisposition disposition, java.lang.String jurisdiction, java.lang.String dataHandlingPolicy, java.lang.String tenancyId, java.lang.String briefing, java.util.List<io.casehub.eidos.api.TemplateRef> templates, java.util.List<io.casehub.eidos.api.AgentGoal> goals, java.util.List<io.casehub.eidos.api.AgentConstraint> constraints)`
+### `public AgentDescriptor(java.lang.String agentId, java.lang.String name, java.lang.String version, java.lang.String provider, java.lang.String modelFamily, java.lang.String modelVersion, java.lang.String weightsFingerprint, java.lang.String domainVocabulary, java.lang.String slotVocabulary, java.lang.String dispositionVocabulary, java.lang.String styleVocabulary, java.util.Map<io.casehub.eidos.api.DispositionAxis,java.lang.String> axisVocabularies, java.lang.String slot, java.lang.String archetype, java.util.List<java.lang.String> archetypeAdjectives, java.lang.String avatar, java.util.List<io.casehub.eidos.api.AgentCapability> capabilities, io.casehub.eidos.api.AgentDisposition disposition, java.lang.String jurisdiction, java.lang.String dataHandlingPolicy, java.lang.String tenancyId, java.lang.String briefing, java.util.List<io.casehub.eidos.api.TemplateRef> templates, java.util.List<io.casehub.eidos.api.AgentGoal> goals, java.util.List<io.casehub.eidos.api.AgentConstraint> constraints, java.util.Map<java.lang.String,java.lang.Object> extensionData)`
 
 #### Parameters
 
@@ -108,8 +128,12 @@
 - `domainVocabulary` (`java.lang.String`)
 - `slotVocabulary` (`java.lang.String`)
 - `dispositionVocabulary` (`java.lang.String`)
+- `styleVocabulary` (`java.lang.String`)
 - `axisVocabularies` (`java.util.Map<io.casehub.eidos.api.DispositionAxis,java.lang.String>`)
 - `slot` (`java.lang.String`)
+- `archetype` (`java.lang.String`)
+- `archetypeAdjectives` (`java.util.List<java.lang.String>`)
+- `avatar` (`java.lang.String`)
 - `capabilities` (`java.util.List<io.casehub.eidos.api.AgentCapability>`)
 - `disposition` (`io.casehub.eidos.api.AgentDisposition`)
 - `jurisdiction` (`java.lang.String`)
@@ -119,10 +143,17 @@
 - `templates` (`java.util.List<io.casehub.eidos.api.TemplateRef>`)
 - `goals` (`java.util.List<io.casehub.eidos.api.AgentGoal>`)
 - `constraints` (`java.util.List<io.casehub.eidos.api.AgentConstraint>`)
+- `extensionData` (`java.util.Map<java.lang.String,java.lang.Object>`)
 
 ## Methods
 
 ### `public java.lang.String agentId()`
+
+### `public java.lang.String archetype()`
+
+### `public java.util.List<java.lang.String> archetypeAdjectives()`
+
+### `public java.lang.String avatar()`
 
 ### `public java.util.Map<io.casehub.eidos.api.DispositionAxis,java.lang.String> axisVocabularies()`
 
@@ -147,6 +178,8 @@
 #### Parameters
 
 - `o` (`java.lang.Object`)
+
+### `public java.util.Map<java.lang.String,java.lang.Object> extensionData()`
 
 ### `public java.util.List<io.casehub.eidos.api.AgentGoal> goals()`
 
@@ -181,6 +214,8 @@
 ### `public java.lang.String slot()`
 
 ### `public java.lang.String slotVocabulary()`
+
+### `public java.lang.String styleVocabulary()`
 
 ### `public java.util.List<io.casehub.eidos.api.TemplateRef> templates()`
 

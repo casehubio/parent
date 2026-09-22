@@ -4,17 +4,15 @@
 
 **Kind:** `class`
 
-Chains all @RiskClassifier-qualified `ActionRiskClassifier` beans
-and returns the most restrictive `RiskDecision`.
+Chains all `ActionRiskClassifier` implementations and returns the most restrictive `RiskDecision`.
 
-<p>When no consumer has registered any `@RiskClassifier` classifier, the injection point is
-unsatisfied and the method returns `Autonomous` immediately.
+<p>When the classifier list is empty, returns `Autonomous` immediately.
 
 <p>If any classifier throws, the fail-safe `GateRequired` is returned — the action is gated
 for manual review.
 
 <p>"Most restrictive" = fewest `candidateGroups`; tie → shorter `expiresIn`; tie →
-CDI iteration order (first wins).
+iteration order (first wins).
 
 ## Fields
 
@@ -22,15 +20,19 @@ CDI iteration order (first wins).
 
 ### `LOG` (`Logger`)
 
-### `classifiers` (`Instance<io.casehub.api.spi.ActionRiskClassifier>`)
+### `classifiers` (`java.util.List<io.casehub.api.spi.ActionRiskClassifier>`)
 
 ## Constructors
 
-### `public ChainedActionRiskClassifier()`
+### `public ChainedActionRiskClassifier(java.util.List<io.casehub.api.spi.ActionRiskClassifier> classifiers)`
+
+#### Parameters
+
+- `classifiers` (`java.util.List<io.casehub.api.spi.ActionRiskClassifier>`)
 
 ## Methods
 
-### `private int candidateSetSize(io.casehub.api.spi.routing.CandidateSetStrategy strategy)`
+### `private static int candidateSetSize(io.casehub.api.spi.routing.CandidateSetStrategy strategy)`
 
 #### Parameters
 
@@ -43,14 +45,14 @@ CDI iteration order (first wins).
 - `action` (`PlannedAction`)
 - `context` (`io.casehub.api.spi.ClassificationContext`)
 
-### `io.casehub.api.spi.RiskDecision mostRestrictive(io.casehub.api.spi.RiskDecision a, io.casehub.api.spi.RiskDecision b)`
+### `public static io.casehub.api.spi.RiskDecision mostRestrictive(io.casehub.api.spi.RiskDecision a, io.casehub.api.spi.RiskDecision b)`
 
 #### Parameters
 
 - `a` (`io.casehub.api.spi.RiskDecision`)
 - `b` (`io.casehub.api.spi.RiskDecision`)
 
-### `private io.casehub.api.spi.RiskDecision.GateRequired narrower(io.casehub.api.spi.RiskDecision.GateRequired a, io.casehub.api.spi.RiskDecision.GateRequired b)`
+### `private static io.casehub.api.spi.RiskDecision.GateRequired narrower(io.casehub.api.spi.RiskDecision.GateRequired a, io.casehub.api.spi.RiskDecision.GateRequired b)`
 
 #### Parameters
 

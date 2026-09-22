@@ -26,7 +26,9 @@ The framework is domain-agnostic. It provides graph management, topological tran
 | `work-adapter/` | `casehub-desiredstate-work` | When approval-gated nodes need WorkItem-backed approval lifecycle via casehub-work. Classpath-activated. |
 | `ras-adapter/` | `casehub-desiredstate-ras` | When reconciliation faults and drift should feed into casehub-ras situation detection. Provides ganglia, situation definitions, and correlation key extraction. |
 | `persistence-jpa/` | `casehub-desiredstate-persistence-jpa` | When fault counts must survive restarts. JPA-backed `FaultCountStore` with Flyway migration. Tier 2 in CDI priority ladder -- yields to application-provided stores. |
-| `yaml/runtime/` | `casehub-desiredstate-yaml` | YAML-driven graph declarations. Declare desired-state graphs in `META-INF/desiredstate/*.yaml` files. Jackson-based deserializer with `NodeSpecRegistry` (maps YAML `type:` strings to `@NodeTypeId`-annotated `NodeSpec` classes), `VariableResolver` (Map → Preferences → Config fallthrough), and build-time validation (unknown types, dangling dependencies, cycles). Add `@NodeTypeId("type-name")` to each `NodeSpec` class that should be YAML-addressable. The build extension (deployment module, auto-activated) discovers YAML files and generates `GoalCompiler<Void>` CDI beans qualified by namespace + name. |
+| `yaml/runtime/` | `casehub-desiredstate-yaml` | YAML-driven graph declarations. Declare desired-state graphs in `META-INF/desiredstate/*.yaml` files. Jackson-based deserializer with `NodeSpecRegistry` (maps YAML `type:` strings to `@NodeTypeId`-annotated `NodeSpec` classes), variable resolution via `casehub-yaml-core` (`VariableResolver` with deferred prefixes), reusable YAML modules with parameter constraints (`minLength`, `maxLength`, `pattern`, `minimum`, `maximum`, `allowedValues`), module extension (`extends`), typed outputs, and cross-module references (`${module.alias.output}`). Modules are discovered at `META-INF/desiredstate/modules/*.yaml`. Build-time validation (unknown types, dangling dependencies, cycles, parameter validation). The build extension (deployment module, auto-activated) discovers YAML files and generates `GoalCompiler<Void>` CDI beans qualified by namespace + name. |
+| `plugin/api/` | `casehub-desiredstate-plugin-api` | Step pipeline SPI for YAML-declared plugins. Depend on this to implement custom `StepPrimitive` beans (named operations invocable from plugin YAML). Pure Java. |
+| `plugin/runtime/` | `casehub-desiredstate-plugin` | YAML plugin runtime. Add this to enable `META-INF/desiredstate/plugins/*.yaml` — each plugin file declares a complete self-healing resource type (spec schema, actual-state detection, provisioning steps, fault policies, CBR features, RAS situations) without Java. The build extension (deployment module, auto-activated) validates plugins exhaustively at build time. Built-in step primitives: `rest-call`, `json-extract`, `compare-state`, `assert`. Compound YAML primitives compose other primitives hierarchically. |
 | `annotations/runtime/` | `casehub-desiredstate-annotations` | Annotation-driven graph declarations. Two models: interface (`@DesiredState` + `@Node`) for centralized graphs, class-based (`@DeclareNode`) for cross-module composition. `@DependsOn` supports string IDs and type-safe `Class<? extends NodeSpec>[]` refs. Graph rewriting via `@GraphRule` (parameterized pattern matching with `@Match`, `@DirectDep`, `@Reaches`, `@NotExists` or imperative with full `DesiredStateGraph` access). Graph validation via `@GraphInvariant` (same pattern vocabulary, universal quantification — fires after rules converge). Standalone rule/invariant containers: `@GraphRule(graph = {"pipeline:*"})` classes with include/exclude matching (`!` prefix for exclusions). `@Tier(nodeType)` eliminates runtime `ReviewSpecFactory` probe. Also: `@FaultPolicyDef`, `@GoalMethod`. The build extension (deployment module, auto-activated) scans annotations and generates `GoalCompiler` + `ThresholdFaultPolicy` CDI beans. |
 
 ---
@@ -40,7 +42,7 @@ Immutable directed acyclic graph of `DesiredNode` instances connected by `Depend
 **Core operations:**
 - `withNode(DesiredNode)`, `withoutNode(NodeId)` -- add/remove nodes
 - `withDependency(Dependency)`, `withoutDependency(Dependency)` -- add/remove edges
-- `withMutation(GraphMutation)` -- apply a single mutation
+- `withMutation(GraphMutation<DesiredNode>)` -- apply a single mutation
 - `overlay(DesiredStateGraph)` -- merge two graphs (union; shared nodes must be equal)
 - `connect(DesiredStateGraph)` -- join graphs (all leaves of this -> all roots of other)
 - `filterByTypes(Set<NodeType>)` -- subtractive filter, removes nodes not matching types
@@ -110,7 +112,7 @@ SPI: `execute(TransitionPlan plan, String tenancyId) -> TransitionResult`. Two i
 
 ### FaultPolicy / FaultPolicyEngine
 
-SPI: `onFault(String tenancyId, FaultEvent event, DesiredStateGraph current, ActualState actual) -> List<GraphMutation>`. Called when provisioning fails, nodes drift, approvals are rejected, or human nodes time out. Policies return graph mutations that the reconciliation loop applies to the desired graph.
+SPI: `onFault(String tenancyId, FaultEvent event, DesiredStateGraph current, ActualState actual) -> List<GraphMutation<DesiredNode>>`. Called when provisioning fails, nodes drift, approvals are rejected, or human nodes time out. Policies return graph mutations that the reconciliation loop applies to the desired graph.
 
 **FaultType enum:** `NODE_DESTROYED`, `NODE_DEGRADED`, `PROVISION_FAILED`, `DEPROVISION_FAILED`, `HUMAN_NODE_TIMEOUT`, `DEPENDENCY_UNAVAILABLE`, `APPROVAL_REJECTED`.
 
@@ -137,11 +139,11 @@ Tier nodeTypes are auto-merged into `ignoreTypes`. Evaluation is highest-tier-fi
 
 ### GraphMutation
 
-Sealed interface with five variants: `AddNode(DesiredNode)`, `RemoveNode(NodeId)`, `UpdateNode(NodeId, DesiredNode)`, `AddDependency(Dependency)`, `RemoveDependency(Dependency)`.
+Sealed generic interface `GraphMutation<N>` with five variants: `AddNode<N>(String id, N node)`, `RemoveNode<N>(String id)`, `UpdateNode<N>(String id, N adaptedNode)`, `AddEdge<N>(String from, String to)`, `RemoveEdge<N>(String from, String to)`. All desiredstate consumers use `GraphMutation<DesiredNode>`. Variant renames: `AddDependency` → `AddEdge`, `RemoveDependency` → `RemoveEdge`.
 
 ### GraphMutations
 
-Static utility: `GraphMutations.addNodeDependingOn(DesiredNode, NodeId)` returns `[AddNode, AddDependency]` -- the common pattern for adding a node with a dependency edge to an existing node.
+Static utility: `GraphMutations.addNodeDependingOn(DesiredNode, NodeId)` returns `List<GraphMutation<DesiredNode>>` (`[AddNode, AddEdge]`) -- the common pattern for adding a node with a dependency edge to an existing node.
 
 ### HumanNodeHandler
 
@@ -206,6 +208,21 @@ Three tiers (CDI priority ladder: custom app store > JPA store > in-memory defau
 
 `FaultCountEvictionListener` (runtime module) -- `@ApplicationScoped` `GlobalReconciliationListener` that calls `evictAcrossNamespaces` after each cycle and on tenant stop, removing stale counts for nodes no longer in the graph.
 
+### ReconciliationStateStore
+
+SPI: persistence abstraction for the last-reconciled desired graph per tenant. Used by `TransitionPlanner` to resolve orphan node specs during deprovisioning -- when a node is removed from the desired graph, the planner retrieves the original `DesiredNode` (with real spec, type, humanGating) from the stored previous graph.
+
+```java
+void store(String tenancyId, DesiredStateGraph lastReconciledDesired);
+Optional<DesiredStateGraph> load(String tenancyId);
+void remove(String tenancyId);
+```
+
+Three tiers (CDI priority ladder: JPA store > in-memory default):
+- `InMemoryReconciliationStateStore` (API module) -- `ConcurrentHashMap` with `tenancyId` key. Thread-safe. Lost on restart.
+- `DefaultReconciliationStateStore` (runtime module) -- `@DefaultBean @ApplicationScoped` CDI fallback wrapping `InMemoryReconciliationStateStore`.
+- `JpaReconciliationStateStore` (persistence-jpa module) -- `@ApplicationScoped` JPA-backed store. Serializes the full `DesiredStateGraph` as JSON per tenant. Classpath-activated -- add `casehub-desiredstate-persistence-jpa` as a dependency to enable durable orphan resolution across restarts.
+
 ### SituationRecompiler
 
 SPI: `recompile(String tenancyId, DesiredStateGraph current, ActualState actual, ActiveSituation situation, DesiredStateGraphFactory factory) -> Optional<CompilationResult>`. Situation-driven graph recompilation independent of GoalCompiler. Supports priority ordering for chain-of-responsibility via `priority()` (ascending; default 0).
@@ -257,6 +274,67 @@ For multi-phase desired-state transitions without re-invoking `GoalCompiler`:
 6. Fault-triggered replanning via `SituationRecompiler` can return a new `CompilationResult.Lifecycle` -- lifecycle state resets to the new sequence.
 
 **CompletionCondition** SPI with built-ins: `allPresent()` (all nodes PRESENT), `never()` (terminal phase).
+
+---
+
+## Cross-Domain Composition
+
+When multiple domains share one classpath (e.g. infra, deployment, compliance, IoT), the `CrossDomainCompositionEngine` merges their graphs with correct ordering. Each domain compiles its own goals (preserving `GoalCompiler<G>` type safety) and registers the result with the engine.
+
+### Push-Model Registration
+
+```java
+@ApplicationScoped
+public class InfraDomainRegistrar {
+    @Inject InfraGoalCompiler compiler;
+    @Inject CrossDomainCompositionEngine engine;
+
+    void onStartup(@Observes StartupEvent event) {
+        CompilationResult result = compiler.compile(goals, graphFactory);
+        engine.registerDomain(DomainRegistration.builder(
+                DomainId.of("infra"), result)
+            .provides(Set.of(NodeTypes.K8S_NAMESPACE, NodeTypes.DATABASE_CLUSTER))
+            .build());
+    }
+}
+
+@ApplicationScoped
+public class DeploymentDomainRegistrar {
+    @Inject DeploymentGoalCompiler compiler;
+    @Inject CrossDomainCompositionEngine engine;
+
+    void onStartup(@Observes StartupEvent event) {
+        CompilationResult result = compiler.compile(goals, graphFactory);
+        engine.registerDomain(DomainRegistration.builder(
+                DomainId.of("deployment"), result)
+            .provides(Set.of(NodeTypes.AGENT, NodeTypes.CHANNEL))
+            .requires(Set.of(NodeTypes.K8S_NAMESPACE))
+            .build());
+    }
+}
+```
+
+**`provides`** declares which `NodeType`s a domain contributes. **`requires`** declares which `NodeType`s from other domains must exist before this domain's nodes can be provisioned. The engine creates cross-domain edges from the requiring domain's root nodes to the providing domain's typed nodes -- `TransitionPlanner` handles ordering from there.
+
+### Composition Modes
+
+| Mode | When | Behaviour |
+|------|------|-----------|
+| **Flattened** (default) | 2+ registrations | All domain graphs merged via `overlay()` into one `DesiredStateGraph` with cross-domain edges. Single `ReconciliationLoop`. |
+| **Hierarchical** | Explicit config | Meta-loop with one domain-level node per domain. Inner `ReconciliationLoop` per domain. `CompletionCondition` gates downstream domains. |
+| **Single-domain** | 0 or 1 registration | Passthrough -- zero composition overhead. |
+
+### Startup Validation
+
+The engine validates at startup: duplicate `provides` (fail-fast), unsatisfied `requires` (fail-fast), circular domain dependencies (Kahn's algorithm), and node ID collisions across domains (identical specs allowed, differing specs fail-fast).
+
+### Per-Domain Lifecycle
+
+Each domain can return `CompilationResult.Lifecycle` with multiple phases. The engine tracks per-domain phase state and recomposes on phase transitions. Domain-specific `SituationRecompiler`s receive only their domain graph (not the composed graph), preserving domain isolation.
+
+### Backward Compatibility
+
+Existing single-domain apps are unchanged. The engine is inert with zero or one registrations. Apps calling `ReconciliationLoop.start()` or `LifecycleManager.start()` directly continue to work.
 
 ---
 
@@ -318,7 +396,7 @@ The runtime emits CloudEvents during reconciliation:
 ## What This Repo Does NOT Do
 
 - Persist desired-state graphs -- graphs are in-memory per tenant
-- Define domain-specific node types -- consumers implement `NodeSpec` and `GoalCompiler`
+- Define domain-specific node types -- consumers implement `NodeSpec` and `GoalCompiler` in Java, or declare types via plugin YAML (`META-INF/desiredstate/plugins/*.yaml`) for REST-based resources
 - Schedule or time work items -- that is `casehub-work` and `casehub-engine`
 - Provide stream infrastructure (Kafka, AMQP) -- `EventSource` is an SPI; stream adapters live elsewhere
 - Multi-cluster orchestration -- single-runtime reconciliation only

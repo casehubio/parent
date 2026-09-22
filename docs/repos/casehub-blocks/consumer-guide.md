@@ -430,6 +430,14 @@ AI-powered `AgentRoutingStrategy` implementations for the engine's routing pipel
 | `DefaultCoordinationOutcomeWeights` | class (@DefaultBean) | Default coordination weights: COMPLETED=1.0, FAULTED=0.2, CANCELLED=0.0 |
 | `DispositionProfile` | record | Desired disposition for routing: `desired` (Map<DispositionAxis, String>), `weights` (Map<DispositionAxis, Double>). Method: `weight(axis)` defaults to 1.0. |
 
+### `io.casehub.blocks.rag`
+
+Reusable RAG retrieval worker factory -- produces engine `Worker` instances that extract queries via `QueryExtractionStrategy`, retrieve chunks from neocortex corpora via `CaseContextRetriever`, and return mapped results. Requires `casehub-neocortex-rag-api` on the consumer's classpath (provided scope in blocks).
+
+| Class | Type | What it does |
+|-------|------|-------------|
+| `RagRetrievalWorkerFactory` | final class (static factory) | `create(name, capabilityName, CaseContextRetriever, QueryExtractionStrategy, List<CorpusRef>, maxResults) → Worker`. Default overload with maxResults=10. Worker function calls `CaseContextRetriever.retrieve()`, maps chunks via `toMap()`, returns `WorkerResult` with `retrievedChunks` list + `summary` string. |
+
 ### `io.casehub.blocks.summarisation`
 
 Layered event summarisation framework -- temporal event accumulation with configurable window policies and pluggable summarisation strategies. Pure Java, zero CDI/Quarkus dependencies.
@@ -439,15 +447,19 @@ Layered event summarisation framework -- temporal event accumulation with config
 | `EventLevel` | record | Named level in the temporal hierarchy: `name`, `ordinal` |
 | `LevelEvent<E>` | record | Typed event at a specific level: `payload`, `timestamp`, `level` |
 | `WindowPolicy` | record | Window boundaries: `maxAge` (ms), `maxCount`. At least one must be positive. Factory methods: `ofCount(int)`, `ofAge(long)`, `of(long, int)`. |
-| `EventAccumulator<E>` | class | Thread-safe event buffer with `collect()`, `shouldEmit()`, `drain()`, `drainIfReady(now)`, `clear()`, `size()`. All methods synchronized. |
+| `EventAccumulator<E>` | class | Thread-safe event buffer with `collect()`, `shouldEmit()`, `drain()`, `drainIfReady(now)`, `peekBuffer()` (read-only snapshot), `clear()`, `size()`. All methods synchronized. |
 | `EventStreamBus<E>` | class | Predicate-based pub/sub. `subscribe(Predicate, Consumer)`, `publish(LevelEvent)`. `clearSubscriptions()`. Backed by `CopyOnWriteArrayList`. Synchronous dispatch. |
 | `Summariser<IN, OUT>` | @FunctionalInterface | Core contract: `summarise(List<LevelEvent<IN>>) -> CompletionStage<List<OUT>>`. Static: `ofSync(SyncSummariser)`. Inner type: `SyncSummariser<IN, OUT>` (@FunctionalInterface). |
 | `Compactor<E>` | @FunctionalInterface | Pre-processing SPI: `compact(List<LevelEvent<E>>) -> List<LevelEvent<E>>`. Runs between drain and summarise for merge/deduplicate/filter. |
-| `SummarisationRunner<IN, OUT>` | class | Wires accumulator -> optional compactor -> summariser -> output bus. Tick-driven via `tick(now)`. `flush()` for unconditional drain at shutdown. |
-| `KeyedAccumulator<K, E>` | class | Groups events by key, emits each group on completion predicate or stale timeout. `collect()`, `drain(now)`, `drainAll()`. |
-| `KeyedSummarisationRunner<K, IN, OUT>` | class | Grouped variant: per-key summarisation with independent failure recovery. `collect()`, `tick(now)`, `flush()`. Optional `onFailure` callback. |
-| `ContentSummariser<T>` | @FunctionalInterface | Higher-level SPI: `summarise(List<T>, @Nullable SummaryResult) -> CompletionStage<SummaryResult>`. Decoupled from pipeline event model. |
-| `ContentSummariserToSummariser<T>` | class | Adapter: wraps `ContentSummariser<T>` to satisfy `Summariser<T, String>`. Strips `LevelEvent` wrappers. |
+| `Tickable` | interface | Common `tick(long now)`/`flush()` contract for both `SummarisationRunner` and `KeyedSummarisationRunner`. |
+| `StatefulSummariser<IN, OUT, S>` | interface | Extends `Summariser` with framework-managed state per partition: `summarise(batch, @Nullable previousState) -> SummariseResult<OUT, S>`. |
+| `EmissionPolicy<IN, S>` | @FunctionalInterface | State-aware emission gating: `shouldEmit(buffered, currentState, now)`. Static `anyOf()`/`allOf()` composition. Used via builder API as alternative to `WindowPolicy`. |
+| `StateStore<S>` | interface | Opt-in persistent state: `load(partitionKey)`, `store(partitionKey, state)`. Write-through cache in runners — reads check in-memory cache first, fall back to store. |
+| `OutputProcessor<OUT, S>` | @FunctionalInterface | Post-summarisation processing: `process(outputs, currentState)`. Called after `summarise()`, before output bus publish. |
+| `SummarisationRunner<IN, OUT>` | class | Wires accumulator -> optional compactor -> summariser -> output bus. Tick-driven via `tick(now)`. `flush()` for unconditional drain at shutdown. Implements `Tickable`. Detects `StatefulSummariser` and manages per-partition state. Builder API: `.emissionPolicy()`, `.stateStore()`, `.stateKeyResolver()`, `.outputProcessor()`, `.compactor()`, `.onFailure()`. Legacy `WindowPolicy` constructors unchanged. |
+| `KeyedAccumulator<K, E>` | class | Groups events by key, emits each group on completion predicate or stale timeout. `collect()`, `drain(now)`, `drainAll()`, `keyExtractor()`. |
+| `KeyedSummarisationRunner<K, IN, OUT>` | class | Grouped variant: per-key summarisation with independent failure recovery. `collect()`, `tick(now)`, `flush()`, `evictState(K)`. Implements `Tickable`. Detects `StatefulSummariser` and manages per-key state via `ConcurrentHashMap`. Builder API: `.stateStore()`, `.outputProcessor()`, `.compactor()`, `.onFailure()`. |
+| `ContentSummariser<T, R>` | @FunctionalInterface | Higher-level SPI: `summarise(List<T>, @Nullable R previous) -> CompletionStage<R>`. Generified result type. `asSummariser()` bridges to `StatefulSummariser<T, R, R>`. |
 | `TieredContentSummariser<T>` | class | Routes to one of three `ContentSummariser<T>` delegates (small/medium/large) based on item count thresholds. |
 | `VerbatimContentSummariser<T>` | class | Renders each item as a bullet point using a `Function<T, String>` renderer. Prepends previous summary. Annotates with `tier=verbatim`. No LLM. |
 
@@ -485,9 +497,67 @@ Affordance grounding -- per-entity observation rendering for LLM agents.
 | `ObservationPipeline` | class | Ordered `ObservationFilter` composition. `apply(sections, agentTags)` runs all stages, then unwraps `AnnotatedSection` to base `ObservationSection`. |
 | `PerceptionFilter` | class | Built-in `ObservationFilter`: visibility gating (drop sections whose `requiredTags` don't intersect `agentTags`) + resolution fallback (degrade to lower `ResolutionTier` on partial match). |
 
+### `io.casehub.blocks.agentic.yaml` (module: `blocks-agentic-yaml`)
+
+YAML surface for agentic orchestration patterns — makes all 8 pattern topologies YAML-expressible via typed spec records, strategy registries, and a pattern compiler.
+
+| Class | Type | What it does |
+|-------|------|-------------|
+| `PatternSpec` | sealed interface | 8 topology subtypes (Supervisor, Debate, Loop, Parallel, Voting, Conditional, Sequence, Htn) with shared concern fields (routing, termination, aggregation, activation, decomposition, failurePolicy, agents, judgment). Jackson `@JsonTypeInfo` discriminated. |
+| `RoutingSpec` | sealed interface | 5 subtypes: FirstMatch (with optional guard expression), RoundRobin, Sequential, LlmSelected, SelectAll |
+| `TerminationSpec` | sealed interface | 9 subtypes: MaxIterations, GoalReached, JudgeConvergence, AllAgreed, Supervisor, Contested, Convergence, SinglePass, AgentCount |
+| `AggregationSpec` | sealed interface | 4 subtypes: PassThrough, CollectAll, MajorityVote, Auction |
+| `AgentRefSpec` | sealed interface | 5 subtypes: Worker, Channel, Human, External, Composed (recursive — holds nested `PatternSpec`) |
+| `PatternCompiler` | class | `compile(PatternSpec) → ExecutionModel<T>`. Resolves spec records to live runtime objects via registries. Applies pattern-specific defaults. |
+| `BlocksSchemaGenerator` | class | `generate(Class<?>) → JsonNode`. Produces JSON Schema from spec record sealed hierarchies via victools with Jackson-aligned discriminator names. |
+
+**Quick start — declare a pattern in YAML:**
+```yaml
+type: supervisor
+routing:
+  type: round-robin
+termination:
+  - type: max-iterations
+    iterations: 10
+agents:
+  - type: worker
+    name: analyst
+  - type: worker
+    name: reviewer
+```
+
+**Compile to ExecutionModel:**
+```java
+var mapper = new ObjectMapper(new YAMLFactory());
+var spec = mapper.readValue(yaml, PatternSpec.class);
+var compiler = new PatternCompiler(expressionEngine);
+ExecutionModel<?> model = compiler.compile(spec);
+```
+
+### `io.casehub.blocks.summarisation.narrative`
+
+Decision narrative pipeline -- transforms platform decision signals into human-readable explanations of agent decisions. Two-level architecture: L1 heuristic accumulation (no LLM), L2 LLM synthesis with incremental state.
+
+| Class | Type | What it does |
+|-------|------|-------------|
+| `DecisionSignal` | sealed interface | Signal from platform decision systems: `caseId()`, `stepName()`, `timestamp()`. 5 permits. |
+| `RoutingDecision` | record | Agent routing signal: `selectedAgentId`, `strategyId`, `score`, `candidateIds`, `reason` |
+| `CbrRetrieval` | record | CBR evidence signal: `retrievedCount`, `topSimilarity`, `topCaseOutcome`, `domain` |
+| `TrustAssessment` | record | Trust evaluation signal: `agentId`, `trustScore`, `threshold`, `passed` |
+| `DeliberationOutcome` | record | Deliberation result signal: `outcome`, `rounds`, `convergenceState`, `participantIds` |
+| `StepOutcome` | record | Step completion signal: `status`, `workerId`, `errorMessage`, `elapsed` |
+| `SignalDigest` | record | L1 intermediate: `signalType`, `summary`, `keyFacts` (Map), `confidence` |
+| `StepDecisionSummary` | record | L1 output: `caseId`, `stepName`, `signals` (List<SignalDigest>), `from`, `to` |
+| `DecisionNarrative` | record | L2 output: `caseId`, `stepNames`, `explanation`, `evidenceSources`, `confidence`, `producedAt` |
+| `DecisionSignalSummariser` | class | L1 heuristic: exhaustive sealed `switch` flattening `DecisionSignal` variants into `SignalDigest`. Pure Java, no LLM. |
+| `DecisionNarrativeSummariser` | @ApplicationScoped | L2 LLM-backed `ContentSummariser<StepDecisionSummary, DecisionNarrative>`. Template fallback on LLM failure. |
+| `NarrativeSignalStrategy` | interface (SPI) | Observer-driven signal collection: `onStepOutcome(Object event)`. Domain repos implement. |
+| `AbstractNarrativeSignalStrategy` | abstract class | Base class: `emit(DecisionSignal)` publishes to `EventStreamBus`, `onCaseClose(caseId)` evicts pipeline state. |
+| `DecisionNarrativePipeline` | @ApplicationScoped | Factory: wires L1→L2 via `EventStreamBus`. `signalBus()`, `narrativeBus()`, `tick(now)`, `evictCaseState(caseId)`. |
+
 ### `io.casehub.blocks.speech` (module: `blocks-speech-api`)
 
-Speech capability SPIs — provider-agnostic interfaces for audio-to-text and text-to-audio. Zero foundation dependencies.
+Speech pipeline SPIs — provider-agnostic interfaces for audio, prompt assembly, and avatar cognition. Zero foundation dependencies.
 
 | Class | Type | What it does |
 |-------|------|-------------|
@@ -496,6 +566,44 @@ Speech capability SPIs — provider-agnostic interfaces for audio-to-text and te
 | `TranscriptionResult` | record | `text`, `language`, `origin` |
 | `SynthesisResult` | record | `audioData` (byte[]), `audioFormat`, `phonemes` (List<PhonemeTiming>) |
 | `PhonemeTiming` | record | `phoneme`, `startMs`, `endMs` — for downstream lip-sync |
+| `SpeechPromptAssembler` | @FunctionalInterface | `assemble(userMessage, history) → AssembledPrompt`. Prompt assembly SPI for speech sessions. |
+| `AssembledPrompt` | record | `systemPrompt`, `userPrompt`, optional `model` override |
+| `ConversationTurn` | record | `role`, `content` — conversation history entry |
+| `PromptContext` | record | `agentId`, `tenantId`, `@Nullable subjectId` — per-turn context for PromptSections |
+| `PromptSection` | @FunctionalInterface | `@Nullable contribute(PromptContext)`. Reads orchestrator cached state, returns formatted text section or null. |
+| `AvatarCognition` | interface | Composition root — `wrapAssembler()`, `initialize()`, `tick()`, `evaluateProactive()`, `recordInteraction()`. speech-ws injects via `Instance<AvatarCognition>`. |
+
+### `io.casehub.blocks.agentic.social.prompt` (module: `blocks`)
+
+Social cognition speech integration — wires all 9 social cognition orchestrators into the speech pipeline via the `AvatarCognition` SPI.
+
+| Class | Type | What it does |
+|-------|------|-------------|
+| `SocialAvatarCognition` | @ApplicationScoped | `AvatarCognition` implementation. Wires MoodOrchestrator, DriveOrchestrator, MentalModelOrchestrator, UserModelOrchestrator, StrategyLearningOrchestrator, NarrativeOrchestrator (optional), GoalProposalOrchestrator (optional), InnerLifeOrchestrator (optional). Constructs PromptSections, handles signal recording and proactive evaluation. |
+| `SocialPromptAssembler` | class | Wraps a base `SpeechPromptAssembler`, appends all `PromptSection` contributions to the system prompt. Fault-tolerant — a failing section is logged and skipped. |
+| `ProactiveSpeechSupport` | class | Encapsulates `InnerLifeOrchestrator` integration for proactive initiation. Returns content from `InnerLifeTick.Initiated` or null from `Silent`. |
+| `MoodPromptSection` | PromptSection | PAD emotional state with natural-language interpretation (positive/negative/energetic/calm/confident/submissive). |
+| `DrivePromptSection` | PromptSection | Motivational state via `CognitiveObservationSections.motivationalStateSection()`. |
+| `PersonalityPromptSection` | PromptSection | Session-static personality traits from `AgentDescriptor.disposition()`. |
+| `MentalModelPromptSection` | PromptSection | BDI Theory of Mind — beliefs, desires, intentions with confidence filtering. Subject-scoped. |
+| `UserModelPromptSection` | PromptSection | Per-subject user profile — familiarity, relationship stage, preferences. Subject-scoped. |
+| `StrategyPromptSection` | PromptSection | Learned interaction strategies via `StrategyProfile.toPromptSection()`. |
+| `NarrativePromptSection` | PromptSection | Self-narrative via `CognitiveObservationSections`. Optional (requires NarrativeOrchestrator). |
+| `GoalPromptSection` | PromptSection | Autonomous drive-generated goal proposals. Optional (requires GoalProposalOrchestrator). |
+
+**Quick start — avatar cognition:**
+```java
+// Consumer adds blocks as compile dep + Jandex indexing:
+// quarkus.index-dependency.casehub-blocks.group-id=io.casehub
+// quarkus.index-dependency.casehub-blocks.artifact-id=casehub-blocks
+//
+// Configure in application.properties:
+// casehub.avatar.agent-id=my-avatar
+// casehub.avatar.tenant-id=my-tenant
+//
+// SocialAvatarCognition is auto-discovered via CDI.
+// speech-ws injects Instance<AvatarCognition> and wraps the base assembler.
+```
 
 ### `io.casehub.blocks.speech.sherpa` (module: `blocks-speech-sherpa`)
 
@@ -516,11 +624,15 @@ TranscriptionResult result = stt.transcribe(audioFile, TranscriptionOptions.defa
 
 ## Key Integration Patterns
 
-**Summarisation Pattern A** (SummarisationRunner pipeline): sync heuristics, microsecond latency. Wire accumulator -> optional compactor -> summariser -> output bus. Use `flush()` at shutdown for unconditional drain.
+**Summarisation Pattern A** (SummarisationRunner pipeline): sync heuristics, microsecond latency. Wire accumulator -> optional compactor -> summariser -> output bus. Use `flush()` at shutdown for unconditional drain. Builder API available for opt-in SPIs: `SummarisationRunner.builder(summariser, bus, level).emissionPolicy(...).stateStore(...).outputProcessor(...).build()`.
 
 **Summarisation Pattern B** (direct EventAccumulator): async LLM dispatch, caller manages the accumulator lifecycle.
 
 **Summarisation Pattern C** (TieredContentSummariser): volume-adaptive summarisation -- verbatim for small batches, grouped for medium, LLM-synthesised for large.
+
+**Summarisation Pattern D** (Decision narrative pipeline): `DecisionNarrativePipeline` wires a two-level `KeyedSummarisationRunner` chain -- L1 groups raw `DecisionSignal` events by step (heuristic, no LLM), L2 groups step summaries by case and synthesises `DecisionNarrative` via LLM with incremental state. Domain repos implement `NarrativeSignalStrategy` to feed platform signals. `evictCaseState()` on case close.
+
+**Summarisation Pattern E** (Identity narrative pipeline): `NarrativePipeline` wires `ReflectionEventAdapter` (pull-to-push bridge from `ReflectionQueryStore`) → `SummarisationRunner` (with `NarrativeEmissionPolicy`, `CbrStateStore`, `NarrativeOutputProcessor`, `NarrativeContentSummariser.asSummariser()`). `tick(agentId, tenantId)` drives the full cycle. `NarrativeOrchestrator` reads results independently from `NarrativeStore`.
 
 **Channel bridges**: `ChannelEventAdapter` (channel -> event bus) and `ChannelEventPublisher` (event bus -> channel) provide bidirectional integration between qhorus channels and the summarisation pipeline.
 
@@ -541,6 +653,23 @@ quarkus.index-dependency.casehub-blocks.artifact-id=casehub-blocks
 ```
 Consumers that only use blocks' pure types (records, sealed interfaces, plain classes) need no configuration.
 
+**Social cognition config defaults:** All social cognition config types (`DriveConfig`, `MoodConfig`, `PersonalityEvolutionConfig`, `InnerLifeConfig`, `MentalModelConfig`, `UserModelConfig`, `StrategyLearningConfig`, `NarrativeConfig`, `GoalProposalConfig`, `GoalEscalationConfig`, `NormDetectionConfig`) and `EventStreamBus<DecisionSignal>` have `@DefaultBean` producers via `SocialCognitionDefaultBeans`. Consumers with blocks on their classpath get safe defaults automatically — no config required to use social cognition features. Override any config by providing your own `@ApplicationScoped` bean for that type.
+
+**Situational context SPIs:** Three `@FunctionalInterface` SPIs let consumers adapt CognitionCore to their domain:
+- `SubjectResolver` — determines which subjects are contextually relevant (replaces `Set<String> activeSubjects` parameter on `CognitionCore.tick()`)
+- `InteractionMapper` — maps domain events to `CognitiveImpact` records that control all 4 orchestrator channels (userModel, mood, BDI extraction, strategy)
+- `NormFilter` — filters detected `SocialNorm`s by situational context before prompt rendering
+
+All three have `@DefaultBean` passthrough producers. Override by providing your own `@ApplicationScoped` bean. `CognitiveImpact.fromText(description)` is the common-case factory for simple text interactions.
+
+**CognitionCore prompt sections:** `CognitionCore.promptSections()` now includes `PersonalityPromptSection` (from `AgentDescriptor.disposition()`) and `ConstraintPromptSection` (from `AgentDescriptor.constraints()`) when available. These are populated after the first `tick()` call.
+
+**External goal registration:** `GoalProposalOrchestrator.registerGoals(agentId, tenantId, goals)` lets consumers inject character-specific goals alongside drive-derived proposals. Registered goals appear in `currentProposals()` and render via `GoalPromptSection`.
+
+**Payload normalization:** `CloudEventIngestionAdapter` accepts an optional `Function<E, E>` normalizer (5th constructor parameter) applied after deserialization before publishing. Use when mixed CloudEvent types have different map shapes to ensure all expected keys are present.
+
+**Decision signal:** `ModelSelection` is the 6th `DecisionSignal` permit — carries `modelId`, `modelTier`, `capabilityName`, `vendor`, `displayName` for model selection narratives.
+
 ## Boundary Rules
 
 - Does NOT provide generic utilities (backoff, rate limiters) -- those belong in platform
@@ -555,6 +684,6 @@ Consumers that only use blocks' pure types (records, sealed interfaces, plain cl
 
 **Compile:** `casehub-qhorus-api`, `casehub-work-api`, `casehub-engine-api`, `casehub-eidos-api`, `casehub-worker-api`, `org.jspecify:jspecify`
 
-**Provided:** `io.smallrye.reactive:mutiny`, `casehub-platform-agent-api`, `casehub-platform-api`, `casehub-engine-ledger`, `casehub-ledger-api`, `casehub-neocortex-memory-api`, `io.opentelemetry:opentelemetry-api`
+**Provided:** `io.smallrye.reactive:mutiny`, `casehub-platform-agent-api`, `casehub-platform-api`, `casehub-engine-ledger`, `casehub-ledger-api`, `casehub-neocortex-memory-api`, `casehub-neocortex-rag-api`, `io.opentelemetry:opentelemetry-api`
 
 **Test:** `casehub-qhorus`, `casehub-qhorus-testing`, `casehub-engine`, `casehub-engine-testing`, `quarkus-junit`, `assertj`, `mockito`, `awaitility`, `io.opentelemetry:opentelemetry-sdk-testing`

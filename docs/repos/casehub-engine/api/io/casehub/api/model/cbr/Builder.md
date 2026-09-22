@@ -10,13 +10,19 @@
 
 ### `cbrType` (`java.lang.String`)
 
+### `crossType` (`boolean`)
+
 ### `domain` (`java.lang.String`)
 
 ### `jqFeatures` (`java.util.Map<java.lang.String,java.lang.String>`)
 
 ### `lambdaExtractor` (`java.util.function.Function<io.casehub.api.context.CaseContext,java.util.Map<java.lang.String,java.lang.Object>>`)
 
+### `minCostSamples` (`java.lang.Integer`)
+
 ### `minSimilarity` (`double`)
+
+### `problemDescription` (`ExpressionEvaluator`)
 
 ### `temporalDecayHalfLifeDays` (`java.lang.Integer`)
 
@@ -48,6 +54,12 @@
 
 - `cbrType` (`java.lang.String`)
 
+### `public io.casehub.api.model.cbr.CbrConfig.Builder crossType(boolean crossType)`
+
+#### Parameters
+
+- `crossType` (`boolean`)
+
 ### `public io.casehub.api.model.cbr.CbrConfig.Builder domain(java.lang.String domain)`
 
 #### Parameters
@@ -67,11 +79,29 @@
 
 - `extractor` (`java.util.function.Function<io.casehub.api.context.CaseContext,java.util.Map<java.lang.String,java.lang.Object>>`)
 
+### `public io.casehub.api.model.cbr.CbrConfig.Builder minCostSamples(java.lang.Integer minCostSamples)`
+
+#### Parameters
+
+- `minCostSamples` (`java.lang.Integer`)
+
 ### `public io.casehub.api.model.cbr.CbrConfig.Builder minSimilarity(double minSimilarity)`
 
 #### Parameters
 
 - `minSimilarity` (`double`)
+
+### `public io.casehub.api.model.cbr.CbrConfig.Builder problemDescription(ExpressionEvaluator problemDescription)`
+
+#### Parameters
+
+- `problemDescription` (`ExpressionEvaluator`)
+
+### `public io.casehub.api.model.cbr.CbrConfig.Builder problemDescription(java.lang.String jqExpression)`
+
+#### Parameters
+
+- `jqExpression` (`java.lang.String`)
 
 ### `public io.casehub.api.model.cbr.CbrConfig.Builder temporalDecayHalfLifeDays(java.lang.Integer temporalDecayHalfLifeDays)`
 

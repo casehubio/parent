@@ -11,6 +11,8 @@
 
 Implements the Blackboard Architecture (Hayes-Roth, 1985) with CMMN terminology. Coordinates workers (AI agents, humans) via case definitions, binding rules, and optional synchronous orchestration. All handlers run on virtual threads (Java 21).
 
+**Getting started:** Case definitions can be authored in [YAML or Java](three-pathways.md) (TypeScript planned). The pathways guide covers when to use each, a side-by-side walkthrough, and the full YAML DSL reference.
+
 ---
 
 ## Modules to Depend On
@@ -42,6 +44,25 @@ Implements the Blackboard Architecture (Hayes-Roth, 1985) with CMMN terminology.
 |---|---|
 | `casehub-engine-persistence-memory` | In-memory thread-safe persistence for `@QuarkusTest` without Docker. Includes `DefaultTestPrincipal` |
 | `casehub-engine-testing` | `@Alternative @Priority(1)` wrappers over in-memory repos for automatic selection in `@QuarkusTest`. Includes `WorkResultSubmitter` test helper |
+
+**Spring Boot modules:**
+
+| Module | Purpose |
+|---|---|
+| `casehub-engine-persistence-jpa-common` | Shared JPA entities (7), Flyway migrations (V1.0–V1.11), `TenantContextManager` (framework-neutral PostgreSQL RLS tenant context), `RlsPolicySetup` (startup RLS policy application) |
+| `casehub-engine-persistence-spring-jpa` | Spring Data JPA implementations of all 9 persistence SPIs. `PersistenceAutoConfiguration` wires beans, `@EntityScan` discovers entities from jpa-common, `CommandLineRunner` applies RLS policies at startup. Displaces in-memory defaults via `@ConditionalOnMissingBean` |
+
+**Spring persistence configuration:**
+
+```properties
+# Enable PostgreSQL Row Level Security (default: false)
+casehub.rls.enabled=true
+
+# Flyway migration location (auto-detected from jpa-common classpath)
+spring.flyway.locations=classpath:db/migration
+```
+
+Add `casehub-engine-persistence-spring-jpa` to your Spring Boot application's dependencies. It auto-configures all 9 persistence SPIs and displaces the in-memory defaults from `casehub-engine-support-spring`.
 
 ---
 
@@ -244,6 +265,75 @@ CBR enables experience-driven routing and planning. Configured per case definiti
 
 `CbrCaseTypeRegistration` registers case types for CBR retention.
 
+**Mixed retrieval (plan traces + documents):** Set `crossType: true` on the `cbr:` block to retrieve both past case traces and knowledge base documents in a single ranked list. Each `RetrievedExperience` carries `sourceType()` (`PLAN_TRACE` or `RESOLUTION_GUIDE`), `documentContent()` (prose solution), and `documentSteps()` (structured steps). Workers check `sourceType` to decide whether to follow a plan trace or a document procedure.
+
+```yaml
+spec:
+  cbr:
+    domain: "soc-incidents"
+    crossType: true
+    features:
+      severity: ".alert.severity"
+      category: ".alert.category"
+```
+
+**Document ingestion via CorpusSourceAdapter:** Implement `CorpusSourceAdapter` to ingest knowledge base documents (runbooks, SOPs, investigation procedures) into the CBR store:
+
+```java
+@ApplicationScoped
+public class RunbookAdapter implements CorpusSourceAdapter {
+    @Override public String id() { return "runbooks"; }
+
+    @Override
+    public List<ResolutionGuideInput> discover(String tenancyId) {
+        return loadRunbooks().stream()
+            .map(doc -> new ResolutionGuideInput(
+                doc.id(),                          // documentId — stable, for idempotent ingestion
+                doc.title(),                       // problem description
+                doc.content(),                     // solution prose
+                parseSteps(doc),                   // optional List<GuidanceStepInput>
+                Map.of("category", FeatureValue.string(doc.category())),  // features for similarity matching
+                "soc-incidents",                   // domain — must match cbr.domain
+                null))                             // optional metadata
+            .toList();
+    }
+}
+```
+
+`NoOpCorpusSourceAdapter` (`@DefaultBean`) ships as the default. `ResolutionIngestionService` bridges the adapter to `CbrCaseMemoryStore` with deterministic `caseId` for idempotent re-ingestion on restart.
+
+**Human-in-the-loop resolution selection:** Use a `judgment:` binding to present ranked CBR candidates to an analyst for selection, then dispatch the selected resolution:
+
+```yaml
+spec:
+  bindings:
+    - name: select-resolution
+      judgment:
+        caller:
+          human:
+            title: "Select investigation approach"
+            candidateGroups: [soc-analysts]
+            outcomes: [approve, reject, escalate]
+        resolutionType: io.casehub.api.model.ResolutionSelection
+      on: ".alert != null and .selectedResolution == null"
+      producedKeys: [selectedResolution]
+
+    - name: investigate-alert
+      capability: investigate
+      on: ".selectedResolution != null and .verdict == null"
+```
+
+When the judgment binding fires on a case with `cbr:` config, the engine automatically populates `_candidates.<bindingName>` with ranked summaries. The human selects via `ResolutionSelection(selectedCaseId, sourceType, rationale)`. Selection feedback is recorded automatically.
+
+**Outcome weighting:** Enabled by default (`casehub.cbr.outcome-weighting.enabled=true`). Cases with higher outcome confidence rank higher in retrieval. Tune via `casehub.cbr.outcome-weighting.influence` (default `0.3`). New documents start with null confidence (no penalty — ranked purely by similarity until outcomes accumulate).
+
+**Retrieval feedback (automatic):** Three layers close the feedback loop without app code:
+- **Layer 1** — `RetrievalFeedbackObserver` records per-step relevance from worker outcomes (success → relevant, failure → not relevant)
+- **Layer 2** — `CbrCaseRetainObserver` stores resolved cases with outcome confidence (existing)
+- **Layer 3** — `SelectionFeedbackRecorder` records human selection signals (selected → highly relevant, unselected above threshold → partially relevant)
+
+Requires `casehub-neocortex-memory-cbr-tracking` on the classpath. Transparent no-op without it.
+
 ### Oversight Gate (`api/spi/`)
 
 Platform-level oversight for consequential worker actions:
@@ -276,6 +366,18 @@ Four operational SPIs. All ship with `@DefaultBean @ApplicationScoped` no-op def
 | `WorkerStatusListener` | Worker lifecycle callbacks: `started()`, `completed()`, `stalled()` |
 | `CaseChannelProvider` | Open/close/post to backend-agnostic channels. `postToChannel` takes a `MessageType` parameter from `casehub-qhorus-api` |
 | `WorkerContextProvider` | Build worker startup context from ledger lineage — includes prior worker summaries, causal chain metadata |
+| `DispatchBudget` | Session-level dispatch capacity. Engine queries `availableCapacity(DispatchBudgetQuery)` before dispatching bindings. `@DefaultBean` returns `MAX_VALUE` (unlimited). Implement to cap concurrent worker sessions (e.g. claudony's `ClaudonyDispatchBudget`). Advisory — `submit()` remains the hard gate |
+| `FailureClassifier` | Classify worker failure modes into `FailureCategory` (Transient, Knowledge, Infeasible). `@DefaultBean` uses heuristic pattern matching. Implement for domain-specific classification (e.g. devtown's `DevtownFailureClassifier` for PR review failure modes) |
+
+### Concurrency Budget (`CaseDefinition` config)
+
+`maxConcurrentDispatches` (nullable Integer) — caps concurrent binding dispatches per case. Set in YAML: `spec: { maxConcurrentDispatches: 5 }`. Engine counts RUNNING/DISPATCHING/DELEGATED PlanItems and admits at most `min(caseBudget, externalBudget)` bindings per CONTEXT_CHANGED cycle. Null = unlimited.
+
+### Watchdog Response Policy (`CaseDefinition` config)
+
+`watchdogPolicy` — per-condition response when qhorus watchdog fires. Three actions: `CANCEL_AFFECTED` (cancel hung workers → failure pipeline), `SIGNAL` (write to `.watchdogAlert` in case context → bindings react), `IGNORE` (no action). Defaults: worker-hung conditions (AGENT_STALE, LOOP_DETECTED, etc.) → CANCEL_AFFECTED; case-level conditions (QUEUE_DEPTH, CONTEXT_PRESSURE, etc.) → SIGNAL. YAML: `spec: { watchdogPolicy: { LOOP_DETECTED: IGNORE } }`.
+
+Case definitions bind automated interventions via JQ: `.watchdogAlert.conditionType == "QUEUE_DEPTH"`.
 
 ### AgentRoutingStrategy SPI (`api/spi/routing/`)
 
@@ -355,6 +457,45 @@ Platform-level agent mesh primitives (pure Java, no CDI):
 | `ActiveParticipationStrategy` | Active participation (contributes to case) |
 | `ReactiveParticipationStrategy` | Reactive participation (responds on demand) |
 | `SilentParticipationStrategy` | Silent participation (monitors only) |
+
+---
+
+## Case Lifecycle Events
+
+`CaseLifecycleEvent` is a CDI event fired via `Event.fireAsync()` on every auditable case lifecycle transition. Consumers observe it with `@ObservesAsync CaseLifecycleEvent` — no engine dependency coupling required.
+
+**Enrichment fields** (available on every event):
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `caseId` | UUID | Case instance identifier |
+| `tenancyId` | String | Owning tenant |
+| `commandType` | String | Actor intent — `"StartCase"`, `"SuspendCase"`, etc. |
+| `eventType` | String | Observable fact — `"CaseStarted"`, `"CaseSuspended"`, etc. |
+| `caseStatus` | String | CaseStatus at transition time; null for non-status events |
+| `caseDefinitionName` | String | Case definition name from CaseMetaModel |
+| `namespace` | String | Case definition namespace |
+| `contextSnapshot` | JsonNode | Working layer at fire time — point-in-time, read-only |
+| `satisfiedGoalName` | String | Goal that caused terminal transition; null if not goal-triggered |
+| `satisfiedGoalKind` | String | Kind of satisfied goal (e.g. `"success"`, `"failure"`) |
+| `actorId` | String | Initiating actor; null for system-triggered events |
+| `traceId` | String | OTel trace ID for distributed tracing correlation |
+
+**Usage example:**
+```java
+@ApplicationScoped
+public class AuditObserver {
+    void onLifecycle(@ObservesAsync CaseLifecycleEvent event) {
+        if ("CaseCompleted".equals(event.eventType())) {
+            log.infof("Case %s (%s/%s) completed via goal %s",
+                event.caseId(), event.namespace(), event.caseDefinitionName(),
+                event.satisfiedGoalName());
+        }
+    }
+}
+```
+
+Consumers can discriminate by case type via `caseDefinitionName`/`namespace` and extract context data from `contextSnapshot` without a repository round-trip.
 
 ---
 

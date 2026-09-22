@@ -58,10 +58,21 @@ io.casehub.soc
  |    +-- SocStepType               -- enum: 6 investigation step types for ledger entries
  |    +-- SocTrustDimensions        -- constants: triage-accuracy, containment-appropriateness
  |    +-- SocAgentDescriptors      -- static factory; AgentDescriptor per worker with MITRE ATT&CK epistemic domains
+ |    +-- SocNotificationEvents    -- constants: 8 notification event types + EventTypeDescriptor factories
+ +-- domain/notification/
+ |    +-- SocIncidentNotification  -- SubscribableEvent record; parameterised incident lifecycle notification
+ |    +-- SocWorkItemNotification  -- SubscribableEvent record; parameterised work item notification
+ +-- engine/spi/
+ |    +-- ContainmentExecutor      -- SPI interface; pluggable containment execution backends
+ |    +-- ContainmentResult        -- record: success, timestamp, details, errorReason, retryable
+ |    +-- ContainmentContext       -- record: caseId, incidentId, approver, tenancyId, timeoutMs
+ |    +-- ContainmentRequest       -- record: API contract request body for HTTP containment connectors
+ |    +-- ContainmentResponse      -- record: API contract response body from HTTP containment connectors
  +-- worker/contract/
       +-- IocEnrichmentOutput       -- record: iocs (list of IocEntry), summary
       +-- AttckMappingOutput        -- record: techniques (list of TechniqueEntry), primaryTactic, confidence, narrative
       +-- ContainmentRecommendationOutput -- record: recommendedAction, riskScore, confidenceScore, rationale, actionParameters
+      +-- ContainmentExecutionOutput -- record: actionType, executed, success, details, errorReason, executionTimestamp, detectionToContainmentMs
 ```
 
 ### app/src/main/java
@@ -73,7 +84,11 @@ io.casehub.soc
  |    +-- SocCaseInputContributor   -- CaseInputContributor; converts RAS detections to serialisable alert context
  |    +-- SocFaultedCaseReviewCreator -- CaseOutcomeObserver; creates failure-review WorkItems for FAULTED cases
  |    +-- SocGanglionProducer       -- CDI producer for SiemAlertGanglion (api/ is pure Java, no CDI)
- |    +-- SocInvestigationCaseDescriptor -- POJO; assembles the 6 workers for incident-investigation cases
+ |    +-- SocInvestigationCaseDescriptor -- POJO; assembles the 10 workers for incident-investigation cases
+ |    +-- ContainmentEndpoint      -- record: url, method, timeoutSeconds for HTTP containment connectors
+ |    +-- ContainmentEndpointResolver -- @ApplicationScoped; reads casehub.soc.containment.endpoints.* config at @PostConstruct
+ |    +-- HttpContainmentExecutor  -- @ApplicationScoped; displaces LoggingContainmentExecutor, routes actions to HTTP connectors via config
+ |    +-- LoggingContainmentExecutor -- @DefaultBean; logs containment actions (fallback when no HTTP connectors configured)
  |    +-- SocAgentRegistrar         -- AgentDescriptorRegistrar SPI; registers descriptors with eidos AgentRegistry at startup
  |    +-- SocAttestationService     -- CaseOutcomeObserver; creates trust attestations on case resolution
  |    +-- SocIncidentStatusObserver -- CDI observer; tracks incident status transitions from CaseLifecycleEvent
@@ -84,6 +99,14 @@ io.casehub.soc
  |    |    +-- SocCbrSchemaRegistrar -- registers CBR schema attributes for SOC incidents
  |    |    +-- SocIncidentCbrCase   -- CbrCase record for SOC incidents
  |    |    +-- SocCaseOutcomeFilter -- shared predicate: successful SOC incident investigation
+ |    +-- rag/
+ |    |    +-- SocRagRetrieveService -- queries CaseContextRetriever with alert + ATT&CK + IOC context for prose retrieval
+ |    +-- mesh/
+ |    |    +-- SocContainmentCommitmentBridge -- CDI observer; bridges ActionGate lifecycle events to qhorus oversight channel speech acts (PROPOSE/DONE/DECLINE/STATUS)
+ |    |    +-- OversightChannelState -- per-case state record; tracks channelId and PROPOSE messageId for commitment threading
+ |    +-- notification/
+ |    |    +-- SocNotificationBridge  -- CDI observer; publishes 8 SubscribableEvent types to notification DataSource on incident status, SLA breach, and work item lifecycle events
+ |    |    +-- SocNotificationSeeder  -- CDI startup; seeds SYSTEM-scope subscriptions per tenant with idempotent content comparison
  |    +-- compliance/
  |    |    +-- SocLedgerEntry        -- JpaLedgerEntry subclass; incidentId + stepType (JOINED inheritance)
  |    |    +-- SocLedgerEntryWriter  -- shared write helper; validates metadata, manages sequence numbers
@@ -94,18 +117,49 @@ io.casehub.soc
  |    |    +-- SocPiiSanitiser      -- regex PII redaction (IPv4, IPv6, email); fail-closed
  +-- rest/
  |    +-- SocComplianceResource     -- JAX-RS: /api/soc/compliance/{proof,timeline,dora}; @RolesAllowed
+ |    +-- SimulatedContainmentConnector -- JAX-RS: /sim/containment; dev/test simulated containment connector
+ +-- connector/
+ |    +-- crowdstrike/
+ |    |    +-- CrowdStrikeContainmentConnector -- JAX-RS: /crowdstrike/containment; host isolation and endpoint wipe via Falcon API
+ |    |    +-- CrowdStrikeOAuth2Client         -- OAuth2 client credentials with in-memory token caching
+ |    |    +-- CrowdStrikeHealthCheck          -- JAX-RS: /crowdstrike/health
+ |    |    +-- CrowdStrikeConfig               -- CDI producer for CrowdStrikeOAuth2Client
+ |    |    +-- CrowdStrikeAuthException        -- runtime exception for auth failures
+ |    +-- paloalto/
+ |    |    +-- PaloAltoContainmentConnector     -- JAX-RS: /paloalto/containment; IP/domain blocking and network segmentation via PAN-OS XML API
+ |    |    +-- PaloAltoApiClient               -- PAN-OS XML API calls with two-phase commit and job polling
+ |    |    +-- PaloAltoApiResponse             -- XML response parser (regex-based for small fixed-shape payloads)
+ |    |    +-- PaloAltoHealthCheck             -- JAX-RS: /paloalto/health
+ |    |    +-- PaloAltoConfig                  -- CDI producer for PaloAltoApiClient
+ |    |    +-- PaloAltoApiException            -- runtime exception for API failures
+ |    +-- identity/
+ |         +-- IdentityContainmentConnector    -- JAX-RS: /identity/containment; account disable, session revoke, API key rotation
+ |         +-- IdentityProvider                -- strategy interface for Okta/Graph provider dispatch
+ |         +-- OktaIdentityProvider            -- Okta Users API implementation (SSWS token auth)
+ |         +-- GraphIdentityProvider           -- Microsoft Graph API implementation (OAuth2 client credentials)
+ |         +-- IdentityHealthCheck             -- JAX-RS: /identity/health
+ |         +-- IdentityConnectorConfig         -- CDI producer with config-driven provider selection
+ |         +-- IdentityResult                  -- record: provider operation result
+ |         +-- IdentityApiException            -- runtime exception for provider API failures
  +-- routing/
  |    +-- SocActionRiskClassifier   -- ActionRiskClassifier with @RiskClassifier qualifier
  +-- worker/
       +-- IocExtractor              -- static utility; regex extraction (IPv4, MD5, SHA1, SHA256, domain, URL, email, CVE)
-      +-- AttckLookupTable          -- static utility; rule prefix + IOC type -> ATT&CK technique mapping
+      +-- threatintel/attck/
+      |    +-- AttckConstants          -- shared constants: REFERENCE_TENANT, SUBGRAPH_NAME, CORPUS_NAME
+      |    +-- AttckStixParser         -- pure Java STIX 2.1 parser; filters deprecated/revoked objects
+      |    +-- AttckIngestionService   -- @Startup; parses STIX bundle, populates MindMap subgraph + RAG corpus
+      |    +-- AttckEnrichmentService  -- stateless MindMap graph queries (related groups, mitigations, sub-techniques)
+      |    +-- AttckLookupTable        -- static utility; rule prefix + IOC type -> ATT&CK technique mapping
       +-- ContainmentDecisionMatrix -- static utility; severity x tactic matrix -> containment recommendation
       +-- RuleIocEnrichmentWorker   -- Worker factory; ioc-enrichment capability, uses IocExtractor
-      +-- RuleAttckMappingWorker    -- Worker factory; attck-mapping capability, uses AttckLookupTable
+      +-- RuleAttckMappingWorker    -- Worker factory; attck-mapping capability, uses AttckLookupTable + AttckEnrichmentService
+      +-- RuleRagRetrievalWorker   -- Worker factory; rag-retrieval capability, delegates to SocRagRetrieveService
       +-- RuleContainmentRecommendationWorker -- Worker factory; containment-recommendation, uses ContainmentDecisionMatrix + PlannedAction
       +-- LlmIocEnrichmentWorker    -- Worker factory; ioc-enrichment, AgentWorkerFunction with IocEnrichmentOutput schema
       +-- LlmAttckMappingWorker     -- Worker factory; attck-mapping, AgentWorkerFunction with AttckMappingOutput schema
       +-- LlmContainmentRecommendationWorker -- Worker factory; containment-recommendation, WorkerFunction.Sync with PlannedAction extraction
+      +-- RuleContainmentExecutionWorker -- Worker factory; containment-execution, delegates to ContainmentExecutor SPI with retryable failure handling
       +-- SocAgentPrompts           -- constants: system prompts for the three LLM worker capabilities
 ```
 

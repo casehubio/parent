@@ -29,7 +29,7 @@
 
 | Module | Artifact | Type | Purpose |
 |--------|----------|------|---------|
-| `engine-adapter/` | `casehub-work-engine-adapter` | Bridge | Two-way bridge between engine PlanItems and work WorkItems. Contains: `HumanTaskScheduleHandler` (outbound: engine -> work), `WorkItemLifecycleAdapter` (inbound: work -> engine), `PlanItemCompletionApplier` (transition routing), `ActionGateWorkItemHandler` + `ActionGateCompletionApplier` + `ActionGateCancelledHandler` (oversight gate bridge), `WorkStrategyContributor` (NamedStrategy registration), `HumanTaskRecoveryService` (startup recovery), `JpaPlanItemStore`, `WorkAdapterPlanItemEntity`, `CallerRef` sealed interface with `PlanItemRef` + `GateRef` variants. Lives here (not in engine) because the bridge owns the WorkItem entity and transaction boundaries. |
+| `engine-adapter/` | `casehub-work-engine-adapter` | Bridge | Two-way bridge between engine PlanItems and work WorkItems. Contains: `HumanTaskScheduleHandler` (outbound: engine -> work), `WorkItemLifecycleAdapter` (inbound: work -> engine), `PlanItemCompletionApplier` (transition routing), `ActionGateWorkItemHandler` + `ActionGateCompletionApplier` + `ActionGateCancelledHandler` (oversight gate bridge), `InboundWorkItemSchedulerImpl` (inbound qhorus messages -> WorkItems via TenantContextRunner), `WorkActorStateContributor` (actor state view — active WorkItems by assignee), `WorkStrategyContributor` (NamedStrategy registration), `HumanTaskRecoveryService` (startup recovery), `JpaPlanItemStore`, `WorkAdapterPlanItemEntity`, `CallerRef` sealed interface with `PlanItemRef` + `GateRef` variants. Lives here (not in engine) because the bridge owns the WorkItem entity and transaction boundaries. |
 | `flow/` | `casehub-work-flow` | Jandex library | `WorkItemsFlow` (extends Quarkus-Flow's `Flow`), `HumanTaskFlowBridge` (CDI bridge creating WorkItems and returning `Uni<String>` that suspends the workflow), `WorkItemTaskBuilder` (fluent DSL: `.title()`, `.description()`, `.assigneeId()`, `.candidateGroups()`, `.priority()`, `.payloadFrom()`, `.buildTask()`), `PendingWorkItemRegistry` (in-memory CompletableFuture registry), `WorkItemFlowEventListener` (lifecycle observer that resolves pending futures), `WorkItemResolutionException`. |
 | `ledger/` | `casehub-work-ledger` | Optional | `LedgerEventCapture` (observes lifecycle events, writes ledger entries), `WorkItemLedgerEntry` entity, `WorkItemLedgerEntryRepository` SPI + `JpaWorkItemLedgerEntryRepository`, REST: `LedgerResource` (queries, provenance, attestation), `ActorTrustResource` (trust scores), DTOs for attestation and provenance. |
 | `queues/` | `casehub-work-queues` | Optional | `QueueMembershipService`, `FilterEvaluationObserver`, `QueueSnapshotJob` (scheduled trend data collection), `WorkItemQueueEventBroadcaster` SPI + `LocalWorkItemQueueEventBroadcaster`, `WorkItemQueueMetrics`, `QueueResource` + `QueueStateResource` (REST), `WorkItemQueueState` + `QueueSnapshot` entities, `QueueSnapshotStore` + `QueueStateStore` + `WorkItemViewQuery` repositories, `QueueSnapshotInterval` + `QueueTrendRetention` config, `QueuesRlsPolicyApplicator`. |
@@ -142,8 +142,12 @@ The filter engine was migrated from a custom `FilterScope` enum to platform `Lab
 `WorkPreferenceRegistrar` (#197) registers work preference schemas at startup via the platform `PreferenceProvider`. Preference keys are declared in `WorkPreferenceKeys`:
 - `casehub.work/sla.default-hours` (default: 24)
 - `casehub.work/sla.default-claim-hours` (default: 4)
+- `casehub.work/sla.on-completion-expiry` (per-tenant SLA breach action override, #375)
+- `casehub.work/sla.on-claim-expiry` (per-tenant SLA breach action override, #375)
+- `casehub.work/sla.extension-hours` (per-tenant extension hours override, #375)
+- `casehub.work/sla.claim-extension-hours` (per-tenant claim extension hours override, #375)
 
-These enable per-scope override of SLA defaults via the platform preference hierarchy.
+These enable per-scope override of SLA defaults via the platform preference hierarchy. The breach action keys (#375) use colon-delimited syntax matching config properties (`fail`, `extend:PT6H`, `escalateTo:group:PT4H`, `exhausted:reason`). `PreferenceSlaBreachPolicyDecorator` (`@Priority APPLICATION+200`) checks these before delegating to the config-selected policy.
 
 ## Business Calendar
 

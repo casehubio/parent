@@ -17,12 +17,16 @@ Any Quarkus app that depends on `casehub-eidos` can register agents with structu
 
 | artifactId | When to use | What you get |
 |---|---|---|
-| `casehub-eidos-api` | Always -- compile dependency | Domain types: `AgentDescriptor`, `AgentCapability`, `AgentDisposition`, `AgentGoal`, `AgentConstraint`, `AgentMatch`, `AgentQuery`, `AgentRegistry`, `AgentSelector`, `SelectionContext`, `CapabilityHealth`, `SystemPromptRenderer`, `VocabularyRegistry`, `TemplateRegistry`, `DispositionHealth`, `DispositionEvolution`, `AgentStateStore`, `BehavioralSignalStore`, `DispositionSignalStore`. SPIs in `api.spi`: `AgentDescriptorRegistrar`, `VocabularyRegistrar`, `TemplateRegistrar`. Utilities: `CapabilityResolver`, `BehavioralExpectations`, `AgentDescriptorComparator`. Sealed types: `MatchDegree`, `CapabilityStatus`, `AgentSelection`, `DispositionStatus`, `EvolutionResult`. Enums: `EscalationKind`. Pure Java, no CDI. |
+| `casehub-eidos-api` | Always -- compile dependency | Domain types: `AgentDescriptor`, `AgentCapability`, `AgentDisposition`, `AgentGoal`, `AgentConstraint`, `AgentMatch`, `AgentQuery`, `AgentRegistry`, `AgentSelector`, `SelectionContext`, `CapabilityHealth`, `SystemPromptRenderer`, `VocabularyRegistry`, `TemplateRegistry`, `DispositionHealth`, `DispositionEvolution`, `AgentStateStore`, `BehavioralSignalStore`, `DispositionSignalStore`. SPIs in `api.spi`: `AgentDescriptorRegistrar`, `VocabularyRegistrar`, `TemplateRegistrar`. Utilities: `CapabilityResolver`, `BehavioralExpectations`, `AgentDescriptorComparator`, `DisplayTermResolver`. Sealed types: `MatchDegree`, `CapabilityStatus`, `AgentSelection`, `DispositionStatus`, `EvolutionResult`. Enums: `EscalationKind`. Pure Java + `casehub-platform-api` (for `ModelQuery`), no CDI. |
 | `casehub-eidos` | Always -- runtime dependency | Quarkus extension: CDI registry, health implementations, renderer, JPA persistence, Flyway migrations. `@DefaultBean` for all SPIs. |
 | `casehub-eidos-memory` | Tests and prototyping | `@Alternative @Priority(1)` in-memory implementations: `InMemoryAgentRegistry`, `InMemoryTemplateRegistry`, `InMemoryAgentStateStore`, `InMemoryBehavioralSignalStore` (per-signal TTL via `@ConfigProperty`), `InMemoryDispositionSignalStore` (ConcurrentHashMap + AtomicInteger, no TTL), `InMemoryRenderedPromptCache`. Activate by adding as dependency. |
-| `casehub-eidos-vocab` | Optional -- domain vocabularies | Well-known vocabularies: `SvoTerm`, `ConscientiousnessTerm`, `CasehubSlotTerm`, `BelbinTerm` (9 team roles), `DiscTerm` (4 DISC types, `axisExactMatch`), `ThomasKilmannTerm` (5 conflict modes), `CasehubCapabilityTerm` (hierarchical capability taxonomy), `JungianFunctionTerm` (8 cognitive functions with `axisExactMatch`, `shadow()`, `opposite()`, `compatibleAuxiliaries()`), `MbtiTypeTerm` (16 MBTI types with `specializes()` to `JungianFunctionTerm`, `defaultProfile()`), `JungianEvolutionType` (4 JPAF reflection types). All optional -- consumers define their own vocabularies. |
-| `casehub-eidos-annotations` | Optional -- annotation-driven identity | Quarkus extension: `@Identity`, `@Disposition`, `@AgentGoals`, `@AgentConstraints` generate `AgentDescriptorRegistrar` beans at build time. Also processes `@Discoverable` (from eidos-api) for capability auto-registration. Depends on `casehub-eidos`. |
+| `casehub-eidos-vocab` | Optional -- domain vocabularies | Well-known vocabularies: `SvoTerm`, `ConscientiousnessTerm`, `CasehubSlotTerm`, `BelbinTerm` (9 team roles), `DiscTerm` (4 DISC types, `axisExactMatch`), `ThomasKilmannTerm` (5 conflict modes), `CasehubCapabilityTerm` (hierarchical capability taxonomy), `JungianFunctionTerm` (8 cognitive functions with `axisExactMatch`, `shadow()`, `opposite()`, `compatibleAuxiliaries()`), `MbtiTypeTerm` (16 MBTI types with `specializes()` to `JungianFunctionTerm`, `defaultProfile()`), `JungianEvolutionType` (4 JPAF reflection types), `ModelTierTerm` (4 LLM model tiers with linear subsumption FLAGSHIP→STANDARD→FAST, EMBEDDING standalone), `ArchetypeTerm` (48 sub-archetypes in 12 families from Hartwell & Chen, with `family()`, `validAdjectives()`, `invalidAdjectives()`), `ArchetypeFamily` (12 families grouped by 4 motivation quadrants), `ArchetypeCompatibility` (framework-to-archetype mapping), `ArchetypeResolver` (set-intersection archetype derivation). All optional -- consumers define their own vocabularies. |
+| `casehub-eidos-annotations` | Optional -- annotation-driven identity | Quarkus extension: `@Identity` (+ `weightsFingerprint`, `modelVersion`), `@Disposition` (+ `@DispositionWeight[]` weighted profiles, `mbtiType`, `enneagramType`, `@AxisVocabulary[]`), `@AgentGoals`, `@AgentConstraints` generate `AgentDescriptorRegistrar` beans at build time. `@AgentCapabilityDef` (repeatable, full capability metadata with `@EpistemicDomain`) — merge semantics with `@Discoverable` (union, name collision → build error). `@AgentTemplateRef` (repeatable, with `@TemplateArg`). `@ExtensionData` (with `@ExtensionEntry` for flat key-value extension data). Build-time validation: NaN guards, range checks, duplicate detection, orphan warnings. Depends on `casehub-eidos`. |
 | `casehub-eidos-routing` | Optional -- engine-aware selection | `EngineAwareAgentSelector` `@Alternative @Priority(1)`. Bridges `AgentMatch` → `AgentCandidate` → `AgentRoutingStrategy`. Requires `casehub-engine-api` on classpath. Displaces `SimpleAgentSelector` via CDI priority. Add when deploying with casehub-engine for trust-maturity-model-compliant selection. |
+| `casehub-eidos-org-api` | Optional -- org model compile dependency | Organizational model types: `OrganizationalUnit`, `AgentRelationship`, `Membership`, `RelationshipKind`, `RelationshipScope`, `AttestationGrant`, `OrgQuery`, `OrgRegistry` SPI, `OrgRegistrar` SPI, `OrgStructure` DSL. Pure Java + `casehub-platform-api` (for `ModelQuery`), no CDI. |
+| `casehub-eidos-org` | Optional -- org model runtime | `OrgBootstrap` (startup registrar discovery), `OrgGoalCompiler` (desiredstate integration), `ClasspathYamlOrgRegistrar` (META-INF/eidos/organization.yaml), YAML Jackson module. |
+| `casehub-eidos-org-memory` | Tests and prototyping | `@Alternative @Priority(1)` `InMemoryOrgRegistry` with cycle detection. Activate by adding as dependency. |
+| `casehub-eidos-org-annotations` | Optional -- annotation-driven org structure | Quarkus extension: `@OrgUnit`, `@OrgMembers`, `@Supervises` (repeatable), `@OrgRelationships` generate `OrgRegistrar` beans at build time. Depends on `casehub-eidos-org`. |
 | `casehub-eidos-graph` | Optional -- knowledge graph | Graph SPIs: `AgentGraphStore` (write task/outcome/attestation events), `AgentGraphQuery` (read agent history, rank agents by outcome), `AgentGraphBackfill` (ledger ingestion), `TaskSemanticEnricher` (application-tier enrichment). JPA persistence with Flyway V3. Activates by classpath presence. |
 
 **Maven coordinates:** `groupId: io.casehub`, root package: `io.casehub.eidos`, API package: `io.casehub.eidos.api`, SPI package: `io.casehub.eidos.api.spi`.
@@ -37,12 +41,16 @@ Structured agent identity record with these fields:
 
 - **Identity:** `agentId`, `name`, `version`, `provider`, `modelFamily`, `modelVersion`, `weightsFingerprint`
 - **Slot:** open `String` -- domain-defined (e.g. `"planner"`, `"reviewer"`). Platform never constrains.
+- **Archetype:** optional `String` -- personality identity from the Hartwell & Chen archetype vocabulary (e.g. `"detective"`, `"mentor"`, `"engineer"`). Open string following the slot pattern. Auto-derived from personality framework values at registration time when not set explicitly.
+- **Archetype Adjectives:** `List<String>` -- optional personality refinement adjectives (e.g. `["meticulous", "persistent"]`). Must be empty when archetype is null. Max 10 adjectives, 50 chars each.
+- **Avatar:** optional `String` -- compact visual identity code (e.g. `"mythic:P1B"`) or external image URL (`"https://..."`). Auto-derived from archetype at registration time when not set explicitly. Collection codes are rendered client-side from SVG part libraries; external URLs are rendered as `<img>`. Max 500 chars. See blocks-ui#167.
 - **Capabilities:** `List<AgentCapability>` -- what the agent can do. Names must be unique within a descriptor.
 - **Disposition:** `AgentDisposition` -- behavioural profile with weighted multi-valued axes.
 - **Goals:** `List<AgentGoal>` -- standing, identity-level goals (BDI-inspired). Unique names enforced.
 - **Constraints:** `List<AgentConstraint>` -- operational limits with severity (HARD/SOFT). Unique names enforced.
 - **Briefing:** free-text field for holistic personality prose (supports newlines).
 - **Templates:** `List<TemplateRef>` -- references to reusable prose templates with variable substitution.
+- **Extension Data:** `Map<String, Object>` -- optional, application-owned configuration bag. Supports nested maps, lists, and primitives. Never rendered in prompts. Use reverse-domain key convention (e.g. `io.casehub.manor.socialConfig`). Max estimated size: 64KB. Declare via YAML (full nested structures) or `@ExtensionData` annotation (flat key-value pairs).
 - **Tenancy:** `tenancyId` is always required. All operations are tenancy-scoped.
 
 **Vocabulary resolution:** `domainVocabulary` sets the default vocabulary URI for all fields. Per-field overrides: `slotVocabulary`, `dispositionVocabulary`. Per-axis override: `axisVocabularies(Map<DispositionAxis, String>)` -- most specific wins.
@@ -63,6 +71,8 @@ Declares a named capability with operational metadata:
 - `tags` (List<String>) -- free-form tags
 - `epistemicDomains` (Map<String, Double>) -- domain-specific confidence, e.g. `{"java": 0.95, "rust": 0.42}`
 - `excludedDomains` (Set<String>) -- domains the agent refuses to handle; validated against `epistemicDomains` at construction (no overlap allowed). Persisted as `@ElementCollection` in JPA, used by `AgentQuery.taskDomain` pre-filter.
+- `modelRef` (String, optional) -- string shorthand for model selection: alias name (e.g. `"reasoning-heavy"`), tier ref (e.g. `"tier:FLAGSHIP"`), or model ID. Mutually exclusive with `model`.
+- `model` (ModelQuery, optional) -- inline constraint query from `casehub-platform-api`: tier, capabilities, vendor, family, locality, max cost, min context, min output, prefer vendor. Mutually exclusive with `modelRef`. Tier validated against `urn:casehub:vocab:model-tier` when the vocabulary is registered. Platform reads these at dispatch time to resolve a concrete model.
 
 `epistemicDomains` qualifies *how well* the agent handles the declared capability in specific subject domains -- it is not a list of separate capabilities.
 
@@ -121,12 +131,13 @@ SPI: `probe(AgentDescriptor, capabilityTag, ProbeContext)` returns sealed `Capab
 |---|---|
 | `Ready` | Capability is operable |
 | `Degraded(reason, detail)` | Agent is in temporary degradation (rate-limited, context-exhausted, overloaded, domain-mismatch) |
+| `Overloaded(pressure, threshold)` | Agent above capacity threshold -- live signal from `ActorCapacityView` (platform-api); excluded from selection |
 | `Unavailable(reason)` | Capability not declared |
 | `EpistemicallyWeak(domain, confidence)` | Confidence below threshold for the task domain |
 | `Excluded(domain, source, declineCount)` | Domain excluded -- source is `DECLARED` (from `excludedDomains`) or `LEARNED` (from accumulated DECLINE signals) |
 | `BehavioralViolation(violations, kind)` | Compliance violation -- `PER_DIMENSION` (single dimension spike) or `AGGREGATE` (cross-dimensional drift) |
 
-**Probe order:** Degraded -> Unavailable -> Excluded(DECLARED) -> Excluded(LEARNED) -> EpistemicallyWeak -> BehavioralViolation -> Ready.
+**Probe order:** Degraded -> Overloaded -> Unavailable -> Excluded(DECLARED) -> Excluded(LEARNED) -> EpistemicallyWeak -> BehavioralViolation -> Ready.
 
 **Engine integration:** `WorkOrchestrator` calls `probe()` at dispatch time. Workers without a descriptor skip the probe and are assumed capable.
 
@@ -157,7 +168,7 @@ SPI: `render(AgentDescriptor, AgentPromptContext)` returns `RenderedPrompt(conte
 |---|---|---|
 | `MARKDOWN` | Claude and markdown-capable models | Structured markdown with capability names, descriptions, I/O types. Numeric routing signals suppressed. |
 | `PROSE` | OpenAI, Gemini, Grok, Qwen, Mistral, Llama | Flowing paragraphs. Numeric routing signals suppressed. |
-| `A2A_CARD` | Machine-readable agent card (JSON) | Full routing signals: `qualityHint`, `latencyHintP50Ms`, `costHint`, `epistemicDomains`, `inputTypes`/`outputTypes`, `excludedDomains`. Slot and disposition with vocabulary context. `frameworks` array of actively-instantiated vocabulary URIs. |
+| `A2A_CARD` | Machine-readable agent card (JSON) | Full routing signals: `qualityHint`, `latencyHintP50Ms`, `costHint`, `epistemicDomains`, `model` (string ref or constraint object), `inputTypes`/`outputTypes`, `excludedDomains`. Slot and disposition with vocabulary context. `frameworks` array of actively-instantiated vocabulary URIs. |
 
 **Semantic enrichment:** Two-step render pipeline -- structural assembly then optional LangChain4j `ChatModel` semantic pass. Falls back to structural output when no `ChatModel` is available. `RenderedPrompt.enriched` is true when LLM enrichment was applied.
 
@@ -175,6 +186,20 @@ SPI for term registration, resolution, hierarchy, and cross-vocabulary equivalen
 
 **Hierarchy:** XKOS-style hierarchy via `VocabularyTerm.specializes()` enables cross-vocabulary subsumption. `match()` returns `MatchDegree` (Exact, Plugin(depth), Specialization(depth), None). `subsumes()`, `ancestors()`, `descendants()`, `expandForMatchingByVocabulary()`.
 
+### DisplayTermResolver
+
+SPI for resolving vocabulary term values to display labels with cross-vocabulary terminology swap.
+
+**Direct resolution:** `resolveLabel(value, vocabUri)` -- looks up value in the vocabulary, returns `term.label()` or raw value if not found.
+
+**Cross-vocabulary swap:** `resolveLabel(value, sourceVocabUri, targetVocabUri)` -- resolves in source vocabulary, finds equivalent in target via `equivalentValues()`, returns target label. Falls back to source label if no cross-vocab match exists.
+
+**Axis-aware swap:** `resolveLabel(value, sourceVocabUri, targetVocabUri, axis)` -- uses `axisExactMatch()` for disposition terms (DISC, Thomas-Kilmann, Belbin) where axis-unaware `exactMatch()` returns empty.
+
+**Auto-discovery:** When `sourceVocabUri` is null, searches all registered vocabularies (best-effort, first match). Prefer explicit `sourceVocabUri` from the domain object (`descriptor.vocabUriForSlot()`, `unit.kindVocabulary()`).
+
+`DefaultDisplayTermResolver` `@DefaultBean` in eidos-runtime delegates to `VocabularyRegistry`. Temporary home -- moves to platform-api (casehubio/platform#283).
+
 ### TemplateRegistry / DescriptorTemplate
 
 Reusable prose fragments for agent system prompts:
@@ -191,7 +216,7 @@ Reusable prose fragments for agent system prompts:
 
 **ClasspathYamlDescriptorRegistrar** -- `@ApplicationScoped` implementation scanning `META-INF/eidos/descriptors.yaml` from the classpath. Multiple YAML files across JARs are merged. Supports full `AgentDescriptor` fields including `briefing`, `axisVocabularies`, `disposition` (with `mbtiType` and `dispositionProfile`), and `capabilities` (with `excludedDomains`). Supports yaml-core preprocessing: `${var.*}` variables (static, from YAML `variables` section), `${config.*}` variables (from Quarkus MicroProfile Config), `forEach` expansion (named iteration groups, inline lists, CSV data sources via `dataSources` section), and `when` conditional inclusion. Expansion limit: 100 per template. All preprocessing keys (`variables`, `iterations`, `dataSources`, `forEach`, `when`) are optional — existing YAML without them works unchanged.
 
-**Annotation-driven registration** (requires `casehub-eidos-annotations`) -- annotate an interface with `@Identity(slot = "analyst")` and optionally `@Disposition`, `@AgentGoals`, `@AgentConstraints`, `@Discoverable`. The build extension generates `AgentDescriptorRegistrar` beans at build time. `agentId` defaults to kebab-cased class name (acronym-aware: `HTMLParser` → `html-parser`). `tenancyId` from MicroProfile config `casehub.eidos.annotations.default-tenancy-id` (default: `"default"`). When vocabulary modules are on the classpath, disposition terms are validated at build time.
+**Annotation-driven registration** (requires `casehub-eidos-annotations`) -- annotate an interface with `@Identity(slot = "analyst")` and optionally `@Disposition`, `@AgentGoals`, `@AgentConstraints`, `@Discoverable`. The build extension generates `AgentDescriptorRegistrar` beans at build time. `agentId` defaults to kebab-cased class name (acronym-aware: `HTMLParser` → `html-parser`). `tenancyId` from MicroProfile config `casehub.eidos.annotations.default-tenancy-id` (default: `"default"`). When vocabulary modules are on the classpath, disposition terms are validated at build time. Full annotation parity: `@Identity` supports `weightsFingerprint` and `modelVersion`; `@Disposition` supports `@DispositionWeight[]` weighted profiles (replaces `String[]`), `mbtiType`/`enneagramType` convenience derivation (via `PersonalityTypeDeriver` with `VocabularyRegistry` injection), and `@AxisVocabulary[]` per-axis vocabulary overrides. `@AgentCapabilityDef` (repeatable) declares full capability metadata (description, qualityHint, latencyHintP50Ms, costHint, inputTypes, outputTypes, tags, `@EpistemicDomain[]`, excludedDomains) -- merge semantics with `@Discoverable` (union; name collision → build-time error). `@AgentTemplateRef` (repeatable) with `@TemplateArg(key, value)` for template args. Build-time validation: NaN guards on doubles, range checks, duplicate capability/axis detection, orphan annotation warnings.
 
 ### AgentDescriptorComparator
 
@@ -209,6 +234,22 @@ Optional module providing agent task and outcome tracking:
 - `TaskSemanticEnricher` -- application-tier enrichment: `dispositionAxes(capabilityTag, taskDomain)`, `semanticallyEquivalent(domainA, domainB)`, `significance(capabilityTag, taskDomain)`
 
 Activates by classpath presence. JPA-backed with Flyway V3 migration. Runtime provides `NoOp*` `@DefaultBean` implementations for all four SPIs when the graph module is absent.
+
+---
+
+## Organizational Model (casehub-eidos-org)
+
+Optional module providing agent organizational structure -- units, memberships, and relationships:
+
+- `OrganizationalUnit` -- groups agents into named units with kind, members, capabilities, goals, constraints. `MAX_MEMBERS = 50`. Hierarchy via `parentUnitId`.
+- `Membership(agentId, role, roleVocabulary)` -- agent's role within a unit.
+- `AgentRelationship` -- directed relationship between agents: `SUPERVISES`, `DELEGATES_TO`, `ESCALATES_TO`, `REPORTS_TO`, `BACKS_UP`, `EXTENDED`. Optional `RelationshipScope` (capability/domain scoping) and `AttestationGrant` (trust dimension delegation).
+- `OrgRegistry` SPI -- register/query units and relationships; `supervisors()`, `subordinates()`, `escalationPath()`, `ancestorUnits()`, `childUnits()`.
+- `OrgRegistrar` SPI -- declarative `OrgDefinition(units, relationships)` provider. Implement as `@ApplicationScoped` beans or use `META-INF/eidos/organization.yaml`.
+- `OrgStructure.define(tenancyId)` -- compositional DSL for programmatic org definition.
+- `OrgGoalCompiler` -- maps org POJOs to desiredstate graph for reconciliation.
+
+**Annotations (casehub-eidos-org-annotations):** `@OrgUnit` on a class declares a unit (ID auto-derived from class name); supports `capabilities` (`@AgentCapabilityDef[]`), `goals` (`@AgentGoalDef[]`), `constraints` (`@AgentConstraintDef[]`) reused from eidos-annotations. `@OrgMembers` defines membership list. `@Supervises` (repeatable) declares supervision with optional `scopeDomain`/`scopeCondition`. `@OrgRelationships`/`@OrgRelationshipDef` for other relationship types with structured scope and `@AttestationGrantDef` for attestation grants. Build extension produces `OrgRegistrar` CDI beans.
 
 ---
 

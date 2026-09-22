@@ -164,8 +164,16 @@ Generation counter pattern for ECharts rendering. Each render tagged with a gene
 | `@casehubio/pages-table` | Data table (`<pages-table>`) -- three display modes (`auto`/`paginated`/`scroll`), virtual scroll engine (variable row heights, span-aware), CSS Grid rendering, `TableColumnConfig`/`ColumnRenderer` data model. Cell spanning via `SpanMap` (`cellSpan`/`mergeRows`, span-aware hover/keyboard/selection). Column resizing (`ColumnResizeDetail`). Multi-mode selection (`SelectionMode`, `SelectionChangeDetail` with page scope). Sorting: multi-column sort stack (`SortEntry[]`, `SortChangeDetail`). Client-side filtering (`FilterConfig` with group coordination, `FilterChangeDetail`). Row-detail expansion (`getRowDetail`, `DetailMode: single/multi`, `DetailChangeDetail`). Jump-to-page. Tree/hierarchical data (`getChildren`, `buildTreeIndex`, hierarchy-preserving client filter). CSV export. Conditional row accent (`RowAccentConfig` with column-based colour map, per-column targeting). Auto-hiding pagination. Row activation events (`RowActivateDetail`). Page size change events (`PageSizeChangeDetail`). Load-more infinite scroll (`LoadMoreDetail`). 2D keyboard navigation via `RovingTabindexMixin`. ARIA grid. Depends on `lit`. |
 | `@casehubio/pages-runtime` | Site orchestrator: `loadSite()` API returning `LiveSite`. Navigation: `buildPageIndex()`, `computeCurrentPage()`, `buildPagePathMap()`. Data pipeline: `createDataPipeline()` returning `DataPipeline`. Cross-filter: `createFilterState()`, `getActiveFilterOps()`, `clearPageFilters()`. Component view state: `createComponentViewState()`, `updateSort()`, `updatePage()`, `getComponentState()`. Dataset scope: `buildDataSetScope()`, `resolveDataSetDef()`, `resolveDataSetEntry()`, `isBinding()`, `isDef()`. Layout serialization: `LayoutStore` SPI, `createLocalLayoutStore()`, `createRestLayoutStore()`. Panel registry: `registerPanel()`. Component registry: `ComponentRegistry`, `ComponentEntry`. Activation callback factory. URL state: `serializeToUrl()`, `parseFromUrl()`. Dev auth: `createDevAuthTokenFn()`. |
 | `@casehubio/pages-ui-components` | Standalone Lit web components: `PagesInput` (`<pages-input>`), `PagesSelect` (`<pages-select>`), `PagesTextarea` (`<pages-textarea>`), `PagesCheckbox` (`<pages-checkbox>`), `PagesButton` (`<pages-button>`, xs/sm/md sizes), `PagesBadge` (`<pages-badge>`, semantic status pill/tag), `PagesStatusDot` (`<pages-status-dot>`, coloured indicator). Each component exported both from barrel and individual import path (`@casehubio/pages-ui-components/input`, etc.). `SelectOption` type for dropdown options. Styled with design tokens from `pages-ui-tokens`. Side-effectful imports (custom element registration). esbuild bundle available. |
+| `@casehubio/yaml-core` | YAML composition layer (TypeScript port of platform's `yaml-core` Java library). Expansion pipeline: CSV data → modules → variables → forEach. `expand(map, {strict?})` returns `ExpandResult {map, diagnostics}` — lenient mode collects errors, strict mode throws. Zod schemas (`yamlCoreDocumentSchema`, `yamlCoreElementMixin`) for LSP schema composition via `z.intersection()`. Zero external runtime deps (Zod for schemas only). Three entry points: `.` (barrel), `./expand`, `./schema`. |
+| `@casehubio/pages-lsp` | LSP server for CaseHub YAML formats. Schema registry, YAML type detection, completion, diagnostics, hover, refactoring (symbol table, rename, workspace index). jq expression intelligence. Node.js stdio + web worker transports. esbuild single-file CJS bundle (`build:bundle` → `dist/server-node.bundle.cjs`) for IDE plugin distribution. |
 | `@casehubio/pages-tsconfig` | Shared TypeScript config base (project references, maximum strict mode: `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `noImplicitOverride`, `verbatimModuleSyntax`, `isolatedModules`). |
 | `@casehubio/pages-webpack-base` | Shared Webpack config presets for iframe component bundling. |
+
+### IntelliJ Plugin (`plugins/intellij/`)
+
+| Module | Purpose |
+|--------|---------|
+| `plugins/intellij` | Kotlin/Gradle IntelliJ plugin — thin LSP client shell via LSP4IJ (Red Hat). Bundles `server-node.bundle.cjs` as a plugin resource, extracts on first run, launches via Node.js stdio. File pattern: `*.page.yaml`. Requires JDK 21 to build, IntelliJ 2024.2+, LSP4IJ plugin installed. Build: `JAVA_HOME=<jdk21> ./gradlew buildPlugin`. |
 
 ### Graph Packages (`packages/`) -- Visual Diagram Editor
 
@@ -205,7 +213,10 @@ Generation counter pattern for ECharts rendering. Each render tagged with a gene
 | Module | Purpose |
 |--------|---------|
 | `casehub-pages-push` | Typed wire protocol SDK: `PushMessage` (server->client builders with event sequence numbers), `PushRequest` (sealed client->server parser with ack/error correlation), `TopicRegistry` (wildcard-aware segment-trie connection tracking: literal `cases.123.events`, single-segment `cases.*.events`, multi-segment `cases.#`), `EventStore` SPI + `InMemoryEventStore` (bounded per-topic event replay buffer, configurable capacity, default 100 events), `EventBroadcaster` (store + fan-out to subscribed sessions via `SessionSender`, validates no wildcards in broadcast topics, supports raw JSON string and typed object broadcast via `JsonWriter` SPI), `SessionSender` SPI, `JsonWriter` SPI, `StoredEvent`, `PushColumn`. jackson-core only, no Quarkus dependency. |
-| `casehub-pages-push-runtime` | Quarkus CDI producers: `PushProducers` -- `@ApplicationScoped` producers for `TopicRegistry`, `EventStore` (`@DefaultBean` InMemoryEventStore, configurable `casehub.pages.push.max-events-per-topic`, default 1000), `JsonWriter` (`@DefaultBean` Jackson ObjectMapper), `EventBroadcaster`. Drop-in for any Quarkus app needing server-push. |
+| `casehub-pages-push-runtime` | Quarkus CDI producers: `PushProducers` -- `@ApplicationScoped` producers for `TopicRegistry`, `EventStore` (`@DefaultBean` InMemoryEventStore, configurable `casehub.pages.push.max-events-per-topic`, default 1000), `JsonWriter` (`@DefaultBean` Jackson ObjectMapper), `EventBroadcaster`. `CdiCommandResultHandler` (`@DefaultBean`) routes `PushRequest.CommandResult` from WebSocket to CDI `Event<>` consumers. Drop-in for any Quarkus app needing server-push. |
+| `casehub-pages-scenario-runtime` | Scenario execution runtime: `AriaDispatcher` (ARIA command dispatch via push wire -- send, sendBatch, navigate/ready-check protocol), `ScenarioExecutor` (dispatches `AriaStep` via `AriaDispatcher` with batching support). Depends on `push-runtime` for wire transport. |
+| `casehub-pages-terminal` | Tmux session management (`TmuxManager`), FIFO pipe relay (`FifoRelay`), per-session output logging (`SessionLogger`). Pure Java, no Quarkus. |
+| `casehub-pages-terminal-runtime` | Quarkus WebSocket endpoint (`/ws/terminal/{id}/{cols}/{rows}`), `TerminalRegistry` CDI bean for session lifecycle, REST resource (`/api/terminals`) for CRUD + input + resize. Config: `casehub.pages.terminal.prefix`, `casehub.pages.terminal.log-dir`. |
 | `casehub-pages-auth` | Development authentication: `DevAuthResource` (JAX-RS REST endpoint), `LoginRequest` (credentials DTO), `TokenResponse` (token DTO). Token handling for backend data providers. |
 | `casehub-pages-data` | Backend data provider adapters (SQL, relay proxy). |
 | `casehub-pages-data-sql` | SQL-based data provider with frontend push-down integration (query translation from frontend filter/sort/group operations to SQL). |
@@ -234,7 +245,11 @@ Fluent builders in Java for typed message construction:
 | `LISTEN` | Subscribe to a topic (supports wildcards). |
 | `UNLISTEN` | Unsubscribe from a topic. |
 
+| `COMMAND_RESULT` | Return value from an ARIA command execution (dispatched by `AriaDispatcher`). |
+
 **Correlation:** client includes `requestId` in LISTEN/UNLISTEN -- server echoes in `listenAck()` or `error()` response.
+
+**Command results:** `CommandResultHandler` (`@FunctionalInterface`) routes `PushRequest.CommandResult` from WebSocket to Java consumers. `CdiCommandResultHandler` (`@DefaultBean` in push-runtime) fires CDI `Event<PushRequest.CommandResult>`.
 
 ### Topic Routing
 

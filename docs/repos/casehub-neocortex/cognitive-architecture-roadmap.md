@@ -28,7 +28,7 @@ Before any code changes, pin the canonical vocabulary. The system borrows from c
 
 | Platform term | Definition | Cognitive science equivalent | Currently used in |
 |---|---|---|---|
-| **confidence** | How certain the system is about a piece of knowledge. Numeric [0,1], decays over time, reinforced by confirmation. | Activation level (ACT-R), belief strength (BDI) | MindMap (`confidence`), CBR (`CbrOutcome`), Memory (`importance`) — three implementations, should be ONE |
+| **confidence** | How certain the system is about a piece of knowledge. Numeric [0,1], decays over time, reinforced by confirmation. | Activation level (ACT-R), belief strength (BDI) | Unified: `Confidence` record in `cognitive-api`, used by MindMap, CBR, and Memory (#229). Event types use `Double confidence` (#232). |
 | **origin** | How the knowledge was established: directly told (STATED), derived by rules (INFERRED), LLM-suggested (SPECULATED). | Source monitoring (Johnson et al. 1993) | MindMap (`ConfidenceOrigin`) — not used in Memory or CBR |
 | **affect** | The emotional valence of knowledge or experience, modelled as PAD (pleasure, arousal, dominance). Property of the knowledge, not the agent's current mood. | Dimensional affect (Mehrabian 1996), core affect (Russell 2003) | MindMap (PAD on nodes/edges), MoodState (PAD on agent) — not on Memory or CBR |
 | **mood** | The agent's current emotional state. Decays toward a baseline. Influences retrieval (mood-congruent recall). | Core affect, mood-congruent memory (Bower 1981) | `MoodState`, `MoodBaseline`, `MoodDecay`, `MoodModulatedRetrieval` |
@@ -40,6 +40,7 @@ Before any code changes, pin the canonical vocabulary. The system borrows from c
 
 **Naming rules:**
 - Use `confidence` everywhere — retire `importance` (Memory) and `CbrOutcome` as a name (keep the EMA mechanics, rename the concept)
+- Use `affectShift` for engagement emotional change — retire `sentimentShift`
 - Use `affect` for knowledge emotions — reserve `mood` for agent state, `emotion` for the general concept
 - Use `validFrom`/`validUntil` for temporal bounds — do not introduce `effectiveFrom` or `startDate`
 - Use `timestamp` for when-it-happened — add `Instant timestamp()` to all event types
@@ -50,19 +51,17 @@ Before any code changes, pin the canonical vocabulary. The system borrows from c
 
 **Goal:** Make the 17 cognitive types feel like one system. Fix APIs, naming, and confidence model so that a developer moving between MindMap, CBR, and Memory encounters the same patterns and terminology.
 
-### 1a: Unified Confidence Model
+### 1a: Unified Confidence Model — **DONE** (#229)
 
-| | Current | Target |
+Implemented in `cognitive-api` module. `Confidence(ConfidenceOrigin origin, double value, Instant decayReference)` record used by all three subsystems:
+
+| Subsystem | Before | After |
 |---|---|---|
-| MindMap | `ConfidenceOrigin` (enum) + `double confidence` + decay via decorator | Unified `Confidence` record |
-| CBR | `CbrOutcome` (EMA-adjusted double) | Same unified record |
-| Memory | `Double importance` (nullable, no decay) | Same unified record |
+| MindMap | `ConfidenceOrigin` enum + `double confidence` + `confirmedAt` | `Confidence` record (confirmedAt removed — subsumed by `decayReference`) |
+| CBR | `CbrOutcome` EMA-adjusted `Double` | `Confidence` record (EMA preserves origin) |
+| Memory | `Double importance` | `Confidence` record (origin=UNKNOWN for legacy) |
 
-**Design:** A shared `Confidence` record with `origin` (how we know), `value` (how sure, [0,1]), and `decayReference` (Instant from which decay is computed). Lives in a shared module (or `memory-api` which all stores already depend on conceptually).
-
-**Migration:** Each store maps its current model to the unified record. `ConfidenceOrigin` becomes the `origin` field. `CbrOutcome`'s EMA value becomes the `value` field. `importance` becomes `value` with `origin=null` (source unknown). Breaking changes are fine — pre-release platform.
-
-**Scope:** M — touches all three SPI modules but the change per module is mechanical.
+Module: `cognitive-api` (tier-0, zero deps). `ConfidenceOrigin` moved from `mindmap-api` with `UNKNOWN` added. Factory methods enforce non-null `decayReference` for MindMap contexts; `Confidence.unknown()` for Memory/CBR. `MindMapConfidenceDefaults` provides origin-based default values.
 
 ### 1b: Builder APIs
 
@@ -89,18 +88,26 @@ interface RetrievalModulator<T> {
 }
 ```
 
-Where `ModulationContext` carries the agent's current mood, personality weights, and any other cross-cutting retrieval parameters. Implementations for `Memory`, `ScoredCbrCase`, and `MindMapNode` adapt to their respective affect/confidence fields.
+Where `ModulationContext` carries the agent's current mood, personality weights, and any other cross-cutting retrieval parameters. Implementations for `Memory`, `CbrMatch`, and `MindMapNode` adapt to their respective affect/confidence fields.
 
 **Scope:** M — new abstraction, three implementations, replaces two existing utilities.
 
-### 1d: Naming & Terminology Audit
+### 1d: Naming & Terminology Audit — **DONE** (#232)
 
-- Walk every public type in `memory-api`, `mindmap-api`, `fusion-api`, `rag-api`
-- Check each name against the terminology table
-- Rename inconsistencies (pre-release — breaking changes are free)
-- Produce a checklist of cross-repo terms that blocks must also adopt
+Audited all public types in `memory-api`, `mindmap-api`, `fusion-api`, `rag-api` against the terminology table. Findings and renames:
 
-**Scope:** S — renames only, no behavioural changes. But must coordinate with blocks and engine if types cross repo boundaries.
+| Module | Before | After |
+|---|---|---|
+| memory-api (7 event types) | `Double importance` | `Double confidence` |
+| memory-api | `sentimentShift` / `SENTIMENT_SHIFT` | `affectShift` / `AFFECT_SHIFT` |
+| memory-jpa, memory-sqlite | DB column `importance` | DB column `confidence` (V1 migration updated) |
+| memory-inmem, retrieval utils | local vars `importance` | `confidenceValue` |
+
+Clean areas: mindmap-api, fusion-api, rag-api — no terminology violations found. No `effectiveFrom`, `emotion`, or `valence` misuse. `startDate` in mindmap-intelligence is a domain term (project start date), not a temporal bound.
+
+Cross-repo adoption checklist filed as casehubio/blocks#218.
+
+**Scope:** S — renames only, no behavioural changes.
 
 ### 1e: ForwardingMindMapStore Adoption
 
@@ -108,25 +115,11 @@ Already implemented (#223). Verify all current and future decorators extend `Abs
 
 **Scope:** Done.
 
-### 1f: Memory Space Model
+### 1f: Memory Space Model — REMOVED (#255)
 
-Define the multi-agent memory space model as part of structural consolidation — not as a later phase. Every subsequent API design (confidence, builders, temporal, affective) must be space-aware from the start.
+The space-as-tenant model was a design mistake. Tenant is the hard isolation boundary (organisation). Individual vs common memory is a property of the memory itself (`entityId`), not a partitioning system. The 5 `memory-space-*` modules were deleted in #255. Per-agent cognitive state (e.g. perspectival overlays) uses `agentId` properties within the shared tenant instead.
 
-**Core concepts:**
-- `MemorySpace` — PRIVATE (one agent), SHARED (group), SELECTIVE (named recipients)
-- Visibility layer above the store — each space IS a tenant; the layer unions results from all spaces an agent belongs to
-- `Visibility` sealed type: `Private(ownerId)`, `Shared(spaceId)`, `Selective(spaceId, Set<String> recipientIds)`
-- Space membership with temporal validity (access changes over time)
-
-**Impact on other Phase 1 items:**
-- 1a (Confidence): shared knowledge has collective confidence (multiple observers strengthen it); individual confidence is per-viewer
-- 1b (Builders): every query builder must accept space parameters — `MindMapQuery.builder().spaces(PRIVATE, SHARED).build()`
-- 1c (Cross-Store Composability): `RetrievalModulator<T>` must work across private + shared result sets
-- 1d (Naming): add space terminology to the naming table
-
-See [Shared Memory Design](shared-memory-design.md) for full design.
-
-**Scope:** M — `MemorySpace` type, `Visibility` sealed hierarchy, space membership model, visibility layer SPI. No store implementation changes — the abstraction sits above the stores.
+See #255 for the rationale and removal scope.
 
 ---
 
@@ -134,7 +127,7 @@ See [Shared Memory Design](shared-memory-design.md) for full design.
 
 **Goal:** One temporal model that handles wall-clock time, relative time, and ordinal (turn-based) time. Every store supports temporal queries. A unified temporal index enables cross-store "what happened when?" and "what's coming up?" queries.
 
-### 2a: Temporal Taxonomy
+### 2a: Temporal Taxonomy — **DONE** (#234)
 
 The system has three kinds of time, currently handled ad-hoc:
 
@@ -165,7 +158,7 @@ Not every use site needs `TemporalMark` — most will continue using `Instant` d
 
 **Scope:** M — new type + integration into MindMapExtractor's temporal parsing.
 
-### 2b: Timestamps on Event Types
+### 2b: Timestamps on Event Types — **DONE** (#235)
 
 Add `Instant timestamp()` to: `ExperienceEvent`, `RelationshipEvent`, `ReflectionEvent`, `MoodState`, `EngagementEvent`.
 
@@ -175,7 +168,7 @@ Default to `Instant.now()` at construction. The converter should propagate the e
 
 **Scope:** S — field addition to 5 record types + converter updates.
 
-### 2c: Temporal Query on MindMapQuery
+### 2c: Temporal Query on MindMapQuery — **DONE** (#236)
 
 Add three fields to `MindMapQuery`:
 - `Instant validAfter` — nodes whose `validFrom` is after this instant ("what's coming up?")
@@ -191,7 +184,7 @@ This is the **single highest-impact change** across all dimensions. It unlocks:
 
 **Scope:** S — 3 fields on a record, 2 backend implementations, contract tests.
 
-### 2d: Chronological Index
+### 2d: Chronological Index — **DONE** (#237)
 
 A cross-store `TemporalIndex` that maintains a sorted view of all temporal events:
 - Upcoming MindMap events (by `validFrom`)
@@ -213,7 +206,7 @@ Feeds the curiosity engine's proximity signals efficiently, replacing the curren
 
 **Goal:** Every memory type can carry emotional metadata. Affect is a trajectory (evolving over time), not a snapshot (overwritten on each update). Prospective events carry anticipatory affect distinct from inherent affect.
 
-### 3a: PAD on MemoryInput/Memory
+### 3a: PAD on MemoryInput/Memory — **DONE** (#238)
 
 Add nullable `Double pleasure, Double arousal, Double dominance` to `MemoryInput` and `Memory`.
 
@@ -223,7 +216,7 @@ Update `MoodModulatedRetrieval` to read PAD from any memory's fields, not just m
 
 **Scope:** S — field additions + retrieval update.
 
-### 3b: Affect Trajectory Log
+### 3b: Affect Trajectory Log — **DONE** (#239)
 
 PAD becomes a timestamped log, not a mutable field. Each `updateNode()` that changes PAD creates an `AffectEntry(Instant timestamp, double pleasure, double arousal, double dominance)`. The "current" PAD is the most recent entry. The trajectory is queryable:
 
@@ -235,7 +228,9 @@ PAD becomes a timestamped log, not a mutable field. Each `updateNode()` that cha
 
 **Scope:** M — new converter, decorator intercept on `updateNode`, trajectory utility.
 
-### 3c: Prospective Event Model
+### 3c: Prospective Event Model — **DONE** (#241)
+
+Implemented in `mindmap-intelligence` (rules, interface, generator), `mindmap-api` (RecurrenceRule), `cognitive-api` (AffectType), `memory-api` (AffectEvents overload).
 
 Future-dated nodes need richer semantics:
 
@@ -270,7 +265,7 @@ See [Shared Memory Design](shared-memory-design.md) § Perspectival Memory.
 
 **Scope:** M — overlay convention, visibility layer merge logic, query-time composition.
 
-### 3e: Trajectory-Aware Curiosity
+### 3e: Trajectory-Aware Curiosity — **DONE** (#242)
 
 Update `CuriositySignalGenerator`'s affect dampening to use trajectory, not snapshot:
 
@@ -295,22 +290,23 @@ Update `CuriositySignalGenerator`'s affect dampening to use trajectory, not snap
 
 **Goal:** Unified querying across all cognitive stores. "Tell me everything about Alice" in one call. "What's on my mind right now?" as a single ranked list. Graph reasoning over the unified knowledge structure.
 
-### 4a: Cross-Store Entity Resolution
+### 4a: Cross-Store Entity Resolution — **DONE** (#243)
 
-A `CognitiveProfile` utility that, given an entity name or ID:
-1. Resolves the MindMap node (via `resolveNode`)
-2. Follows `NodeRef`s to text memories (`scheme="memory"`) and CBR cases (`scheme="cbr"`)
-3. Queries engagement events, relationship quality, experience history
-4. Reads the affect trajectory
-5. Returns a unified `EntityKnowledge` record aggregating everything the system knows
+Implemented in `cognitive-index` module. `CognitiveProfile` CDI bean (`@ApplicationScoped`, `Instance<T>` graceful degradation) resolves everything the system knows about an entity:
 
-This is the "tell me everything about Alice" query.
+1. Resolves MindMap node (by ID via `getNode` or by name/alias via `resolveNode`)
+2. Follows `NodeRef(scheme="memory")` to linked memories; records `scheme="cbr"` as unresolved (CbrRecordStore has no get-by-ID)
+3. Queries memories across 6 cognitive domains (experience, relationship, reflection, mood, engagement, affect) using dual entity ID resolution (nodeId + nodeName)
+4. Computes affect trajectory via `AffectTrajectoryAnalyzer` composition
+5. Returns unified `EntityKnowledge` record (node, edges, memories-by-domain, trajectory, unresolved refs)
+
+Query configuration via `CognitiveProfileQuery` record: `byId`/`byName` factories, `withDomains()` for selective domain querying, `withIncludeEdges()`, `withMemoryLimit()`. Single `tenantId` — designed for future multi-tenant extension when memory spaces (#230) land.
 
 **Memory space impact:** Entity resolution must work across memory spaces. "Tell me everything about Alice" traverses the agent's private graph AND shared family graph, follows NodeRefs into private and shared memories, and merges perspectival affect overlays. The result carries provenance: which facts are private, which are shared, which are the viewer's perspective vs consensus.
 
 **Scope:** L — bridge module depending on all three SPIs.
 
-### 4b: TemporalFocus Utility
+### 4b: TemporalFocus Utility — **DONE** (#244)
 
 "What's on my mind right now?" — aggregates:
 - Upcoming MindMap events (by proximity score)
@@ -326,16 +322,18 @@ This feeds the agent's executive function — deciding what to think about next.
 
 **Scope:** M — depends on temporal index (2d) and affect trajectory (3b).
 
-### 4c: Graph Reasoning Integration
+### 4c: Graph Reasoning Integration — **DONE** (#245)
 
-DesiredState has developed graph reasoning capabilities (directed acyclic graph traversal, dependency resolution, convergence analysis). Future exploration:
+Exploration complete. **DesiredStateGraph DAG data model does not apply** — acyclic enforcement, `Dependency` provisioning semantics, and `NodeSpec` are incompatible with MindMap's cyclic semantic graph.
 
-- Can DesiredState's graph query engine traverse MindMap structure?
-- "Find all paths between Alice and Project X"
-- "What entities are transitively connected to this upcoming event?"
-- Convergence analysis: "which knowledge areas are well-connected vs isolated?"
+**Three algorithmic patterns ARE transferable:**
+1. `GraphRuleEngine` — iterative pattern-match → mutate → convergence-check loop. Graph-type-agnostic. Reference for evolving `DerivedEdgeDecorator` when multi-hop inference is needed.
+2. `PatternEvaluator` — structural graph pattern matching with variable bindings. Reference for MindMap inference rules beyond property-based `TraitRule`.
+3. Declarative rule model (`@GraphRule`) — working reference for roadmap §5d (Declarative Rule DSL).
 
-This is an exploration item — assess feasibility, don't commit to implementation.
+**Platform extraction opportunity:** Pure graph reasoning (rule engine, pattern evaluator, traversal) could be extracted to platform behind a generic graph interface. Both desiredstate (DAG) and MindMap (general graph) would be consumers — constraint enforcement lives in the graph implementation, not the reasoning layer.
+
+**Short-term:** Extend MindMapAnalyzer with `findPaths`, `reachableFrom`, `connectedComponents` (~S effort each, pure Java on `neighbors()`).
 
 **Scope:** Exploration — assessment only.
 
@@ -486,50 +484,31 @@ This is a Quarkus build-time or startup-time loader, not a runtime interpreter. 
 
 **Scope:** L — Quarkus extension or `@Startup` loader, CDI bean production, validation.
 
-### 5f: Identity-Cognition Derivation Engine
+### 5f: Identity-Cognition Derivation Engine — **DONE** (#251, #256–#261)
 
-The bridge between WHO (eidos) and HOW (neocortex). A pure-function derivation engine that reads an `AgentDescriptor` and produces default cognitive configuration.
+The bridge between WHO (eidos) and HOW (neocortex). `CognitiveDerivationEngine` is a pure static utility that reads a `DescriptorView` and produces default cognitive configuration. `deriveAndMerge()` overlays explicit YAML overrides on derived defaults.
 
-**Derivation rules:**
-- `dispositionProfile` → `PersonalityWeights` (Ni-dominant → reflection=1.5, Fe-dominant → relationship=1.4)
-- Disposition axes → `MoodBaseline` (low riskAppetite → lower baseline pleasure, higher arousal)
-- Goals + disposition → curiosity category weights (autonomy → STRUCTURAL boost, ruleFollowing → QUALITY boost)
-- ruleFollowing + riskAppetite → CBR retrieval parameters (strict vs broad similarity)
-- Disposition profile → extraction biases (analytical → relationship-bias, empathetic → affect-sensitivity)
+**All 8 derivation rules implemented:**
+1. `dispositionProfile` → `PersonalityWeights` — Jungian function weights via weighted average (#251)
+2. Disposition axes → `MoodBaseline` — riskAppetite→pleasure, socialOrient→arousal, autonomy→dominance (#251)
+3. Disposition + goals → `CuriosityConfig.categoryWeights` — autonomy→STRUCTURAL, ruleFollowing→QUALITY, socialOrient→CENTRALITY, strategic goals→CENTRALITY+STRUCTURAL boost (#256)
+4. Goals → `TemporalFocusConfig.subgraphProximityWeights` — career→PROJECT, family→PERSON, research→RESEARCH_AREA (#257)
+5. ruleFollowing + riskAppetite → `CbrStrategyDefaults` — strict→FEATURE_ONLY/0.65, flexible→SEMANTIC_ONLY/0.35, bold→180d decay (#258)
+6. socialOrient + conflictMode → `SocialCognitionDefaults` — cooperative→fast trust+repair, competitive→slow trust+information (#259)
+7. Disposition profile → `GraphStructureDefaults` — holistic (Ni/Fe/Ne/Fi)→CONNECTIVE, systematic (Te/Si/Ti/Se)→CATEGORICAL (#260)
+8. Disposition profile → `ExtractionBiasDefaults` — analytical→higher relationshipBias, empathetic→higher affectSensitivity (#261)
 
-**YAML directive:** `derive-from: descriptor` in the `cognitive:` block triggers derivation. Explicit overrides in the same block take precedence over derived defaults.
+**YAML directive:** `derive-from: descriptor` in the `cognitive:` block triggers derivation. Explicit overrides in the same block take precedence over derived defaults via `deriveAndMerge()`.
 
-**The derivation rules are themselves configurable** — different platforms may have different mappings from disposition to cognition. The default rules implement the personality-cognition research consensus; domain-specific deployments can override them via a `DerivationRuleSet` SPI.
-
-**Implementation:** Pure function `AgentDescriptor → CognitiveDefaults`. No CDI, no state, fully testable. Runs at YAML load time as part of the 5e loader.
+**Implementation:** Pure static utility `DescriptorView → CognitiveDefaults`. No CDI, no state, fully testable. 33 unit tests.
 
 See [Identity-Memory Integration](identity-memory-integration.md) for the full design of all 8 integration points.
 
-**Scope:** M — derivation function, default rule set, integration with 5e loader.
+**Scope:** M — derivation function, default rule set. Consumer wiring (applying derived configs to runtime behaviour) is tracked separately per subsystem.
 
-### 5g: Memory Space YAML Configuration
+### ~~5g: Memory Space YAML Configuration~~ — REMOVED (#255)
 
-YAML surface for defining memory spaces, membership, visibility rules, and scope-based access:
-
-```yaml
-memory-spaces:
-  - id: smiths-family
-    type: shared
-    members:
-      - { id: alice, roles: [admin, financial-authority], since: 2010-06-15 }
-      - { id: bob, roles: [admin, school-authority], since: 2010-06-15 }
-      - { id: emma, roles: [member], since: 2012-09-01 }
-    scopes:
-      calendar:  { visibility: all-members }
-      finances:  { visibility: [alice, bob] }
-      health:    { visibility: owner-only }
-```
-
-Composes with `descriptor:` (eidos) + `cognitive:` (neocortex) in the same agent YAML. Group identity (shared goals, collective values) lives here alongside individual cognitive profiles.
-
-See [Shared Memory Design](shared-memory-design.md) for the full model.
-
-**Scope:** M — YAML schema + parser + integration with visibility layer (1f).
+The space-as-tenant model was deleted in #255. The YAML configuration for memory spaces is no longer applicable. Multi-agent memory sharing within a tenant will require a different design if the use case materialises.
 
 ---
 
@@ -566,32 +545,32 @@ Phase 1 (Structural)       Phase 2 (Temporal)        Phase 3 (Affective)       P
 
 | Work item | Depends on | Scale | Key deliverable |
 |---|---|---|---|
-| 1a: Unified Confidence | — | M | Single `Confidence` type across MindMap, CBR, Memory |
+| 1a: Unified Confidence | Done (#229) | — | `cognitive-api` module: `Confidence` record + `ConfidenceOrigin` enum |
 | 1b: Builder APIs | — | S | `MindMapQuery.builder()`, `NodeInput.builder()`, `MemoryInput.withX()` |
 | 1c: Cross-Store Composability | 1a | M | Generic `RetrievalModulator<T>` for mood/personality/trust |
 | 1d: Naming Audit | 1a | S | Terminology table enforced; inconsistencies renamed |
 | 1e: Forwarding Store | Done (#223) | — | — |
-| 1f: Memory Space Model | — | M | `MemorySpace`, `Visibility`, space membership, visibility layer SPI |
+| ~~1f: Memory Space Model~~ | — | — | REMOVED — space-as-tenant model deleted (#255) |
 | 2a: Temporal Taxonomy | 1d | M | `TemporalMark` sealed hierarchy |
 | 2b: Event Timestamps | 2a | S | `Instant timestamp()` on all event types |
 | 2c: Temporal MindMapQuery | 2a | S | `validAfter`/`validBefore`/`updatedAfter` fields |
-| 2d: Chronological Index | 2a, 2b, 2c | L | Cross-store `TemporalIndex` |
+| 2d: Chronological Index | 2a, 2b, 2c | M | Cross-store `TemporalIndex` — **DONE** (#237) |
 | 3a: PAD on Memory | 1d | S | `pleasure`/`arousal`/`dominance` on MemoryInput |
-| 3b: Affect Trajectory | 3a | M | `AffectEntry` log per node/entity |
+| 3b: Affect Trajectory | 3a | M | `AffectEntry` log per node/entity — **DONE** (#239) |
 | 3c: Prospective Events | 2a, 3b | M | Event lifecycle + traits + recurrence |
-| 3d: Perspectival Overlays | 1f, 3a | M | Per-agent PAD overlays on shared nodes |
+| 3d: Perspectival Overlays | 3a | M | Per-agent PAD overlays on shared nodes — **DONE** (#240) |
 | 3e: Trajectory Curiosity | 3b | S | Updated `CuriositySignalGenerator` |
-| 4a: Cross-Store Entity | 1c, 2d | L | `CognitiveProfile` utility |
+| 4a: Cross-Store Entity | 1c, 2d | L | `CognitiveProfile` utility — **DONE** (#243) |
 | 4b: TemporalFocus | 2d, 3b | M | `AttentionList` — "what's on my mind?" |
-| 4c: Graph Reasoning | 4a | Exploration | DesiredState integration assessment |
+| 4c: Graph Reasoning | 4a | Exploration | DesiredState integration assessment — **DONE** (#245) |
 | 4d: Query DSL | 4a, 4b | XL | Unified cognitive query language |
 | 5a: API-to-YAML Mapping Audit | 1b, 1d | S | Mapping table identifying all YAML gaps |
 | 5b: YAML Schema Design | 5a | M | YAML schema conventions document |
 | 5c: Cognitive Profile YAML | 5b, 3a | M | Agent cognitive configuration in YAML |
 | 5d: Declarative Rule DSL | 5b | L | YAML trait rules + derived edge rules |
 | 5e: YAML-to-Java Compiler | 5c, 5d | L | Build-time/startup YAML → CDI bean loader |
-| 5f: Identity-Cognition Derivation | 5c, eidos | M | `derive-from: descriptor` → default cognitive config |
-| 5g: Memory Space YAML | 5b, 1f | M | YAML memory space configuration + group identity |
+| 5f: Identity-Cognition Derivation | 5c, eidos | M | `derive-from: descriptor` → default cognitive config — **DONE** (#251, #256–#261) |
+| ~~5g: Memory Space YAML~~ | ~~5b, 1f~~ | — | REMOVED — space-as-tenant model deleted (#255) |
 
 **Phase 1** can start immediately — no external dependencies. Items 1a and 1b are parallelisable.
 
@@ -611,4 +590,4 @@ Phase 1 (Structural)       Phase 2 (Temporal)        Phase 3 (Affective)       P
 - **New backends** — no new storage engines (TinkerPop, PostgreSQL graph). The improvements work with existing InMemory + SQLite backends.
 - **LLM prompt evolution** — `MindMapExtractor`'s prompts may need updating as the temporal/affective model evolves, but prompt engineering is not a structural concern.
 - **Performance** — the chronological index (2d) has performance implications but this program focuses on capability, not optimisation.
-- **casehub-life wiring** — this program designs the memory space model and visibility layer. Wiring it to life's family model (household membership, decision authority, care coordination) is a life-side integration task that depends on Phases 1f and 3d being complete.
+- **casehub-life wiring** — multi-agent memory sharing within a tenant will need a separate design if the use case materialises. The space-as-tenant model (1f) was removed in #255. Per-agent cognitive state (e.g. perspectival overlays, 3d) uses agentId properties within the shared tenant.
