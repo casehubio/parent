@@ -1242,6 +1242,92 @@
                 <version>${casehub.version}</version>
             </dependency>
 
+      <!-- ================================================================ -->
+      <!-- casehub-langchain4j                                              -->
+      <!-- ================================================================ -->
+      <dependency>
+        <groupId>io.casehub.langchain4j</groupId>
+        <artifactId>casehub-langchain4j-bom</artifactId>
+        <version>${casehub.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub.langchain4j</groupId>
+        <artifactId>casehub-langchain4j-audit-core</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub.langchain4j</groupId>
+        <artifactId>casehub-langchain4j-audit</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub.langchain4j</groupId>
+        <artifactId>casehub-langchain4j-audit-spring</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub.langchain4j</groupId>
+        <artifactId>casehub-langchain4j-tenancy-core</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub.langchain4j</groupId>
+        <artifactId>casehub-langchain4j-tenancy</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub.langchain4j</groupId>
+        <artifactId>casehub-langchain4j-tenancy-spring</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub.langchain4j</groupId>
+        <artifactId>casehub-langchain4j-governance-core</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub.langchain4j</groupId>
+        <artifactId>casehub-langchain4j-governance</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub.langchain4j</groupId>
+        <artifactId>casehub-langchain4j-governance-spring</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub.langchain4j</groupId>
+        <artifactId>casehub-langchain4j-hybrid-search-core</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub.langchain4j</groupId>
+        <artifactId>casehub-langchain4j-hybrid-search</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub.langchain4j</groupId>
+        <artifactId>casehub-langchain4j-hybrid-search-spring</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub.langchain4j</groupId>
+        <artifactId>casehub-langchain4j-agents-core</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub.langchain4j</groupId>
+        <artifactId>casehub-langchain4j-agents</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub.langchain4j</groupId>
+        <artifactId>casehub-langchain4j-agents-spring</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+
     </dependencies>
   </dependencyManagement>
 

@@ -35,6 +35,7 @@ Org-level parent POM and BOM for the [casehubio](https://github.com/casehubio) e
 | [casehub-openclaw](https://github.com/casehubio/openclaw) | [![casehub-openclaw](https://github.com/casehubio/openclaw/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/openclaw/actions/workflows/publish.yml) |
 | [casehub-chat-app](https://github.com/casehubio/chat-app) | [![casehub-chat-app](https://github.com/casehubio/chat-app/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/chat-app/actions/workflows/publish.yml) |
 | [casehub-scaffold](https://github.com/casehubio/scaffold) | [![casehub-scaffold](https://github.com/casehubio/scaffold/actions/workflows/maven.yml/badge.svg?branch=main)](https://github.com/casehubio/scaffold/actions/workflows/maven.yml) |
+| [casehub-langchain4j](https://github.com/casehubio/casehub-langchain4j) | [![casehub-langchain4j](https://github.com/casehubio/casehub-langchain4j/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/casehub-langchain4j/actions/workflows/publish.yml) |
 
 **Applications**
 

@@ -10,6 +10,7 @@
     {"name": "ras",          "org": "casehubio", "repo": "casehub-ras"},
     {"name": "desiredstate", "org": "casehubio", "repo": "casehub-desiredstate"},
     {"name": "blocks",       "org": "casehubio"},
+    {"name": "casehub-langchain4j", "org": "casehubio"},
     {"name": "blocks-ui",    "org": "casehubio"},
     {"name": "engine",       "org": "casehubio"},
     {"name": "eidos",        "org": "casehubio"},

@@ -45,6 +45,7 @@ jobs:
             casehubio/devtown \
             casehubio/aml \
             casehubio/blocks \
+            casehubio/casehub-langchain4j \
             casehubio/blocks-ui \
             casehubio/clinical \
             casehubio/life \
