@@ -49,6 +49,30 @@
       </dependency>
 
       <!-- ================================================================ -->
+      <!-- CloudEvents SDK (not managed by Quarkus BOM)                     -->
+      <!-- ================================================================ -->
+      <dependency>
+        <groupId>io.cloudevents</groupId>
+        <artifactId>cloudevents-core</artifactId>
+        <version>4.0.1</version>
+      </dependency>
+      <dependency>
+        <groupId>io.cloudevents</groupId>
+        <artifactId>cloudevents-json-jackson</artifactId>
+        <version>4.0.1</version>
+      </dependency>
+
+      <!-- ================================================================ -->
+      <!-- Test libraries (not managed by Quarkus BOM)                      -->
+      <!-- ================================================================ -->
+      <dependency>
+        <groupId>org.assertj</groupId>
+        <artifactId>assertj-core</artifactId>
+        <version>3.27.3</version>
+        <scope>test</scope>
+      </dependency>
+
+      <!-- ================================================================ -->
       <!-- casehub-ledger                                                   -->
       <!-- ================================================================ -->
       <dependency>
