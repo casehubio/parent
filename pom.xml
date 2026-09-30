@@ -124,6 +124,253 @@
         <version>${casehub.version}</version>
       </dependency>
 
+      <!-- ================================================================ -->
+      <!-- casehub-platform                                                 -->
+      <!-- ================================================================ -->
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-platform-api</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-platform</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-platform-testing</artifactId>
+        <version>${casehub.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-platform-agent-api</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-platform-expression</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-platform-config</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-platform-oidc</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-platform-yaml-core</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-platform-yaml-jackson</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-platform-yaml-step-runtime</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+
+      <!-- ================================================================ -->
+      <!-- casehub-engine additional modules                                -->
+      <!-- ================================================================ -->
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-engine-api</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-engine</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-engine-common</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-engine-flow</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-engine-testing</artifactId>
+        <version>${casehub.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-engine-persistence-memory</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-engine-rest</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-engine-scheduler-quartz</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-engine-actor-state</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-engine-planning</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-engine-planning-core</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+
+      <!-- ================================================================ -->
+      <!-- casehub-worker                                                   -->
+      <!-- ================================================================ -->
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-worker-api</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+
+      <!-- ================================================================ -->
+      <!-- casehub-qhorus additional                                        -->
+      <!-- ================================================================ -->
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-qhorus-api</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+
+      <!-- ================================================================ -->
+      <!-- casehub-neocortex                                                -->
+      <!-- ================================================================ -->
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-neocortex-memory-api</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+
+      <!-- ================================================================ -->
+      <!-- casehub-ras                                                      -->
+      <!-- ================================================================ -->
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-ras-api</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-ras</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-ras-testing</artifactId>
+        <version>${casehub.version}</version>
+        <scope>test</scope>
+      </dependency>
+
+      <!-- ================================================================ -->
+      <!-- casehub-eidos                                                    -->
+      <!-- ================================================================ -->
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-eidos-api</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+
+      <!-- ================================================================ -->
+      <!-- casehub-connectors                                               -->
+      <!-- ================================================================ -->
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-connectors-core</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-connectors-chat-spi</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-connectors-chat-discord</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-connectors-discord</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+
+      <!-- ================================================================ -->
+      <!-- casehub-blocks                                                   -->
+      <!-- ================================================================ -->
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-blocks</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+
+      <!-- ================================================================ -->
+      <!-- casehub-desiredstate                                             -->
+      <!-- ================================================================ -->
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-desiredstate-api</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-desiredstate</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+
+      <!-- ================================================================ -->
+      <!-- casehub-work additional                                          -->
+      <!-- ================================================================ -->
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-work-engine-adapter</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+
+      <!-- ================================================================ -->
+      <!-- Third-party versions                                             -->
+      <!-- ================================================================ -->
+      <dependency>
+        <groupId>io.cloudevents</groupId>
+        <artifactId>cloudevents-core</artifactId>
+        <version>4.0.1</version>
+      </dependency>
+      <dependency>
+        <groupId>io.cloudevents</groupId>
+        <artifactId>cloudevents-api</artifactId>
+        <version>4.0.1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.assertj</groupId>
+        <artifactId>assertj-core</artifactId>
+        <version>3.27.3</version>
+        <scope>test</scope>
+      </dependency>
+
     </dependencies>
   </dependencyManagement>
 
