@@ -1,15 +1,15 @@
 # parent Workspace
 **Name:** casehub
 
-**Physical path:** `/Users/mdproctor/claude/casehub/parent/CLAUDE.md`
-**Symlinked at:** `/Users/mdproctor/claude/public/casehub/CLAUDE.md`
-**Project repo:** `/Users/mdproctor/claude/casehub/parent`
-**Workspace:** `/Users/mdproctor/claude/public/casehub`
+**Physical path:** `/Users/mdproctor/claude/casehub/slots/209/parent/CLAUDE.md`
+**Symlinked at:** `/Users/mdproctor/claude/casehub/slots/209/wsp-casehub/CLAUDE.md`
+**Project repo:** `/Users/mdproctor/claude/casehub/slots/209/parent`
+**Workspace:** `/Users/mdproctor/claude/casehub/slots/209/wsp-casehub`
 **Workspace type:** public
 
 ## Session Start
 
-Run `add-dir /Users/mdproctor/claude/casehub/parent` before any other work.
+Run `add-dir /Users/mdproctor/claude/casehub/slots/209/parent` before any other work.
 
 ## Artifact Locations
 
@@ -38,13 +38,13 @@ Run `add-dir /Users/mdproctor/claude/casehub/parent` before any other work.
 ## Git Discipline
 
 Two git repositories are active in every session:
-- **Workspace** (`/Users/mdproctor/claude/public/casehub`) — methodology artifacts: handover, blog (staging before publish), plans, snapshots
-- **Project repo** (`/Users/mdproctor/claude/casehub/parent`) — source code, ADRs (`docs/adr/`), specs
+- **Workspace** (`/Users/mdproctor/claude/casehub/slots/209/wsp-casehub`) — methodology artifacts: handover, blog (staging before publish), plans, snapshots
+- **Project repo** (`/Users/mdproctor/claude/casehub/slots/209/parent`) — source code, ADRs (`docs/adr/`), specs
 
 Never rely on CWD for git operations — the session may have started in either repo. Always use explicit paths:
 ```bash
-git -C /Users/mdproctor/claude/public/casehub ...       # workspace artifacts
-git -C /Users/mdproctor/claude/casehub/parent ...       # project artifacts
+git -C /Users/mdproctor/claude/casehub/slots/209/wsp-casehub ...       # workspace artifacts
+git -C /Users/mdproctor/claude/casehub/slots/209/parent ...       # project artifacts
 ```
 The file path determines the repo: if the file lives under `Workspace`, use the workspace path; if under `Project repo`, use the project path.
 
