@@ -1,4 +1,64 @@
-audit_status: []
+audit_status:
+- repo: platform
+  wave: 1
+  consumer_guide: verified-accurate
+  contributor_guide: verified-accurate
+  last_audited: '2026-10-02'
+  notes: 178 modules (parent indexes said ~50). Spring dual-framework. Guides thorough.
+- repo: engine
+  wave: 1
+  consumer_guide: done
+  contributor_guide: done
+  last_audited: '2026-10-02'
+  notes: 68 modules (parent said 17). 6 modules added. yaml-cbr undocumented.
+- repo: worker
+  wave: 1
+  consumer_guide: done
+  contributor_guide: done
+  last_audited: '2026-10-02'
+  notes: 3 modules verified. reasoning field added.
+- repo: ledger
+  wave: 1
+  consumer_guide: done
+  contributor_guide: done
+  last_audited: '2026-10-02'
+  notes: 12+ active modules. 6 Spring modules added to contributor guide.
+- repo: connectors
+  wave: 1
+  consumer_guide: done
+  contributor_guide: done
+  last_audited: '2026-10-02'
+  notes: 29 modules. Module counts fixed. Stale issues updated.
+- repo: work
+  wave: 1
+  consumer_guide: done
+  contributor_guide: done
+  last_audited: '2026-10-02'
+  notes: 38 modules (22 active). 12 statuses. 16 modules excluded from reactor.
+- repo: qhorus
+  wave: 1
+  consumer_guide: done
+  contributor_guide: done
+  last_audited: '2026-10-02'
+  notes: 23 modules (was 14). 29 store interfaces (was 13). 9 modules added.
+- repo: eidos
+  wave: 1
+  consumer_guide: done
+  contributor_guide: done
+  last_audited: '2026-10-02'
+  notes: 14 modules (was 8). Voice profile + goal lifecycle added.
+- repo: neocortex
+  wave: 1
+  consumer_guide: needs-update
+  contributor_guide: needs-update
+  last_audited: '2026-10-02'
+  notes: 61 modules (was 36). Cognitive architecture undocumented. Deferred.
+- repo: iot
+  wave: 1
+  consumer_guide: done
+  contributor_guide: done
+  last_audited: '2026-10-02'
+  notes: 12 modules. Guides recently updated. Only stale issues fixed.
 entries:
 - path: CLAUDE.md
   repo: aml
