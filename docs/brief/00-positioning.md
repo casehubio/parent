@@ -109,7 +109,66 @@ infrastructure.
 
 ## Themes
 
-<!-- To be selected from options — see next step -->
+### 1. Accountable by Default
+
+Every agent decision produces a tamper-evident audit entry in a Merkle
+MMR ledger. Trust is Bayesian with exponential decay — scored, not
+assumed. Oversight gates enforce M-of-N quorum approval for
+consequential actions. EU AI Act Art.12 compliance evidence is generated
+automatically. Privacy is structural — even erasure receipts are
+tamper-evident. Accountability isn't a feature — it's the architecture.
+
+### 2. From Intent to Operations
+
+The complete lifecycle loop: declare intent in YAML, agents execute with
+enterprise controls, desired-state reconciliation drives reality toward
+the declaration, situation awareness detects drift and triggers
+corrective action. The loop closes — operations feeds back into
+declaration. No competitor covers all five stages as one platform.
+
+### 3. Learn, Adapt, Improve
+
+Case-based reasoning drives a learning loop across the platform.
+Execution outcomes feed back into routing decisions, plan adaptation,
+and experience-based reasoning. Workers learn which approaches succeed
+in which contexts. Routing signals incorporate historical performance.
+Plans adapt based on prior case similarity. The platform gets better
+with use — and this is proven and deployed, not theoretical.
+
+### 4. Composable Standalone Architecture
+
+Built on proven open-source primitives. Every module works independently
+— the audit ledger, human task engine, communications mesh, and web
+framework are each standalone products. No module requires AI. This
+composability is what makes AI integration natural: agents participate
+through the same SPIs as humans and systems. Customers adopt the pieces
+they need today, and AI capabilities layer on without rearchitecting.
+The platform isn't a bet on one AI trend — it's infrastructure that
+outlasts any model generation.
+
+### 5. Enterprise Depth, YAML Simplicity
+
+500+ modules of enterprise Java underneath. Domain experts see YAML.
+Agentic patterns — supervisor, debate, voting, HTN decomposition — are
+declared as building blocks, not custom code. Hybrid execution controls
+blend orchestration and choreography for coordination and collaboration.
+The depth is the substance; YAML is the access layer.
+
+### 6. Fully Automatable
+
+Every part of the platform is automatable through GraphQL and MCP.
+Distributed scripting capabilities enable end-to-end programmatic
+control. Scenario and simulation frameworks are built in and consistent
+throughout — not afterthoughts. The platform is its own best operator.
+
+### 7. Cognitive Agents *(horizon)*
+
+Structured agent identity with vocabulary-grounded descriptors and
+subsumption matching. Goal cognition with 5-phase lifecycle. OCC
+emotional model. Progressive attention. Personality calibration. This is
+where the learning loop (Theme 3) leads when combined with agent memory
+and behavioural signals — positioned as the trajectory, not a headline
+claim. Research-grade, actively developed, not yet proven at scale.
 
 ---
 
