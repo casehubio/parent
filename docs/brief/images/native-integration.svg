@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1060 560">
+  <defs>
+    <filter id="shadow" x="-4%" y="-4%" width="108%" height="116%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.08"/>
+    </filter>
+    <marker id="flow-in" viewBox="0 0 8 8" refX="8" refY="4" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L8,4 L0,8 z" fill="#3B82F6"/>
+    </marker>
+    <marker id="flow-out" viewBox="0 0 8 8" refX="8" refY="4" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L8,4 L0,8 z" fill="#14B8A6"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1060" height="560" fill="#FAFBFC"/>
+
+  <!-- Title -->
+  <text x="530" y="30" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="bold" fill="#0F172A">Shared Context at Every Decision Point</text>
+  <text x="530" y="50" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#64748B" font-style="italic">What native integration enables — no API calls between capabilities, no data mapping, no lost context</text>
+
+  <!-- ═══════════════ Central Decision Point ═══════════════ -->
+
+  <circle cx="530" cy="250" r="72" fill="#1E293B" filter="url(#shadow)"/>
+  <circle cx="530" cy="250" r="68" fill="#0F172A"/>
+  <text x="530" y="240" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#F8FAFC">Every Agent</text>
+  <text x="530" y="258" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#F8FAFC">Decision</text>
+  <text x="530" y="280" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#94A3B8">Same CDI context</text>
+  <text x="530" y="293" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#94A3B8">Same tenant</text>
+
+  <!-- ═══════════════ INPUT Capabilities (left + top) ═══════════════ -->
+
+  <!-- Agent Identity (top-left) -->
+  <rect x="80" y="90" width="210" height="62" rx="8" fill="#F5F3FF" stroke="#8B5CF6" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="185" y="115" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1E293B">Agent Identity</text>
+  <text x="185" y="135" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Structured vocabulary, voice, goals</text>
+  <!-- Connection line -->
+  <line x1="290" y1="130" x2="468" y2="220" stroke="#8B5CF6" stroke-width="1.5" marker-end="url(#flow-in)"/>
+  <text x="360" y="162" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#7C3AED" transform="rotate(-14, 360, 162)">identity context</text>
+
+  <!-- Trust Score (left) -->
+  <rect x="40" y="218" width="210" height="62" rx="8" fill="#F0FDFA" stroke="#14B8A6" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="145" y="243" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1E293B">Trust Scoring</text>
+  <text x="145" y="263" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Bayesian EigenTrust with decay</text>
+  <!-- Connection line -->
+  <line x1="250" y1="249" x2="460" y2="249" stroke="#14B8A6" stroke-width="1.5" marker-end="url(#flow-in)"/>
+  <text x="355" y="241" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#0D9488">trust score</text>
+
+  <!-- Case Context (bottom-left) -->
+  <rect x="80" y="348" width="210" height="62" rx="8" fill="#EFF6FF" stroke="#3B82F6" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="185" y="373" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1E293B">Case Context</text>
+  <text x="185" y="393" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Full history, working layer, plan</text>
+  <!-- Connection line -->
+  <line x1="290" y1="370" x2="468" y2="280" stroke="#3B82F6" stroke-width="1.5" marker-end="url(#flow-in)"/>
+  <text x="358" y="340" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#2563EB" transform="rotate(14, 358, 340)">case history</text>
+
+  <!-- ═══════════════ OUTPUT Capabilities (right + bottom) ═══════════════ -->
+
+  <!-- Similar Cases / CBR (top-right) -->
+  <rect x="730" y="90" width="210" height="62" rx="8" fill="#F5F3FF" stroke="#8B5CF6" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="835" y="115" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1E293B">Similar Cases</text>
+  <text x="835" y="135" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">CBR retrieval, plan adaptation</text>
+  <!-- Connection line -->
+  <line x1="592" y1="220" x2="730" y2="130" stroke="#8B5CF6" stroke-width="1.5" marker-end="url(#flow-out)"/>
+  <text x="672" y="162" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#7C3AED" transform="rotate(14, 672, 162)">experience match</text>
+
+  <!-- Audit Capture (right) -->
+  <rect x="770" y="218" width="210" height="62" rx="8" fill="#F0FDFA" stroke="#14B8A6" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="875" y="243" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1E293B">Audit Capture</text>
+  <text x="875" y="263" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Merkle entry with full context</text>
+  <!-- Connection line -->
+  <line x1="600" y1="249" x2="770" y2="249" stroke="#14B8A6" stroke-width="1.5" marker-end="url(#flow-out)"/>
+  <text x="685" y="241" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#0D9488">tamper-evident record</text>
+
+  <!-- Outcome Learning (bottom-right) -->
+  <rect x="730" y="348" width="210" height="62" rx="8" fill="#EFF6FF" stroke="#3B82F6" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="835" y="373" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1E293B">Outcome Learning</text>
+  <text x="835" y="393" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Feeds future routing decisions</text>
+  <!-- Connection line -->
+  <line x1="592" y1="280" x2="730" y2="370" stroke="#3B82F6" stroke-width="1.5" marker-end="url(#flow-out)"/>
+  <text x="668" y="340" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#2563EB" transform="rotate(-14, 668, 340)">outcome feedback</text>
+
+  <!-- ═══════════════ Labels ═══════════════ -->
+
+  <text x="185" y="78" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="bold" fill="#64748B">AVAILABLE AT DECISION TIME</text>
+  <text x="835" y="78" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="bold" fill="#64748B">PRODUCED BY EVERY DECISION</text>
+
+  <!-- ═══════════════ Shared Foundation Ring ═══════════════ -->
+
+  <circle cx="530" cy="250" r="110" fill="none" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="6 4"/>
+
+  <!-- ═══════════════ Bottom Summary ═══════════════ -->
+
+  <rect x="130" y="445" width="800" height="52" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1"/>
+  <text x="530" y="467" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#0F172A">Every capability shares one CDI context, one tenant model, one event system, one type system.</text>
+  <text x="530" y="486" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#64748B">Full context at every decision — identity, trust, history, audit — without integration code.</text>
+
+  <!-- ═══════════════ Module count ═══════════════ -->
+
+  <text x="530" y="530" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#94A3B8" font-style="italic">500+ modules, one coherent model — context is never lost, never transformed, never approximated</text>
+</svg>

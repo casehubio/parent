@@ -193,3 +193,15 @@ organised by pillar in the middle, shared platform services underneath,
 and the Quarkus / Spring Boot foundation at the base. The accountability
 thread runs through every layer — not bolted on, structural.
 
+### Native Integration
+
+![Native Integration](images/native-integration.svg)
+
+What native integration enables at runtime. Every agent decision has
+full context available — identity, trust score, case history — because
+all capabilities share one CDI context, one tenant model, one event
+system. Every decision automatically produces tamper-evident audit
+entries, outcome feedback for future routing, and experience matches
+for plan adaptation. No API calls between capabilities. No data
+mapping. No lost context.
+
