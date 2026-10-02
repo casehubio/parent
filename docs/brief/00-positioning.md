@@ -205,3 +205,13 @@ entries, outcome feedback for future routing, and experience matches
 for plan adaptation. No API calls between capabilities. No data
 mapping. No lost context.
 
+### YAML Across the Lifecycle
+
+![YAML Lifecycle](images/yaml-lifecycle.svg)
+
+Real CaseHub YAML for each lifecycle stage. Domain experts declare
+cases, agents, routing, reconciliation, and situation awareness in one
+language — 500+ modules of enterprise Java underneath, invisible to the
+person writing the YAML. See the
+[YAML Walkthrough](01-yaml-walkthrough.md) for annotated examples.
+

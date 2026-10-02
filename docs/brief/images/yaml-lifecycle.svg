@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1300 340">
+  <defs>
+    <filter id="shadow" x="-4%" y="-4%" width="108%" height="116%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1300" height="340" fill="#FAFBFC"/>
+
+  <!-- Title -->
+  <text x="650" y="26" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="bold" fill="#0F172A">The Platform in YAML — Real Syntax, Every Lifecycle Stage</text>
+  <text x="650" y="44" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#64748B" font-style="italic">Domain experts declare intent — the platform handles execution</text>
+
+  <!-- ═══════════════ Declaration Panel ═══════════════ -->
+
+  <rect x="35" y="62" width="230" height="218" rx="8" fill="#1E293B" filter="url(#shadow)"/>
+  <rect x="35" y="62" width="230" height="30" rx="8" fill="#FBBF24"/>
+  <rect x="35" y="82" width="230" height="10" fill="#FBBF24"/>
+  <text x="150" y="82" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#1E293B">Declaration</text>
+
+  <g xml:space="preserve" font-family="Courier New, Consolas, monospace" font-size="9.5" fill="#CBD5E1">
+    <text x="45" y="112">name: <tspan fill="#86EFAC">fraud-review</tspan></text>
+    <text x="45" y="126">namespace: <tspan fill="#86EFAC">aml</tspan></text>
+    <text x="45" y="140">spec:</text>
+    <text x="45" y="154">  capabilities:</text>
+    <text x="45" y="168">    - name: <tspan fill="#86EFAC">investigate</tspan></text>
+    <text x="45" y="182">      input: <tspan fill="#86EFAC">"{ tx: .transaction }"</tspan></text>
+    <text x="45" y="196">  workers:</text>
+    <text x="45" y="210">    - name: <tspan fill="#86EFAC">analyst</tspan></text>
+    <text x="45" y="224">      capabilities: <tspan fill="#86EFAC">[investigate]</tspan></text>
+    <text x="45" y="238">  goals:</text>
+    <text x="45" y="252">    - condition: <tspan fill="#86EFAC">'.verdict != null'</tspan></text>
+    <text x="45" y="266">  completion:</text>
+  </g>
+
+  <!-- ═══════════════ Intelligence Panel ═══════════════ -->
+
+  <rect x="285" y="62" width="230" height="218" rx="8" fill="#1E293B" filter="url(#shadow)"/>
+  <rect x="285" y="62" width="230" height="30" rx="8" fill="#60A5FA"/>
+  <rect x="285" y="82" width="230" height="10" fill="#60A5FA"/>
+  <text x="400" y="82" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#1E293B">Intelligence</text>
+
+  <g xml:space="preserve" font-family="Courier New, Consolas, monospace" font-size="9.5" fill="#CBD5E1">
+    <text x="295" y="112">type: <tspan fill="#86EFAC">supervisor</tspan></text>
+    <text x="295" y="126">routing:</text>
+    <text x="295" y="140">  type: <tspan fill="#86EFAC">first-match</tspan></text>
+    <text x="295" y="154">  guard: <tspan fill="#86EFAC">"priority > 5"</tspan></text>
+    <text x="295" y="168">termination:</text>
+    <text x="295" y="182">  - max-iterations: <tspan fill="#FCD34D">20</tspan></text>
+    <text x="295" y="196">agents:</text>
+    <text x="295" y="210">  - name: <tspan fill="#86EFAC">analyst</tspan></text>
+    <text x="295" y="224">    capabilities:</text>
+    <text x="295" y="238">      - <tspan fill="#86EFAC">data-analysis</tspan></text>
+    <text x="295" y="252">  - name: <tspan fill="#86EFAC">reviewer</tspan></text>
+  </g>
+
+  <!-- ═══════════════ Control Panel ═══════════════ -->
+
+  <rect x="535" y="62" width="230" height="218" rx="8" fill="#1E293B" filter="url(#shadow)"/>
+  <rect x="535" y="62" width="230" height="30" rx="8" fill="#818CF8"/>
+  <rect x="535" y="82" width="230" height="10" fill="#818CF8"/>
+  <text x="650" y="82" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#FFFFFF">Control</text>
+
+  <g xml:space="preserve" font-family="Courier New, Consolas, monospace" font-size="9.5" fill="#CBD5E1">
+    <text x="545" y="112">cbr:</text>
+    <text x="545" y="126">  features:</text>
+    <text x="545" y="140">    risk: <tspan fill="#86EFAC">".tx.risk_level"</tspan></text>
+    <text x="545" y="154">    amount: <tspan fill="#86EFAC">".tx.amount"</tspan></text>
+    <text x="545" y="168">  weights:</text>
+    <text x="545" y="182">    risk: <tspan fill="#FCD34D">2.0</tspan></text>
+    <text x="545" y="196">    amount: <tspan fill="#FCD34D">1.0</tspan></text>
+    <text x="545" y="210">  topK: <tspan fill="#FCD34D">5</tspan></text>
+    <text x="545" y="224">  domain: <tspan fill="#86EFAC">fraud-cases</tspan></text>
+    <text x="545" y="238">  minSimilarity: <tspan fill="#FCD34D">0.0</tspan></text>
+  </g>
+
+  <!-- ═══════════════ Convergence Panel ═══════════════ -->
+
+  <rect x="785" y="62" width="230" height="218" rx="8" fill="#1E293B" filter="url(#shadow)"/>
+  <rect x="785" y="62" width="230" height="30" rx="8" fill="#2DD4BF"/>
+  <rect x="785" y="82" width="230" height="10" fill="#2DD4BF"/>
+  <text x="900" y="82" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#1E293B">Convergence</text>
+
+  <g xml:space="preserve" font-family="Courier New, Consolas, monospace" font-size="9.5" fill="#CBD5E1">
+    <text x="795" y="112">plugin:</text>
+    <text x="795" y="126">  type: <tspan fill="#86EFAC">cloud-resource</tspan></text>
+    <text x="795" y="140">  resyncInterval: <tspan fill="#86EFAC">30s</tspan></text>
+    <text x="795" y="154">actual-state:</text>
+    <text x="795" y="168">  - compare-state:</text>
+    <text x="795" y="182">      drifted-when:</text>
+    <text x="795" y="196">        <tspan fill="#86EFAC">"${count} &lt; ${spec}"</tspan></text>
+    <text x="795" y="210">provisioner:</text>
+    <text x="795" y="224">  provision:</text>
+    <text x="795" y="238">    - rest-call:</text>
+    <text x="795" y="252">        method: <tspan fill="#86EFAC">PUT</tspan></text>
+  </g>
+
+  <!-- ═══════════════ Operations Panel ═══════════════ -->
+
+  <rect x="1035" y="62" width="230" height="218" rx="8" fill="#1E293B" filter="url(#shadow)"/>
+  <rect x="1035" y="62" width="230" height="30" rx="8" fill="#34D399"/>
+  <rect x="1035" y="82" width="230" height="10" fill="#34D399"/>
+  <text x="1150" y="82" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#1E293B">Operations</text>
+
+  <g xml:space="preserve" font-family="Courier New, Consolas, monospace" font-size="9.5" fill="#CBD5E1">
+    <text x="1045" y="112">ras:</text>
+    <text x="1045" y="126">  situations:</text>
+    <text x="1045" y="140">    - name: <tspan fill="#86EFAC">repeated-failures</tspan></text>
+    <text x="1045" y="154">      events:</text>
+    <text x="1045" y="168">        - <tspan fill="#86EFAC">NODE_FAULTED</tspan></text>
+    <text x="1045" y="182">      correlation-window: <tspan fill="#86EFAC">10m</tspan></text>
+    <text x="1045" y="196">      chain-mode:</text>
+    <text x="1045" y="210">        streak: <tspan fill="#FCD34D">3</tspan></text>
+    <text x="1045" y="224">      trigger: <tspan fill="#86EFAC">create-case</tspan></text>
+    <text x="1045" y="238">      trigger-mode: <tspan fill="#86EFAC">fire-once</tspan></text>
+  </g>
+
+  <!-- ═══════════════ Bottom ═══════════════ -->
+
+  <text x="650" y="310" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#0F172A" font-weight="bold">Real CaseHub YAML — cases, agents, routing, reconciliation, and situation awareness declared in one language</text>
+  <text x="650" y="328" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">500+ modules of enterprise Java underneath. Domain experts never need to see it.</text>
+</svg>
