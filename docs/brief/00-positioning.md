@@ -193,6 +193,3 @@ organised by pillar in the middle, shared platform services underneath,
 and the Quarkus / Spring Boot foundation at the base. The accountability
 thread runs through every layer — not bolted on, structural.
 
-### Competitive Landscape
-
-![Competitive Landscape](images/competitive-landscape.svg)
