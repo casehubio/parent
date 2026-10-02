@@ -174,4 +174,25 @@ claim. Research-grade, actively developed, not yet proven at scale.
 
 ## Platform Overview
 
-<!-- SVG: lifecycle arc with capability areas mapped to each stage -->
+### Lifecycle Arc
+
+![Platform Lifecycle Arc](images/platform-lifecycle-arc.svg)
+
+The complete lifecycle from declaration to operations. Each capability
+area is positioned at its primary lifecycle stage and colour-coded by
+pillar: **Automation** (blue), **Coordination** (violet),
+**Collaboration** (teal). The feedback loop closes the arc — situations
+detected in operations trigger new declarations.
+
+### Architecture Stack
+
+![Architecture Stack](images/architecture-stack.svg)
+
+How the platform layers. YAML applications at the top, capability areas
+organised by pillar in the middle, shared platform services underneath,
+and the Quarkus / Spring Boot foundation at the base. The accountability
+thread runs through every layer — not bolted on, structural.
+
+### Competitive Landscape
+
+![Competitive Landscape](images/competitive-landscape.svg)

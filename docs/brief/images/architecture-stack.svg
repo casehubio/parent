@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 530">
+  <defs>
+    <filter id="shadow" x="-4%" y="-4%" width="108%" height="116%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="530" fill="#FAFBFC"/>
+
+  <!-- Title -->
+  <text x="600" y="28" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="bold" fill="#0F172A">CaseHub Platform Architecture</text>
+  <text x="600" y="48" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#64748B" font-style="italic">Layered · Composable · Enterprise-Grade</text>
+
+  <!-- ═══════════════ YAML Applications Layer ═══════════════ -->
+
+  <rect x="25" y="66" width="1060" height="42" rx="8" fill="#FEF3C7" stroke="#F59E0B" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="555" y="84" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#92400E">YAML Applications Layer</text>
+  <text x="555" y="100" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#A16207">Case Definitions · Agent Config · App Assembly · Domain DSL</text>
+
+  <!-- ═══════════════ Three Pillar Columns ═══════════════ -->
+
+  <!-- ── Automation Column ── -->
+  <rect x="25" y="122" width="340" height="262" rx="8" fill="#EFF6FF" stroke="#93C5FD" stroke-width="1" filter="url(#shadow)"/>
+  <!-- Header -->
+  <rect x="25" y="122" width="340" height="32" rx="8" fill="#3B82F6"/>
+  <rect x="25" y="140" width="340" height="14" fill="#3B82F6"/>
+  <text x="195" y="143" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#FFFFFF">Automation</text>
+  <!-- Cards -->
+  <rect x="35" y="164" width="320" height="40" rx="5" fill="white" stroke="#BFDBFE" stroke-width="1"/>
+  <text x="47" y="181" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#1E293B">Case Orchestration Engine</text>
+  <text x="47" y="196" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#64748B">Blackboard architecture, composable signal routing</text>
+
+  <rect x="35" y="212" width="320" height="40" rx="5" fill="white" stroke="#BFDBFE" stroke-width="1"/>
+  <text x="47" y="229" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#1E293B">Goal-Directed Planning</text>
+  <text x="47" y="244" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#64748B">HTN decomposition, strategy adaptation, YAML-CBR bridge</text>
+
+  <rect x="35" y="260" width="320" height="40" rx="5" fill="white" stroke="#BFDBFE" stroke-width="1"/>
+  <text x="47" y="277" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#1E293B">Task Execution</text>
+  <text x="47" y="292" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#64748B">5-variant sealed outcomes, worker reasoning</text>
+
+  <rect x="35" y="308" width="320" height="40" rx="5" fill="white" stroke="#BFDBFE" stroke-width="1"/>
+  <text x="47" y="325" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#1E293B">Desired-State Reconciliation</text>
+  <text x="47" y="340" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#64748B">Declare target state, reconciliation drives reality</text>
+
+  <!-- ── Coordination Column ── -->
+  <rect x="385" y="122" width="340" height="262" rx="8" fill="#F5F3FF" stroke="#C4B5FD" stroke-width="1" filter="url(#shadow)"/>
+  <!-- Header -->
+  <rect x="385" y="122" width="340" height="32" rx="8" fill="#8B5CF6"/>
+  <rect x="385" y="140" width="340" height="14" fill="#8B5CF6"/>
+  <text x="555" y="143" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#FFFFFF">Coordination</text>
+  <!-- Cards -->
+  <rect x="395" y="164" width="320" height="40" rx="5" fill="white" stroke="#DDD6FE" stroke-width="1"/>
+  <text x="407" y="181" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#1E293B">Agentic Orchestration Patterns</text>
+  <text x="407" y="196" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#64748B">Supervisor, debate, voting, speech acts</text>
+
+  <rect x="395" y="212" width="320" height="40" rx="5" fill="white" stroke="#DDD6FE" stroke-width="1"/>
+  <text x="407" y="229" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#1E293B">Agent Identity &amp; Cognition</text>
+  <text x="407" y="244" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#64748B">Structured identity, memory, goal cognition, emotions</text>
+
+  <rect x="395" y="260" width="320" height="40" rx="5" fill="white" stroke="#DDD6FE" stroke-width="1"/>
+  <text x="407" y="277" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#1E293B">Knowledge &amp; Reasoning</text>
+  <text x="407" y="292" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#64748B">RAG, CBR, on-device inference, knowledge graph</text>
+
+  <rect x="395" y="308" width="320" height="40" rx="5" fill="white" stroke="#DDD6FE" stroke-width="1"/>
+  <text x="407" y="325" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#1E293B">Fleet &amp; Communications</text>
+  <text x="407" y="340" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#64748B">Multi-model orchestration, mesh, oversight watchdogs</text>
+
+  <!-- ── Collaboration Column ── -->
+  <rect x="745" y="122" width="340" height="262" rx="8" fill="#F0FDFA" stroke="#99F6E4" stroke-width="1" filter="url(#shadow)"/>
+  <!-- Header -->
+  <rect x="745" y="122" width="340" height="32" rx="8" fill="#14B8A6"/>
+  <rect x="745" y="140" width="340" height="14" fill="#14B8A6"/>
+  <text x="915" y="143" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#FFFFFF">Collaboration</text>
+  <!-- Cards -->
+  <rect x="755" y="164" width="320" height="40" rx="5" fill="white" stroke="#A7F3D0" stroke-width="1"/>
+  <text x="767" y="181" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#1E293B">Human Task Management</text>
+  <text x="767" y="196" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#64748B">12 statuses, SLA enforcement, delegation chains</text>
+
+  <rect x="755" y="212" width="320" height="40" rx="5" fill="white" stroke="#A7F3D0" stroke-width="1"/>
+  <text x="767" y="229" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#1E293B">Channel Integration</text>
+  <text x="767" y="244" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#64748B">Slack, Teams, SMS, WhatsApp, email — no vendor SDKs</text>
+
+  <rect x="755" y="260" width="320" height="40" rx="5" fill="white" stroke="#A7F3D0" stroke-width="1"/>
+  <text x="767" y="277" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#1E293B">Situation Awareness</text>
+  <text x="767" y="292" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#64748B">Drift detection, corrective action triggers</text>
+
+  <rect x="755" y="308" width="320" height="40" rx="5" fill="white" stroke="#A7F3D0" stroke-width="1"/>
+  <text x="767" y="325" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#1E293B">Trust &amp; Accountability</text>
+  <text x="767" y="340" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#64748B">Merkle MMR ledger, Bayesian trust, EU AI Act compliance</text>
+
+  <!-- ═══════════════ Accountability Sidebar ═══════════════ -->
+
+  <rect x="1100" y="66" width="75" height="418" rx="8" fill="#DC2626"/>
+  <text transform="rotate(-90, 1137, 275)" x="1137" y="275" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="white">ACCOUNTABILITY</text>
+  <text transform="rotate(-90, 1152, 275)" x="1152" y="275" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="8" fill="#FECACA">Merkle · Bayesian Trust · Oversight · EU AI Act</text>
+
+  <!-- ═══════════════ Shared Platform Services ═══════════════ -->
+
+  <rect x="25" y="400" width="1060" height="42" rx="6" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="1"/>
+  <text x="555" y="417" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#334155">Shared Platform Services</text>
+  <text x="555" y="434" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">CDI · Events · Tenancy · Expression Engine · Access Control · Notifications · Simulation — 178 modules</text>
+
+  <!-- ═══════════════ Foundation ═══════════════ -->
+
+  <rect x="25" y="458" width="1150" height="44" rx="6" fill="#1E293B"/>
+  <text x="600" y="477" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#F8FAFC">Quarkus / Spring Boot</text>
+  <text x="600" y="494" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#94A3B8">CDI / Spring DI · JPA / Hibernate · Virtual Threads · GraphQL · MCP · 500+ modules</text>
+
+  <!-- ═══════════════ Legend ═══════════════ -->
+
+  <g font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">
+    <text x="25" y="522" font-style="italic">Each module works independently — no module requires AI. Composability makes AI integration natural.</text>
+  </g>
+</svg>

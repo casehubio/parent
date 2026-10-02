@@ -1,0 +1,163 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 610">
+  <defs>
+    <filter id="shadow" x="-4%" y="-4%" width="108%" height="116%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.08"/>
+    </filter>
+    <marker id="stage-arrow" viewBox="0 0 10 8" refX="10" refY="4" markerWidth="10" markerHeight="8" orient="auto">
+      <path d="M0,0 L10,4 L0,8 z" fill="#94A3B8"/>
+    </marker>
+    <marker id="feedback-arrow" viewBox="0 0 12 10" refX="12" refY="5" markerWidth="10" markerHeight="8" orient="auto">
+      <path d="M0,0 L12,5 L0,10 z" fill="#EA580C"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="610" fill="#FAFBFC"/>
+
+  <!-- Title -->
+  <text x="600" y="32" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="bold" fill="#0F172A">CaseHub — The Accountable AI Harness</text>
+  <text x="600" y="54" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#64748B" font-style="italic">From Intent to Operations — One Platform, Full Accountability</text>
+
+  <!-- ═══════════════ Stage Headers ═══════════════ -->
+
+  <!-- Declaration -->
+  <rect x="25" y="75" width="210" height="40" rx="8" fill="#FBBF24" filter="url(#shadow)"/>
+  <text x="130" y="100" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="bold" fill="#1E293B">Declaration</text>
+
+  <line x1="237" y1="95" x2="258" y2="95" stroke="#94A3B8" stroke-width="2" marker-end="url(#stage-arrow)"/>
+
+  <!-- Intelligence -->
+  <rect x="260" y="75" width="210" height="40" rx="8" fill="#60A5FA" filter="url(#shadow)"/>
+  <text x="365" y="100" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="bold" fill="#1E293B">Intelligence</text>
+
+  <line x1="472" y1="95" x2="493" y2="95" stroke="#94A3B8" stroke-width="2" marker-end="url(#stage-arrow)"/>
+
+  <!-- Control -->
+  <rect x="495" y="75" width="210" height="40" rx="8" fill="#818CF8" filter="url(#shadow)"/>
+  <text x="600" y="100" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="bold" fill="#FFFFFF">Control</text>
+
+  <line x1="707" y1="95" x2="728" y2="95" stroke="#94A3B8" stroke-width="2" marker-end="url(#stage-arrow)"/>
+
+  <!-- Convergence -->
+  <rect x="730" y="75" width="210" height="40" rx="8" fill="#2DD4BF" filter="url(#shadow)"/>
+  <text x="835" y="100" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="bold" fill="#1E293B">Convergence</text>
+
+  <line x1="942" y1="95" x2="963" y2="95" stroke="#94A3B8" stroke-width="2" marker-end="url(#stage-arrow)"/>
+
+  <!-- Operations -->
+  <rect x="965" y="75" width="210" height="40" rx="8" fill="#34D399" filter="url(#shadow)"/>
+  <text x="1070" y="100" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="bold" fill="#1E293B">Operations</text>
+
+  <!-- ═══════════════ Capability Cards ═══════════════ -->
+
+  <!-- ── Declaration ── -->
+
+  <rect x="30" y="127" width="200" height="52" rx="6" fill="#F8FAFC" stroke="#94A3B8" stroke-width="1" filter="url(#shadow)"/>
+  <text x="40" y="149" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#1E293B">YAML Application Framework</text>
+  <text x="40" y="164" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Domain apps without code</text>
+
+  <rect x="30" y="187" width="200" height="52" rx="6" fill="#EFF6FF" stroke="#3B82F6" stroke-width="1" filter="url(#shadow)"/>
+  <text x="40" y="209" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#1E293B">Case Definitions</text>
+  <text x="40" y="224" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Lifecycle, plans, agents, routing</text>
+
+  <rect x="30" y="247" width="200" height="52" rx="6" fill="#F5F3FF" stroke="#8B5CF6" stroke-width="1" filter="url(#shadow)"/>
+  <text x="40" y="269" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#1E293B">Agent Configuration</text>
+  <text x="40" y="284" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Identity, voice, goals</text>
+
+  <!-- ── Intelligence ── -->
+
+  <rect x="265" y="127" width="200" height="52" rx="6" fill="#F5F3FF" stroke="#8B5CF6" stroke-width="1" filter="url(#shadow)"/>
+  <text x="275" y="149" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#1E293B">Agentic Patterns</text>
+  <text x="275" y="164" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Supervisor, debate, voting, HTN</text>
+
+  <rect x="265" y="187" width="200" height="52" rx="6" fill="#F5F3FF" stroke="#8B5CF6" stroke-width="1" filter="url(#shadow)"/>
+  <text x="275" y="209" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#1E293B">Agent Identity &amp; Cognition</text>
+  <text x="275" y="224" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Memory, goals, emotions</text>
+
+  <rect x="265" y="247" width="200" height="52" rx="6" fill="#F5F3FF" stroke="#8B5CF6" stroke-width="1" filter="url(#shadow)"/>
+  <text x="275" y="269" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#1E293B">Knowledge &amp; Retrieval</text>
+  <text x="275" y="284" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">RAG, corpus, on-device inference</text>
+
+  <rect x="265" y="307" width="200" height="52" rx="6" fill="#F5F3FF" stroke="#8B5CF6" stroke-width="1" filter="url(#shadow)"/>
+  <text x="275" y="329" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#1E293B">Fleet Management</text>
+  <text x="275" y="344" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Multi-model orchestration</text>
+
+  <!-- ── Control ── -->
+
+  <rect x="500" y="127" width="200" height="52" rx="6" fill="#EFF6FF" stroke="#3B82F6" stroke-width="1" filter="url(#shadow)"/>
+  <text x="510" y="149" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#1E293B">Case Orchestration</text>
+  <text x="510" y="164" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Blackboard, signal routing</text>
+
+  <rect x="500" y="187" width="200" height="52" rx="6" fill="#EFF6FF" stroke="#3B82F6" stroke-width="1" filter="url(#shadow)"/>
+  <text x="510" y="209" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#1E293B">Goal-Directed Planning</text>
+  <text x="510" y="224" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">HTN decomposition, adaptation</text>
+
+  <rect x="500" y="247" width="200" height="52" rx="6" fill="#F0FDFA" stroke="#14B8A6" stroke-width="1" filter="url(#shadow)"/>
+  <text x="510" y="269" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#1E293B">Human Task Management</text>
+  <text x="510" y="284" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">SLA enforcement, delegation</text>
+
+  <rect x="500" y="307" width="200" height="52" rx="6" fill="#F0FDFA" stroke="#14B8A6" stroke-width="1" filter="url(#shadow)"/>
+  <text x="510" y="329" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#1E293B">Trust &amp; Accountability</text>
+  <text x="510" y="344" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Merkle ledger, Bayesian trust</text>
+
+  <!-- ── Convergence ── -->
+
+  <rect x="735" y="127" width="200" height="52" rx="6" fill="#EFF6FF" stroke="#3B82F6" stroke-width="1" filter="url(#shadow)"/>
+  <text x="745" y="149" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#1E293B">Desired-State Reconciliation</text>
+  <text x="745" y="164" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Declare target, drive reality</text>
+
+  <rect x="735" y="187" width="200" height="52" rx="6" fill="#EFF6FF" stroke="#3B82F6" stroke-width="1" filter="url(#shadow)"/>
+  <text x="745" y="209" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#1E293B">Task Execution</text>
+  <text x="745" y="224" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Sealed outcomes, reasoning</text>
+
+  <rect x="735" y="247" width="200" height="52" rx="6" fill="#F5F3FF" stroke="#8B5CF6" stroke-width="1" filter="url(#shadow)"/>
+  <text x="745" y="269" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#1E293B">Experience &amp; Learning</text>
+  <text x="745" y="284" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">CBR, outcome feedback</text>
+
+  <!-- ── Operations ── -->
+
+  <rect x="970" y="127" width="200" height="52" rx="6" fill="#F0FDFA" stroke="#14B8A6" stroke-width="1" filter="url(#shadow)"/>
+  <text x="980" y="149" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#1E293B">Situation Awareness</text>
+  <text x="980" y="164" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Detect drift, trigger action</text>
+
+  <rect x="970" y="187" width="200" height="52" rx="6" fill="#F0FDFA" stroke="#14B8A6" stroke-width="1" filter="url(#shadow)"/>
+  <text x="980" y="209" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#1E293B">Channel Integration</text>
+  <text x="980" y="224" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Slack, Teams, SMS, email, MCP</text>
+
+  <rect x="970" y="247" width="200" height="52" rx="6" fill="#F5F3FF" stroke="#8B5CF6" stroke-width="1" filter="url(#shadow)"/>
+  <text x="980" y="269" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#1E293B">Communications Mesh</text>
+  <text x="980" y="284" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Speech acts, oversight, A2A</text>
+
+  <!-- ═══════════════ Cross-cutting Platform Services ═══════════════ -->
+
+  <rect x="25" y="378" width="1150" height="42" rx="6" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="1"/>
+  <text x="600" y="395" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#334155">Shared Platform Services</text>
+  <text x="600" y="412" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">CDI · Events · Tenancy · Expression Engine · Access Control · Notifications · Simulation — 178 modules</text>
+
+  <!-- ═══════════════ Foundation ═══════════════ -->
+
+  <rect x="25" y="435" width="1150" height="42" rx="6" fill="#1E293B"/>
+  <text x="600" y="453" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#F8FAFC">Quarkus / Spring Boot</text>
+  <text x="600" y="469" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#94A3B8">CDI / Spring DI · JPA / Hibernate · Virtual Threads · GraphQL · MCP</text>
+
+  <!-- ═══════════════ Feedback Loop ═══════════════ -->
+
+  <path d="M 1070 480 C 1100 548 100 548 130 480"
+        stroke="#EA580C" stroke-width="2.5" fill="none"
+        stroke-dasharray="8 4"
+        marker-end="url(#feedback-arrow)"/>
+  <text x="600" y="565" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#EA580C" font-weight="bold">Feedback Loop</text>
+
+  <!-- ═══════════════ Legend ═══════════════ -->
+
+  <g font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#64748B">
+    <rect x="310" y="590" width="12" height="12" rx="2" fill="#3B82F6"/>
+    <text x="328" y="600">Automation</text>
+    <rect x="430" y="590" width="12" height="12" rx="2" fill="#8B5CF6"/>
+    <text x="448" y="600">Coordination</text>
+    <rect x="568" y="590" width="12" height="12" rx="2" fill="#14B8A6"/>
+    <text x="586" y="600">Collaboration</text>
+    <rect x="706" y="590" width="12" height="12" rx="2" fill="#94A3B8"/>
+    <text x="724" y="600">Cross-cutting</text>
+  </g>
+</svg>
