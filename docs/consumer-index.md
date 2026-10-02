@@ -57,9 +57,9 @@ Key types: `InferenceModel`, `CaseRetriever`, `EmbeddingIngestor`, `CaseMemorySt
 
 ## Shared Patterns
 
-**Blocks** — agentic orchestration framework (supervisor, sequence, loop, parallel, voting, debate, HTN), conversation protocol, channel summarisation, trust routing strategies
+**Blocks** — agentic orchestration (5 SPIs, 8 topologies, YAML surface), BDI agent intelligence (beliefs, intentions, coalitions, judgment), social cognition framework (90+ types — mood, drives, narrative, goals, emergence), conversation protocol (epistemic common ground, convergence), temporal summarisation, prompt optimisation, agent memory hygiene, trust intake
 → [repos/casehub-blocks/consumer-guide.md](repos/casehub-blocks/consumer-guide.md)
-Key types: `ExecutionPlan`, `RoutingStrategy`, `DecompositionStrategy`, `ConversationProtocol`, `EventStreamBus`
+Key types: `ExecutionPlan`, `RoutingStrategy`, `DecompositionStrategy`, `ConversationProtocol`, `EventStreamBus`, `SocialCognitionRenderer`
 
 **Platform** — shared services: identity, preferences, notifications, expressions (MVEL/JQ/JEXL), DataSource alpha network, ACL, credentials, agent infrastructure
 → [repos/casehub-platform/consumer-guide.md](repos/casehub-platform/consumer-guide.md)
@@ -69,13 +69,13 @@ Key types: `CurrentPrincipal`, `PreferenceProvider`, `NotificationBridge`, `Expr
 
 ## UI & Frontend
 
-**Pages** — web component framework, data pipelines, push protocol, design tokens, form components
+**Pages** — web component framework, data pipelines, push protocol (JDBC + Redis EventStore), design tokens (OKLCH), form components, viz (15 chart types), ARIA scenario automation (hierarchical composition, MCP domain, virtual clock), visual builder (pre-alpha), step orchestration (barrier, signal, quorum, correlation)
 → [repos/casehub-pages/consumer-guide.md](repos/casehub-pages/consumer-guide.md)
-Key types: `ConfigurablePanel`, `DataReceiver`, `DataSourceMixin`, `PagesTable`, `FilterModel`
+Key types: `ConfigurablePanel`, `DataReceiver`, `DataSourceMixin`, `PagesTable`, `FilterModel`, `ScenarioCompiler`
 
-**Blocks UI** — 31 shared domain components (work items, trust, SLA, channel activity, oversight, compliance, document workbench, graph stencils)
+**Blocks UI** — 60 shared domain components across 9 packages (work items, trust, SLA, channel activity, oversight, compliance, document workbench, graph stencils, agent personality UI, evolution conductor, operations infrastructure, deliberation UI)
 → [repos/casehub-blocks-ui/consumer-guide.md](repos/casehub-blocks-ui/consumer-guide.md)
-Key components: `split-workbench`, `work-item-inbox`, `channel-feed`, `trust-score-panel`, `kpi-metric-row`
+Key components: `split-workbench`, `work-item-inbox`, `channel-feed`, `trust-score-panel`, `kpi-metric-row`, `agent-personality-editor`, `evolution-conductor`
 
 ---
 
@@ -85,17 +85,17 @@ Key components: `split-workbench`, `work-item-inbox`, `channel-feed`, `trust-sco
 → [repos/casehub-connectors/consumer-guide.md](repos/casehub-connectors/consumer-guide.md)
 Key types: `Connector`, `InboundConnector`, `ConnectorDiscovery`, `ChatPlatform`, `CalendarPlatform`
 
-**Workers** — HTTP, Camel, MCP, K8s, GitHub Actions, Script, Scenario worker runtimes + dispatch
+**Workers** — 7 transport backends (HTTP, Camel, MCP Streamable HTTP, K8s Job, GitHub Actions, Script, Scenario), unified fault pipeline with transport-specific classification, async completion with callback security, tenant-aware capability resolution, K8s restart recovery
 → [repos/casehub-workers/consumer-guide.md](repos/casehub-workers/consumer-guide.md)
-Key types: `WorkerRuntime`, `EndpointResolver`, `ExecutionManager`, `FaultEventHandler`
+Key types: `WorkerRuntime`, `EndpointResolver`, `ExecutionManager`, `FaultEventHandler`, `AsyncCompletionRegistry`
 
-**OpenClaw** — CaseHub ↔ OpenClaw bridge, worker provisioning, MCP tools, ChannelContextWindow
+**OpenClaw** — CaseHub ↔ OpenClaw bridge, @McpDomain (18 operations across 5 domains, tri-channel: REST + GraphQL + MCP), structural completion signaling (ADR-0004), cross-channel context intelligence, crash-safe oversight gates
 → [repos/casehub-openclaw/consumer-guide.md](repos/casehub-openclaw/consumer-guide.md)
-Key types: `OpenClawWorkerProvisioner`, `DirectCallBridge`, `OpenClawAgentProvider`, `OversightGateService`
+Key types: `OpenClawWorkerProvisioner`, `DirectCallBridge`, `OpenClawAgentProvider`, `OversightGateService`, `CommitmentMcpDomain`
 
-**Claudony** — CaseHub ↔ Claude CLI bridge, worker provisioning, system prompt layers, agent mesh
+**Claudony** — LLM Fleet Manager (declarative pools with auto-scaling, eviction SPI, metrics), remote terminal orchestration (tmux, crash recovery), CaseHub worker runtime (PROV-DM causal links), agent communication mesh (40+ MCP tools), browser workspace (12 Lit components)
 → [repos/claudony/consumer-guide.md](repos/claudony/consumer-guide.md)
-Key types: `ClaudonyWorkerProvisioner`, `ClaudonyCaseChannelProvider`, `ClaudonyMcpTools`
+Key types: `ClaudonyWorkerProvisioner`, `ClaudonyCaseChannelProvider`, `ClaudonyMcpTools`, `AgentPoolManager`, `FleetDefinition`
 
 **IoT** — device abstraction (Matter-aligned), Home Assistant + OpenHAB providers, SSE streaming, MCP tools
 → [repos/casehub-iot/consumer-guide.md](repos/casehub-iot/consumer-guide.md)
@@ -108,17 +108,17 @@ Key types: `DeviceRegistry`, `DeviceProvider`, `DeviceCommand`, `StateChangeEven
 
 ## Operations & Desired State
 
-**Desired State** — reconciliation runtime (Kubernetes controller pattern), goal compilation, fault policies, CBR
+**Desired State** — reconciliation runtime (domain-agnostic, human-in-the-loop), three-surface graph declaration (annotations, YAML, TypeScript), YAML plugin system (zero-Java resource lifecycle), goal compilation, CBR fault learning loop (retrieve-adapt-apply-revise), eidos org bridge, dual-framework (Quarkus + Spring)
 → [repos/casehub-desiredstate/consumer-guide.md](repos/casehub-desiredstate/consumer-guide.md)
 Key types: `DesiredStateGraph`, `GoalCompiler`, `NodeProvisioner`, `FaultPolicy`, `ReconciliationLoop`
 
-**RAS** — situational awareness, event correlation (ganglions), case triggers, situation detection
+**RAS** — situational awareness, 5 ganglion types (incl. SituationWatcher for meta-situations), composable signal architecture (7 sealed ChainMode variants), missed detection API (per-ganglion recall, drift classification), feedback-driven learning loop, situation replay & validation
 → [repos/casehub-ras/consumer-guide.md](repos/casehub-ras/consumer-guide.md)
-Key types: `Ganglion`, `SituationDefinitionProvider`, `SituationSource`, `CaseInputContributor`
+Key types: `Ganglion`, `SituationDefinitionProvider`, `SituationSource`, `CaseInputContributor`, `MissedDetectionRecorder`
 
-**Ops** — CaseHub deployment, K8s integration, compliance posture, infrastructure provisioning
+**Ops** — self-managing platform (engine case model against own infrastructure), container lifecycle (Podman SPI quad), 7 fully-implemented case descriptors, adaptive topology with hysteresis, @McpDomain (29 operations), canonical topology test matrix (5×4), K8s lifecycle (fabric8)
 → [repos/casehub-ops/consumer-guide.md](repos/casehub-ops/consumer-guide.md)
-Key types: `InfraNodeSpec`, `EvidenceCollector`, `ApplicationGoalCompiler`, `DeploymentGoalCompiler`
+Key types: `InfraNodeSpec`, `EvidenceCollector`, `ApplicationGoalCompiler`, `DeploymentGoalCompiler`, `PodmanClient`
 
 ---
 

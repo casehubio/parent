@@ -23,7 +23,10 @@
 | Case lifecycle | Define and execute multi-step case plans | repos/casehub-engine/capabilities/case-lifecycle.md | engine |
 | Work items | Human task inbox with SLA and delegation | repos/casehub-work/capabilities/work-items.md | work |
 | Worker dispatch | Automated task execution and routing | repos/casehub-worker/capabilities/worker-api.md | worker |
-| Desired state | Reconciliation runtime (K8s controller pattern) | repos/casehub-desiredstate/capabilities/reconciliation.md | desiredstate |
+| Desired state | Domain-agnostic reconciliation with human-in-the-loop | repos/casehub-desiredstate/capabilities/reconciliation.md | desiredstate |
+| Three-surface graph declaration | Annotations, YAML, TypeScript with cross-surface rules | — | desiredstate |
+| YAML plugins | Complete resource lifecycle in YAML, zero Java knowledge required | — | desiredstate |
+| CBR fault learning | Retrieve-adapt-apply-revise on reconciliation outcomes (CloudEvents) | — | desiredstate |
 
 ## Communication
 
@@ -61,7 +64,10 @@
 |------------|-------------|----------------|------|
 | Tamper-evident audit | Merkle MMR ledger, peer attestation, EigenTrust, Bayesian trust scoring | repos/casehub-ledger/capabilities/audit.md | ledger |
 | Document signing | EU DSS 6.2, per-tenant keystores, 4 cloud KMS providers | — | platform |
-| Situational awareness | Event correlation (ganglions), case triggers | repos/casehub-ras/capabilities/situational-awareness.md | ras |
+| Situational awareness | 5 ganglion types (incl. meta-situations), composable signal architecture | repos/casehub-ras/capabilities/situational-awareness.md | ras |
+| Meta-situation detection | Situations watching situations with cycle detection and deadlines | — | ras |
+| Missed detection | Per-ganglion recall measurement, drift classification | — | ras |
+| Situation replay | Deterministic replay using production pipeline for validation | — | ras |
 
 ## Data & Preferences
 
@@ -75,24 +81,45 @@
 
 | Capability | What it does | Consumer chunk | Repo |
 |------------|-------------|----------------|------|
-| Agentic orchestration | Supervisor, sequence, loop, parallel, voting, debate, HTN | repos/casehub-blocks/capabilities/orchestration.md | blocks |
-| Conversation protocol | Channel summarisation, trust routing strategies | repos/casehub-blocks/capabilities/conversation.md | blocks |
+| Agentic orchestration | 5 SPIs, 8 topologies (supervisor, sequence, loop, parallel, voting, debate, HTN), YAML surface | repos/casehub-blocks/capabilities/orchestration.md | blocks |
+| Conversation protocol | Epistemic common ground, convergence detection, structured deliberation | repos/casehub-blocks/capabilities/conversation.md | blocks |
+| Social cognition | 90+ types — mood, drives, narrative identity, goals, emergence, all rendering as PromptSections | — | blocks |
+| BDI agent intelligence | Beliefs, intentions, coalitions, judgment framework | — | blocks |
+| Prompt optimisation | Variant generation, few-shot injection, runtime customisation | — | blocks |
+| Agent memory hygiene | Confidence scoring, integrity checks, retention policies | — | blocks |
+| Decision narratives | Raw platform signals → human-readable accountability explanations | — | blocks |
 
 ## Integration & Connectors
 
 | Capability | What it does | Consumer chunk | Repo |
 |------------|-------------|----------------|------|
 | Chat platforms | Slack, Discord, Teams, email | repos/casehub-connectors/capabilities/chat-platforms.md | connectors |
-| Worker runtimes | HTTP, Camel, MCP, K8s, GitHub Actions, Script, Scenario | repos/casehub-workers/capabilities/runtimes.md | workers |
+| Worker runtimes | 7 transport backends (HTTP, Camel, MCP Streamable HTTP, K8s Job, GitHub Actions, Script, Scenario) | repos/casehub-workers/capabilities/runtimes.md | workers |
+| Multi-transport fault pipeline | Transport-specific fault classification converging into unified retry pipeline | — | workers |
+| Async completion | Callback security, tenant-aware capability resolution | — | workers |
+| K8s restart recovery | Reconstruct dispatch state from Job labels after application restart | — | workers |
 | IoT devices | Device abstraction (Matter-aligned), HA + OpenHAB | repos/casehub-iot/capabilities/devices.md | iot |
 | Event streams | Kafka, AMQP, Webhook, Poll, Camel connectors | repos/casehub-platform/capabilities/streams.md | platform |
+| LLM Fleet Management | Declarative pools with auto-scaling, eviction SPI, Micrometer metrics, real-time SSE | — | claudony |
+| Remote terminal orchestration | tmux-based fleet federation, circuit breaker, crash recovery | — | claudony |
+| @McpDomain tri-channel | Single-source API generation for REST + GraphQL + MCP | — | openclaw |
+| Structural completion signaling | Tool-call-first agent completion (ADR-0004), no text classification | — | openclaw |
+| Container lifecycle | Podman SPI quad — provisioner, adapter, fault policy, event source | — | ops |
+| Self-managing platform | Engine case model operating against own infrastructure | — | ops |
+| Adaptive topology | RAS situation-driven recompilation of deployment topology with hysteresis | — | ops |
 
 ## UI & Frontend
 
 | Capability | What it does | Consumer chunk | Repo |
 |------------|-------------|----------------|------|
-| Web components | Data pipelines, push protocol, design tokens | repos/casehub-pages/capabilities/web-components.md | pages |
-| Domain components | 31 shared components (work items, trust, SLA, channel) | repos/casehub-blocks-ui/capabilities/domain-components.md | blocks-ui |
+| Web components | Data pipelines, push protocol (JDBC + Redis), OKLCH design tokens | repos/casehub-pages/capabilities/web-components.md | pages |
+| Scenario automation | ARIA-based UI + domain automation with hierarchical composition, MCP domain, virtual clock | — | pages |
+| Visual builder | Dashboard authoring workbench with document model and component catalog (pre-alpha) | — | pages |
+| Step orchestration | Barrier, signal, quorum, correlation primitives; 13-layer DecoratorChain pipeline | — | pages |
+| Data visualisation | 15 chart types (heatmap, density, treemap, etc.), timeline, statistic components | — | pages |
+| Domain components | 60 shared components across 9 packages (work items, trust, SLA, channel, agent personality, evolution) | repos/casehub-blocks-ui/capabilities/domain-components.md | blocks-ui |
+| Agent personality UI | Visual agent identity configuration: catalog → avatar → manifest → profile | — | blocks-ui |
+| Evolution conductor | Operational dashboard for gated agent improvement streams | — | blocks-ui |
 
 ---
 

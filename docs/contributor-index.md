@@ -51,10 +51,10 @@ Module structure (api, runtime, rest, testing, memory, signing), save pipeline, 
 
 ## Integration Tier — bridges, UI, shared patterns
 
-### Blocks (agentic patterns)
-Single-module library: 6 packages (channel, conversation, agentic with 9 sub-packages, routing, routing.agent, summarisation), execution driver architecture, pattern builders, decomposition strategies, epistemic common ground
+### Blocks (agentic patterns & social cognition)
+25 modules (903 Java sources): compositional agentic orchestration (5 SPIs, 8 topology patterns, YAML surface), BDI agent intelligence (beliefs, intentions, coalitions, judgment), social cognition framework (90+ types — mood, drives, narrative identity, goals, emergence), structured conversation protocol (epistemic common ground, convergence detection), temporal event summarisation, AI-powered agent routing (LLM + CBR, 5 signal providers), prompt optimisation (variant generation, few-shot), agent memory hygiene, trust intake & vouching, speech pipeline (STT/TTS with social cognition)
 → [repos/casehub-blocks/contributor-guide.md](repos/casehub-blocks/contributor-guide.md)
-1 module · depends on: qhorus-api, work-api, engine-api, worker-api · depended on by: drafthouse, engine, aml, devtown, clinical, quarkmind
+25 modules · depends on: qhorus-api, work-api, engine-api, worker-api · depended on by: drafthouse, engine, aml, devtown, clinical, quarkmind
 
 ### Connectors (external integrations)
 29 modules: 5 platform SPIs (Chat, Calendar, Bank, Email, Document), Slack/Discord/Teams/SMS/WhatsApp/Signal/email/Google Calendar, notification bridge, MCP tools (14+), webhook infrastructure, simulation-ready
@@ -62,39 +62,39 @@ Single-module library: 6 packages (channel, conversation, agentic with 9 sub-pac
 29 modules · depends on: platform-api · depended on by: devtown, openclaw, chat-app
 
 ### Workers (execution runtimes)
-9 modules: HTTP, Camel, MCP, K8s, GitHub Actions, Script, Scenario backends. Four-class pattern (Runtime, Resolver, ExecutionManager, FaultEventHandler)
+19 modules: 7 transport backends (HTTP, Camel, MCP Streamable HTTP, K8s Job, GitHub Actions, Script, Scenario), unified fault pipeline with transport-specific classification, async completion registry with callback security, tenant-aware capability resolution, K8s restart recovery from Job labels, dual-framework (Quarkus + Spring)
 → [repos/casehub-workers/contributor-guide.md](repos/casehub-workers/contributor-guide.md)
-8 modules · depends on: worker-api, engine-api · depended on by: engine
+19 modules · depends on: worker-api, engine-api · depended on by: engine
 
 ### Desired State (reconciliation)
-API, runtime, testing, engine-adapter, work-adapter, ras-adapter, persistence-jpa, 4 examples. ReconciliationLoop (per-tenant event-driven), TransitionPlanner (Kahn's algorithm), LifecycleManager (dual CAS), CBR pipeline
+37 leaf modules (27 production + 10 examples, 566 Java sources): runtime-core (framework-neutral, 24 classes) + runtime (CDI wiring), three-surface graph declaration (annotations, YAML, TypeScript with cross-surface rules), YAML plugin system (complete resource types in YAML with declarative test framework), ReconciliationLoop (per-tenant event-driven), TransitionPlanner (Kahn's algorithm), LifecycleManager (dual CAS), CBR fault learning loop (retrieve-adapt-apply-revise with outcome CloudEvents), eidos org bridge, Spring JPA + Spring integration test, annotations processing (4 modules), TypeScript DSL (3 modules)
 → [repos/casehub-desiredstate/contributor-guide.md](repos/casehub-desiredstate/contributor-guide.md)
-11 modules · depends on: platform-api, engine-api, work-api, ras-api · depended on by: ops
+37 modules · depends on: platform-api, engine-api, work-api, ras-api · depended on by: ops
 
 ### RAS (situational awareness)
-RasEngine, SituationEvaluator (two-phase), 4 built-in ganglion types, clustered conflict handling, compaction, dynamic registration, 30+ Micrometer metrics
+RasEngine, SituationEvaluator (two-phase), 5 ganglion types (incl. SituationWatcher for meta-situations), composable signal architecture (7 sealed ChainMode variants), missed detection API (per-ganglion recall, drift classification), clustered conflict handling (dual-layer OCC), situation replay & validation, 30+ Micrometer metrics
 → [repos/casehub-ras/contributor-guide.md](repos/casehub-ras/contributor-guide.md)
-8 modules · depends on: platform-api · depended on by: desiredstate, iot, ops
+9 modules · depends on: platform-api · depended on by: desiredstate, iot, ops
 
-### Pages (web framework)
-TypeScript packages: data pipeline, event system, table, form, primitives, tokens, viz, graph-core, graph-renderer. Java backend: auth, runtime, push wire protocol, Quinoa integration
+### Pages (web framework & scenario automation)
+28 TS packages + 17 Java modules: data pipeline, event system, table, form, primitives, tokens, viz (15 chart types incl. heatmap, density, treemap), graph-core + graph-renderer (ELK/stack-column/radial layout), diagram-core, ARIA scenario framework (hierarchical composition, MCP domain, virtual clock), visual builder (pre-alpha), schema (Zod), filter-bar, property-palette. Java: auth, runtime, push (JDBC + Redis EventStore), MCP/GraphQL ARIA resolver, scenario compiler, scenario-client, data-iotdb, data-prometheus, Quinoa integration
 → [repos/casehub-pages/contributor-guide.md](repos/casehub-pages/contributor-guide.md)
-15+ packages · depends on: nothing · depended on by: blocks-ui, all app UIs
+28 TS + 17 Java modules · depends on: nothing · depended on by: blocks-ui, all app UIs
 
 ### Blocks UI (shared components)
-31 Lit web components: data patterns (DataSourceMixin, EventStreamController, TrendSourceMixin), Shadow DOM conventions, portal resolution, document workbench (9 panels), graph stencils
+60 components across 9 packages (479 TS source files): data patterns (DataSourceMixin, EventStreamController, TrendSourceMixin), Shadow DOM conventions, portal resolution, document workbench (9 panels), graph stencils, agent personality UI (catalog → avatar → manifest → profile), evolution conductor dashboard, operations infrastructure (cluster, service, topology, reconciliation), trust visualization (score → routing → decision → feedback → audit), structured deliberation UI (convergence + epistemic common ground)
 → [repos/casehub-blocks-ui/contributor-guide.md](repos/casehub-blocks-ui/contributor-guide.md)
-31 components · depends on: pages · depended on by: life, devtown, clinical, aml, chat-app, claudony, drafthouse
+60 components · depends on: pages · depended on by: life, devtown, clinical, aml, chat-app, claudony, drafthouse
 
 ### OpenClaw (OpenClaw bridge)
-4 modules: core, casehub, app, plugin. DirectCallBridge, OversightGateService, 1:N agent registry, parallel COMMAND routing, MCP endpoint (8 tools), PluginTokenBridgeMechanism
+3 Maven modules + 2 non-Maven packages (TS plugin, Python SDK). DirectCallBridge (sync-over-async), OversightGateService (crash-safe persistence), @McpDomain pioneer (18 operations across 5 domains, tri-channel: REST + GraphQL + MCP), structural completion signaling (ADR-0004: tool-call-first, no text classification), cross-channel context intelligence (ring buffer → system prompts), 3 reference multi-agent scenarios
 → [repos/casehub-openclaw/contributor-guide.md](repos/casehub-openclaw/contributor-guide.md)
-4 modules · depends on: qhorus, engine-api, platform-agent-api · depended on by: life
+5 deliverables · depends on: qhorus, engine-api, platform-agent-api · depended on by: life
 
-### Claudony (Claude CLI bridge)
-3 modules: core, casehub, app. System prompt three-layer model, terminal streaming, agent mesh framework, channel architecture, persistence
+### Claudony (LLM fleet management & Claude CLI bridge)
+4 modules (164 main + 142 test sources): LLM Fleet Manager (43-class subsystem — declarative pools with suspend/resume, auto-scaling with step + target-tracking, eviction SPI, Micrometer metrics + IoTDB bridge, real-time SSE), remote terminal orchestration (tmux-based, fleet federation, circuit breaker, crash recovery), CaseHub worker runtime (signal drain pattern, W3C PROV-DM causal links), agent communication mesh (normative reference impl, 3 participation levels, 40+ MCP tools), browser workspace (12 Lit components — pool dashboard, action inbox, case browser)
 → [repos/claudony/contributor-guide.md](repos/claudony/contributor-guide.md)
-3 modules · depends on: qhorus, engine-api, platform · depended on by: none (standalone)
+4 modules · depends on: qhorus, engine-api, platform · depended on by: none (standalone)
 
 ### IoT (device management)
 12 modules: api, runtime, Home Assistant provider, OpenHAB provider (Equipment + Thing paths), bridge (wire protocol, 7 sealed variants), webapp (REST, case engine, ganglia, CBR, AI resolution), testing, simulation
@@ -115,5 +115,5 @@ TypeScript packages: data pipeline, event system, table, form, primitives, token
 | **SOC** | api, app | Alert ingestion pipeline (CloudEvent → Ganglion → Case), 6 workers, dual rule/LLM architecture | [repos/casehub-soc/contributor-guide.md](repos/casehub-soc/contributor-guide.md) |
 | **FSI Trading** | api, app | Strategy evaluation, order lifecycle, P&L attestation, human approval gates | [repos/casehub-fsitrading/contributor-guide.md](repos/casehub-fsitrading/contributor-guide.md) |
 | **QuarkMind** | single module | 58 strategy archetypes, 12 LLM agents, Drools CEP enemy classifier, coaching pipeline | [repos/quarkmind/contributor-guide.md](repos/quarkmind/contributor-guide.md) |
-| **Ops** | api, infra, deployment, compliance, iot, app, testing | K8s lifecycle (fabric8), adaptive topology, case model (drift remediation + scaling), 3-layer approval | [repos/casehub-ops/contributor-guide.md](repos/casehub-ops/contributor-guide.md) |
+| **Ops** | api, deployment, infra, compliance, container, iot[deprecated], app, testing, topology-tests, examples | Self-managing platform (engine case model against own infrastructure), container lifecycle (Podman — SPI quad, active event stream), 7 case descriptors (fully implemented), adaptive topology with hysteresis, @McpDomain (29 operations), K8s lifecycle (fabric8), canonical topology test matrix (5×4, 14 YAML exemplars) | [repos/casehub-ops/contributor-guide.md](repos/casehub-ops/contributor-guide.md) |
 | **Chat App** | single module | Qhorus-backed persistence, WebSocket protocol (7 datasets), frontend app shell | [repos/casehub-chat-app/contributor-guide.md](repos/casehub-chat-app/contributor-guide.md) |
