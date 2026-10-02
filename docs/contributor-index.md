@@ -8,14 +8,14 @@
 ## Foundation Tier — shared primitives, zero domain knowledge
 
 ### Engine (case orchestration)
-Module structure, handler pipeline, routing architecture, DAG execution, CaseDefinitionRegistry, tenancy enforcement, SPI placement rules, virtual thread migration
+Blackboard Architecture (reactive choreography, not DAG), handler pipeline, composable signal routing (5 providers), planning strategies (GOAP, HTN, DAG), CaseDefinitionRegistry, tenancy enforcement, SPI placement rules, virtual thread migration, YAML-CBR bridge, evolution conductor
 → [repos/casehub-engine/contributor-guide.md](repos/casehub-engine/contributor-guide.md)
-17 modules · depends on: platform-api, worker-api · depended on by: all application repos
+68 modules (44 non-example) · depends on: platform-api, worker-api · depended on by: all application repos
 
 ### Work (human tasks)
-Module architecture (20+ modules), core/runtime split, engine adapter, progress model (6 modules), filter engine, template versioning, flow bridge
+Module architecture (38 modules, 22 active), core/runtime split, progress model (6 modules), filter engine, template versioning, flow bridge, SLA breach decision algebra, M-of-N group completion, saga compensation
 → [repos/casehub-work/contributor-guide.md](repos/casehub-work/contributor-guide.md)
-20+ modules · depends on: platform-api · depended on by: engine, clinical, aml, life, devtown
+38 modules (22 active) · depends on: platform-api · depended on by: engine, clinical, aml, life, devtown
 
 ### Worker (automated task primitives)
 Execution model (12-step DefaultWorkerExecutor pipeline), SchemaValidator, Guard caching, typed function builders, persistent worker variant
@@ -23,14 +23,14 @@ Execution model (12-step DefaultWorkerExecutor pipeline), SchemaValidator, Guard
 3 modules · depends on: platform-api · depended on by: engine, desiredstate
 
 ### Qhorus (agent communication)
-Dispatch gate pipeline, channel gateway, protocol enforcement, delivery service, 13 store interfaces, evidential checker, reactive tier (retired)
+Dispatch gate pipeline, channel gateway, protocol enforcement, delivery service, 29 store interfaces, evidential checker, A2A protocol bridge, EU AI Act compliance reporting, 11 watchdog types
 → [repos/casehub-qhorus/contributor-guide.md](repos/casehub-qhorus/contributor-guide.md)
-14 modules · depends on: ledger, platform-api · depended on by: claudony, engine, all app repos
+23 modules · depends on: ledger, platform-api · depended on by: claudony, engine, all app repos
 
 ### Eidos (agent identity)
-8 modules, BehavioralSignalStore (signal-parameterized API), disposition health/evolution, Jungian personality framework, render pipeline, template system, eval harness (10 judges, 18 profiles)
+14 modules, BehavioralSignalStore (signal-parameterized API), disposition health/evolution, Jungian personality framework, render pipeline, template system, eval harness (10 judges, 18 profiles), voice profiles, goal lifecycle (6 states), org hierarchy
 → [repos/casehub-eidos/contributor-guide.md](repos/casehub-eidos/contributor-guide.md)
-8 modules · depends on: ledger, langchain4j · depended on by: engine (optional)
+14 modules · depends on: ledger, langchain4j · depended on by: engine (optional)
 
 ### Ledger (audit & trust)
 Module structure (api, runtime, rest, testing, memory, signing), save pipeline, CDI bean graph, repository architecture (tenant/cross-tenant/unscoped), trust routing events, privacy architecture, enricher pipeline
@@ -38,14 +38,14 @@ Module structure (api, runtime, rest, testing, memory, signing), save pipeline, 
 14 modules · depends on: nothing (Quarkus + Hibernate only) · depended on by: work, qhorus, engine
 
 ### Neocortex (AI & knowledge)
-36 modules: inference (ONNX, task adapters), RAG (3-leg hybrid, cross-encoder, query expansion, tracking), CBR (typed features, similarity specs, plan adaptation, temporal decay, reconciliation), memory (5 backends), corpus, fusion
+61 modules: inference (ONNX, task adapters, SPLADE, BGE-M3), RAG (3-leg hybrid, corrective RAG, query expansion), CBR (typed features, DTW, plan adaptation, ensemble analysis), memory (7 backends, salience ordering, GDPR erasure), knowledge graph/MindMap (Thing model, dynamic types), cognitive architecture (goal cognition, OCC emotions, progressive attention, personality calibration)
 → [repos/casehub-neocortex/contributor-guide.md](repos/casehub-neocortex/contributor-guide.md)
-36 modules · depends on: platform-api, LangChain4j, Qdrant · depended on by: eidos, engine, all app repos
+61 modules · depends on: platform-api, LangChain4j, Qdrant · depended on by: eidos, engine, all app repos
 
 ### Platform (shared services)
-~50 modules: identity, preferences, notifications (subscriptions, dispatch, digest, delivery), DataSource alpha network, expression engines (MVEL/JQ/JEXL), DID infrastructure, ACL, credentials, agent infrastructure, CloudEvent dispatcher
+178 modules: identity, preferences, notifications (14 modules, full event-driven pipeline), DataSource alpha network, expression engines (MVEL/JQ/JEXL), DID infrastructure, ACL, credentials, agent infrastructure (24 modules, 7 backends), simulation framework (14 modules), callback system, MCP hierarchical model, document signing (EU DSS 6.2), Spring Boot dual-framework (~30 modules)
 → [repos/casehub-platform/contributor-guide.md](repos/casehub-platform/contributor-guide.md)
-~50 modules · depends on: nothing · depended on by: everything
+178 modules · depends on: nothing · depended on by: everything
 
 ---
 
@@ -57,9 +57,9 @@ Single-module library: 6 packages (channel, conversation, agentic with 9 sub-pac
 1 module · depends on: qhorus-api, work-api, engine-api, worker-api · depended on by: drafthouse, engine, aml, devtown, clinical, quarkmind
 
 ### Connectors (external integrations)
-16 modules: core SPI, Slack/Discord/Teams/email/Google Calendar implementations, chat SPI, notification bridge, MCP tools, webhook infrastructure
+29 modules: 5 platform SPIs (Chat, Calendar, Bank, Email, Document), Slack/Discord/Teams/SMS/WhatsApp/Signal/email/Google Calendar, notification bridge, MCP tools (14+), webhook infrastructure, simulation-ready
 → [repos/casehub-connectors/contributor-guide.md](repos/casehub-connectors/contributor-guide.md)
-16 modules · depends on: platform-api · depended on by: devtown, openclaw, chat-app
+29 modules · depends on: platform-api · depended on by: devtown, openclaw, chat-app
 
 ### Workers (execution runtimes)
 9 modules: HTTP, Camel, MCP, K8s, GitHub Actions, Script, Scenario backends. Four-class pattern (Runtime, Resolver, ExecutionManager, FaultEventHandler)
@@ -97,9 +97,9 @@ TypeScript packages: data pipeline, event system, table, form, primitives, token
 3 modules · depends on: qhorus, engine-api, platform · depended on by: none (standalone)
 
 ### IoT (device management)
-13 modules: api, runtime, Home Assistant provider, OpenHAB provider (Equipment + Thing paths), bridge (wire protocol, 7 sealed variants), webapp (REST, case engine, ganglia, CBR, AI resolution), testing
+12 modules: api, runtime, Home Assistant provider, OpenHAB provider (Equipment + Thing paths), bridge (wire protocol, 7 sealed variants), webapp (REST, case engine, ganglia, CBR, AI resolution), testing, simulation
 → [repos/casehub-iot/contributor-guide.md](repos/casehub-iot/contributor-guide.md)
-13 modules · depends on: platform-api, ras-api · depended on by: ops, life
+12 modules · depends on: platform-api, ras-api · depended on by: ops, life
 
 ---
 

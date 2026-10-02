@@ -31,6 +31,9 @@
 |------------|-------------|----------------|------|
 | Notifications | Delivery pipeline (digest/suppress/immediate), subscriptions, SSE | [notifications.md](repos/casehub-platform/capabilities/notifications.md) | platform |
 | Speech acts | Commitments, channels, message dispatch, topic projections | repos/casehub-qhorus/capabilities/speech-acts.md | qhorus |
+| EU AI Act compliance | Compliance evidence generation with digital signing (Art.12) | — | qhorus |
+| A2A protocol bridge | Google A2A protocol with governance layer | — | qhorus |
+| Communication watchdogs | 11 watchdog types detecting coordination pathologies | — | qhorus |
 
 ## AI & Knowledge
 
@@ -45,12 +48,19 @@
 | YAML processing | Truthiness, VariableResolver, CsvParser, ForEachExpander | repos/casehub-platform/capabilities/yaml-core.md | platform |
 | TypeScript execution | TsExecutor SPI, JVM-hosted TS evaluation | repos/casehub-platform/capabilities/ts-core.md | platform |
 | Signing | Cryptographic signing and verification | repos/casehub-platform/capabilities/signing.md | platform |
+| Simulation framework | Generated CDI decorators, corpus strategies, temporal events, verification | — | platform |
+| Callback system | Generated remote SPI callbacks (10 modules) | — | platform |
+| MCP hierarchical model | Auto-discovered tool registration, landscape aggregation | — | platform |
+| Cognitive architecture | Goal cognition (5 phases), OCC emotions, progressive attention, personality calibration | — | neocortex |
+| Agent memory | 7 backends, salience ordering, GDPR erasure | — | neocortex |
+| Knowledge graph | Thing model, dynamic types, confidence, PAD | — | neocortex |
 
 ## Audit & Trust
 
 | Capability | What it does | Consumer chunk | Repo |
 |------------|-------------|----------------|------|
-| Tamper-evident audit | Merkle MMR ledger, peer attestation, EigenTrust | repos/casehub-ledger/capabilities/audit.md | ledger |
+| Tamper-evident audit | Merkle MMR ledger, peer attestation, EigenTrust, Bayesian trust scoring | repos/casehub-ledger/capabilities/audit.md | ledger |
+| Document signing | EU DSS 6.2, per-tenant keystores, 4 cloud KMS providers | — | platform |
 | Situational awareness | Event correlation (ganglions), case triggers | repos/casehub-ras/capabilities/situational-awareness.md | ras |
 
 ## Data & Preferences

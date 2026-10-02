@@ -13,13 +13,13 @@
 → [repos/casehub-engine/consumer-guide.md](repos/casehub-engine/consumer-guide.md)
 Key types: `CaseDefinition`, `CasePlanModel`, `PlanItem`, `Worker`, `Binding`, `GoalExpression`, `WorkerResult`
 
-**Work** — human task inbox, WorkItem lifecycle (11 statuses), SLA, delegation, M-of-N quorum, progress tracking
+**Work** — human task inbox, WorkItem lifecycle (12 statuses), SLA, delegation, M-of-N quorum, progress tracking, saga compensation
 → [repos/casehub-work/consumer-guide.md](repos/casehub-work/consumer-guide.md)
 Key types: `WorkItem`, `WorkerSelectionStrategy`, `SlaBreachPolicy`, `SpawnPort`, `ProgressInstance`
 
 **Worker** — automated task primitives: `Worker`, `Capability`, typed `WorkerFunction<T,R>`, execution policy
 → [repos/casehub-worker/consumer-guide.md](repos/casehub-worker/consumer-guide.md)
-Key types: `Worker`, `Capability`, `WorkerFunction<T,R>`, `WorkerResult<R>`, `WorkerScope`
+Key types: `Worker`, `Capability`, `WorkerFunction<T,R>`, `WorkerResult<R>` (with `reasoning`), `WorkerScope`
 
 ---
 
