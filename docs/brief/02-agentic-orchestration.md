@@ -180,6 +180,28 @@ with the ledger's Bayesian trust scores and the engine's routing
 policies — trust is not a number, it is a signal in a composable
 routing decision.
 
+### Capacity-Aware Routing
+
+Agents are routed away from overloaded channels automatically.
+Commitment-count capacity sources track per-channel load in real
+time. Per-channel capacity thresholds trigger redistribution when
+an agent's commitment count exceeds its budget. A redistribution
+executor rebalances work across available agents. MCP tools expose
+capacity state for operational visibility and manual override.
+Capacity routing composes with trust routing and CBR routing — the
+system considers load alongside trustworthiness and historical
+performance when making dispatch decisions.
+
+### Broadcast Channels
+
+BROADCAST is a first-class channel semantic alongside direct and
+group channels. `BroadcastMembershipManager` automatically adds and
+removes participants as their capabilities change — agents join
+broadcast channels for topics they can handle and leave when they
+can't. `NotificationChannelBackend` bridges broadcast channels into
+the platform's notification pipeline, enabling subscription-based
+delivery (digest, suppress, immediate) for broadcast messages.
+
 ### Stigmergic Coordination (Hive Mind)
 
 A fundamentally different coordination paradigm. Stigmergy — from
@@ -390,7 +412,7 @@ integrate — everything is already in the same context.
 
 ## Architecture
 
-![Agentic Orchestration Architecture](images/brief/02-orchestration-architecture.svg)
+![Agentic Orchestration Architecture](images/orchestration-architecture.svg)
 
 *Five composable SPIs drive pattern execution. The communications
 mesh enforces normative accountability on every agent interaction.

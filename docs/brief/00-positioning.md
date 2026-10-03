@@ -47,7 +47,7 @@ Declaration → Intelligence → Control → Convergence → Operations
 | Stage | What happens |
 |-------|-------------|
 | **Declaration** | Define intent in YAML — cases, agents, topology, bindings |
-| **Intelligence** | AI agents execute with agentic patterns — supervisor, debate, voting, HTN planning |
+| **Intelligence** | AI agents execute with agentic patterns — supervisor, debate, voting, HTN (Hierarchical Task Network) planning |
 | **Control** | Enterprise-grade execution with oversight gates, trust routing, and tamper-evident audit |
 | **Convergence** | Desired-state reconciliation drives reality toward declared intent |
 | **Operations** | Situation awareness detects drift and triggers corrective action |
@@ -60,13 +60,15 @@ trigger new cases. The platform is self-correcting.
 ### Breadth of Homogeneous Consistency
 
 500+ modules across the foundation, every one sharing the same CDI
-model, event system, type safety, tenancy model, and audit trail.
+(Contexts and Dependency Injection) model, event system, type safety,
+tenancy model, and audit trail.
 Capabilities compose without integration glue. This isn't bolted-together
 best-of-breed — it's one coherent system.
 
 ### Written by LLMs for LLMs
 
-The platform is AI-native by design. Every API, DSL, SPI, and MCP tool
+The platform is AI-native by design. Every API, DSL, SPI (Service
+Provider Interface), and MCP tool
 is designed so that LLMs can effectively operate the platform. The
 entire development process uses LLMs, and the platform is built for
 LLM operability from the ground up.
@@ -81,7 +83,8 @@ YAML, executed on enterprise Java, with full accountability.
 ### Accountability by Default
 
 Every agent decision produces a tamper-evident audit entry in a Merkle
-MMR ledger. Trust is scored via Bayesian EigenTrust with exponential
+MMR (Mountain Range) ledger. Trust is scored via Bayesian EigenTrust
+with exponential
 decay. Oversight gates enforce M-of-N quorum approval for consequential
 actions. EU AI Act Art.12 compliance evidence is generated automatically.
 Privacy is structural — even erasure receipts are tamper-evident.
@@ -94,18 +97,6 @@ automation, home automation with IoT devices, security operations, and
 financial trading. Domain experts express their domain in YAML — the
 platform provides the automation, coordination, and collaboration
 infrastructure.
-
-## Market Position
-
-| | CaseHub | LangChain / CrewAI / AutoGen | Camunda / jBPM | Kubernetes |
-|---|---|---|---|---|
-| Lifecycle stage | All five | Intelligence only | Control only | Convergence only |
-| Accountability | Structural (Merkle) | None | Audit log (appendable) | None |
-| Agent coordination | Speech acts, trust routing, oversight | Tool calling | Service tasks | None |
-| Accessibility | YAML + Java | Python | BPMN XML | YAML (infra only) |
-| Domain portability | Any vertical | AI-specific | Process-specific | Infra-specific |
-
----
 
 ## Themes
 
@@ -165,7 +156,7 @@ throughout — not afterthoughts. The platform is its own best operator.
 
 Structured agent identity with vocabulary-grounded descriptors and
 subsumption matching. Goal cognition with 5-phase lifecycle. OCC
-emotional model. Progressive attention. Personality calibration. This is
+(Ortony, Clore & Collins) emotional appraisal model. Progressive attention. Personality calibration. This is
 where the learning loop (Theme 3) leads when combined with agent memory
 and behavioural signals — positioned as the trajectory, not a headline
 claim. Research-grade, actively developed, not yet proven at scale.

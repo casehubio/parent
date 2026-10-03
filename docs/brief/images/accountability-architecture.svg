@@ -1,0 +1,187 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 680">
+  <defs>
+    <filter id="shadow" x="-4%" y="-4%" width="108%" height="116%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.08"/>
+    </filter>
+    <marker id="gate-arrow" viewBox="0 0 8 6" refX="8" refY="3" markerWidth="8" markerHeight="6" orient="auto">
+      <path d="M0,0 L8,3 L0,6 z" fill="#8B5CF6"/>
+    </marker>
+    <marker id="flow-arrow" viewBox="0 0 10 8" refX="10" refY="4" markerWidth="10" markerHeight="8" orient="auto">
+      <path d="M0,0 L10,4 L0,8 z" fill="#94A3B8"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="680" fill="#FAFBFC"/>
+
+  <!-- Title -->
+  <text x="600" y="32" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="bold" fill="#0F172A">Accountability Architecture</text>
+  <text x="600" y="54" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#64748B" font-style="italic">Woven through every interaction — not bolted on</text>
+
+  <!-- ═══════════════ Agent Interaction Bar ═══════════════ -->
+  <rect x="30" y="75" width="1140" height="42" rx="6" fill="#1E293B" filter="url(#shadow)"/>
+  <text x="600" y="93" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#F8FAFC">Agent Interaction</text>
+  <text x="600" y="109" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#94A3B8">Every message, decision, and action enters the dispatch gate pipeline</text>
+
+  <!-- Down arrow -->
+  <line x1="600" y1="119" x2="600" y2="135" stroke="#94A3B8" stroke-width="2" marker-end="url(#flow-arrow)"/>
+
+  <!-- ═══════════════ 12-Step Dispatch Gate Pipeline ═══════════════ -->
+  <rect x="30" y="140" width="1140" height="80" rx="8" fill="#F5F3FF" stroke="#8B5CF6" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="600" y="160" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#3730A3">12-Step Dispatch Gate Pipeline</text>
+
+  <!-- Gate steps -->
+  <rect x="45" y="170" width="85" height="38" rx="4" fill="#FFFFFF" stroke="#C4B5FD" stroke-width="1"/>
+  <text x="87" y="194" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="bold" fill="#1E293B">ACL Check</text>
+
+  <line x1="132" y1="189" x2="143" y2="189" stroke="#8B5CF6" stroke-width="1.5" marker-end="url(#gate-arrow)"/>
+
+  <rect x="145" y="170" width="85" height="38" rx="4" fill="#FFFFFF" stroke="#C4B5FD" stroke-width="1"/>
+  <text x="187" y="194" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="bold" fill="#1E293B">Rate Limit</text>
+
+  <line x1="232" y1="189" x2="243" y2="189" stroke="#8B5CF6" stroke-width="1.5" marker-end="url(#gate-arrow)"/>
+
+  <rect x="245" y="170" width="85" height="38" rx="4" fill="#FFFFFF" stroke="#C4B5FD" stroke-width="1"/>
+  <text x="287" y="194" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="bold" fill="#1E293B">Trust Gate</text>
+
+  <line x1="332" y1="189" x2="343" y2="189" stroke="#8B5CF6" stroke-width="1.5" marker-end="url(#gate-arrow)"/>
+
+  <rect x="345" y="170" width="95" height="38" rx="4" fill="#FFFFFF" stroke="#C4B5FD" stroke-width="1"/>
+  <text x="392" y="194" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="bold" fill="#1E293B">Protocol Eval</text>
+
+  <line x1="442" y1="189" x2="453" y2="189" stroke="#8B5CF6" stroke-width="1.5" marker-end="url(#gate-arrow)"/>
+
+  <rect x="455" y="170" width="100" height="38" rx="4" fill="#FFFFFF" stroke="#C4B5FD" stroke-width="1"/>
+  <text x="505" y="194" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="bold" fill="#1E293B">Speech Act Valid</text>
+
+  <line x1="557" y1="189" x2="568" y2="189" stroke="#8B5CF6" stroke-width="1.5" marker-end="url(#gate-arrow)"/>
+
+  <rect x="570" y="170" width="95" height="38" rx="4" fill="#FFFFFF" stroke="#C4B5FD" stroke-width="1"/>
+  <text x="617" y="194" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="bold" fill="#1E293B">Quorum Check</text>
+
+  <line x1="667" y1="189" x2="678" y2="189" stroke="#8B5CF6" stroke-width="1.5" marker-end="url(#gate-arrow)"/>
+
+  <rect x="680" y="170" width="100" height="38" rx="4" fill="#FFFFFF" stroke="#C4B5FD" stroke-width="1"/>
+  <text x="730" y="194" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="bold" fill="#1E293B">Conflict Check</text>
+
+  <line x1="782" y1="189" x2="793" y2="189" stroke="#8B5CF6" stroke-width="1.5" marker-end="url(#gate-arrow)"/>
+
+  <rect x="795" y="170" width="95" height="38" rx="4" fill="#FFFFFF" stroke="#C4B5FD" stroke-width="1"/>
+  <text x="842" y="194" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="bold" fill="#1E293B">Watchdog Eval</text>
+
+  <line x1="892" y1="189" x2="903" y2="189" stroke="#8B5CF6" stroke-width="1.5" marker-end="url(#gate-arrow)"/>
+
+  <!-- Remaining gates abbreviated -->
+  <rect x="905" y="170" width="50" height="38" rx="4" fill="#FFFFFF" stroke="#C4B5FD" stroke-width="1"/>
+  <text x="930" y="194" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#64748B">···</text>
+
+  <line x1="957" y1="189" x2="968" y2="189" stroke="#8B5CF6" stroke-width="1.5" marker-end="url(#gate-arrow)"/>
+
+  <rect x="970" y="170" width="95" height="38" rx="4" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="1.5"/>
+  <text x="1017" y="194" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="bold" fill="#5B21B6">Ledger Entry</text>
+
+  <line x1="1067" y1="189" x2="1078" y2="189" stroke="#8B5CF6" stroke-width="1.5" marker-end="url(#gate-arrow)"/>
+
+  <rect x="1080" y="170" width="75" height="38" rx="4" fill="#DCFCE7" stroke="#86EFAC" stroke-width="1"/>
+  <text x="1117" y="194" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="bold" fill="#166534">Deliver</text>
+
+  <!-- Down arrows from pipeline to three pillars -->
+  <line x1="230" y1="222" x2="230" y2="260" stroke="#94A3B8" stroke-width="2" marker-end="url(#flow-arrow)"/>
+  <line x1="600" y1="222" x2="600" y2="260" stroke="#94A3B8" stroke-width="2" marker-end="url(#flow-arrow)"/>
+  <line x1="970" y1="222" x2="970" y2="260" stroke="#94A3B8" stroke-width="2" marker-end="url(#flow-arrow)"/>
+
+  <!-- ═══════════════ Three Pillars Row ═══════════════ -->
+
+  <!-- Left: Merkle MMR Ledger -->
+  <rect x="30" y="265" width="350" height="200" rx="8" fill="#FFFFFF" stroke="#3B82F6" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="205" y="290" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#1E293B">Merkle MMR Ledger</text>
+  <text x="205" y="308" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Tamper-evident append-only chain</text>
+
+  <!-- Chain visualization -->
+  <rect x="55" y="325" width="60" height="35" rx="4" fill="#EFF6FF" stroke="#93C5FD" stroke-width="1"/>
+  <text x="85" y="347" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#1E293B">Entry N</text>
+
+  <line x1="117" y1="342" x2="132" y2="342" stroke="#3B82F6" stroke-width="1.5" marker-end="url(#gate-arrow)"/>
+
+  <rect x="135" y="325" width="60" height="35" rx="4" fill="#EFF6FF" stroke="#93C5FD" stroke-width="1"/>
+  <text x="165" y="347" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#1E293B">Entry N+1</text>
+
+  <line x1="197" y1="342" x2="212" y2="342" stroke="#3B82F6" stroke-width="1.5" marker-end="url(#gate-arrow)"/>
+
+  <rect x="215" y="325" width="60" height="35" rx="4" fill="#EFF6FF" stroke="#93C5FD" stroke-width="1"/>
+  <text x="245" y="347" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#1E293B">Entry N+2</text>
+
+  <line x1="277" y1="342" x2="292" y2="342" stroke="#3B82F6" stroke-width="1.5" marker-end="url(#gate-arrow)"/>
+
+  <rect x="295" y="325" width="60" height="35" rx="4" fill="#DBEAFE" stroke="#3B82F6" stroke-width="1.5"/>
+  <text x="325" y="347" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="bold" fill="#1E293B">Peak</text>
+
+  <text x="205" y="385" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Ed25519 digital signatures</text>
+  <text x="205" y="400" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Mountain Range append structure</text>
+  <text x="205" y="418" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Privacy-preserving: hash commitment</text>
+  <text x="205" y="436" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">without exposing entry content</text>
+  <text x="205" y="454" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#3B82F6">Cannot alter without detection</text>
+
+  <!-- Center: Bayesian EigenTrust -->
+  <rect x="410" y="265" width="380" height="200" rx="8" fill="#FFFFFF" stroke="#8B5CF6" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="600" y="290" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#1E293B">Bayesian EigenTrust</text>
+  <text x="600" y="308" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Trust scored, not assumed</text>
+
+  <rect x="425" y="320" width="170" height="55" rx="6" fill="#F5F3FF" stroke="#DDD6FE" stroke-width="1"/>
+  <text x="510" y="340" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="bold" fill="#1E293B">Exponential Decay</text>
+  <text x="510" y="356" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#64748B">Recent outcomes weighted</text>
+  <text x="510" y="369" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#64748B">more than distant history</text>
+
+  <rect x="605" y="320" width="170" height="55" rx="6" fill="#F5F3FF" stroke="#DDD6FE" stroke-width="1"/>
+  <text x="690" y="340" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="bold" fill="#1E293B">Asymmetric Valence</text>
+  <text x="690" y="356" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#64748B">Failures erode trust faster</text>
+  <text x="690" y="369" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#64748B">than successes build it</text>
+
+  <text x="600" y="400" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Per-agent, per-capability trust scores</text>
+  <text x="600" y="418" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Feeds into signal routing decisions</text>
+  <text x="600" y="436" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Attestation-based: observed outcomes, not claims</text>
+  <text x="600" y="454" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#8B5CF6">Trust adapts continuously from execution</text>
+
+  <!-- Right: Protocol Enforcement -->
+  <rect x="820" y="265" width="350" height="200" rx="8" fill="#FFFFFF" stroke="#14B8A6" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="995" y="290" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#1E293B">Protocol Enforcement</text>
+  <text x="995" y="308" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Normative accountability on every interaction</text>
+
+  <rect x="840" y="322" width="140" height="40" rx="6" fill="#F0FDFA" stroke="#99F6E4" stroke-width="1"/>
+  <text x="910" y="338" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="bold" fill="#1E293B">Advisory</text>
+  <text x="910" y="354" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#64748B">Log violation, proceed</text>
+
+  <rect x="840" y="370" width="140" height="40" rx="6" fill="#FEF9C3" stroke="#FDE047" stroke-width="1"/>
+  <text x="910" y="386" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="bold" fill="#1E293B">Blocking</text>
+  <text x="910" y="402" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#64748B">Reject non-compliant</text>
+
+  <rect x="840" y="418" width="140" height="40" rx="6" fill="#FEE2E2" stroke="#FCA5A5" stroke-width="1"/>
+  <text x="910" y="434" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="bold" fill="#1E293B">Quarantine</text>
+  <text x="910" y="450" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#64748B">Isolate + escalate</text>
+
+  <text x="1060" y="345" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Speech act</text>
+  <text x="1060" y="360" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">validation</text>
+  <text x="1060" y="393" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Commitment</text>
+  <text x="1060" y="408" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">tracking</text>
+  <text x="1060" y="441" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Obligation</text>
+  <text x="1060" y="456" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">enforcement</text>
+
+  <!-- ═══════════════ Watchdog Bar ═══════════════ -->
+  <rect x="30" y="485" width="1140" height="50" rx="6" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="600" y="507" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#334155">11 Watchdog Types — Continuous Monitoring</text>
+  <text x="600" y="525" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Echo chamber · Groupthink · Dominance · Deadlock · Circular reasoning · Scope creep · Confirmation bias · and more</text>
+
+  <!-- ═══════════════ Bottom Cards ═══════════════ -->
+  <rect x="250" y="555" width="300" height="70" rx="6" fill="#FFFFFF" stroke="#3B82F6" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="400" y="580" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1E293B">EU AI Act Art.12 Compliance</text>
+  <text x="400" y="598" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Automatic evidence generation</text>
+  <text x="400" y="613" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Digitally signed compliance reports</text>
+
+  <rect x="650" y="555" width="300" height="70" rx="6" fill="#FFFFFF" stroke="#14B8A6" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="800" y="580" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1E293B">GDPR Erasure Receipts</text>
+  <text x="800" y="598" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Privacy by design — erasure receipts are</text>
+  <text x="800" y="613" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">themselves tamper-evident ledger entries</text>
+
+  <!-- ═══════════════ Footer ═══════════════ -->
+  <text x="600" y="660" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#64748B" font-style="italic">Accountability is the architecture — not a feature, not a layer, not an afterthought.</text>
+</svg>

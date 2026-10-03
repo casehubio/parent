@@ -71,6 +71,36 @@ HTN decomposition uses `DecompositionStrategy` SPIs — methods
 produce DagPlans of sub-tasks, enabling recursive decomposition.
 Contingency support on failure nodes.
 
+### Playbook Engine (Step Runtime)
+
+A complete imperative step orchestration system built into
+yaml-core. Not just YAML data structures — a full state machine
+executor for YAML-declared imperative workflows.
+
+**StepWalker** drives execution through structural step types:
+
+- **Control flow** — `block`, `if`/`else`, `match`/`cases`,
+  `parallel`, `try`/`catch`/`finally`, CSP `select`
+- **13-layer DecoratorChain** — each step passes through a pipeline
+  of decorators for logging, metrics, security, timeout, retry,
+  and custom concerns
+- **PlaybookStateMachineExecutor** — long-running playbook execution
+  with durable state, suspend/resume, and checkpoint recovery
+- **Step plugin system** — APT code generator produces step handler
+  registrations from annotated methods. Extend the step vocabulary
+  without modifying the engine.
+- **Built-in handlers** — process invoke, REST call, agent invoke,
+  barrier, quorum, signal, correlation
+- **Security model** — step-level authorization, credential scoping,
+  and audit trail integration
+- **Step catalog** — cross-runtime portability validation ensures
+  playbooks are portable across Quarkus and Spring deployments
+
+This is the execution engine that powers playbooks. Cases dispatch
+playbook step files via `StepFileCallableDispatcher` — bridging the
+case lifecycle with imperative orchestration. Agents, services, and
+humans participate in the same playbook through the step plugin SPI.
+
 ### Composable Signal Routing
 
 Worker selection is not a simple assignment. CaseHub's routing
@@ -372,7 +402,7 @@ trail:
 
 ## Architecture
 
-![Enterprise Execution Architecture](images/brief/enterprise-execution.svg)
+![Enterprise Execution Architecture](images/enterprise-execution.svg)
 
 *Case definitions compile into runtime plans. The planning layer
 selects strategies (GOAP, HTN, DAG). Composable signal routing scores

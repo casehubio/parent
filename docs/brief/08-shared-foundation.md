@@ -224,12 +224,12 @@ ecosystem.
 
 ### Connector SPIs
 
-Five homogeneous platform SPIs — Chat, Calendar, Bank, Email,
-Document — each following the same pattern: SPI interface with
-`@SimulationEligible`, routing service, reference implementation,
-and one or more real providers. 29 connector modules. No vendor
-SDKs anywhere — all HTTP-based connectors use `java.net.http`
-directly.
+Seven homogeneous platform SPIs — Chat, Calendar, Bank, Email,
+Document, Contacts, Project — each following the same pattern: SPI
+interface with `@SimulationEligible`, routing service, reference
+implementation, and one or more real providers. 29 connector modules.
+No vendor SDKs anywhere — all HTTP-based connectors use
+`java.net.http` directly.
 
 - **Chat Platform** — 10 capability interfaces (Messaging, Threading,
   Discovery, Reactions, Presence, Members, ChannelManagement,
@@ -251,6 +251,12 @@ directly.
   structured metadata enables agents to detect and recover from
   unsupported operations without crashing. `supports(Class<?>)`
   for capability introspection.
+- **Contacts Platform** — identity sync from external providers
+  (contact import, enrichment, dedup). Bridges external identity
+  systems into the platform's typed identity model.
+- **Project Platform** — GitHub issues, milestones, comments via
+  `@McpDomain` annotation. Project management operations surfaced
+  through the same tri-channel API pattern as other SPIs.
 - **Slash Commands** — `CommandHandler` SPI for registering and
   dispatching commands across chat platforms
 

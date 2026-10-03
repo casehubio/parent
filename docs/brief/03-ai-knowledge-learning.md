@@ -374,7 +374,7 @@ share the same infrastructure as every other part of CaseHub:
 
 ## Architecture
 
-![AI Knowledge & Learning Architecture](images/brief/ai-knowledge-learning.svg)
+![AI Knowledge & Learning Architecture](images/ai-knowledge-learning.svg)
 
 *Diagram: The five subsystems (Inference, RAG, CBR, Memory, Knowledge
 Graph) with the learning loop connecting execution outcomes back through

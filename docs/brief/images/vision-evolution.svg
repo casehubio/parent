@@ -1,0 +1,161 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700">
+  <defs>
+    <filter id="shadow" x="-4%" y="-4%" width="108%" height="116%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.08"/>
+    </filter>
+    <marker id="arrow-up" viewBox="0 0 10 10" refX="5" refY="10" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,10 L5,0 L10,10 z" fill="#94A3B8"/>
+    </marker>
+    <marker id="arrow-right" viewBox="0 0 10 8" refX="10" refY="4" markerWidth="10" markerHeight="8" orient="auto">
+      <path d="M0,0 L10,4 L0,8 z" fill="#94A3B8"/>
+    </marker>
+    <linearGradient id="h1-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#DBEAFE"/>
+      <stop offset="100%" stop-color="#EFF6FF"/>
+    </linearGradient>
+    <linearGradient id="h2-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#E0E7FF"/>
+      <stop offset="100%" stop-color="#EEF2FF"/>
+    </linearGradient>
+    <linearGradient id="h3-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#F3E8FF"/>
+      <stop offset="100%" stop-color="#FAF5FF"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="700" fill="#FAFBFC"/>
+
+  <!-- Title -->
+  <text x="600" y="32" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="bold" fill="#0F172A">CaseHub — Vision Evolution</text>
+  <text x="600" y="54" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#64748B" font-style="italic">Three horizons — each building on the previous</text>
+
+  <!-- ═══════════════ Current Foundation Bar ═══════════════ -->
+  <rect x="30" y="600" width="1140" height="50" rx="8" fill="#1E293B" filter="url(#shadow)"/>
+  <text x="600" y="622" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="bold" fill="#F8FAFC">Current Platform — Deployed &amp; Proven</text>
+  <text x="600" y="640" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#94A3B8">500+ modules · Full lifecycle · Structural accountability · Domain applications · YAML accessibility</text>
+
+  <!-- ═══════════════ Horizon 1 — Infrastructure Completion ═══════════════ -->
+  <rect x="30" y="430" width="1140" height="155" rx="10" fill="url(#h1-grad)" stroke="#93C5FD" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="50" y="455" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1E40AF">Horizon 1 — Infrastructure Completion</text>
+  <text x="1150" y="455" text-anchor="end" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#3B82F6" font-style="italic">Filling gaps in a shipping platform</text>
+
+  <!-- H1 Cards -->
+  <rect x="50" y="470" width="250" height="100" rx="6" fill="#FFFFFF" stroke="#BFDBFE" stroke-width="1" filter="url(#shadow)"/>
+  <text x="65" y="493" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1E293B">Spring Boot Parity</text>
+  <text x="65" y="510" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Every foundation module runs</text>
+  <text x="65" y="523" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">on Quarkus or Spring Boot.</text>
+  <text x="65" y="540" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#3B82F6">engine · ledger · work · platform</text>
+  <text x="65" y="556" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Customer chooses runtime.</text>
+
+  <rect x="320" y="470" width="250" height="100" rx="6" fill="#FFFFFF" stroke="#BFDBFE" stroke-width="1" filter="url(#shadow)"/>
+  <text x="335" y="493" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1E293B">YAML Tooling Maturation</text>
+  <text x="335" y="510" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Auto-bootstrap from classpath.</text>
+  <text x="335" y="523" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">LSP import resolution.</text>
+  <text x="335" y="540" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">IDE JSON Schema generation.</text>
+  <text x="335" y="556" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#3B82F6">First-class dev surface</text>
+
+  <rect x="590" y="470" width="250" height="100" rx="6" fill="#FFFFFF" stroke="#BFDBFE" stroke-width="1" filter="url(#shadow)"/>
+  <text x="605" y="493" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1E293B">Simulation Depth</text>
+  <text x="605" y="510" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">SPI simulation strategies.</text>
+  <text x="605" y="523" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Simulation data catalogue.</text>
+  <text x="605" y="540" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Pattern-based synthesis.</text>
+  <text x="605" y="556" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#3B82F6">Realistic testing at scale</text>
+
+  <rect x="860" y="470" width="290" height="100" rx="6" fill="#FFFFFF" stroke="#BFDBFE" stroke-width="1" filter="url(#shadow)"/>
+  <text x="875" y="493" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1E293B">Learning Loop Maturation</text>
+  <text x="875" y="510" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">CBR plan-to-step converter.</text>
+  <text x="875" y="523" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">YAML-CBR bridge (landed).</text>
+  <text x="875" y="540" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">E2E adaptive playbook demo.</text>
+  <text x="875" y="556" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#3B82F6">Closed adaptive feedback</text>
+
+  <!-- ═══════════════ Horizon 2 — Emergent Coordination ═══════════════ -->
+  <rect x="30" y="240" width="1140" height="175" rx="10" fill="url(#h2-grad)" stroke="#A5B4FC" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="50" y="267" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#3730A3">Horizon 2 — Emergent Coordination</text>
+  <text x="1150" y="267" text-anchor="end" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#6366F1" font-style="italic">New coordination patterns from existing primitives</text>
+
+  <!-- H2 Cards -->
+  <rect x="50" y="282" width="260" height="118" rx="6" fill="#FFFFFF" stroke="#C7D2FE" stroke-width="1" filter="url(#shadow)"/>
+  <text x="65" y="305" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1E293B">Hive Mind</text>
+  <text x="65" y="322" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Stigmergy — indirect coordination</text>
+  <text x="65" y="335" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">via shared environment signals.</text>
+  <text x="65" y="352" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Swarm — dynamic role emergence.</text>
+  <text x="65" y="369" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Continuous evolution — agents</text>
+  <text x="65" y="382" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">improve themselves via CI.</text>
+  <text x="65" y="395" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#6366F1">Self-organising agent systems</text>
+
+  <rect x="330" y="282" width="260" height="118" rx="6" fill="#FFFFFF" stroke="#C7D2FE" stroke-width="1" filter="url(#shadow)"/>
+  <text x="345" y="305" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1E293B">Qhorus Mesh</text>
+  <text x="345" y="322" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">LLM-to-LLM local relay with</text>
+  <text x="345" y="335" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">full governance preservation.</text>
+  <text x="345" y="352" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">YAML-declared channels.</text>
+  <text x="345" y="369" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Indirect loop detection.</text>
+  <text x="345" y="382" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Message-scoped erasure.</text>
+  <text x="345" y="395" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#6366F1">Governed agent interop</text>
+
+  <rect x="610" y="282" width="260" height="118" rx="6" fill="#FFFFFF" stroke="#C7D2FE" stroke-width="1" filter="url(#shadow)"/>
+  <text x="625" y="305" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1E293B">Physical World Convergence</text>
+  <text x="625" y="322" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">IoT desired-state reconciliation.</text>
+  <text x="625" y="335" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Crossplane multi-cloud.</text>
+  <text x="625" y="352" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">CaseHub deploys itself.</text>
+  <text x="625" y="369" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Digital-physical convergence</text>
+  <text x="625" y="382" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">via the same YAML graph.</text>
+  <text x="625" y="395" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#6366F1">Reconciliation for everything</text>
+
+  <rect x="890" y="282" width="260" height="118" rx="6" fill="#FFFFFF" stroke="#C7D2FE" stroke-width="1" filter="url(#shadow)"/>
+  <text x="905" y="305" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1E293B">Avatar Performance</text>
+  <text x="905" y="322" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Local LLM — Qwen3 32B on-device.</text>
+  <text x="905" y="335" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">CoreML TTS — 12-79x realtime.</text>
+  <text x="905" y="352" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Parallel sentence synthesis.</text>
+  <text x="905" y="369" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Personality-driven voice.</text>
+  <text x="905" y="382" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Zero cloud dependency.</text>
+  <text x="905" y="395" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#6366F1">Embodied agent interaction</text>
+
+  <!-- ═══════════════ Horizon 3 — Cognitive Architecture ═══════════════ -->
+  <rect x="180" y="75" width="840" height="150" rx="10" fill="url(#h3-grad)" stroke="#D8B4FE" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="600" y="100" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#581C87">Horizon 3 — Cognitive Architecture</text>
+  <text x="600" y="117" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#7C3AED" font-style="italic">In active development · Where the learning loop leads</text>
+
+  <!-- H3 Cards -->
+  <rect x="200" y="130" width="240" height="80" rx="6" fill="#FFFFFF" stroke="#E9D5FF" stroke-width="1" filter="url(#shadow)"/>
+  <text x="215" y="153" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1E293B">Emergent Behaviour</text>
+  <text x="215" y="170" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Behavioural attractors from</text>
+  <text x="215" y="183" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">memory + disposition. Causal</text>
+  <text x="215" y="196" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">graphs. Gut-feeling probes.</text>
+
+  <rect x="480" y="130" width="240" height="80" rx="6" fill="#FFFFFF" stroke="#E9D5FF" stroke-width="1" filter="url(#shadow)"/>
+  <text x="495" y="153" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1E293B">Inside Out Model</text>
+  <text x="495" y="170" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Sub-LLMs per cognitive domain.</text>
+  <text x="495" y="183" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Metacognitive executive.</text>
+  <text x="495" y="196" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Adaptive cognitive brief.</text>
+
+  <rect x="760" y="130" width="240" height="80" rx="6" fill="#FFFFFF" stroke="#E9D5FF" stroke-width="1" filter="url(#shadow)"/>
+  <text x="775" y="153" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1E293B">Goal Formation</text>
+  <text x="775" y="170" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Autonomous goal origination</text>
+  <text x="775" y="183" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">from situation + personality.</text>
+  <text x="775" y="196" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Oversight-gated, accountable.</text>
+
+  <!-- ═══════════════ Vertical Build Arrows ═══════════════ -->
+  <!-- Foundation → H1 -->
+  <line x1="300" y1="598" x2="300" y2="588" stroke="#94A3B8" stroke-width="2" marker-end="url(#arrow-up)"/>
+  <line x1="600" y1="598" x2="600" y2="588" stroke="#94A3B8" stroke-width="2" marker-end="url(#arrow-up)"/>
+  <line x1="900" y1="598" x2="900" y2="588" stroke="#94A3B8" stroke-width="2" marker-end="url(#arrow-up)"/>
+
+  <!-- H1 → H2 -->
+  <line x1="200" y1="428" x2="200" y2="418" stroke="#94A3B8" stroke-width="2" marker-end="url(#arrow-up)"/>
+  <line x1="600" y1="428" x2="600" y2="418" stroke="#94A3B8" stroke-width="2" marker-end="url(#arrow-up)"/>
+  <line x1="1000" y1="428" x2="1000" y2="418" stroke="#94A3B8" stroke-width="2" marker-end="url(#arrow-up)"/>
+
+  <!-- H2 → H3 -->
+  <line x1="400" y1="238" x2="400" y2="228" stroke="#94A3B8" stroke-width="2" marker-end="url(#arrow-up)"/>
+  <line x1="600" y1="238" x2="600" y2="228" stroke="#94A3B8" stroke-width="2" marker-end="url(#arrow-up)"/>
+  <line x1="800" y1="238" x2="800" y2="228" stroke="#94A3B8" stroke-width="2" marker-end="url(#arrow-up)"/>
+
+  <!-- ═══════════════ Labels ═══════════════ -->
+  <text x="15" y="508" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#3B82F6" transform="rotate(-90, 15, 508)" text-anchor="middle" font-weight="bold">COMPLETING</text>
+  <text x="15" y="330" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#6366F1" transform="rotate(-90, 15, 330)" text-anchor="middle" font-weight="bold">COMPOSING</text>
+  <text x="15" y="150" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#7C3AED" transform="rotate(-90, 15, 150)" text-anchor="middle" font-weight="bold">DEEPENING</text>
+
+  <!-- ═══════════════ Key Principle ═══════════════ -->
+  <text x="600" y="680" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#64748B" font-style="italic">Each horizon inherits the accountability guarantees of the layers below — the harness holds.</text>
+</svg>

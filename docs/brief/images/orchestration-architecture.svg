@@ -1,0 +1,132 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 620">
+  <defs>
+    <filter id="shadow" x="-4%" y="-4%" width="108%" height="116%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.08"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 8" refX="10" refY="4" markerWidth="10" markerHeight="8" orient="auto">
+      <path d="M0,0 L10,4 L0,8 z" fill="#94A3B8"/>
+    </marker>
+    <marker id="arrow-violet" viewBox="0 0 10 8" refX="10" refY="4" markerWidth="10" markerHeight="8" orient="auto">
+      <path d="M0,0 L10,4 L0,8 z" fill="#8B5CF6"/>
+    </marker>
+    <marker id="arrow-up-out" viewBox="0 0 10 10" refX="5" refY="0" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,10 L5,0 L10,10 z" fill="#14B8A6"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="620" fill="#FAFBFC"/>
+
+  <!-- Title -->
+  <text x="600" y="32" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="bold" fill="#0F172A">Agentic Orchestration Architecture</text>
+  <text x="600" y="54" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#64748B" font-style="italic">Five composable SPIs — two execution drivers — governed communications</text>
+
+  <!-- ═══════════════ Decision Narratives (top output) ═══════════════ -->
+
+  <rect x="410" y="70" width="380" height="36" rx="6" fill="#F0FDFA" stroke="#14B8A6" stroke-width="1" filter="url(#shadow)"/>
+  <text x="600" y="93" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#1E293B">Decision Narratives — human-readable audit output</text>
+
+  <!-- Arrow up from drivers -->
+  <line x1="600" y1="130" x2="600" y2="108" stroke="#14B8A6" stroke-width="2" marker-end="url(#arrow-up-out)"/>
+
+  <!-- ═══════════════ 5 SPIs (left column) ═══════════════ -->
+
+  <text x="130" y="128" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#3730A3">Composable SPIs</text>
+
+  <rect x="30" y="140" width="200" height="52" rx="6" fill="#F5F3FF" stroke="#8B5CF6" stroke-width="1" filter="url(#shadow)"/>
+  <text x="130" y="163" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#1E293B">RoutingStrategy</text>
+  <text x="130" y="180" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Who should handle this work?</text>
+
+  <rect x="30" y="200" width="200" height="52" rx="6" fill="#F5F3FF" stroke="#8B5CF6" stroke-width="1" filter="url(#shadow)"/>
+  <text x="130" y="223" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#1E293B">DecompositionStrategy</text>
+  <text x="130" y="240" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">How to break down goals?</text>
+
+  <rect x="30" y="260" width="200" height="52" rx="6" fill="#F5F3FF" stroke="#8B5CF6" stroke-width="1" filter="url(#shadow)"/>
+  <text x="130" y="283" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#1E293B">DispatchStrategy</text>
+  <text x="130" y="300" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">How to send work?</text>
+
+  <rect x="30" y="320" width="200" height="52" rx="6" fill="#F5F3FF" stroke="#8B5CF6" stroke-width="1" filter="url(#shadow)"/>
+  <text x="130" y="343" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#1E293B">CompletionStrategy</text>
+  <text x="130" y="360" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">When is this done?</text>
+
+  <rect x="30" y="380" width="200" height="52" rx="6" fill="#F5F3FF" stroke="#8B5CF6" stroke-width="1" filter="url(#shadow)"/>
+  <text x="130" y="403" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#1E293B">AdaptationStrategy</text>
+  <text x="130" y="420" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">How to adjust plans?</text>
+
+  <!-- Arrows: SPIs → Drivers -->
+  <line x1="232" y1="166" x2="368" y2="190" stroke="#8B5CF6" stroke-width="1.5" marker-end="url(#arrow-violet)"/>
+  <line x1="232" y1="226" x2="368" y2="220" stroke="#8B5CF6" stroke-width="1.5" marker-end="url(#arrow-violet)"/>
+  <line x1="232" y1="286" x2="368" y2="260" stroke="#8B5CF6" stroke-width="1.5" marker-end="url(#arrow-violet)"/>
+  <line x1="232" y1="346" x2="368" y2="310" stroke="#8B5CF6" stroke-width="1.5" marker-end="url(#arrow-violet)"/>
+  <line x1="232" y1="406" x2="368" y2="340" stroke="#8B5CF6" stroke-width="1.5" marker-end="url(#arrow-violet)"/>
+
+  <!-- ═══════════════ Execution Drivers (center) ═══════════════ -->
+
+  <text x="490" y="128" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#1E40AF">Execution Drivers</text>
+
+  <rect x="370" y="140" width="240" height="110" rx="8" fill="#FFFFFF" stroke="#3B82F6" stroke-width="2" filter="url(#shadow)"/>
+  <text x="490" y="168" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1E293B">OrchestratedDriver</text>
+  <text x="490" y="188" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Central control — supervisor</text>
+  <text x="490" y="203" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">selects patterns, delegates work,</text>
+  <text x="490" y="218" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">collects results, adapts plans</text>
+  <text x="490" y="240" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#3B82F6">Supervisor · Debate · Voting · HTN</text>
+
+  <rect x="370" y="265" width="240" height="110" rx="8" fill="#FFFFFF" stroke="#3B82F6" stroke-width="2" filter="url(#shadow)"/>
+  <text x="490" y="293" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1E293B">ChoreographedDriver</text>
+  <text x="490" y="313" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Reactive — handlers respond to</text>
+  <text x="490" y="328" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">blackboard state changes. No</text>
+  <text x="490" y="343" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">central coordinator.</text>
+  <text x="490" y="365" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#3B82F6">Stigmergy · Swarm · Event-driven</text>
+
+  <!-- ═══════════════ Communications Mesh (right) ═══════════════ -->
+
+  <text x="860" y="128" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#3730A3">Communications Mesh</text>
+
+  <rect x="710" y="140" width="300" height="280" rx="8" fill="#F5F3FF" stroke="#8B5CF6" stroke-width="1.5" filter="url(#shadow)"/>
+
+  <rect x="730" y="160" width="260" height="55" rx="6" fill="#FFFFFF" stroke="#C7D2FE" stroke-width="1"/>
+  <text x="860" y="183" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#1E293B">Speech Act Protocol</text>
+  <text x="860" y="200" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Propose · Accept · Reject · Commit · Inform</text>
+
+  <rect x="730" y="225" width="260" height="55" rx="6" fill="#FFFFFF" stroke="#C7D2FE" stroke-width="1"/>
+  <text x="860" y="248" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#1E293B">Commitment Store</text>
+  <text x="860" y="265" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Lifecycle: Proposed → Active → Fulfilled</text>
+
+  <rect x="730" y="290" width="260" height="55" rx="6" fill="#FFFFFF" stroke="#C7D2FE" stroke-width="1"/>
+  <text x="860" y="313" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#1E293B">Watchdogs (11 types)</text>
+  <text x="860" y="330" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Free-rider · Echo · Commitment-breach · ...</text>
+
+  <rect x="730" y="355" width="260" height="50" rx="6" fill="#FFFFFF" stroke="#C7D2FE" stroke-width="1"/>
+  <text x="860" y="378" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="#1E293B">12-Step Dispatch Gate</text>
+  <text x="860" y="393" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">ACL → trust → protocol → ledger → deliver</text>
+
+  <!-- Arrows: Drivers → Mesh -->
+  <line x1="612" y1="195" x2="708" y2="195" stroke="#94A3B8" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="612" y1="320" x2="708" y2="320" stroke="#94A3B8" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- ═══════════════ Shared Platform Context (bottom) ═══════════════ -->
+
+  <rect x="30" y="460" width="1140" height="55" rx="6" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="1"/>
+  <text x="600" y="482" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#334155">Shared Platform Context</text>
+  <text x="600" y="502" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#64748B">Trust Scores · CBR Experience · Agent Identity · Tenancy · Events · Audit Ledger</text>
+
+  <!-- Arrows: Platform → SPIs -->
+  <line x1="130" y1="458" x2="130" y2="434" stroke="#94A3B8" stroke-width="2" marker-end="url(#arrow-up-out)"/>
+  <line x1="490" y1="458" x2="490" y2="378" stroke="#94A3B8" stroke-width="2" marker-end="url(#arrow-up-out)"/>
+  <line x1="860" y1="458" x2="860" y2="422" stroke="#94A3B8" stroke-width="2" marker-end="url(#arrow-up-out)"/>
+
+  <!-- ═══════════════ Caption ═══════════════ -->
+  <text x="600" y="550" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#64748B" font-style="italic">SPIs compose freely — any routing strategy with any dispatch mode. The mesh governs every interaction.</text>
+
+  <!-- ═══════════════ Legend ═══════════════ -->
+  <g font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#64748B">
+    <rect x="340" y="575" width="12" height="12" rx="2" fill="#3B82F6"/>
+    <text x="358" y="585">Automation</text>
+    <rect x="460" y="575" width="12" height="12" rx="2" fill="#8B5CF6"/>
+    <text x="478" y="585">Coordination</text>
+    <rect x="600" y="575" width="12" height="12" rx="2" fill="#14B8A6"/>
+    <text x="618" y="585">Collaboration</text>
+    <rect x="740" y="575" width="12" height="12" rx="2" fill="#94A3B8"/>
+    <text x="758" y="585">Cross-cutting</text>
+  </g>
+</svg>

@@ -1,0 +1,153 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 620">
+  <defs>
+    <filter id="shadow" x="-4%" y="-4%" width="108%" height="116%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.08"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 8" refX="10" refY="4" markerWidth="10" markerHeight="8" orient="auto">
+      <path d="M0,0 L10,4 L0,8 z" fill="#94A3B8"/>
+    </marker>
+    <marker id="feedback-arrow" viewBox="0 0 12 10" refX="12" refY="5" markerWidth="10" markerHeight="8" orient="auto">
+      <path d="M0,0 L12,5 L0,10 z" fill="#EA580C"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="620" fill="#FAFBFC"/>
+
+  <!-- Title -->
+  <text x="600" y="32" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="bold" fill="#0F172A">Enterprise Execution Pipeline</text>
+  <text x="600" y="54" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#64748B" font-style="italic">From case definition to sealed outcome — with oversight at every stage</text>
+
+  <!-- ═══════════════ Stage 1: Case Definitions ═══════════════ -->
+  <rect x="20" y="90" width="130" height="120" rx="6" fill="#EFF6FF" stroke="#3B82F6" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="85" y="115" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1E293B">Case</text>
+  <text x="85" y="132" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1E293B">Definitions</text>
+  <text x="85" y="155" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">YAML / Java</text>
+  <text x="85" y="170" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Annotations</text>
+  <text x="85" y="190" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#3B82F6">Schema-validated</text>
+
+  <!-- Arrow 1→2 -->
+  <line x1="152" y1="150" x2="178" y2="150" stroke="#94A3B8" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- ═══════════════ Stage 2: Planning Strategies ═══════════════ -->
+  <rect x="180" y="80" width="160" height="140" rx="6" fill="#FFFFFF" stroke="#3B82F6" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="260" y="102" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1E293B">Planning Strategies</text>
+
+  <rect x="192" y="112" width="136" height="28" rx="4" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1"/>
+  <text x="260" y="131" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#1E293B">GOAP — goal-oriented</text>
+
+  <rect x="192" y="146" width="136" height="28" rx="4" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1"/>
+  <text x="260" y="165" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#1E293B">HTN — decomposition</text>
+
+  <rect x="192" y="180" width="136" height="28" rx="4" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1"/>
+  <text x="260" y="199" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#1E293B">DAG — parallel exec</text>
+
+  <!-- Arrow 2→3 -->
+  <line x1="342" y1="150" x2="368" y2="150" stroke="#94A3B8" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- ═══════════════ Stage 3: Signal Routing ═══════════════ -->
+  <rect x="370" y="75" width="150" height="200" rx="6" fill="#FFFFFF" stroke="#8B5CF6" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="445" y="97" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1E293B">Signal Routing</text>
+
+  <rect x="382" y="107" width="126" height="25" rx="4" fill="#F5F3FF" stroke="#DDD6FE" stroke-width="1"/>
+  <text x="445" y="124" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#1E293B">Workload</text>
+
+  <rect x="382" y="137" width="126" height="25" rx="4" fill="#F5F3FF" stroke="#DDD6FE" stroke-width="1"/>
+  <text x="445" y="154" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#1E293B">Trust</text>
+
+  <rect x="382" y="167" width="126" height="25" rx="4" fill="#F5F3FF" stroke="#DDD6FE" stroke-width="1"/>
+  <text x="445" y="184" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#1E293B">CBR (experience)</text>
+
+  <rect x="382" y="197" width="126" height="25" rx="4" fill="#F5F3FF" stroke="#DDD6FE" stroke-width="1"/>
+  <text x="445" y="214" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#1E293B">Personality</text>
+
+  <rect x="382" y="227" width="126" height="25" rx="4" fill="#F5F3FF" stroke="#DDD6FE" stroke-width="1"/>
+  <text x="445" y="244" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#1E293B">Semantic</text>
+
+  <!-- Arrow 3→4 -->
+  <line x1="522" y1="175" x2="548" y2="175" stroke="#94A3B8" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- ═══════════════ Stage 4: Dispatch ═══════════════ -->
+  <rect x="550" y="80" width="160" height="195" rx="6" fill="#FFFFFF" stroke="#14B8A6" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="630" y="102" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1E293B">Dispatch</text>
+  <text x="630" y="117" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">7 transport backends</text>
+
+  <rect x="562" y="127" width="136" height="20" rx="3" fill="#F0FDFA" stroke="#99F6E4" stroke-width="1"/>
+  <text x="630" y="141" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#1E293B">CDI Direct</text>
+
+  <rect x="562" y="151" width="136" height="20" rx="3" fill="#F0FDFA" stroke="#99F6E4" stroke-width="1"/>
+  <text x="630" y="165" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#1E293B">HTTP / REST</text>
+
+  <rect x="562" y="175" width="136" height="20" rx="3" fill="#F0FDFA" stroke="#99F6E4" stroke-width="1"/>
+  <text x="630" y="189" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#1E293B">gRPC</text>
+
+  <rect x="562" y="199" width="136" height="20" rx="3" fill="#F0FDFA" stroke="#99F6E4" stroke-width="1"/>
+  <text x="630" y="213" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#1E293B">Kafka / Messaging</text>
+
+  <rect x="562" y="223" width="136" height="20" rx="3" fill="#F0FDFA" stroke="#99F6E4" stroke-width="1"/>
+  <text x="630" y="237" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#1E293B">Kubernetes Job</text>
+
+  <rect x="562" y="247" width="66" height="20" rx="3" fill="#F0FDFA" stroke="#99F6E4" stroke-width="1"/>
+  <text x="595" y="261" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#1E293B">LLM</text>
+
+  <rect x="632" y="247" width="66" height="20" rx="3" fill="#F0FDFA" stroke="#99F6E4" stroke-width="1"/>
+  <text x="665" y="261" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#1E293B">Script</text>
+
+  <!-- Arrow 4→5 -->
+  <line x1="712" y1="175" x2="738" y2="175" stroke="#94A3B8" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- ═══════════════ Stage 5: Workers — Sealed Outcomes ═══════════════ -->
+  <rect x="740" y="80" width="170" height="195" rx="6" fill="#FFFFFF" stroke="#3B82F6" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="825" y="102" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1E293B">Workers</text>
+  <text x="825" y="117" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Sealed outcome model</text>
+
+  <rect x="755" y="127" width="140" height="24" rx="4" fill="#DCFCE7" stroke="#86EFAC" stroke-width="1"/>
+  <text x="825" y="144" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="bold" fill="#166534">Success</text>
+
+  <rect x="755" y="156" width="140" height="24" rx="4" fill="#FEF9C3" stroke="#FDE047" stroke-width="1"/>
+  <text x="825" y="173" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="bold" fill="#854D0E">Declined</text>
+
+  <rect x="755" y="185" width="140" height="24" rx="4" fill="#FEE2E2" stroke="#FCA5A5" stroke-width="1"/>
+  <text x="825" y="202" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="bold" fill="#991B1B">Failed</text>
+
+  <rect x="755" y="214" width="140" height="24" rx="4" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="1"/>
+  <text x="825" y="231" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="bold" fill="#475569">Expired</text>
+
+  <rect x="755" y="243" width="140" height="24" rx="4" fill="#EFF6FF" stroke="#93C5FD" stroke-width="1"/>
+  <text x="825" y="260" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="bold" fill="#1D4ED8">Completed</text>
+
+  <!-- ═══════════════ Stage 6: Oversight Gates ═══════════════ -->
+  <rect x="950" y="90" width="220" height="110" rx="6" fill="#FFFFFF" stroke="#EA580C" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="1060" y="115" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1E293B">Oversight Gates</text>
+  <text x="1060" y="133" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">M-of-N quorum approval</text>
+  <text x="1060" y="150" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Risk classification rules</text>
+  <text x="1060" y="167" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Escalation policies</text>
+  <text x="1060" y="187" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#EA580C">Consequential decisions gated</text>
+
+  <!-- Arrow Workers→Oversight -->
+  <line x1="912" y1="145" x2="948" y2="145" stroke="#94A3B8" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Feedback arrow: Oversight back to Planning -->
+  <path d="M 1060 202 C 1060 340 260 340 260 222"
+        stroke="#EA580C" stroke-width="2" fill="none"
+        stroke-dasharray="8 4"
+        marker-end="url(#feedback-arrow)"/>
+  <text x="660" y="345" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#EA580C" font-weight="bold">Feedback → Re-plan / Adapt</text>
+
+  <!-- ═══════════════ Evolution Conductor Bar ═══════════════ -->
+  <rect x="20" y="380" width="1150" height="50" rx="6" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="600" y="402" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#334155">Evolution Conductor</text>
+  <text x="600" y="420" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Manages case evolution across execution lifecycle — state machine spanning the entire pipeline</text>
+
+  <!-- ═══════════════ Legend ═══════════════ -->
+  <g font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#64748B">
+    <rect x="310" y="460" width="12" height="12" rx="2" fill="#3B82F6"/>
+    <text x="328" y="470">Automation</text>
+    <rect x="430" y="460" width="12" height="12" rx="2" fill="#8B5CF6"/>
+    <text x="448" y="470">Coordination</text>
+    <rect x="568" y="460" width="12" height="12" rx="2" fill="#14B8A6"/>
+    <text x="586" y="470">Collaboration</text>
+    <rect x="706" y="460" width="12" height="12" rx="2" fill="#EA580C"/>
+    <text x="724" y="470">Oversight</text>
+  </g>
+</svg>

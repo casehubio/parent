@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 520">
+  <defs>
+    <filter id="shadow" x="-4%" y="-4%" width="108%" height="116%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.08"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 8" refX="10" refY="4" markerWidth="10" markerHeight="8" orient="auto">
+      <path d="M0,0 L10,4 L0,8 z" fill="#94A3B8"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="520" fill="#FAFBFC"/>
+
+  <!-- Title -->
+  <text x="600" y="32" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="bold" fill="#0F172A">The Declaration Surface</text>
+  <text x="600" y="54" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#64748B" font-style="italic">Three input surfaces — one runtime model</text>
+
+  <!-- ═══════════════ Input Surfaces (left) ═══════════════ -->
+
+  <!-- YAML -->
+  <rect x="40" y="100" width="220" height="80" rx="6" fill="#FFFFFF" stroke="#3B82F6" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="150" y="130" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#1E293B">YAML</text>
+  <text x="150" y="148" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#64748B">Cases, agents, routing, topology</text>
+  <text x="150" y="166" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#3B82F6">Primary surface — domain experts</text>
+
+  <!-- Java Annotations -->
+  <rect x="40" y="200" width="220" height="80" rx="6" fill="#FFFFFF" stroke="#3B82F6" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="150" y="230" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#1E293B">Java Annotations</text>
+  <text x="150" y="248" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#64748B">@Case, @Binding, @Stage</text>
+  <text x="150" y="266" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#3B82F6">Compile-time safety — developers</text>
+
+  <!-- TypeScript (POC) -->
+  <rect x="40" y="300" width="220" height="80" rx="6" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1" stroke-dasharray="4 2" filter="url(#shadow)"/>
+  <text x="150" y="330" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#1E293B">TypeScript</text>
+  <text x="150" y="348" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#64748B">Reconciliation graphs</text>
+  <text x="150" y="366" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#94A3B8">POC — desiredstate only</text>
+
+  <!-- ═══════════════ Convergence Arrows ═══════════════ -->
+
+  <line x1="262" y1="140" x2="370" y2="215" stroke="#94A3B8" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="262" y1="240" x2="370" y2="230" stroke="#94A3B8" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="262" y1="340" x2="370" y2="245" stroke="#94A3B8" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- ═══════════════ Surface Parsers (center-left) ═══════════════ -->
+
+  <rect x="375" y="190" width="200" height="80" rx="6" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="475" y="220" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#1E293B">Surface Parsers</text>
+  <text x="475" y="240" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#64748B">Parse, validate, cross-reference</text>
+  <text x="475" y="258" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">against SPI registry</text>
+
+  <!-- Arrow: Parsers → Registry -->
+  <line x1="577" y1="230" x2="638" y2="230" stroke="#94A3B8" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- ═══════════════ CDI Bean Registry (center) ═══════════════ -->
+
+  <rect x="643" y="190" width="200" height="80" rx="6" fill="#EFF6FF" stroke="#3B82F6" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="743" y="220" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#1E293B">CDI Bean Registry</text>
+  <text x="743" y="240" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#64748B">Unified runtime model</text>
+  <text x="743" y="258" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">All surfaces → same beans</text>
+
+  <!-- Arrow: Registry → Engine -->
+  <line x1="845" y1="230" x2="908" y2="230" stroke="#94A3B8" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- ═══════════════ Runtime Engine (right) ═══════════════ -->
+
+  <rect x="913" y="150" width="250" height="160" rx="8" fill="#FFFFFF" stroke="#1E293B" stroke-width="2" filter="url(#shadow)"/>
+  <text x="1038" y="180" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#1E293B">Runtime Engine</text>
+  <text x="1038" y="200" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#64748B">Blackboard Architecture</text>
+  <line x1="933" y1="212" x2="1143" y2="212" stroke="#E2E8F0" stroke-width="1"/>
+  <text x="1038" y="232" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#64748B">Case lifecycle management</text>
+  <text x="1038" y="250" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#64748B">Planning &amp; signal routing</text>
+  <text x="1038" y="268" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#64748B">Worker dispatch</text>
+  <text x="1038" y="286" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#64748B">Oversight gates</text>
+
+  <!-- ═══════════════ Expression Engines (bottom) ═══════════════ -->
+
+  <text x="600" y="420" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#334155">Expression Engines</text>
+
+  <rect x="320" y="435" width="140" height="45" rx="6" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1" filter="url(#shadow)"/>
+  <text x="390" y="462" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1E293B">JQ</text>
+
+  <rect x="480" y="435" width="140" height="45" rx="6" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1" filter="url(#shadow)"/>
+  <text x="550" y="462" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1E293B">MVEL</text>
+
+  <rect x="640" y="435" width="140" height="45" rx="6" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1" filter="url(#shadow)"/>
+  <text x="710" y="462" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#1E293B">JEXL</text>
+
+  <!-- Arrows from expression engines up to runtime -->
+  <line x1="390" y1="433" x2="960" y2="312" stroke="#94A3B8" stroke-width="1.5" stroke-dasharray="4 2" marker-end="url(#arrow)"/>
+  <line x1="550" y1="433" x2="1000" y2="312" stroke="#94A3B8" stroke-width="1.5" stroke-dasharray="4 2" marker-end="url(#arrow)"/>
+  <line x1="710" y1="433" x2="1040" y2="312" stroke="#94A3B8" stroke-width="1.5" stroke-dasharray="4 2" marker-end="url(#arrow)"/>
+
+  <!-- ═══════════════ Caption ═══════════════ -->
+  <text x="600" y="505" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#64748B" font-style="italic">All surfaces compile to the same CDI beans — the runtime engine is surface-agnostic.</text>
+</svg>

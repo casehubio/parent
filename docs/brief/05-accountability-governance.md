@@ -56,6 +56,16 @@ Build-time validation catches misuse — `@Audited` on a non-CDI
 class, missing `@Attested` on a method that writes compliance data.
 Errors at compile time, not at runtime.
 
+### Offline Verification & Audit Export
+
+`MerkleVerificationBundleService` creates self-contained
+tamper-evidence packages that can be verified without access to
+the running system — hand a bundle to an auditor and they can
+independently verify the chain. `AuditTrailExportService` exports
+tenancy-level audit trails with inclusion proofs. Qute template-based
+reporting generates human-readable PDF audit reports via the
+platform's document signing infrastructure.
+
 **What makes this different:** Competing platforms use appendable
 databases for audit trails. Appendable means mutable — entries can be
 silently altered or deleted. CaseHub's Merkle MMR makes any tampering
@@ -290,6 +300,32 @@ Design choices for edge cases:
   exception, the gate is required. Unknown risk is treated as high
   risk.
 
+### Governed Yield
+
+Beyond gating actions, CaseHub governs the agent's judgment process
+itself. The judgment commitment type extends the speech act taxonomy
+with yield/response/acceptance semantics — formalising how agents
+request, provide, and accept judgment calls.
+
+Compliance evidence is generated automatically for each judgment
+lifecycle. Reputation-aware routing selects qualified judgment
+callers based on trust scores and domain expertise. Formal
+verification invariants enforce judgment lifecycle correctness —
+a judgment cannot be accepted before it is rendered, a yield cannot
+be retracted after acceptance.
+
+This goes beyond oversight gates: gates govern whether an action
+proceeds; governed yield governs the quality of the decision itself.
+
+### Governance Annotations in YAML
+
+Every governance mechanism has a YAML equivalent. `@Attestation`,
+`@OversightGate`, `@TrustRouted`, `@CbrRouted` — all expressible
+in YAML declarations alongside Java annotations. Domain experts
+declare governance policies in the same YAML they use for case
+definitions, without writing Java. Governance is part of the
+declaration surface, not a separate configuration concern.
+
 ---
 
 ## Structural Completion Signaling
@@ -364,7 +400,7 @@ exercised — and that receipt is itself part of the chain.
 
 ## Architecture
 
-![Accountability Architecture](images/brief/05-accountability-arch.svg)
+![Accountability Architecture](images/accountability-architecture.svg)
 
 The accountability infrastructure is not a layer — it is woven through
 every interaction. The 12-step dispatch gate pipeline in the

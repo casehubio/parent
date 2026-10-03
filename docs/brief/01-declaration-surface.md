@@ -327,7 +327,7 @@ area receives its instructions through declarations:
 
 ## Architecture
 
-![Declaration Surface Architecture](../images/brief/01-declaration-surface.svg)
+![Declaration Surface Architecture](images/declaration-surface.svg)
 
 The declaration surface spans three audiences and converges on one
 runtime model. YAML files, annotated Java classes, and (planned)

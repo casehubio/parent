@@ -353,21 +353,38 @@ regulatory requirements.
 
 Multiple reconciliation domains compose without coupling.
 
-Push-model composition: each domain compiles its own goals, declares
-provides/requires for cross-domain edges, and registers with the
-engine. Three composition modes:
+The `CrossDomainCompositionEngine` orchestrates multi-domain
+reconciliation with explicit cross-domain dependencies.
+`DomainRegistration` declares distinct reconciliation domains.
+`DomainNodeProvisioner` handles domain-specific node lifecycle.
+Cross-domain edges link nodes across domain boundaries — an
+infrastructure node can depend on a compliance node in a different
+domain, and the planner respects the dependency.
 
-- **Flattened** — single merged graph for simple deployments
-- **Hierarchical** — meta-loop with one domain-level node per domain,
-  preserving domain isolation
+Three composition modes:
+
+- **Flattened** — single merged overlay graph for simple deployments
+- **Hierarchical** — meta-graphs that compose domain-specific graphs,
+  with one domain-level node per domain preserving isolation
 - **Passthrough** — 0-1 domains, no composition overhead
 
 Domains compile independently (preserving GoalCompiler&lt;G&gt; type
 safety), and domain-specific SituationRecompilers receive only their
-own domain graph. Isolation is preserved through composition.
+own domain graph. Infrastructure, compliance, and application domains
+reconcile simultaneously with type-safe cross-domain dependencies.
 
 No equivalent exists in IaC — Crossplane is the closest but lacks
-human gating, CBR learning, and domain isolation.
+human gating, CBR learning, domain isolation, and compositional
+meta-graphs.
+
+### Suspend/Resume for Reconciliation
+
+Operational control over reconciliation loops. Administrators can
+suspend a reconciliation domain during maintenance windows and resume
+with state preserved. Lifecycle state machines track domain states
+with a planner decision matrix governing resume behaviour. Parallel
+execution orchestration primitives ensure suspended domains don't
+block independent domains from proceeding.
 
 ---
 

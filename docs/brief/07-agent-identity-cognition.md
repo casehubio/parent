@@ -64,6 +64,11 @@ communication. A two-stage pipeline with optional LLM semantic
 enrichment ensures each provider receives identity information in its
 preferred format.
 
+**Agent Team DSL** — fluent Java DSL for multi-descriptor composition
+with shared defaults. Compose agent teams declaratively: define a
+team with shared capabilities, individual specialisations, and
+coordination rules in a single expression.
+
 14 modules. 303 Java source files. Full JPA persistence with Flyway
 migrations.
 
@@ -88,10 +93,13 @@ succeeds at analytical tasks will see its Thinking function strengthen.
 An agent that receives repeated compliance violations will see its
 behavioural health degrade, triggering personality review.
 
-The 48-archetype system (12 families from Hartwell & Chen) derives
-archetypes from personality framework values, enabling avatar code
-generation — agents don't just have personality, they have visual
-identity that reflects it.
+The 60-archetype personality system (faceted framework intersection
+across Jungian, MBTI, DISC, Belbin, Big Five) provides a rich
+vocabulary for personality configuration. Model selection via eidos
+vocabulary enables identity-scoped LLM routing — a "meticulous
+analyst" archetype selects different model parameters than a "creative
+explorer." Archetypes drive avatar code generation — agents don't
+just have personality, they have visual identity that reflects it.
 
 ### Voice Profiles
 
@@ -170,6 +178,12 @@ on-device speech-to-text and text-to-speech processing.
 - **Social cognition integration** — speech delivery adapts to the
   agent's current emotional state and personality disposition
 
+Multiple TTS backends beyond sherpa-onnx: Dia TTS (dialogue-native
+with emotional rendering), CosyVoice TTS, Audio8 TTS. Streaming
+LLM-to-TTS pipeline for real-time speech generation. Speaker
+identification via voiceprint (ECAPA-TDNN neural embeddings).
+Two-pass STT accuracy pipeline with contextual correction.
+
 This completes the identity → personality → voice → speech chain:
 agents defined with structured descriptors, personalised through
 experience, voiced through profiles, and rendered through
@@ -238,6 +252,25 @@ narrative-grounded, socially intelligent behaviour.
 
 JPA persistence for all social cognition stores. Quarkus and Spring
 Boot support.
+
+---
+
+### Cognitive Observability
+
+Three-layer observability makes cognitive agent behaviour inspectable
+and debuggable — no competing framework offers this:
+
+- **Layer 1: Live View** — real-time MCP tools for graph inspection,
+  delta tracking, health monitoring, and cognitive trace. Watch an
+  agent's beliefs, goals, and social cognition state change in real
+  time.
+- **Layer 2: Snapshot Infrastructure** — point-in-time cognitive state
+  capture for comparison and regression testing.
+- **Layer 3: Temporal Observation** — tools for understanding how
+  cognitive state evolves over time, identifying patterns in
+  belief revision, goal formation, and emotional appraisal.
+
+You can observe and debug what an agent thinks, not just what it does.
 
 ---
 

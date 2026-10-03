@@ -1,0 +1,119 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 650">
+  <defs>
+    <filter id="shadow" x="-4%" y="-4%" width="108%" height="116%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.08"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 8" refX="10" refY="4" markerWidth="10" markerHeight="8" orient="auto">
+      <path d="M0,0 L10,4 L0,8 z" fill="#94A3B8"/>
+    </marker>
+    <marker id="loop-arrow" viewBox="0 0 10 8" refX="10" refY="4" markerWidth="10" markerHeight="8" orient="auto">
+      <path d="M0,0 L10,4 L0,8 z" fill="#EA580C"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="650" fill="#FAFBFC"/>
+
+  <!-- Title -->
+  <text x="600" y="32" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="bold" fill="#0F172A">AI Knowledge &amp; Learning</text>
+  <text x="600" y="54" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#64748B" font-style="italic">Five subsystems — one learning loop</text>
+
+  <!-- ═══════════════ Five Subsystem Cards ═══════════════ -->
+
+  <!-- Top row: 3 cards -->
+
+  <!-- On-Device Inference -->
+  <rect x="40" y="80" width="340" height="120" rx="6" fill="#FFFFFF" stroke="#3B82F6" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="210" y="108" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#1E293B">On-Device Inference</text>
+  <line x1="60" y1="118" x2="360" y2="118" stroke="#E2E8F0" stroke-width="1"/>
+  <text x="210" y="138" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#64748B">ONNX Runtime · SPLADE sparse vectors</text>
+  <text x="210" y="155" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#64748B">BGE-M3 dense embeddings · Reranking</text>
+  <text x="210" y="175" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#3B82F6">7 modules — no cloud dependency for embeddings</text>
+
+  <!-- Corpus &amp; RAG -->
+  <rect x="430" y="80" width="340" height="120" rx="6" fill="#FFFFFF" stroke="#3B82F6" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="600" y="108" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#1E293B">Corpus &amp; RAG</text>
+  <line x1="450" y1="118" x2="750" y2="118" stroke="#E2E8F0" stroke-width="1"/>
+  <text x="600" y="138" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#64748B">3-leg hybrid: sparse + dense + keyword</text>
+  <text x="600" y="155" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#64748B">Corrective RAG with hallucination detection</text>
+  <text x="600" y="175" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#3B82F6">11 modules — tenant-scoped, fusion strategies</text>
+
+  <!-- CBR -->
+  <rect x="820" y="80" width="340" height="120" rx="6" fill="#FFFFFF" stroke="#8B5CF6" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="990" y="108" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#1E293B">Case-Based Reasoning</text>
+  <line x1="840" y1="118" x2="1140" y2="118" stroke="#E2E8F0" stroke-width="1"/>
+  <text x="990" y="138" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#64748B">Typed features · DTW temporal matching</text>
+  <text x="990" y="155" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#64748B">8-decorator retrieval chain · Plan adaptation</text>
+  <text x="990" y="175" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#8B5CF6">7 modules — the learning engine</text>
+
+  <!-- Bottom row: 2 cards -->
+
+  <!-- Agent Memory -->
+  <rect x="130" y="230" width="340" height="120" rx="6" fill="#FFFFFF" stroke="#8B5CF6" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="300" y="258" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#1E293B">Agent Memory</text>
+  <line x1="150" y1="268" x2="450" y2="268" stroke="#E2E8F0" stroke-width="1"/>
+  <text x="300" y="288" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#64748B">7 backends: Postgres, Qdrant, Elasticsearch,</text>
+  <text x="300" y="305" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#64748B">Redis, File, In-Memory, IoTDB</text>
+  <text x="300" y="325" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#8B5CF6">17 modules — salience scoring, GDPR erasure</text>
+
+  <!-- Knowledge Graph -->
+  <rect x="730" y="230" width="340" height="120" rx="6" fill="#FFFFFF" stroke="#8B5CF6" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="900" y="258" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#1E293B">Knowledge Graph</text>
+  <line x1="750" y1="268" x2="1050" y2="268" stroke="#E2E8F0" stroke-width="1"/>
+  <text x="900" y="288" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#64748B">Thing model with typed relations</text>
+  <text x="900" y="305" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#64748B">Confidence scoring · PAD emotional state</text>
+  <text x="900" y="325" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#8B5CF6">8 modules — MindMap subsystem</text>
+
+  <!-- ═══════════════ Learning Loop (center arc) ═══════════════ -->
+
+  <rect x="250" y="390" width="700" height="120" rx="10" fill="#FFF7ED" stroke="#EA580C" stroke-width="1.5" filter="url(#shadow)"/>
+
+  <text x="600" y="418" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="bold" fill="#9A3412">The Learning Loop</text>
+
+  <!-- Loop steps -->
+  <rect x="275" y="432" width="145" height="58" rx="6" fill="#FFFFFF" stroke="#FDBA74" stroke-width="1"/>
+  <text x="347" y="455" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="bold" fill="#1E293B">Execution</text>
+  <text x="347" y="472" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Outcomes recorded</text>
+
+  <line x1="422" y1="461" x2="448" y2="461" stroke="#EA580C" stroke-width="2" marker-end="url(#loop-arrow)"/>
+
+  <rect x="453" y="432" width="145" height="58" rx="6" fill="#FFFFFF" stroke="#FDBA74" stroke-width="1"/>
+  <text x="525" y="455" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="bold" fill="#1E293B">CBR Retain</text>
+  <text x="525" y="472" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Experience stored</text>
+
+  <line x1="600" y1="461" x2="626" y2="461" stroke="#EA580C" stroke-width="2" marker-end="url(#loop-arrow)"/>
+
+  <rect x="631" y="432" width="145" height="58" rx="6" fill="#FFFFFF" stroke="#FDBA74" stroke-width="1"/>
+  <text x="703" y="455" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="bold" fill="#1E293B">Retrieve &amp; Adapt</text>
+  <text x="703" y="472" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">Routing + planning</text>
+
+  <!-- Loop-back arrow -->
+  <path d="M 780 461 C 850 461 850 530 600 530 C 350 530 260 500 275 461"
+        stroke="#EA580C" stroke-width="2" fill="none"
+        stroke-dasharray="6 3"
+        marker-end="url(#loop-arrow)"/>
+  <text x="600" y="548" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#EA580C" font-weight="bold">Feedback — the platform gets better with use</text>
+
+  <!-- Arrows: subsystems → learning loop -->
+  <line x1="990" y1="202" x2="850" y2="388" stroke="#94A3B8" stroke-width="1.5" stroke-dasharray="4 2" marker-end="url(#arrow)"/>
+  <line x1="300" y1="352" x2="400" y2="388" stroke="#94A3B8" stroke-width="1.5" stroke-dasharray="4 2" marker-end="url(#arrow)"/>
+  <line x1="900" y1="352" x2="800" y2="388" stroke="#94A3B8" stroke-width="1.5" stroke-dasharray="4 2" marker-end="url(#arrow)"/>
+
+  <!-- ═══════════════ Shared Infrastructure (bottom bar) ═══════════════ -->
+
+  <rect x="30" y="575" width="1140" height="42" rx="6" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="1"/>
+  <text x="600" y="593" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="#334155">Shared Infrastructure</text>
+  <text x="600" y="609" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#64748B">CDI Decorators · Tenant Scoping · Fusion Strategies · Consolidation Pipeline · Semantic Deduplication</text>
+
+  <!-- ═══════════════ Legend ═══════════════ -->
+  <g font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#64748B">
+    <rect x="340" y="635" width="12" height="12" rx="2" fill="#3B82F6"/>
+    <text x="358" y="645">Retrieval</text>
+    <rect x="440" y="635" width="12" height="12" rx="2" fill="#8B5CF6"/>
+    <text x="458" y="645">Reasoning</text>
+    <rect x="560" y="635" width="12" height="12" rx="2" fill="#EA580C"/>
+    <text x="578" y="645">Learning Loop</text>
+    <rect x="700" y="635" width="12" height="12" rx="2" fill="#94A3B8"/>
+    <text x="718" y="645">Shared</text>
+  </g>
+</svg>
