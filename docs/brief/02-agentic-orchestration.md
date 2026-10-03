@@ -180,6 +180,59 @@ with the ledger's Bayesian trust scores and the engine's routing
 policies — trust is not a number, it is a signal in a composable
 routing decision.
 
+### Stigmergic Coordination (Hive Mind)
+
+A fundamentally different coordination paradigm. Stigmergy — from
+Greek *stigma* (mark) + *ergon* (work) — is coordination through
+environment modification. Agents don't communicate directly; they
+observe and modify a shared environment, and coordination emerges
+from their individual reactions to environmental changes. The
+canonical example is ant pheromone trails.
+
+Six implemented foundation SPIs power the model:
+
+- **Signal/Pheromone Model** — `SignalRegistry`, `SignalSpace` with
+  temporal signals that decay and reinforce over time. Cross-case
+  signal visibility via RAS pheromone CloudEvent bridge.
+- **Environment Observation** — `EnvironmentObserver`,
+  `ObservationRegistry` for agents to perceive CaseContext patterns.
+- **Dynamic Interest Registration** — `InterestSpace`,
+  `InterestDeclaration` for runtime observation interest management.
+- **Agent Discovery & Neighbors** — `NeighborSpace` for emergent
+  topology from shared activity. Agents discover each other through
+  co-participation, not configuration.
+- **Local Rule Evaluation** — `RuleSpace`, `RuleRegistry`,
+  `LocalRule` for per-agent condition→action rules that drive the
+  perceive→decide→act cycle.
+- **Convergence Detection** — `ConvergenceDetector`,
+  `BudgetEnforcer`, `ActivityTracker` for emergent termination.
+  The swarm knows when it's done without a central coordinator.
+
+The `StigmergyExecutionModel` composes all six SPIs into a coherent
+coordination model — a case author declares `type: stigmergy` and
+gets environment-aware swarm coordination with automatic convergence
+detection. The `SwarmExecutionModel` extends this with self-selected
+routing, self-provisioning, and behavioral fingerprinting.
+
+Workers access all facets through domain-organized APIs on
+`WorkerRuntime`: `signals()`, `interests()`, `neighbors()`,
+`rules()`.
+
+No competitor offers stigmergic coordination as a built-in
+execution model alongside traditional orchestration patterns.
+
+### Structured Chat Platform
+
+The communications mesh extends into a full chat infrastructure
+stack. The platform's `ChatPlatform` SPI (10 capability interfaces
+including Messaging, Threading, Reactions, Typing, Presence, Search,
+Pinning, Polls, Scheduling, Attachments) provides a uniform chat
+surface across Slack, Discord, Teams, email, and custom providers.
+Qhorus speech acts layer on top — every chat message is a normative
+commitment, not just text. The chat-app workbench provides a
+browser-based qhorus UI with WebSocket protocol (7 datasets),
+H2/PostgreSQL persistence, and full lifecycle integration.
+
 ---
 
 ## What Makes It Different
