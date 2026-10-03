@@ -175,6 +175,42 @@ agents defined with structured descriptors, personalised through
 experience, voiced through profiles, and rendered through
 mood-modulated speech synthesis.
 
+### Affordance & World Model
+
+Agents perceive and interact with a typed world model, not raw data
+streams. `ObservableEntity`, `Affordance`, `ActionDescriptor`, and
+`PerceptionFilter` compose a formal environment perception layer.
+YAML-declarable. Agents don't just react to events — they perceive
+affordances in their environment and select actions based on what the
+environment allows. No competing framework offers typed affordance
+perception as infrastructure.
+
+### Drive Architecture & Intrinsic Motivation
+
+Agents have intrinsic motivation. The drive architecture creates
+goals autonomously — not just responding to external task
+assignments. Drive signals translate into concrete `AgentGoal`
+instances for the engine's goal lifecycle. This is the bridge between
+social cognition (mood, drives) and concrete execution: an agent's
+internal motivational state produces real work through the case
+engine.
+
+Combined with autonomous goal generation, this means CaseHub agents
+self-direct. They observe their environment (affordances), feel
+intrinsic motivation (drives), generate goals, and pursue them
+through the case lifecycle. This is a fundamentally different agent
+model from "receive task, execute task, return result."
+
+### Agent Learning & Memory Architecture
+
+Cross-cutting architecture bridging agent-level memory, reflection,
+and goal lifecycle across neocortex, eidos, and blocks. Agents
+remember individual experiences, synthesise insights, and form and
+revise goals based on accumulated experience. Three-tier memory model:
+episodic events (Tier 1) → experience consolidation (Tier 2) →
+structured knowledge graph (Tier 3). Agents graduate lived experience
+into persistent understanding.
+
 ### Social Cognition Framework
 
 90+ types implementing a full social intelligence stack. Nothing

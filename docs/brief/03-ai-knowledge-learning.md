@@ -241,6 +241,33 @@ entity types at runtime.
 **Extent:** 8 modules (api, core, inmem, intelligence, spring, sqlite,
 testing, main). 72-test contract test suite.
 
+### Knowledge Consolidation Pipeline
+
+Automatic maintenance of the knowledge graph through a multi-phase
+background pipeline: conversation extraction → scheduling →
+merge detection → community summaries → access-frequency tracking.
+Five phases landed. The knowledge graph doesn't just grow — it
+self-maintains, deduplicates, and surfaces community structure
+from accumulated entries.
+
+### Experience Consolidation
+
+Bridges episodic experience events (Tier 2 memory) into the
+knowledge graph (Tier 3). Agents graduate lived experience into
+structured knowledge — patterns discovered during case execution
+become permanent graph entries that inform future reasoning.
+This completes the three-tier memory model: raw events → episodic
+memory → structured knowledge.
+
+### Cognitive Schema Flywheel
+
+A self-reinforcing loop: schema discovery → pattern recognition →
+improved extraction → richer schemas. The knowledge system improves
+its own extraction capabilities over time. Each round of extraction
+reveals new patterns that become templates for future extraction.
+The knowledge infrastructure gets better at learning, not just at
+storing what it's learned.
+
 ---
 
 ## What Makes It Different
