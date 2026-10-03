@@ -84,6 +84,32 @@ obligation fan-out, conversation stall, echo chamber, circular
 delegation. The platform doesn't just record what happened — it
 actively monitors for dysfunction.
 
+### A2A Protocol Bridge
+
+CaseHub's communications mesh is not a closed system. The A2A
+(Agent-to-Agent) protocol bridge provides Google A2A-compatible agent
+discovery, task messaging, SSE streaming, and push notifications.
+Agent cards are JWS-signed for verifiable identity.
+
+This positions CaseHub as an open ecosystem participant — agents
+within CaseHub can interoperate with A2A-compatible agents on other
+platforms through the same normative accountability guarantees that
+govern internal communication.
+
+### Agent Mesh Primitives
+
+Two mesh layout patterns structure how agents participate:
+
+- **NormativeChannelLayout** — four-channel architecture: broadcast,
+  coordination, task, and oversight. Full normative accountability
+  with protocol enforcement on every channel.
+- **SimpleLayout** — two-channel architecture: broadcast and task.
+  Lighter governance for simpler coordination patterns.
+
+Mesh participation strategies determine how agents enter, contribute
+to, and exit coordinated work — the same agent can participate in
+multiple meshes simultaneously with different roles.
+
 ### Conversation Protocol & Epistemic Common Ground
 
 Multi-agent conversations get formal structure. ConversationProjection

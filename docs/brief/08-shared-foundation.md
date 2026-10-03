@@ -84,6 +84,70 @@ digest batching.
   SSE push delivery. REST API for presentation.
 - 14 notification modules
 
+### DataSource Alpha Network
+
+Rete-style event routing with tenant-scoped registries and
+self-pruning lifecycle. Applying the Rete algorithm — the same
+pattern-matching engine used in production rule systems — to domain
+event routing. Data sources register with typed schemas; consumers
+subscribe with pattern predicates. The alpha network prunes inactive
+subscriptions and optimises matching paths automatically.
+
+This is not a message bus. It is a discrimination network that
+evaluates every event against every active subscription in a single
+pass — the same algorithmic efficiency that made Drools fast, applied
+to domain event distribution.
+
+### Preference Management
+
+Scope-hierarchical business configuration with runtime changes,
+schema discovery, and validation. Configuration values resolve
+through a tenant → case-type → case-instance ancestor chain, with
+more specific scopes overriding less specific ones.
+
+- **Runtime changes** — preferences update without restart. Expression
+  engine `$config` scope references resolve live.
+- **Schema validation** — each preference key declares its type,
+  constraints, and default. Invalid values are rejected at write time.
+- **Schema discovery** — REST API exposes available preference keys,
+  types, and current values per scope
+- Feeds expression engine config injection, SLA thresholds,
+  notification policies, compliance parameters, and behavioural
+  contract bounds
+
+### Callback System
+
+Remote procedure call over HTTP with lease management, retry, and
+heartbeat renewal. 10 callback modules enable distributed SPI
+deployment: a service on one node can implement an SPI that another
+node calls as if it were local.
+
+- **Lease lifecycle** — register → heartbeat → release with automatic
+  expiry detection
+- **Retry with backoff** — configurable retry policies for transient
+  network failures
+- **Multi-format** — JSON and CBOR serialisation
+- Enables deployment patterns where specialised SPI implementations
+  (e.g. a GPU-accelerated inference provider) run on dedicated nodes
+  while the rest of the platform sees a standard CDI bean
+
+### Streams Integration
+
+Five event stream connectors for enterprise event infrastructure:
+
+- **Kafka** — CloudEvent production and consumption with offset
+  management
+- **AMQP** — RabbitMQ/ActiveMQ integration with durable
+  subscriptions
+- **Webhook** — inbound HTTP event receivers with signature
+  verification
+- **Poll** — scheduled HTTP polling with change detection
+- **Camel** — Apache Camel routes for integration patterns
+
+All connectors construct standardised CloudEvents — downstream
+consumers (ganglia, notification pipeline, reconciliation listeners)
+don't know or care which transport delivered the event.
+
 ### Agent Infrastructure
 
 Vendor-agnostic `AgentProvider` SPI with 7 pluggable backends:

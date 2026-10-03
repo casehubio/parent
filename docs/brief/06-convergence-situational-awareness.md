@@ -150,6 +150,26 @@ substitution. Flyway V1–V10.
 
 ---
 
+## RAS Pheromone CloudEvent Bridge
+
+Cases can influence each other's situation detection through shared
+pheromone signals. When a case emits a pheromone CloudEvent —
+signalling a condition discovered during its own execution — other
+cases' ganglia can incorporate that signal into their detection
+logic.
+
+This is cross-case signal visibility: a fraud investigation case
+that identifies a suspicious pattern can emit a pheromone that
+triggers heightened sensitivity in related compliance cases — without
+any direct coupling between the case definitions.
+
+The metaphor is biological: just as ant pheromone trails guide colony
+behaviour without centralised coordination, CaseHub pheromones enable
+emergent cross-case awareness. No equivalent exists in event
+processing systems, where cases are isolated processing contexts.
+
+---
+
 ## Composable Signal Architecture
 
 Seven sealed ChainMode variants compose simple signals into complex

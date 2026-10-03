@@ -134,6 +134,43 @@ resolution: SPI beans (programmatic, highest priority) → config
 properties → `EndpointRegistry` (tenant-aware runtime resolution).
 The same capability tag resolves to different endpoints per tenant.
 
+**Worker rights and scoped credentials.** Workers receive
+case-scoped credentials at dispatch time — security boundary per
+case, not per service. Auto-managed ACL grants mean each worker
+sees only the data it needs for its specific case step. Differential
+revocation for shared service accounts ensures credentials are
+withdrawn when the case step completes, even if the underlying
+service account is shared across tenants.
+
+**DataChannel for inter-worker communication.** `DataChannel<T>`
+provides typed, bidirectional streaming between workers within a
+case. `Exchange<T>` enables worker-to-worker composition via
+`andThen()` — chain workers into pipelines where the output of one
+feeds directly into the next without serialisation to case context.
+
+### Case-to-Playbook Dispatch
+
+`StepFileCallableDispatcher` bridges the case engine to the playbook
+system. Cases dispatch playbook step files as callable work —
+a case binding can reference a `.step` file, and the engine executes
+it as a worker invocation with full lifecycle tracking. This connects
+declaration (playbook steps), execution (worker dispatch), and the
+application surface (ARIA-based automation) in a single dispatch
+path.
+
+### Execution Resilience
+
+**Circuit breaker with event-sourced recovery.** Circuit breaker
+state survives application restarts via EventLog event-sourcing.
+State transitions (CLOSED → OPEN → HALF_OPEN) are persisted as
+events, meaning a restart doesn't reset protection thresholds.
+
+**Dead letter queue.** Failed dispatches move to a DLQ with
+PoisonPill detection — messages that repeatedly fail are quarantined
+rather than blocking the queue. Configurable backoff strategies and
+auto-replay policies. Integration with the notifications pipeline
+for operator alerts.
+
 ### Work Item Management
 
 Not a checkbox feature — a standalone product. 38 modules, 196 API
@@ -175,10 +212,22 @@ and `routingExperiences`) threaded through the entire lifecycle.
 bindings declared in YAML. Engine-work bridge, ledger supplement for
 audit, notifications on compensation, and visualization support.
 
-**Annotation-driven tasks.** `@HumanApproval`, `@RequiresQuorum`,
-`@Escalate`, `@SkillMatch` for declarative human-in-the-loop
-integration. MCP/LLM discovery via 25+ REST resources annotated with
-`@McpDomain`.
+**Annotation-driven human oversight.** Add `@HumanApproval` to any
+worker and it automatically gets human oversight — no workflow
+redesign, no plumbing code. `@RequiresQuorum(3)` gates execution
+behind multi-approver consensus. `@Escalate` declares escalation
+paths. `@SkillMatch` routes to humans with specific expertise.
+These annotations bridge Declaration and Execution: a domain expert
+adds one line to a YAML binding, and the platform wires up the
+full human-in-the-loop lifecycle — task creation, inbox routing,
+SLA enforcement, approval tracking, and audit trail.
+
+**Issue tracker SPI.** Work items bridge to external issue trackers
+(GitHub, Jira) via webhooks. CloudEvent bridge enables distributed
+task creation — an event from an external system creates a tracked
+work item with full SLA and lifecycle management. Quarkus-Flow
+workflow DSL provides an alternative imperative declaration
+approach for complex approval chains.
 
 ### Evolution Conductor
 

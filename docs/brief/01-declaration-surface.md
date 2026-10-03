@@ -151,6 +151,38 @@ Terraform providers require Go. CaseHub YAML plugins require zero
 programming knowledge for complete, self-healing resource lifecycle
 management.
 
+### LSP & IDE Intelligence
+
+The declaration surface is not just files — it's an authored
+experience. A full LSP (Language Server Protocol) server for CaseHub
+YAML formats provides schema-aware completion, diagnostics, hover
+documentation, and refactoring support. The schema registry drives
+all of it — as new YAML declaration capabilities are added to the
+platform, the LSP server picks them up automatically.
+
+An IntelliJ plugin surfaces these capabilities natively: inline
+validation, navigation to referenced definitions, rename refactoring
+across YAML declarations, and quick-fix suggestions when declarations
+reference unknown types or misspell strategy names.
+
+This makes the "YAML is the declaration surface" promise practical.
+Domain experts don't need to memorise schema structures — the IDE
+tells them what's valid, suggests completions, and catches errors
+before anything runs.
+
+### yaml-core — The Composition Engine
+
+Underneath every YAML surface sits yaml-core: a pure Java YAML
+processing engine providing variable resolution, for-each expansion,
+truthiness evaluation, CSV parsing, and a module system. Zero external
+dependencies. J2CL-transpilable for browser use.
+
+yaml-core is shared infrastructure — the engine's case definitions,
+the desiredstate's plugin system, and the pages framework's dashboard
+declarations all build on the same composition primitives. When
+yaml-core gains a feature (e.g. conditional `when` blocks), every
+declaration surface gains it simultaneously.
+
 ### Binding Expressions
 
 Three expression engines connect declarations to runtime data:

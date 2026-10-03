@@ -38,6 +38,24 @@ writes to the same `LedgerAppender` SPI with one consistent API. A
 case transition, a worker completion, a message dispatch, and a trust
 score update all produce entries in the same Merkle chain.
 
+### Annotation-Driven Audit
+
+Add `@Audited` to any CDI or Spring method and it gets a
+tamper-evident audit trail — zero code, zero configuration. The
+annotation triggers build-time APT validation and runtime CDI
+interception. Three annotations cover the common cases:
+
+- **`@Audited`** — every call produces a ledger entry with method
+  name, arguments, return value, caller identity, and tenant context
+- **`@Attested`** — combines audit with peer attestation, so the
+  entry can be endorsed or challenged by other actors
+- **`@ComplianceSupplement`** — attaches regulatory evidence
+  (report type, framework reference) to the ledger entry
+
+Build-time validation catches misuse — `@Audited` on a non-CDI
+class, missing `@Attested` on a method that writes compliance data.
+Errors at compile time, not at runtime.
+
 **What makes this different:** Competing platforms use appendable
 databases for audit trails. Appendable means mutable — entries can be
 silently altered or deleted. CaseHub's Merkle MMR makes any tampering
@@ -75,6 +93,15 @@ providers (alongside workload, CBR experience, personality, and
 semantic match). A worker with declining trust is automatically
 deprioritised — no manual intervention, no threshold rules, just
 continuous Bayesian recomputation from attestation history.
+
+### Trust Federation
+
+Trust score export/import across CaseHub deployments. Three
+federation services enable multi-instance enterprises to share
+trust intelligence — an agent proven reliable in one deployment
+carries its reputation to another. Bootstrap from external trust
+sources means new deployments don't start from zero — existing
+organisational trust assessments seed the initial scores.
 
 **What makes this different:** Competing platforms either don't score
 trust at all (fire-and-forget) or use simple threshold rules (agent
@@ -142,6 +169,24 @@ determine how messages are delivered. External platforms (Slack,
 Discord, Teams) bridge into mesh channels via the connector SPIs,
 meaning the same governance applies to messages sent through Slack as
 to messages sent between AI agents.
+
+### Channel Summaries
+
+Per-channel maintained summaries with LLM-hookable
+`SummaryUpdateHook` SPI. Annotations mark channels for automatic
+summarisation. Scheduled sweeps keep summaries current during
+long-running agent conversations. Summaries feed into agent system
+prompts via the context window, giving agents situational awareness
+of conversation history without full replay.
+
+### A2A Protocol Bridge
+
+Google A2A-compatible interoperability. Agent discovery via A2A
+agent cards with JWS signing. Task messaging maps to CaseHub
+commitments. SSE streaming for real-time updates. Push notifications
+for asynchronous completion. Positions CaseHub as an open ecosystem
+participant — agents from other A2A-compliant platforms can interact
+with CaseHub agents through the same governance infrastructure.
 
 **What makes this different:** LangChain, CrewAI, and AutoGen use
 fire-and-forget messaging. An agent sends a message; the framework
@@ -351,11 +396,10 @@ applies to every channel — including bridged external platforms like
 Slack and Teams — because connectors integrate at the mesh layer, not
 at the application layer.
 
-The annotation-driven audit (`@Audited`, `@Attested`,
-`@ComplianceSupplement`) means any CDI or Spring method can be made
-accountable with a single annotation. Zero-code audit trail for any
-business operation — the same build-time validation and runtime
-interception used across the platform.
+The annotation-driven audit (see §Annotation-Driven Audit above)
+means any CDI or Spring method across the platform becomes
+accountable with a single annotation — same build-time validation
+and runtime interception everywhere.
 
 ---
 

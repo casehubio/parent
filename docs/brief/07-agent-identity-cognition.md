@@ -156,6 +156,25 @@ assessment. Judgment is an explicit step, not an implicit LLM call.
 25 modules in the blocks repo support BDI alongside the orchestration
 patterns. 903 Java source files total.
 
+### Speech Pipeline
+
+Agents don't just have personality — they can speak it. The speech
+pipeline integrates sherpa-onnx via Foreign Function Memory (FFM) for
+on-device speech-to-text and text-to-speech processing.
+
+- **AvatarCognition SPI** — social cognition (mood, drives,
+  personality) feeds into speech generation. An anxious agent speaks
+  differently from a confident one.
+- **Per-phoneme timing** — lip-sync animation data generated alongside
+  audio for visual avatar rendering
+- **Social cognition integration** — speech delivery adapts to the
+  agent's current emotional state and personality disposition
+
+This completes the identity → personality → voice → speech chain:
+agents defined with structured descriptors, personalised through
+experience, voiced through profiles, and rendered through
+mood-modulated speech synthesis.
+
 ### Social Cognition Framework
 
 90+ types implementing a full social intelligence stack. Nothing
