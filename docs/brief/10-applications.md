@@ -7,7 +7,7 @@ surface, same accountability.*
 
 ## What This Proves
 
-These are not demos. They are production-grade domain applications
+These are not demos. They are production-grade reference architectures
 built entirely on the CaseHub platform, each bringing its own domain
 logic while relying on the shared foundation for orchestration,
 accountability, agent coordination, trust scoring, and learning.
@@ -315,44 +315,13 @@ existing IoT architecture.
 
 ---
 
-## Other Applications
-
-**Ops** — The platform's own operations console. Runs the CaseHub
-engine's case model against CaseHub's own infrastructure — 7
-fully-implemented case descriptors, container lifecycle via Podman,
-adaptive topology with hysteresis, 29 @McpDomain operations. The
-meta-application: CaseHub managing CaseHub.
-
-**Drafthouse** — MCP-driven document review and multi-participant
-LLM debate. 52 MCP tools across 5 operational modes, composable
-Facet SPI for extensible review dimensions, Eidos identity model
-for multi-LLM reviewer registry. The most tool-dense application
-in the portfolio.
-
-**QuarkMind** — StarCraft II game AI built on a game-agnostic agency
-framework. 11 Maven + 2 Python modules, 68 strategy archetypes,
-Python ONNX classifier trained on 151,000 replays. Proves the
-CaseHub harness pattern works at millisecond game-loop granularity
-outside regulated domains.
-
-**Life** — Personal life automation covering household coordination,
-health monitoring, financial review, elder care. 8 case definitions,
-7 sentinel monitors, 4 OpenClaw agents. The platform applied to
-consumer-grade personal automation.
-
-**Chat App** — Real-time messaging backed by the Qhorus
-communications mesh with @McpDomain APIs. The thinnest application
-in the portfolio — proof that CaseHub's messaging infrastructure
-works standalone without the full engine.
-
----
-
 ## What the Portfolio Proves
 
-Ten applications across ten unrelated domains. Each one built by
-swapping the YAML case definitions and domain workers while the
-platform provides orchestration, accountability, agent coordination,
-trust scoring, learning, situation awareness, and reconciliation.
+Six reference architectures across six unrelated domains. Each one
+built by swapping the YAML case definitions and domain workers while
+the platform provides orchestration, accountability, agent
+coordination, trust scoring, learning, situation awareness, and
+reconciliation.
 
 The consistency is structural, not cosmetic. Every application
 shares:
@@ -360,14 +329,14 @@ shares:
 - **The same CDI context** — capabilities compose at runtime without
   integration glue. An AML agent's trust score uses the same
   EigenTrust algorithm as a trading agent's.
-- **The same YAML surface** — a clinical trial coordinator and a
-  game AI strategist express intent in the same declaration
+- **The same YAML surface** — a clinical trial coordinator and an
+  IoT device manager express intent in the same declaration
   language. The runtime beneath is identical.
 - **The same accountability guarantees** — Merkle-chained audit
   entries in AML investigations use the same tamper-evident
-  structure as container lifecycle events in Ops.
+  structure as SOC containment decisions.
 - **The same learning loop** — CBR feedback from AML triage,
-  clinical adverse events, SOC incident patterns, and StarCraft
+  clinical adverse events, SOC incident patterns, and trading
   strategy outcomes all flow through the same retrieval-adapt-apply
   cycle.
 
