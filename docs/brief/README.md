@@ -17,7 +17,8 @@ warrants.
 |-------|-------|----------|----------------|
 | **0** | Positioning | Everyone | Executive summary — differentiators, themes, market context. Most readers stop here. |
 | **1** | Capability Areas | Technical leaders | What each area does, what makes it different, how deep it goes. |
-| **2** | Vision | Strategists | The trajectory — where the platform is heading, organised by maturity stage. |
+| **2** | Applications | Domain experts | Six production-grade domain applications — what they do, how they use the platform, especially the AI/LLM parts. |
+| **3** | Vision | Strategists | The trajectory — where the platform is heading, organised by maturity stage. |
 
 ---
 
@@ -44,7 +45,13 @@ overview SVGs.
 **Appendix:** [YAML Walkthrough](01-yaml-walkthrough.md) — annotated
 examples across the lifecycle.
 
-## Layer 2 — Vision
+## Layer 2 — Applications
+
+[**The Application Portfolio**](10-applications.md) — AML, Clinical,
+SOC, FSI Trading, DevTown, IoT. What each application does, how it
+uses the platform, and what makes it interesting.
+
+## Layer 3 — Vision
 
 [**Where the Platform Is Heading**](23-vision.md) — three
 horizons: completing, composing, deepening.
