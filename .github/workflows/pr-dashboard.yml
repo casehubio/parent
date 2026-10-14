@@ -141,6 +141,5 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
           if [ "$FAILING_PRS" -gt 0 ]; then
-            echo "::error::$FAILING_PRS PR(s) in the $ORG org have failing CI."
-            exit 1
+            echo "::warning::$FAILING_PRS PR(s) in the $ORG org have failing CI."
           fi

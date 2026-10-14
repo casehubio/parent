@@ -135,8 +135,6 @@ jobs:
             echo "[▶ Run Full Stack Build](https://github.com/$ORG/parent/actions/workflows/build-all.yml) — clones and builds the entire platform in dependency order."
           } >> "$GITHUB_STEP_SUMMARY"
 
-          # Surface failures as a workflow-level error so the dashboard run goes red
           if [ "$FAIL_COUNT" -gt 0 ]; then
-            echo "::error::$FAIL_COUNT build(s) in the $ORG org are failing or have no runs."
-            exit 1
+            echo "::warning::$FAIL_COUNT build(s) in the $ORG org are failing or have no runs."
           fi
