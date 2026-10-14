@@ -27,9 +27,9 @@ NS = {"m": "http://maven.apache.org/POM/4.0.0"}
 ORG = "casehubio"
 
 BUILD_REPOS = [
-    "platform", "worker", "ledger", "work", "qhorus", "engine", "eidos",
-    "connectors", "iot", "desiredstate", "ras", "openclaw", "claudony",
-    "ops", "devtown", "workers", "life", "aml", "clinical", "soc",
+    "platform", "casehub-worker", "ledger", "work", "qhorus", "engine", "eidos",
+    "connectors", "iot", "casehub-desiredstate", "casehub-ras", "openclaw", "claudony",
+    "casehub-ops", "devtown", "workers", "life", "aml", "clinical", "soc",
     "fsitrading", "blocks", "neocortex", "quarkmind",
 ]
 
@@ -47,7 +47,7 @@ def extract_bom_artifacts(bom_source):
     for dep in root.findall(".//m:dependencyManagement/m:dependencies/m:dependency", NS):
         gid = dep.find("m:groupId", NS)
         aid = dep.find("m:artifactId", NS)
-        if gid is not None and aid is not None and gid.text == "io.casehub":
+        if gid is not None and aid is not None and (gid.text.startswith("io.casehub") or gid.text.startswith("io.quarkmind")):
             artifacts.add(aid.text)
     return artifacts
 
