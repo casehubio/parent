@@ -344,6 +344,201 @@ def cmd_tag(args):
         print(f"{name:<30} {status:<8} {detail}")
 
 
+def _resolve_work_dir(name, tmpdir):
+    """Resolve a working directory for a repo — local if usable, cloned otherwise."""
+    if name == "parent":
+        local = PARENT_DIR
+    else:
+        local = get_local_path(name)
+
+    if local:
+        usable, reason = is_usable_local(local)
+        if usable:
+            has_upstream = git(["remote", "get-url", "upstream"], cwd=local, check=False).returncode == 0
+            remote = "upstream" if has_upstream else "origin"
+            return local, "local", remote, None
+        else:
+            print(f"  {name}: local not usable ({reason}), cloning...")
+            work_dir, msg = clone_bare(name, tmpdir)
+            if not work_dir:
+                return None, None, None, f"clone failed: {msg}"
+            return work_dir, "cloned", "origin", None
+    else:
+        work_dir, msg = clone_bare(name, tmpdir)
+        if not work_dir:
+            return None, None, None, f"clone failed: {msg}"
+        return work_dir, "cloned", "origin", None
+
+
+def _bump_version(name, work_dir, source, remote, old_ver, new_ver, push, commit_msg):
+    """Bump version in a repo's pom.xml, commit, and optionally push."""
+    pom = work_dir / "pom.xml"
+    if not pom.exists():
+        return "SKIP", "no pom.xml"
+
+    current = read_version(pom)
+    if old_ver and current != old_ver:
+        return "SKIP", f"expected {old_ver}, found {current}"
+    if current == new_ver:
+        return "OK", f"already at {new_ver}"
+
+    changed = set_version_in_pom(pom, new_ver, current)
+    if not changed:
+        return "SKIP", f"no version match for {current}"
+
+    git(["add", "pom.xml"], cwd=work_dir)
+    git(["commit", "-m", commit_msg], cwd=work_dir)
+
+    if push:
+        push_result = git(["push", remote, "main"], cwd=work_dir, check=False)
+        if push_result.returncode != 0:
+            return "FAIL", f"push failed: {push_result.stderr.strip()[:80]}"
+
+    return "OK", f"{current} -> {new_ver} ({source}{', pushed' if push else ''})"
+
+
+def _tag_repo(name, work_dir, remote, tag_name, push):
+    """Tag a repo at HEAD, optionally push the tag."""
+    existing = git(["tag", "-l", tag_name], cwd=work_dir, check=False)
+    if tag_name in existing.stdout.strip().split("\n"):
+        return "OK", f"{tag_name} already exists"
+
+    git(["tag", tag_name], cwd=work_dir)
+
+    if push:
+        push_result = git(["push", remote, tag_name], cwd=work_dir, check=False)
+        if push_result.returncode != 0:
+            return "FAIL", f"tag push failed: {push_result.stderr.strip()[:80]}"
+
+    return "OK", f"tagged {tag_name}{' (pushed)' if push else ''}"
+
+
+def cmd_release(args):
+    """Full release: drop SNAPSHOT, commit, tag, push, then bump to next SNAPSHOT."""
+    release_version = args.version
+    if "SNAPSHOT" in release_version:
+        print("Release version must not contain SNAPSHOT.", file=sys.stderr)
+        return 1
+
+    parts = release_version.split(".")
+    next_minor = int(parts[-1]) + 1
+    next_version = ".".join(parts[:-1] + [str(next_minor)]) + "-SNAPSHOT"
+    tag_name = f"v{release_version}"
+
+    include_apps = args.include_apps
+    repos = load_repos(include_apps)
+    all_repos = ["parent"] + repos
+    push = args.push
+    dry_run = args.dry_run
+
+    print(f"Release plan:")
+    print(f"  1. Set version: * -> {release_version}")
+    print(f"  2. Tag: {tag_name}")
+    print(f"  3. Prepare next: {release_version} -> {next_version}")
+    print(f"  Push: {'yes' if push else 'no (local only)'}")
+    print(f"  Repos: {len(all_repos)}")
+    print()
+
+    if dry_run:
+        print("DRY RUN — no changes will be made.\n")
+
+    tmpdir = tempfile.mkdtemp(prefix="casehub-release-")
+    phase1_results = []
+    phase2_results = []
+    phase3_results = []
+    repo_dirs = {}
+
+    try:
+        # Resolve all work dirs first
+        for name in all_repos:
+            work_dir, source, remote, err = _resolve_work_dir(name, tmpdir)
+            if err:
+                phase1_results.append((name, "SKIP", err))
+                continue
+            repo_dirs[name] = (work_dir, source, remote)
+
+        # Phase 1: set release version
+        print(f"── Phase 1: Set version to {release_version} ──")
+        for name in all_repos:
+            if name not in repo_dirs:
+                continue
+            work_dir, source, remote = repo_dirs[name]
+            if dry_run:
+                pom = work_dir / "pom.xml"
+                if not pom.exists():
+                    phase1_results.append((name, "SKIP", "no pom.xml"))
+                    continue
+                cur = read_version(pom)
+                phase1_results.append((name, "DRY", f"{cur} -> {release_version} ({source})"))
+            else:
+                status, detail = _bump_version(
+                    name, work_dir, source, remote, None,
+                    release_version, push, f"Release {release_version}"
+                )
+                phase1_results.append((name, status, detail))
+                if status == "FAIL":
+                    print(f"  ABORT: {name} failed — {detail}")
+                    break
+
+        _print_results("Phase 1 — release version", phase1_results)
+        if any(s == "FAIL" for _, s, _ in phase1_results):
+            print("\nRelease aborted due to failure in Phase 1.")
+            return 1
+
+        # Phase 2: tag
+        print(f"\n── Phase 2: Tag {tag_name} ──")
+        for name in all_repos:
+            if name not in repo_dirs:
+                continue
+            work_dir, source, remote = repo_dirs[name]
+            if dry_run:
+                phase2_results.append((name, "DRY", f"would tag {tag_name}"))
+            else:
+                status, detail = _tag_repo(name, work_dir, remote, tag_name, push)
+                phase2_results.append((name, status, detail))
+                if status == "FAIL":
+                    print(f"  ABORT: {name} failed — {detail}")
+                    break
+
+        _print_results("Phase 2 — tag", phase2_results)
+        if any(s == "FAIL" for _, s, _ in phase2_results):
+            print("\nRelease aborted due to failure in Phase 2.")
+            return 1
+
+        # Phase 3: prepare next SNAPSHOT
+        print(f"\n── Phase 3: Prepare {next_version} ──")
+        for name in all_repos:
+            if name not in repo_dirs:
+                continue
+            work_dir, source, remote = repo_dirs[name]
+            if dry_run:
+                phase3_results.append((name, "DRY", f"{release_version} -> {next_version} ({source})"))
+            else:
+                status, detail = _bump_version(
+                    name, work_dir, source, remote, release_version,
+                    next_version, push, f"Prepare {next_version}"
+                )
+                phase3_results.append((name, status, detail))
+
+        _print_results("Phase 3 — next snapshot", phase3_results)
+
+    finally:
+        shutil.rmtree(tmpdir, ignore_errors=True)
+
+    ok = sum(1 for _, s, _ in phase1_results + phase2_results + phase3_results if s == "OK")
+    fail = sum(1 for _, s, _ in phase1_results + phase2_results + phase3_results if s == "FAIL")
+    print(f"\nRelease {'(dry run) ' if dry_run else ''}complete: {ok} operations succeeded, {fail} failed")
+    return 1 if fail > 0 else 0
+
+
+def _print_results(heading, results):
+    print(f"\n{heading}:")
+    print(f"  {'Repo':<30} {'Status':<8} Detail")
+    print(f"  {'-' * 75}")
+    for name, status, detail in results:
+        print(f"  {name:<30} {status:<8} {detail}")
+
+
 def main():
     parser = argparse.ArgumentParser(description="CaseHub ecosystem version management")
     sub = parser.add_subparsers(dest="command")
@@ -365,6 +560,12 @@ def main():
     p_tag.add_argument("--include-apps", action="store_true")
     p_tag.add_argument("--repo", help="Single repo only")
 
+    p_rel = sub.add_parser("release", help="Full release: drop SNAPSHOT, tag, prepare next")
+    p_rel.add_argument("version", help="Release version (e.g. 0.4) — must not contain SNAPSHOT")
+    p_rel.add_argument("--push", action="store_true", help="Push to upstream")
+    p_rel.add_argument("--dry-run", action="store_true")
+    p_rel.add_argument("--include-apps", action="store_true")
+
     args = parser.parse_args()
     if not args.command:
         parser.print_help()
@@ -376,6 +577,8 @@ def main():
         cmd_set_version(args)
     elif args.command == "tag":
         return cmd_tag(args)
+    elif args.command == "release":
+        return cmd_release(args)
     return 0
 
 

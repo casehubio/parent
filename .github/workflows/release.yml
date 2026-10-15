@@ -10,9 +10,10 @@ on:
           - status
           - set-version
           - tag
+          - release
         default: status
       version:
-        description: "Target version (e.g. 0.4-SNAPSHOT, 0.3) — required for set-version and tag"
+        description: "Target version (e.g. 0.4-SNAPSHOT for set-version, 0.4 for release/tag)"
         type: string
         default: ''
       include_apps:
@@ -46,6 +47,10 @@ jobs:
           fi
           if [ "${{ inputs.action }}" = "tag" ] && echo "${{ inputs.version }}" | grep -q SNAPSHOT; then
             echo "::error::Cannot tag a SNAPSHOT version"
+            exit 1
+          fi
+          if [ "${{ inputs.action }}" = "release" ] && echo "${{ inputs.version }}" | grep -q SNAPSHOT; then
+            echo "::error::Release version must not contain SNAPSHOT"
             exit 1
           fi
 
