@@ -62,12 +62,12 @@ jobs:
         run: |
           mkdir -p casehub
           declare -A REPO_OVERRIDE=([pages]="casehubio/casehub-pages" [worker]="casehubio/casehub-worker" [desiredstate]="casehubio/casehub-desiredstate" [ras]="casehubio/casehub-ras" [ops]="casehubio/casehub-ops" [flow]="mdproctor/flow")
-          declare -A TOKEN_OVERRIDE=([quarkmind]="$GH_TOKEN" [flow]="$GH_TOKEN")
+          # GH_PAT for all repos — GITHUB_TOKEN is repo-scoped, can't push to other repos
           clone_csv() {
             local csv=$1
             while IFS=',' read -r name _rest; do
               [[ "$name" =~ ^#|^$ ]] && continue
-              local token="${TOKEN_OVERRIDE[$name]:-$GITHUB_TOKEN}"
+              local token="$GH_TOKEN"
               local repo="${REPO_OVERRIDE[$name]:-casehubio/$name}"
               echo "Cloning $repo -> casehub/$name"
               git clone --depth=1 "https://x-access-token:${token}@github.com/${repo}.git" "casehub/$name" || echo "SKIP $name: clone failed"
