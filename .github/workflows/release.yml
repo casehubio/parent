@@ -83,11 +83,18 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Configure git identity
+        if: inputs.action != 'status'
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
       - name: "Run: ${{ inputs.action }}"
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          set -euo pipefail
           ARGS="${{ inputs.action }}"
           if [ "${{ inputs.action }}" != "status" ]; then
             ARGS="$ARGS ${{ inputs.version }}"
