@@ -19,7 +19,7 @@
 
   <groupId>io.casehub</groupId>
   <artifactId>casehub-aggregator</artifactId>
-  <version>0.2-SNAPSHOT</version>
+  <version>0.3</version>
   <packaging>pom</packaging>
 
   <name>CaseHub :: Full Stack Aggregator</name>
