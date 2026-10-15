@@ -6,7 +6,7 @@
 
   <groupId>io.casehub</groupId>
   <artifactId>casehub-parent</artifactId>
-  <version>0.2-SNAPSHOT</version>
+  <version>0.3</version>
   <packaging>pom</packaging>
 
   <name>CaseHub Parent</name>
@@ -26,7 +26,7 @@
   </organization>
 
   <properties>
-    <casehub.version>0.2-SNAPSHOT</casehub.version>
+    <casehub.version>0.3</casehub.version>
     <quarkus.platform.version>3.39.3</quarkus.platform.version>
     <maven.compiler.release>21</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

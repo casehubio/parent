@@ -346,9 +346,9 @@ casehub-pages-push,pages
 casehub-pages-push-runtime,pages
 casehub-pages-push-store-jdbc,pages
 casehub-pages-push-store-redis,pages
-casehub-pages-scenario,pages
-casehub-pages-scenario-client,pages
-casehub-pages-scenario-runtime,pages
+casehub-pages-playbook,pages
+casehub-pages-playbook-client,pages
+casehub-pages-playbook-runtime,pages
 casehub-pages-terminal,pages
 casehub-pages-terminal-runtime,pages
 casehub-pages-ui-static,pages
