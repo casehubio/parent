@@ -348,6 +348,8 @@ def _resolve_work_dir(name, tmpdir):
     """Resolve a working directory for a repo — local if usable, cloned otherwise."""
     if name == "parent":
         local = PARENT_DIR
+        if CI_MODE:
+            return local, "local", "origin", None
     else:
         local = get_local_path(name)
 
