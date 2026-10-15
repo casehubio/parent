@@ -1,0 +1,114 @@
+name: Ecosystem Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Action to perform"
+        type: choice
+        options:
+          - status
+          - set-version
+          - tag
+        default: status
+      version:
+        description: "Target version (e.g. 0.4-SNAPSHOT, 0.3) — required for set-version and tag"
+        type: string
+        default: ''
+      include_apps:
+        description: "Include application repos"
+        type: boolean
+        default: true
+      dry_run:
+        description: "Dry run — show changes without applying"
+        type: boolean
+        default: true
+      push:
+        description: "Push changes to upstream repos (ignored if dry_run)"
+        type: boolean
+        default: false
+
+jobs:
+  release:
+    name: "Release: ${{ inputs.action }} ${{ inputs.version }}"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate inputs
+        run: |
+          if [ "${{ inputs.action }}" != "status" ] && [ -z "${{ inputs.version }}" ]; then
+            echo "::error::Version is required for ${{ inputs.action }}"
+            exit 1
+          fi
+          if [ "${{ inputs.action }}" = "tag" ] && echo "${{ inputs.version }}" | grep -q SNAPSHOT; then
+            echo "::error::Cannot tag a SNAPSHOT version"
+            exit 1
+          fi
+
+      - name: Clone ecosystem repos
+        if: inputs.action != 'status'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          mkdir -p casehub
+          declare -A REPO_OVERRIDE=([pages]="casehubio/casehub-pages" [worker]="casehubio/casehub-worker" [desiredstate]="casehubio/casehub-desiredstate" [ras]="casehubio/casehub-ras" [ops]="casehubio/casehub-ops" [flow]="mdproctor/flow")
+          declare -A TOKEN_OVERRIDE=([quarkmind]="$GH_TOKEN" [flow]="$GH_TOKEN")
+          clone_csv() {
+            local csv=$1
+            while IFS=',' read -r name _rest; do
+              [[ "$name" =~ ^#|^$ ]] && continue
+              local token="${TOKEN_OVERRIDE[$name]:-$GITHUB_TOKEN}"
+              local repo="${REPO_OVERRIDE[$name]:-casehubio/$name}"
+              echo "Cloning $repo -> casehub/$name"
+              git clone --depth=1 "https://x-access-token:${token}@github.com/${repo}.git" "casehub/$name" || echo "SKIP $name: clone failed"
+            done < "$csv"
+          }
+          clone_csv build/modules-core.csv
+          if [ "${{ inputs.include_apps }}" = "true" ]; then
+            clone_csv build/modules-applications.csv
+          fi
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: "Run: ${{ inputs.action }}"
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ARGS="${{ inputs.action }}"
+          if [ "${{ inputs.action }}" != "status" ]; then
+            ARGS="$ARGS ${{ inputs.version }}"
+          fi
+          if [ "${{ inputs.include_apps }}" = "true" ]; then
+            ARGS="$ARGS --include-apps"
+          fi
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            ARGS="$ARGS --dry-run"
+          fi
+          if [ "${{ inputs.push }}" = "true" ] && [ "${{ inputs.dry_run }}" != "true" ]; then
+            ARGS="$ARGS --push"
+          fi
+
+          echo "Running: python3 scripts/release.py $ARGS"
+          python3 scripts/release.py $ARGS 2>&1 | tee /tmp/release-output.txt
+
+      - name: Post summary
+        if: always()
+        run: |
+          {
+            echo "# Ecosystem Release — ${{ inputs.action }}"
+            echo ""
+            echo "_Version: **${{ inputs.version || 'n/a' }}** &nbsp;|&nbsp; Dry run: **${{ inputs.dry_run }}** &nbsp;|&nbsp; Push: **${{ inputs.push }}**_"
+            echo ""
+            echo '```'
+            cat /tmp/release-output.txt 2>/dev/null || echo "No output captured"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
