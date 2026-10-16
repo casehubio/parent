@@ -11,6 +11,7 @@ claudony/
 
 # Maven
 target/
+.flattened-pom.xml
 wksp
 
 # Claude Code system files — session state, not project config
