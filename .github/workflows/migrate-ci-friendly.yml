@@ -1,0 +1,85 @@
+name: Migrate to CI-friendly versioning
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Current version to migrate (e.g. 0.4-SNAPSHOT)"
+        type: string
+        required: true
+      include_apps:
+        description: "Include application repos"
+        type: boolean
+        default: true
+      dry_run:
+        description: "Dry run — show changes without applying"
+        type: boolean
+        default: true
+      push:
+        description: "Push changes to upstream repos"
+        type: boolean
+        default: false
+
+jobs:
+  migrate:
+    name: "Migrate: ${revision} = ${{ inputs.version }}"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure git identity
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Clone ecosystem repos (shallow)
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          mkdir -p casehub
+          declare -A REPO_OVERRIDE=([pages]="casehubio/casehub-pages" [worker]="casehubio/casehub-worker" [desiredstate]="casehubio/casehub-desiredstate" [ras]="casehubio/casehub-ras" [ops]="casehubio/casehub-ops" [flow]="mdproctor/flow")
+          clone_csv() {
+            local csv=$1
+            while IFS=',' read -r name _rest; do
+              [[ "$name" =~ ^#|^$ ]] && continue
+              local repo="${REPO_OVERRIDE[$name]:-casehubio/$name}"
+              echo "Cloning $repo -> casehub/$name"
+              git clone --depth=1 "https://x-access-token:${GH_TOKEN}@github.com/${repo}.git" "casehub/$name" || echo "SKIP $name: clone failed"
+            done < "$csv"
+          }
+          clone_csv build/modules-core.csv
+          if [ "${{ inputs.include_apps }}" = "true" ]; then
+            clone_csv build/modules-applications.csv
+          fi
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: "Run migration"
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          set -euo pipefail
+          ARGS="${{ inputs.version }} --all"
+          if [ "${{ inputs.dry_run }}" = "true" ]; then ARGS="$ARGS --dry-run"; fi
+          if [ "${{ inputs.push }}" = "true" ] && [ "${{ inputs.dry_run }}" != "true" ]; then ARGS="$ARGS --push"; fi
+          echo "Running: python3 scripts/migrate-ci-friendly.py $ARGS"
+          python3 scripts/migrate-ci-friendly.py $ARGS 2>&1 | tee /tmp/migrate-output.txt
+
+      - name: Post summary
+        if: always()
+        run: |
+          {
+            echo "# CI-Friendly Migration"
+            echo ""
+            echo "_Version: **${{ inputs.version }}** | Dry run: **${{ inputs.dry_run }}** | Push: **${{ inputs.push }}**_"
+            echo ""
+            echo '```'
+            cat /tmp/migrate-output.txt 2>/dev/null || echo "No output"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

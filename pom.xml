@@ -6,7 +6,7 @@
 
   <groupId>io.casehub</groupId>
   <artifactId>casehub-parent</artifactId>
-  <version>0.4-SNAPSHOT</version>
+  <version>${revision}</version>
   <packaging>pom</packaging>
 
   <name>CaseHub Parent</name>
@@ -26,7 +26,8 @@
   </organization>
 
   <properties>
-    <casehub.version>0.4-SNAPSHOT</casehub.version>
+    <revision>0.4-SNAPSHOT</revision>
+    <casehub.version>${revision}</casehub.version>
     <quarkus.platform.version>3.39.3</quarkus.platform.version>
     <maven.compiler.release>21</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -3311,12 +3312,37 @@ Banned dependency detected:
             </execution>
           </executions>
         </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>flatten-maven-plugin</artifactId>
+          <version>1.7.0</version>
+          <configuration>
+            <updatePomFile>true</updatePomFile>
+            <flattenMode>resolveCiFriendliesOnly</flattenMode>
+          </configuration>
+          <executions>
+            <execution>
+              <id>flatten</id>
+              <phase>process-resources</phase>
+              <goals><goal>flatten</goal></goals>
+            </execution>
+            <execution>
+              <id>flatten.clean</id>
+              <phase>clean</phase>
+              <goals><goal>clean</goal></goals>
+            </execution>
+          </executions>
+        </plugin>
       </plugins>
     </pluginManagement>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>flatten-maven-plugin</artifactId>
       </plugin>
     </plugins>
   </build>
