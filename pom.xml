@@ -37,7 +37,7 @@
     <assertj.version>3.27.7</assertj.version>
     <quarkus-quinoa.version>2.8.3</quarkus-quinoa.version>
     <spring-boot.version>4.1.1</spring-boot.version>
-    <jackson3.version>3.0.4-SNAPSHOT</jackson3.version>
+    <jackson3.version>3.0.3</jackson3.version>
     <json-schema-validator.version>1.5.4</json-schema-validator.version>
     <rest-assured.version>6.0.1</rest-assured.version>
   </properties>
@@ -73,7 +73,7 @@
         <version>${quarkus-quinoa.version}</version>
       </dependency>
 
-      <!-- Jackson 3.x — MCP SDK 2.0.0 pulls 3.0.4-SNAPSHOT, jsonschema2pojo pulls 3.0.2 -->
+      <!-- Jackson 3.x — MCP SDK 2.0.0 pulls 3.0.3, jsonschema2pojo pulls 3.0.2 -->
       <dependency>
         <groupId>tools.jackson.core</groupId>
         <artifactId>jackson-databind</artifactId>
