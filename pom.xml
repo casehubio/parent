@@ -25,6 +25,10 @@
     <url>https://github.com/casehubio</url>
   </organization>
 
+  <modules>
+    <module>casehub-platform-bootstrap</module>
+  </modules>
+
   <properties>
     <casehub.version>0.4-SNAPSHOT</casehub.version>
     <quarkus.platform.version>3.39.3</quarkus.platform.version>
@@ -132,6 +136,11 @@
       <!-- ================================================================ -->
       <!-- casehub-platform                                                -->
       <!-- ================================================================ -->
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-platform-bootstrap</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
       <dependency>
         <groupId>io.casehub</groupId>
         <artifactId>casehub-platform-api</artifactId>
