@@ -93,10 +93,25 @@ public class ClasspathBootstrap {
     }
 
     List<String> discoverYamlFiles(URL dirUrl, String basePath, ClassLoader cl) throws IOException {
-        List<String> result = new ArrayList<>();
-        if ("file".equals(dirUrl.getProtocol())) {
+        List<String> result   = new ArrayList<>();
+        String       protocol = dirUrl.getProtocol();
+        if ("file".equals(protocol)) {
             java.io.File dir = new java.io.File(dirUrl.getPath());
             collectYamlFiles(dir, basePath, result);
+        } else if ("jar".equals(protocol)) {
+            java.net.JarURLConnection jarConn = (java.net.JarURLConnection) dirUrl.openConnection();
+            try (java.util.jar.JarFile jarFile = jarConn.getJarFile()) {
+                java.util.Enumeration<java.util.jar.JarEntry> entries = jarFile.entries();
+                while (entries.hasMoreElements()) {
+                    java.util.jar.JarEntry entry = entries.nextElement();
+                    String                 name  = entry.getName();
+                    if (!entry.isDirectory() && name.startsWith(basePath) && isYamlFile(name)) {
+                        result.add(name);
+                    }
+                }
+            }
+        } else {
+            LOG.debugf("Unsupported classpath URL protocol '%s' for path '%s' — skipping", protocol, basePath);
         }
         return result;
     }
