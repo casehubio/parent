@@ -79,6 +79,9 @@ type: java
 
 Root parent POM for the CaseHub ecosystem. Owns shared build configuration, CI/CD workflows, cross-module conventions, and the full-stack build orchestration.
 
+**Modules:**
+- `casehub-platform-bootstrap` — ClasspathYamlRegistrar SPI, ClasspathBootstrap scanner, AppManifest model. Discovers YAML files on the classpath (file: and jar: protocols) and dispatches them to registered section handlers. Used by engine (case/agent/situation registrars) and ops (topology registrar).
+
 **Peer repos (each has its own Claude session — do not commit to these):**
 platform, eidos, ledger, connectors, iot, work, worker, qhorus, pages, engine, claudony, openclaw, neocortex, devtown, aml, clinical, drafthouse, life, quarkmind, flow, blocks, soc, fsitrading, desiredstate, ras, ops, workers
 
