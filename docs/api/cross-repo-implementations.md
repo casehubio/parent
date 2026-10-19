@@ -9,60 +9,43 @@ the interface and every implementation found across the platform.
 | Repo | Implementation |
 |------|---------------|
 | api | `ChainedActionRiskClassifier` |
-| app | `AmlActionRiskClassifier` |
-| app | `DemoGateClassifier` |
-| app | `LifeActionRiskClassifier` |
-| app | `SocActionRiskClassifier` |
-| runtime | `ClinicalActionRiskClassifier` |
+| runtime | `CallbackActionRiskClassifier` |
 | webapp-api | `IoTActionRiskClassifier` |
 
-## ActualStateAdapter
+## ActorIdentityProvider
 
 | Repo | Implementation |
 |------|---------------|
-| app | `KubernetesActualStateAdapter` |
-| app | `StubActualStateAdapter` |
-| compliance | `ComplianceActualStateAdapter` |
-| deployment | `DeploymentActualStateAdapter` |
-| infra | `InfraActualStateAdapter` |
-| iot | `IoTActualStateAdapter` |
-| testing | `MockActualStateAdapter` |
+| ledger-core | `PassThroughActorIdentityProvider` |
+| runtime | `InternalActorIdentityProvider` |
 
 ## AgentChannelBackend
 
 | Repo | Implementation |
 |------|---------------|
-| app | `PushAgentDispatch` |
-| runtime | `QhorusChannelBackend` |
-
-## AgentDescriptorRegistrar
-
-| Repo | Implementation |
-|------|---------------|
-| app | `SocAgentRegistrar` |
-| quarkmind | `QuarkMindAgentRegistrar` |
-| runtime | `ClasspathYamlDescriptorRegistrar` |
+| notification-bridge-core | `NotificationChannelBackendCore` |
+| runtime-core | `QhorusChannelBackend` |
 
 ## AgentGraphBackfill
 
 | Repo | Implementation |
 |------|---------------|
+| eidos-core | `NoOpAgentGraphBackfill` |
 | graph | `JpaAgentGraphBackfill` |
-| runtime | `NoOpAgentGraphBackfill` |
 
 ## AgentGraphQuery
 
 | Repo | Implementation |
 |------|---------------|
+| eidos-core | `NoOpAgentGraphQuery` |
 | graph | `JpaAgentGraphQuery` |
-| runtime | `NoOpAgentGraphQuery` |
 
 ## AgentGraphStore
 
 | Repo | Implementation |
 |------|---------------|
+| eidos-core | `NoOpAgentGraphStore` |
 | graph | `JpaAgentGraphStore` |
-| runtime | `NoOpAgentGraphStore` |
 
 ## AgentRegistry
 
@@ -70,41 +53,45 @@ the interface and every implementation found across the platform.
 |------|---------------|
 | persistence-memory | `InMemoryAgentRegistry` |
 | runtime | `JpaAgentRegistry` |
+| runtime-core | `NoOpAgentRegistry` |
 
 ## AgentRoutingStrategy
 
 | Repo | Implementation |
 |------|---------------|
-| blocks | `CbrAgentRoutingStrategy` |
-| blocks | `LlmAgentRoutingStrategy` |
-| quarkmind | `DispositionAwareRoutingStrategy` |
-| runtime | `ComposableAgentRoutingStrategy` |
+| api | `ComposableAgentRoutingStrategy` |
+| blocks-core | `CbrAgentRoutingStrategy` |
+| blocks-core | `LlmAgentRoutingStrategy` |
+
+## AgentSelector
+
+| Repo | Implementation |
+|------|---------------|
+| eidos-routing | `EngineAwareAgentSelector` |
+| runtime | `SimpleAgentSelector` |
 
 ## AgentStateStore
 
 | Repo | Implementation |
 |------|---------------|
+| eidos-core | `NoOpAgentStateStore` |
 | persistence-memory | `InMemoryAgentStateStore` |
 | runtime | `JpaAgentStateStore` |
-| runtime | `NoOpAgentStateStore` |
 
-## ApprovalEvaluator
+## AgentTrustProvider
 
 | Repo | Implementation |
 |------|---------------|
-| app | `K8sApprovalEvaluator` |
-| compliance | `ComplianceApprovalEvaluator` |
-| deployment | `DeploymentApprovalEvaluator` |
-| infra | `InfraApprovalEvaluator` |
-| iot | `IoTApprovalEvaluator` |
+| memory | `NoOpAgentTrustProvider` |
+| runtime | `TrustScoreAgentTrustProvider` |
 
 ## BehavioralSignalStore
 
 | Repo | Implementation |
 |------|---------------|
+| eidos-core | `NoOpBehavioralSignalStore` |
 | persistence-memory | `InMemoryBehavioralSignalStore` |
 | runtime | `JpaBehavioralSignalStore` |
-| runtime | `NoOpBehavioralSignalStore` |
 
 ## BridgeAuditStore
 
@@ -120,70 +107,78 @@ the interface and every implementation found across the platform.
 |------|---------------|
 | api | `JqCandidateSetStrategy` |
 | api | `StaticSetStrategy` |
-| runtime | `ExpressionSetStrategy` |
+| runtime-core | `ExpressionSetStrategy` |
 
-## CaseChannelProvider
-
-| Repo | Implementation |
-|------|---------------|
-| casehub | `ClaudonyCaseChannelProvider` |
-| casehub | `OpenClawCaseChannelProvider` |
-| runtime | `NoOpCaseChannelProvider` |
-
-## CaseContext
+## CapabilityHealth
 
 | Repo | Implementation |
 |------|---------------|
-| quarkmind | `MapCaseContext` |
-| quarkmind | `MutableMapCaseContext` |
-| runtime | `SnapshotCaseContext` |
+| engine-support-core | `A2ACapabilityHealth` |
+| engine-support-core | `McpCapabilityHealth` |
+| runtime | `DefaultCapabilityHealth` |
+| runtime-core | `NoOpCapabilityHealth` |
 
 ## CaseEventRecorder
 
 | Repo | Implementation |
 |------|---------------|
 | api | `NoOpCaseEventRecorder` |
-| runtime | `DefaultCaseEventRecorder` |
+| runtime-core | `DefaultCaseEventRecorder` |
 
-## CaseInputContributor
+## CaseMemoryStore
 
 | Repo | Implementation |
 |------|---------------|
-| app | `SocCaseInputContributor` |
-| webapp | `IoTCaseInputContributor` |
+| memory-api | `DelegatingCaseMemoryStore` |
+| memory-core | `CaseEnrichmentPipeline` |
+| memory-inmem | `InMemoryMemoryStore` |
+| memory-jpa | `JpaMemoryStore` |
+| memory-mem0 | `Mem0CaseMemoryStore` |
+| memory-spring-jpa | `SpringMemoryStore` |
+| memory-sqlite | `SqliteMemoryStore` |
 
 ## CaseOutcomeObserver
 
 | Repo | Implementation |
 |------|---------------|
 | api | `ScreeningOrchestrator` |
-| app | `AmlCaseProfileStoreObserver` |
-| app | `LifeCaseOutcomeCbrWriter` |
-| app | `SocFaultedCaseReviewCreator` |
-| quarkmind | `SC2CbrRetentionObserver` |
 | runtime | `CbrCaseRetainObserver` |
-| runtime | `ClinicalCaseOutcomeObserver` |
-| runtime | `NoOpCaseOutcomeObserver` |
+| runtime-core | `NoOpCaseOutcomeObserver` |
 
-## CaseTrigger
+## CaseRetriever
 
 | Repo | Implementation |
 |------|---------------|
-| runtime | `DefaultCaseTrigger` |
-| testing | `MockCaseTrigger` |
+| rag-core | `HybridCaseRetriever` |
+| rag-core | `PayloadBoostCaseRetriever` |
+| rag-crossencoder | `CorrectiveCaseRetriever` |
+| rag-crossencoder | `RerankingCaseRetriever` |
+| rag-expansion | `QueryExpandingCaseRetriever` |
+| rag-testing | `InMemoryCaseRetriever` |
+| rag-tracking | `TrackingCaseRetriever` |
+
+## CbrRetrievalTracker
+
+| Repo | Implementation |
+|------|---------------|
+| memory-cbr-tracking | `SqliteCbrRetrievalTracker` |
+| memory-testing | `InMemoryCbrRetrievalTracker` |
 
 ## ChannelActivityBroadcaster
 
 | Repo | Implementation |
 |------|---------------|
 | postgres-broadcaster | `PostgresChannelActivityBroadcaster` |
-| runtime | `NoOpChannelActivityBroadcaster` |
+| postgres-broadcaster-spring | `SpringPostgresChannelActivityBroadcaster` |
+| runtime-core | `NoOpChannelActivityBroadcaster` |
 
 ## ChannelBackend
 
 | Repo | Implementation |
 |------|---------------|
-| casehub | `OpenClawChannelBackend` |
+| a2a-outbound | `A2AOutboundBackend` |
+| a2a-push-notification-core | `PushNotificationBackendCore` |
+| agent-bridge | `AgentProviderBackend` |
 | runtime | `A2AChannelBackend` |
 | testing | `RecordingChannelBackend` |
 
@@ -193,6 +188,13 @@ the interface and every implementation found across the platform.
 |------|---------------|
 | persistence-memory | `InMemoryChannelBindingStore` |
 | runtime | `JpaChannelBindingStore` |
+
+## ChannelManager
+
+| Repo | Implementation |
+|------|---------------|
+| cluster | `ChannelManagerDecorator` |
+| runtime-core | `ChannelService` |
 
 ## ChannelMembershipStore
 
@@ -219,8 +221,8 @@ the interface and every implementation found across the platform.
 
 | Repo | Implementation |
 |------|---------------|
-| ledger | `TrustGatedAttestationPolicy` |
-| runtime | `StoredCommitmentAttestationPolicy` |
+| ledger-core | `TrustGatedAttestationPolicy` |
+| runtime-core | `StoredCommitmentAttestationPolicy` |
 
 ## CommitmentStore
 
@@ -229,26 +231,22 @@ the interface and every implementation found across the platform.
 | persistence-memory | `InMemoryCommitmentStore` |
 | runtime | `JpaCommitmentStore` |
 
-## ConfigurationAdapter
+## ConsumerMessaging
 
 | Repo | Implementation |
 |------|---------------|
-| runtime | `NoOpConfigurationAdapter` |
-| testing | `MockConfigurationAdapter` |
+| cluster | `RoutingConsumerMessaging` |
+| runtime-core | `MessageService` |
 
-## ConfigurationRetriever
-
-| Repo | Implementation |
-|------|---------------|
-| runtime | `NoOpConfigurationRetriever` |
-| testing | `MockConfigurationRetriever` |
-
-## CorrelationKeyExtractor
+## ContentSummariser
 
 | Repo | Implementation |
 |------|---------------|
-| api | `DefaultCorrelationKeyExtractor` |
-| ras-adapter | `DesiredStateCorrelationKeyExtractor` |
+| blocks-core | `HeuristicMessageSummariser` |
+| blocks-core | `LlmContentSummariser` |
+| blocks-core | `TieredContentSummariser` |
+| summarisation | `VerbatimContentSummariser` |
+| summarisation-api | `VerbatimContentSummariser` |
 
 ## CrossTenantChannelStore
 
@@ -285,12 +283,35 @@ the interface and every implementation found across the platform.
 | persistence-memory | `InMemoryCrossTenantWatchdogStore` |
 | runtime | `JpaCrossTenantWatchdogStore` |
 
+## CursorStore
+
+| Repo | Implementation |
+|------|---------------|
+| rag-core | `FileCursorStore` |
+| rag-testing | `InMemoryCursorStore` |
+
 ## DataStore
 
 | Repo | Implementation |
 |------|---------------|
 | persistence-memory | `InMemoryDataStore` |
 | runtime | `JpaDataStore` |
+
+## DecompositionStrategy
+
+| Repo | Implementation |
+|------|---------------|
+| blocks-core | `CapabilityDependencyDecomposition` |
+| blocks-core | `ForwardReasoningDecomposition` |
+| blocks-core | `HeuristicDecomposition` |
+| blocks-core | `HybridDecomposition` |
+| blocks-core | `IdentityDecomposition` |
+| blocks-core | `LlmDecomposition` |
+| blocks-core | `SequenceStrategy` |
+| blocks-core | `StaticDecomposition` |
+| planning-core | `GoapDecompositionStrategy` |
+| planning-core | `LlmDecompositionStrategy` |
+| planning-core | `PortfolioDecompositionStrategy` |
 
 ## DeliveryCursorStore
 
@@ -315,25 +336,35 @@ the interface and every implementation found across the platform.
 | api | `CdiDeviceRegistry` |
 | testing | `MockDeviceRegistry` |
 
+## DispositionEvolution
+
+| Repo | Implementation |
+|------|---------------|
+| eidos-core | `NoOpDispositionEvolution` |
+| runtime | `DefaultDispositionEvolution` |
+
+## DispositionHealth
+
+| Repo | Implementation |
+|------|---------------|
+| eidos-core | `NoOpDispositionHealth` |
+| runtime | `DefaultDispositionHealth` |
+
 ## DispositionSignalStore
 
 | Repo | Implementation |
 |------|---------------|
+| eidos-core | `NoOpDispositionSignalStore` |
 | persistence-memory | `InMemoryDispositionSignalStore` |
 | runtime | `JpaDispositionSignalStore` |
-| runtime | `NoOpDispositionSignalStore` |
 
-## EventSource
+## EmbeddingIngestor
 
 | Repo | Implementation |
 |------|---------------|
-| app | `KubernetesEventSource` |
-| app | `StubEventSource` |
-| compliance | `ComplianceEventSource` |
-| deployment | `DeploymentEventSource` |
-| infra | `InfraEventSource` |
-| iot | `IoTEventSource` |
-| testing | `CannedEventSource` |
+| rag-core | `DedupEmbeddingIngestor` |
+| rag-core | `QdrantEmbeddingIngestor` |
+| rag-testing | `InMemoryEmbeddingIngestor` |
 
 ## ExclusionPolicy
 
@@ -341,117 +372,104 @@ the interface and every implementation found across the platform.
 |------|---------------|
 | examples | `ExpiringExclusionPolicy` |
 | examples | `ExpiringExclusionPolicy` |
-| runtime | `CommaSeparatedExclusionPolicy` |
+| runtime-core | `CommaSeparatedExclusionPolicy` |
+
+## ExecutionBackend
+
+| Repo | Implementation |
+|------|---------------|
+| blocks-core | `CancellableBackend` |
+| engine-adapter-core | `EngineHostedBackend` |
+
+## ExecutionEventListener
+
+| Repo | Implementation |
+|------|---------------|
+| blocks-core | `ChannelTeardownListener` |
+| blocks-core | `EventLogListener` |
+| blocks-core | `LedgerExecutionListener` |
+| blocks-core | `MetricsListener` |
+| blocks-core | `ResultCollector` |
+| engine-adapter-core | `CheckpointingListener` |
 
 ## ExpressionEngine
 
 | Repo | Implementation |
 |------|---------------|
-| expression | `JQExpressionEngine` |
-| expression | `JexlExpressionEngine` |
-| expression | `MvelExpressionEngine` |
-| runtime | `JQExpressionEngine` |
-| runtime | `LambdaExpressionEngine` |
+| expression-core | `JQExpressionEngine` |
+| expression-core | `JexlExpressionEngine` |
+| expression-core | `MvelExpressionEngine` |
+| runtime | `MvelExpressionEngine` |
+| runtime-core | `JQExpressionEngine` |
+| runtime-core | `LambdaExpressionEngine` |
 
 ## ExpressionEngineRegistry
 
 | Repo | Implementation |
 |------|---------------|
-| expression | `DefaultExpressionEngineRegistry` |
-| platform | `NoOpExpressionEngineRegistry` |
+| expression-core | `DefaultExpressionEngineRegistry` |
+| platform-core | `NoOpExpressionEngineRegistry` |
 | runtime | `DefaultExpressionEngineRegistry` |
 
-## FaultCountStore
+## GoalEvolution
 
 | Repo | Implementation |
 |------|---------------|
-| api | `InMemoryFaultCountStore` |
-| persistence-jpa | `JpaFaultCountStore` |
-
-## FaultPolicy
-
-| Repo | Implementation |
-|------|---------------|
-| api | `ThresholdFaultPolicy` |
-| app | `KubernetesFaultPolicy` |
-| app | `StubFaultPolicy` |
-| compliance | `ComplianceFaultPolicy` |
-| deployment | `DeploymentFaultPolicy` |
-| infra | `InfraFaultPolicy` |
-| iot | `IoTFaultPolicy` |
-| runtime | `CbrFaultPolicy` |
-
-## Ganglion
-
-| Repo | Implementation |
-|------|---------------|
-| api | `JavaSwitchGanglion` |
-| ras-drools | `DroolsGanglion` |
-| runtime | `EvidenceExtractingGanglion` |
-| runtime | `ExpressionRulesGanglion` |
-| runtime | `NaiveBayesGanglion` |
-| testing | `MockGanglion` |
-
-## GanglionStateStore
-
-| Repo | Implementation |
-|------|---------------|
-| persistence-jpa | `JpaGanglionStateStore` |
-| runtime | `InMemoryGanglionStateStore` |
-
-## GoalCompiler
-
-| Repo | Implementation |
-|------|---------------|
-| compliance | `ComplianceGoalCompiler` |
-| deployment | `DeploymentGoalCompiler` |
-| infra | `InfraGoalCompiler` |
-| iot | `IoTGoalCompiler` |
+| api | `DefaultGoalEvolution` |
+| eidos-core | `NoOpGoalEvolution` |
+| runtime | `DefaultGoalEvolution` |
 
 ## GoalSignalStore
 
 | Repo | Implementation |
 |------|---------------|
+| api | `InMemoryGoalSignalStore` |
+| eidos-core | `NoOpGoalSignalStore` |
 | persistence-memory | `InMemoryGoalSignalStore` |
-| runtime | `NoOpGoalSignalStore` |
 
-## HumanObserverChannelBackend
+## GraphCaseMemoryStore
 
 | Repo | Implementation |
 |------|---------------|
-| app | `ClaudonyChannelBackend` |
-| quarkmind | `AdvisoryChannelBackend` |
-| quarkmind | `CommentaryChannelBackend` |
+| memory | `NoOpCaseMemoryStore` |
+| memory-graphiti | `GraphitiCaseMemoryStore` |
+
+## HolidayCalendar
+
+| Repo | Implementation |
+|------|---------------|
+| runtime | `CompanyHolidayCalendar` |
+| runtime-core | `ConfigHolidayCalendar` |
+| runtime-core | `ICalHolidayCalendar` |
 
 ## HumanParticipatingChannelBackend
 
 | Repo | Implementation |
 |------|---------------|
-| connector-backend | `ConnectorChannelBackend` |
+| connector-backend-core | `ConnectorChannelBackendCore` |
 | slack-channel | `SlackChannelBackend` |
+| slack-channel-core | `SlackChannelBackendCore` |
 
 ## ImplementationRoutingStrategy
 
 | Repo | Implementation |
 |------|---------------|
-| ledger | `TrustWeightedImplementationRoutingStrategy` |
-| quarkmind | `SC2ImplementationRoutingStrategy` |
-| runtime | `NoOpImplementationRoutingStrategy` |
+| ledger-core | `TrustWeightedImplementationRoutingStrategy` |
+| runtime-core | `NoOpImplementationRoutingStrategy` |
 
 ## InboundNormaliser
 
 | Repo | Implementation |
 |------|---------------|
-| runtime | `ClinicalInboundNormaliser` |
-| runtime | `DefaultInboundNormaliser` |
-| slack-channel | `SlackInboundNormaliser` |
+| runtime-core | `DefaultInboundNormaliser` |
+| slack-channel-core | `SlackInboundNormaliser` |
 
-## InstanceActorIdProvider
+## InferenceModel
 
 | Repo | Implementation |
 |------|---------------|
-| casehub | `ClaudonyInstanceActorIdProvider` |
-| runtime | `DefaultInstanceActorIdProvider` |
+| inference-inmem | `InMemoryInferenceModel` |
+| inference-runtime | `OnnxInferenceModel` |
 
 ## InstanceStore
 
@@ -464,9 +482,10 @@ the interface and every implementation found across the platform.
 
 | Repo | Implementation |
 |------|---------------|
+| ledger-core | `NoOpLedgerEntryRepository` |
+| ledger-spring-jpa | `SpringJpaLedgerEntryRepository` |
 | persistence-memory | `InMemoryLedgerEntryRepository` |
 | runtime | `JpaLedgerEntryRepository` |
-| runtime | `NoOpLedgerEntryRepository` |
 | runtime | `QhorusLedgerEntryRepository` |
 | testing | `NoOpLedgerEntryRepository` |
 
@@ -474,81 +493,61 @@ the interface and every implementation found across the platform.
 
 | Repo | Implementation |
 |------|---------------|
-| planning | `PlanningStrategyLoopControl` |
-| runtime | `ChoreographyLoopControl` |
+| planning-core | `PlanningStrategyLoopControl` |
+| runtime-core | `ChoreographyLoopControl` |
 
 ## MessageObserver
 
 | Repo | Implementation |
 |------|---------------|
-| app | `LifeOversightResponseObserver` |
-| blocks | `ChannelEventAdapter` |
-| casehub | `ChannelContextWindowObserver` |
-| casehub | `ScenarioObserver` |
-| casehub-engine-inbound | `InboundWorkItemBridge` |
+| blocks-core | `ChannelEventAdapter` |
+| blocks-core | `ChannelObserver` |
+| cache | `CachePopulationObserver` |
+| compliance-report | `JudgmentVerificationObserver` |
+| engine-support-core | `InboundWorkItemBridge` |
 | kafka-observer | `KafkaMessageObserver` |
-| notification-bridge | `NotificationBridgeObserver` |
-| runtime | `InProcessMessageBus` |
+| kafka-observer-spring | `SpringKafkaMessageObserver` |
+| notification-bridge-core | `NotificationBridgeObserverCore` |
 | runtime | `PeerReviewAutoTrigger` |
 | runtime | `PeerReviewResponseHandler` |
-| runtime | `PiResponseListener` |
+| runtime-core | `InProcessMessageBus` |
 | webhook-observer | `WebhookMessageObserver` |
 | websocket-observer | `WebSocketMessageObserver` |
+| websocket-observer-spring | `SpringWebSocketMessageObserver` |
 
 ## MessageStore
 
 | Repo | Implementation |
 |------|---------------|
+| cache | `CachingMessageStore` |
 | persistence-memory | `InMemoryMessageStore` |
 | runtime | `JpaMessageStore` |
 
-## NodeProvisioner
+## MetadataExtractor
 
 | Repo | Implementation |
 |------|---------------|
-| app | `KubernetesNodeProvisioner` |
-| app | `StubNodeProvisioner` |
-| compliance | `ComplianceNodeProvisioner` |
-| deployment | `DeploymentNodeProvisioner` |
-| infra | `InfraNodeProvisioner` |
-| iot | `IoTNodeProvisioner` |
-| testing | `MockNodeProvisioner` |
+| rag-core | `YamlFrontmatterExtractor` |
+| rag-query-augmentation | `QueryAugmentingMetadataExtractor` |
 
-## OversightGateService
+## MultiModalEmbedder
 
 | Repo | Implementation |
 |------|---------------|
-| casehub | `OversightGateService` |
-| runtime | `NoOpOversightGateService` |
+| inference-api | `MatryoshkaMultiModalEmbedder` |
+| inference-bge-m3 | `BgeM3Embedder` |
+| rag-cache | `CachingMultiModalEmbedder` |
+| rag-core | `SeparateModelEmbedder` |
 
-## PendingApprovalHandler
-
-| Repo | Implementation |
-|------|---------------|
-| runtime | `NoOpPendingApprovalHandler` |
-| testing | `MockPendingApprovalHandler` |
-| work-adapter | `WorkItemPendingApprovalHandler` |
-
-## PlanStore
+## QueryExpander
 
 | Repo | Implementation |
 |------|---------------|
-| api | `InMemoryPlanStore` |
-| app | `JpaPlanStore` |
-
-## ProvisionerConfigRegistry
-
-| Repo | Implementation |
-|------|---------------|
-| deployment | `DeploymentProvisionerConfigRegistry` |
-| runtime | `NoOpProvisionerConfigRegistry` |
-
-## RasTriggerPolicy
-
-| Repo | Implementation |
-|------|---------------|
-| runtime | `DefaultRasTriggerPolicy` |
-| webapp-api | `IoTSuppressionTriggerPolicy` |
+| rag-expansion | `LlmQueryExpander` |
+| rag-expansion | `NoOpQueryExpander` |
+| rag-expansion | `StepBackQueryExpander` |
+| rag-expansion | `TemplateQueryExpander` |
+| rag-testing | `InMemoryQueryExpander` |
 
 ## ReactionStore
 
@@ -557,79 +556,76 @@ the interface and every implementation found across the platform.
 | persistence-memory | `InMemoryReactionStore` |
 | runtime | `JpaReactionStore` |
 
+## ReflectionSynthesizer
+
+| Repo | Implementation |
+|------|---------------|
+| blocks | `LlmReflectionSynthesizer` |
+| cognition | `LlmReflectionSynthesizer` |
+| memory | `NoOpReflectionSynthesizer` |
+
+## RelevanceEvaluator
+
+| Repo | Implementation |
+|------|---------------|
+| rag-api | `ColBertRelevanceEvaluator` |
+| rag-crossencoder | `CrossEncoderRelevanceEvaluator` |
+| rag-testing | `InMemoryRelevanceEvaluator` |
+
 ## RenderedPromptCache
 
 | Repo | Implementation |
 |------|---------------|
+| eidos-core | `NoOpRenderedPromptCache` |
 | persistence-memory | `InMemoryRenderedPromptCache` |
-| runtime | `NoOpRenderedPromptCache` |
+
+## RetrievalTracker
+
+| Repo | Implementation |
+|------|---------------|
+| rag-testing | `InMemoryRetrievalTracker` |
+| rag-tracking | `SqliteRetrievalTracker` |
 
 ## RoutingSignalProvider
 
 | Repo | Implementation |
 |------|---------------|
-| blocks | `CoordinationSignalProvider` |
-| blocks | `DispositionAwareRouting` |
-| blocks | `PlanCompositionAnalyser` |
-| blocks | `PredecessorAnalyser` |
-| engine-ai | `SemanticSignalProvider` |
-| ledger | `TrustSignalProvider` |
-| runtime | `ExperienceSignalProvider` |
-| runtime | `GoalSignalProvider` |
-| runtime | `PersonalitySignalProvider` |
-| runtime | `WorkloadSignalProvider` |
-
-## SituationDefinitionProvider
-
-| Repo | Implementation |
-|------|---------------|
-| ras-adapter | `DesiredStateSituationDefinitionProvider` |
-| runtime | `YamlSituationDefinitionProvider` |
-| webapp | `JpaRuntimeSituationDefinitionProvider` |
-
-## SituationQueryService
-
-| Repo | Implementation |
-|------|---------------|
-| persistence-jpa | `JpaSituationQueryService` |
-| persistence-memory | `InMemorySituationQueryService` |
-
-## SituationRecompiler
-
-| Repo | Implementation |
-|------|---------------|
-| app | `StubSituationRecompiler` |
-| runtime | `CbrSituationRecompiler` |
-
-## SituationSource
-
-| Repo | Implementation |
-|------|---------------|
-| app | `StubSituationSource` |
-| runtime | `DefaultSituationSource` |
-
-## SituationStore
-
-| Repo | Implementation |
-|------|---------------|
-| persistence-jpa | `JpaSituationStore` |
-| persistence-memory | `InMemorySituationStore` |
+| blocks-core | `CoordinationSignalProvider` |
+| blocks-core | `DispositionAwareRouting` |
+| blocks-core | `ModelPreferenceSignalProvider` |
+| blocks-core | `PlanCompositionAnalyser` |
+| blocks-core | `PredecessorAnalyser` |
+| engine-support-core | `SemanticSignalProvider` |
+| ledger-core | `TrustSignalProvider` |
+| runtime-core | `ExperienceSignalProvider` |
+| runtime-core | `GoalSignalProvider` |
+| runtime-core | `PersonalitySignalProvider` |
+| runtime-core | `WorkloadSignalProvider` |
 
 ## SkillMatcher
 
 | Repo | Implementation |
 |------|---------------|
-| ai | `EmbeddingSkillMatcher` |
 | examples | `KeywordSkillMatcher` |
+| work-support-core | `EmbeddingSkillMatcher` |
+
+## SkillProfileProvider
+
+| Repo | Implementation |
+|------|---------------|
+| ai | `WorkerProfileSkillProfileProvider` |
+| work-support-core | `CapabilitiesSkillProfileProvider` |
+| work-support-core | `CompositeSkillProfileProvider` |
+| work-support-core | `ResolutionHistorySkillProfileProvider` |
 
 ## SlaBreachPolicy
 
 | Repo | Implementation |
 |------|---------------|
-| app | `LifeSlaBreachPolicy` |
-| app | `SocSlaBreachPolicy` |
-| runtime | `ClinicalIndReportingBreachPolicy` |
-| runtime | `NoOpSlaBreachPolicy` |
+| runtime | `CallbackSlaBreachPolicyDecorator` |
+| runtime | `DeclarativeSlaBreachPolicy` |
+| runtime | `PreferenceSlaBreachPolicyDecorator` |
+| runtime-core | `NoOpSlaBreachPolicy` |
 
 ## SpaceStore
 
@@ -638,20 +634,19 @@ the interface and every implementation found across the platform.
 | persistence-memory | `InMemorySpaceStore` |
 | runtime | `JpaSpaceStore` |
 
-## Summariser
-
-| Repo | Implementation |
-|------|---------------|
-| blocks | `ContentSummariserToSummariser` |
-| quarkmind | `GameArcSummariser` |
-| quarkmind | `GamePhaseSummariser` |
-
 ## SummaryUpdateHook
 
 | Repo | Implementation |
 |------|---------------|
-| blocks | `ChannelSummariser` |
-| runtime | `NoOpSummaryUpdateHook` |
+| blocks-core | `ChannelSummariser` |
+| runtime-core | `NoOpSummaryUpdateHook` |
+
+## SystemPromptRenderer
+
+| Repo | Implementation |
+|------|---------------|
+| cognition | `CognitiveSystemPromptRenderer` |
+| runtime | `EidosSystemPromptRenderer` |
 
 ## TemplateRegistry
 
@@ -660,6 +655,14 @@ the interface and every implementation found across the platform.
 | persistence-memory | `InMemoryTemplateRegistry` |
 | runtime | `CdiTemplateRegistry` |
 
+## ThreadSummaryStore
+
+| Repo | Implementation |
+|------|---------------|
+| blocks-core | `NoOpThreadSummaryStore` |
+| persistence-memory | `InMemoryThreadSummaryStore` |
+| runtime | `JpaThreadSummaryStore` |
+
 ## TopicStore
 
 | Repo | Implementation |
@@ -667,42 +670,24 @@ the interface and every implementation found across the platform.
 | persistence-memory | `InMemoryTopicStore` |
 | runtime | `JpaTopicStore` |
 
-## TransitionExecutor
+## TrustScoreSource
 
 | Repo | Implementation |
 |------|---------------|
-| engine-adapter | `CaseTransitionExecutor` |
-| runtime | `SimpleTransitionExecutor` |
-| testing | `MockTransitionExecutor` |
+| agent-card-signing | `IdentityVerificationTrustDecorator` |
+| agent-card-signing-core | `IdentityVerificationTrustDecoratorCore` |
+| ledger-core | `ComputedTrustSourceCore` |
+| ledger-core | `MaterializedTrustSourceCore` |
+| runtime | `CachedTrustScoreSource` |
+| runtime | `ComputedTrustScoreSource` |
+| runtime | `MaterializedTrustScoreSource` |
 
-## TrustRoutingPolicyProvider
-
-| Repo | Implementation |
-|------|---------------|
-| app | `AmlTrustRoutingPolicyProvider` |
-| app | `LifeTrustRoutingPolicyProvider` |
-| deployment | `DeploymentTrustRoutingPolicyProvider` |
-| quarkmind | `QuarkMindTrustRoutingPolicyProvider` |
-| runtime | `ClinicalTrustRoutingPolicyProvider` |
-
-## VocabularyRegistrar
+## VocabularyRegistry
 
 | Repo | Implementation |
 |------|---------------|
-| quarkmind | `CoachingDispositionRegistrar` |
-| quarkmind | `CommentaryDispositionRegistrar` |
-| vocab | `BelbinVocabRegistrar` |
-| vocab | `BigFiveVocabRegistrar` |
-| vocab | `CasehubCapabilityRegistrar` |
-| vocab | `CasehubSlotVocabRegistrar` |
-| vocab | `ConscientiousnessVocabRegistrar` |
-| vocab | `DiscVocabRegistrar` |
-| vocab | `EnneagramVocabRegistrar` |
-| vocab | `JungianVocabRegistrar` |
-| vocab | `MbtiVocabRegistrar` |
-| vocab | `SdiVocabRegistrar` |
-| vocab | `SvoVocabRegistrar` |
-| vocab | `ThomasKilmannVocabRegistrar` |
+| runtime | `CdiVocabularyRegistry` |
+| runtime-core | `NoOpVocabularyRegistry` |
 
 ## WatchdogStore
 
@@ -715,65 +700,42 @@ the interface and every implementation found across the platform.
 
 | Repo | Implementation |
 |------|---------------|
+| qhorus | `QhorusCompensationAdapter` |
 | qhorus | `QhorusWorkItemLifecycleAdapter` |
 | webapp | `WorkItemOutcomeRecorder` |
-
-## WorkerContextProvider
-
-| Repo | Implementation |
-|------|---------------|
-| casehub | `ClaudonyWorkerContextProvider` |
-| runtime | `EmptyWorkerContextProvider` |
 
 ## WorkerExecutionGuard
 
 | Repo | Implementation |
 |------|---------------|
-| resilience | `PoisonPillWorkerExecutionGuard` |
-| runtime | `AllowAllWorkerExecutionGuard` |
+| resilience-core | `PoisonPillWorkerExecutionGuard` |
+| runtime-core | `AllowAllWorkerExecutionGuard` |
 
 ## WorkerFunctionProvider
 
 | Repo | Implementation |
 |------|---------------|
-| a2a | `A2AWorkerFunctionProvider` |
-| flow | `FlowWorkerFunctionProvider` |
-| mcp | `McpWorkerFunctionProvider` |
+| engine-adapter-core | `PatternWorkerFunctionProvider` |
+| engine-support-core | `A2AWorkerFunctionProvider` |
+| engine-support-core | `FlowWorkerFunctionProvider` |
+| engine-support-core | `McpWorkerFunctionProvider` |
+| engine-support-core | `ReActWorkerFunctionProvider` |
 
 ## WorkerProvisioner
 
 | Repo | Implementation |
 |------|---------------|
-| casehub | `ClaudonyWorkerProvisioner` |
-| casehub | `OpenClawWorkerProvisioner` |
-| runtime | `NoOpWorkerProvisioner` |
-
-## WorkerRuntime
-
-| Repo | Implementation |
-|------|---------------|
-| runtime | `DefaultWorkerRuntime` |
-| workers-camel | `CamelWorkerRuntime` |
-| workers-github-actions | `GitHubActionsWorkerRuntime` |
-| workers-http | `HttpWorkerRuntime` |
-| workers-k8s | `K8sWorkerRuntime` |
-| workers-mcp | `McpWorkerRuntime` |
-| workers-script | `ScriptWorkerRuntime` |
+| runtime | `CallbackWorkerProvisionerDecorator` |
+| runtime-core | `NoOpWorkerProvisioner` |
+| testing | `TestWorkerProvisioner` |
 
 ## WorkerSelectionStrategy
 
 | Repo | Implementation |
 |------|---------------|
-| ai | `SemanticWorkerSelectionStrategy` |
 | core | `ClaimFirstStrategy` |
 | core | `LeastLoadedStrategy` |
 | core | `RoundRobinStrategy` |
-
-## WorkerStatusListener
-
-| Repo | Implementation |
-|------|---------------|
-| casehub | `ClaudonyWorkerStatusListener` |
-| casehub | `OpenClawWorkerStatusListener` |
-| runtime | `NoOpWorkerStatusListener` |
+| runtime | `CallbackWorkerSelectionStrategyDecorator` |
+| work-support-core | `SemanticWorkerSelectionStrategy` |
 
