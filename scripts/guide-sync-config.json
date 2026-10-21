@@ -11,7 +11,7 @@
     {"name": "desiredstate", "org": "casehubio", "repo": "casehub-desiredstate"},
     {"name": "blocks",       "org": "casehubio"},
     {"name": "casehub-langchain4j", "org": "casehubio"},
-    {"name": "blocks-ui",    "org": "casehubio"},
+    {"name": "casehub-mosaic", "org": "casehubio"},
     {"name": "engine",       "org": "casehubio"},
     {"name": "eidos",        "org": "casehubio"},
     {"name": "neocortex",    "org": "casehubio"},
