@@ -14,7 +14,7 @@ engine,platform,ledger,connectors,eidos,neocortex,qhorus,work,worker
 pages
 blocks,platform,ledger,neocortex,eidos,engine,qhorus,work,worker
 casehub-langchain4j,platform,ledger,neocortex,engine
-blocks-ui,pages,engine,work,qhorus,ledger,blocks
+casehub-mosaic,pages,engine,work,qhorus,ledger,blocks
 workers,platform,engine,worker
 claudony,platform,ledger,engine,qhorus,work,worker
 ops,platform,ledger,desiredstate,eidos,engine,iot,qhorus,ras,work,blocks

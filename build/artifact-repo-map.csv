@@ -22,9 +22,9 @@ casehub-blocks-spring,blocks
 casehub-blocks-summarisation-api,blocks
 casehub-blocks-summarisation-yaml,blocks
 casehub-blocks-summarisation-yaml-deployment,blocks
-casehub-blocks-ui-app,blocks-ui
-casehub-blocks-ui-avatar-demo,blocks-ui
-casehub-blocks-ui-npm,blocks-ui
+casehub-mosaic-app,casehub-mosaic
+casehub-mosaic-avatar-demo,casehub-mosaic
+casehub-mosaic-npm,casehub-mosaic
 casehub-chat-app,chat-app
 casehub-claudony-app,claudony
 casehub-claudony-casehub,claudony
@@ -341,7 +341,7 @@ casehub-pages-examples-server,pages
 casehub-pages-layout,pages
 casehub-pages-layout-sqlite,pages
 casehub-pages-mcp,pages
-casehub-pages-npm,blocks-ui
+casehub-pages-npm,casehub-mosaic
 casehub-pages-push,pages
 casehub-pages-push-runtime,pages
 casehub-pages-push-store-jdbc,pages
