@@ -504,28 +504,28 @@ jobs:
           [ $RC -eq 0 ] && echo "success" > .build-outcomes/pages || echo "failure" > .build-outcomes/pages
           echo $((SECONDS - START)) > .build-times/pages
 
-      - name: "Build: blocks-ui"
-        id: blocks_ui
+      - name: "Build: casehub-mosaic"
+        id: casehub_mosaic
         continue-on-error: true
         env:
-          CUR: ${{ steps.shas.outputs.sha_blocks_ui }}
-          PRV: ${{ steps.prev.outputs.sha_blocks_ui }}
+          CUR: ${{ steps.shas.outputs.sha_casehub_mosaic }}
+          PRV: ${{ steps.prev.outputs.sha_casehub_mosaic }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mkdir -p .build-outcomes .build-decisions
           D=$(./scripts/build-all-decision.sh \
-            --module blocks-ui --current-sha "$CUR" --previous-sha "${PRV:-none}")
+            --module casehub-mosaic --current-sha "$CUR" --previous-sha "${PRV:-none}")
           echo "decision=$D" >> $GITHUB_OUTPUT
-          echo "$D" > .build-decisions/blocks-ui
+          echo "$D" > .build-decisions/casehub-mosaic
           START=$SECONDS
           RC=0
           case "$D" in
-            SKIP) echo "⏭️  blocks-ui: SKIP" ;;
-            TEST) echo "⏭️  blocks-ui: SKIP (yarn-only, no separate test phase)" ;;
-            BUILD) cd casehub/blocks-ui && mvn -f npm-packages/pom.xml --batch-mode initialize && yarn install && yarn build || RC=$? ;;
+            SKIP) echo "⏭️  casehub-mosaic: SKIP" ;;
+            TEST) echo "⏭️  casehub-mosaic: SKIP (yarn-only, no separate test phase)" ;;
+            BUILD) cd casehub/casehub-mosaic && mvn -f npm-packages/pom.xml --batch-mode initialize && yarn install && yarn build || RC=$? ;;
           esac
-          [ $RC -eq 0 ] && echo "success" > .build-outcomes/blocks-ui || echo "failure" > .build-outcomes/blocks-ui
-          echo $((SECONDS - START)) > .build-times/blocks-ui
+          [ $RC -eq 0 ] && echo "success" > .build-outcomes/casehub-mosaic || echo "failure" > .build-outcomes/casehub-mosaic
+          echo $((SECONDS - START)) > .build-times/casehub-mosaic
 
       - name: "Build: engine"
         id: engine

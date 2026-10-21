@@ -46,7 +46,7 @@ jobs:
             casehubio/aml \
             casehubio/blocks \
             casehubio/casehub-langchain4j \
-            casehubio/blocks-ui \
+            casehubio/casehub-mosaic \
             casehubio/clinical \
             casehubio/life \
             casehubio/drafthouse \
