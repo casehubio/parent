@@ -42,6 +42,7 @@
     <spring-boot.version>4.1.1</spring-boot.version>
     <jackson3.version>3.0.3</jackson3.version>
     <json-schema-validator.version>1.5.4</json-schema-validator.version>
+    <langchain4j.version>1.19.0</langchain4j.version>
     <rest-assured.version>6.0.1</rest-assured.version>
   </properties>
 
@@ -114,6 +115,13 @@
         <artifactId>xml-path</artifactId>
         <version>${rest-assured.version}</version>
         <scope>test</scope>
+      </dependency>
+
+      <!-- langchain4j — pin to single version across platform-agent (1.19.0) and engine/eidos (1.14.1) -->
+      <dependency>
+        <groupId>dev.langchain4j</groupId>
+        <artifactId>langchain4j-core</artifactId>
+        <version>${langchain4j.version}</version>
       </dependency>
 
       <!-- CloudEvents SDK — overrides Quarkus BOM's cloudevents-api:3.0.0 -->
