@@ -59,9 +59,9 @@ the interface and every implementation found across the platform.
 
 | Repo | Implementation |
 |------|---------------|
+| agency-core | `CbrAgentRoutingStrategy` |
+| agency-core | `LlmAgentRoutingStrategy` |
 | api | `ComposableAgentRoutingStrategy` |
-| blocks-core | `CbrAgentRoutingStrategy` |
-| blocks-core | `LlmAgentRoutingStrategy` |
 
 ## AgentSelector
 
@@ -242,9 +242,9 @@ the interface and every implementation found across the platform.
 
 | Repo | Implementation |
 |------|---------------|
-| blocks-core | `HeuristicMessageSummariser` |
-| blocks-core | `LlmContentSummariser` |
-| blocks-core | `TieredContentSummariser` |
+| agency-core | `HeuristicMessageSummariser` |
+| agency-core | `LlmContentSummariser` |
+| agency-core | `TieredContentSummariser` |
 | summarisation | `VerbatimContentSummariser` |
 | summarisation-api | `VerbatimContentSummariser` |
 
@@ -301,14 +301,14 @@ the interface and every implementation found across the platform.
 
 | Repo | Implementation |
 |------|---------------|
-| blocks-core | `CapabilityDependencyDecomposition` |
-| blocks-core | `ForwardReasoningDecomposition` |
-| blocks-core | `HeuristicDecomposition` |
-| blocks-core | `HybridDecomposition` |
-| blocks-core | `IdentityDecomposition` |
-| blocks-core | `LlmDecomposition` |
-| blocks-core | `SequenceStrategy` |
-| blocks-core | `StaticDecomposition` |
+| agency-core | `CapabilityDependencyDecomposition` |
+| agency-core | `ForwardReasoningDecomposition` |
+| agency-core | `HeuristicDecomposition` |
+| agency-core | `HybridDecomposition` |
+| agency-core | `IdentityDecomposition` |
+| agency-core | `LlmDecomposition` |
+| agency-core | `SequenceStrategy` |
+| agency-core | `StaticDecomposition` |
 | planning-core | `GoapDecompositionStrategy` |
 | planning-core | `LlmDecompositionStrategy` |
 | planning-core | `PortfolioDecompositionStrategy` |
@@ -366,6 +366,13 @@ the interface and every implementation found across the platform.
 | rag-core | `QdrantEmbeddingIngestor` |
 | rag-testing | `InMemoryEmbeddingIngestor` |
 
+## EventDispatcher
+
+| Repo | Implementation |
+|------|---------------|
+| runtime | `VertxEventDispatcher` |
+| runtime-spring | `SpringEventDispatcher` |
+
 ## ExclusionPolicy
 
 | Repo | Implementation |
@@ -378,18 +385,18 @@ the interface and every implementation found across the platform.
 
 | Repo | Implementation |
 |------|---------------|
-| blocks-core | `CancellableBackend` |
+| agency-core | `CancellableBackend` |
 | engine-adapter-core | `EngineHostedBackend` |
 
 ## ExecutionEventListener
 
 | Repo | Implementation |
 |------|---------------|
-| blocks-core | `ChannelTeardownListener` |
-| blocks-core | `EventLogListener` |
-| blocks-core | `LedgerExecutionListener` |
-| blocks-core | `MetricsListener` |
-| blocks-core | `ResultCollector` |
+| agency-core | `ChannelTeardownListener` |
+| agency-core | `EventLogListener` |
+| agency-core | `LedgerExecutionListener` |
+| agency-core | `MetricsListener` |
+| agency-core | `ResultCollector` |
 | engine-adapter-core | `CheckpointingListener` |
 
 ## ExpressionEngine
@@ -478,6 +485,17 @@ the interface and every implementation found across the platform.
 | persistence-memory | `InMemoryInstanceStore` |
 | runtime | `JpaInstanceStore` |
 
+## JudgmentVerifier
+
+| Repo | Implementation |
+|------|---------------|
+| agency-core | `CompositeVerifier` |
+| agency-core | `NoOpVerifier` |
+| engine-adapter-core | `LlmEvaluationVerifier` |
+| engine-adapter-core | `SchemaValidationVerifier` |
+| runtime-core | `AcceptAllVerifier` |
+| runtime-core | `EvidencePresenceVerifier` |
+
 ## LedgerEntryRepository
 
 | Repo | Implementation |
@@ -500,8 +518,8 @@ the interface and every implementation found across the platform.
 
 | Repo | Implementation |
 |------|---------------|
-| blocks-core | `ChannelEventAdapter` |
-| blocks-core | `ChannelObserver` |
+| agency-core | `ChannelEventAdapter` |
+| agency-core | `ChannelObserver` |
 | cache | `CachePopulationObserver` |
 | compliance-report | `JudgmentVerificationObserver` |
 | engine-support-core | `InboundWorkItemBridge` |
@@ -560,7 +578,7 @@ the interface and every implementation found across the platform.
 
 | Repo | Implementation |
 |------|---------------|
-| blocks | `LlmReflectionSynthesizer` |
+| agency | `LlmReflectionSynthesizer` |
 | cognition | `LlmReflectionSynthesizer` |
 | memory | `NoOpReflectionSynthesizer` |
 
@@ -590,11 +608,11 @@ the interface and every implementation found across the platform.
 
 | Repo | Implementation |
 |------|---------------|
-| blocks-core | `CoordinationSignalProvider` |
-| blocks-core | `DispositionAwareRouting` |
-| blocks-core | `ModelPreferenceSignalProvider` |
-| blocks-core | `PlanCompositionAnalyser` |
-| blocks-core | `PredecessorAnalyser` |
+| agency-core | `CoordinationSignalProvider` |
+| agency-core | `DispositionAwareRouting` |
+| agency-core | `ModelPreferenceSignalProvider` |
+| agency-core | `PlanCompositionAnalyser` |
+| agency-core | `PredecessorAnalyser` |
 | engine-support-core | `SemanticSignalProvider` |
 | ledger-core | `TrustSignalProvider` |
 | runtime-core | `ExperienceSignalProvider` |
@@ -634,11 +652,18 @@ the interface and every implementation found across the platform.
 | persistence-memory | `InMemorySpaceStore` |
 | runtime | `JpaSpaceStore` |
 
+## StepOutcomeObserver
+
+| Repo | Implementation |
+|------|---------------|
+| runtime | `RetrievalFeedbackObserver` |
+| runtime-core | `NoOpStepOutcomeObserver` |
+
 ## SummaryUpdateHook
 
 | Repo | Implementation |
 |------|---------------|
-| blocks-core | `ChannelSummariser` |
+| agency-core | `ChannelSummariser` |
 | runtime-core | `NoOpSummaryUpdateHook` |
 
 ## SystemPromptRenderer
@@ -659,7 +684,7 @@ the interface and every implementation found across the platform.
 
 | Repo | Implementation |
 |------|---------------|
-| blocks-core | `NoOpThreadSummaryStore` |
+| agency-core | `NoOpThreadSummaryStore` |
 | persistence-memory | `InMemoryThreadSummaryStore` |
 | runtime | `JpaThreadSummaryStore` |
 
