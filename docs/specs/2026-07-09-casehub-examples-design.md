@@ -86,7 +86,7 @@ casehubio/examples/
 │   ├── multi-agent-dev-team/
 │   └── trading-oversight/
 │
-├── blocks-ui-examples/              ← synced from blocks-ui/examples/ (TypeScript/Vite)
+├── mosaic-examples/              ← synced from mosaic/examples/ (TypeScript/Vite)
 │
 └── pages-examples/                  ← synced from pages/examples/ (TypeScript/webpack)
 ```
@@ -177,7 +177,7 @@ the `<repo>-examples/` directory already exists in the working tree:
     {"name": "desiredstate", "org": "casehubio", "type": "maven"},
     {"name": "neocortex",   "org": "casehubio", "type": "maven"},
     {"name": "openclaw",    "org": "casehubio", "type": "docker"},
-    {"name": "blocks-ui",   "org": "casehubio", "type": "typescript"},
+    {"name": "mosaic",   "org": "casehubio", "type": "typescript"},
     {"name": "pages",       "org": "casehubio", "type": "typescript"}
   ]
 }
@@ -208,7 +208,7 @@ Same payload, same SHAs. The examples workflow reads `sync-config.json` to know
 which repos to sync and skips any repo whose SHA is not in the payload.
 
 **SHA key convention:** `sync-casehub-all.py` converts dashes to underscores in
-SHA keys (`blocks-ui` → `blocks_ui`). The sync workflow must apply the same
+SHA keys (`mosaic` → `blocks_ui`). The sync workflow must apply the same
 transformation when looking up `client_payload.shas[name.replace('-', '_')]`.
 
 ## 6. Aggregator POM
@@ -233,7 +233,7 @@ one-file prerequisite change per repo (alongside the `<relativePath/>` fix), tra
 as implementation work items. Without it, new examples added to these repos are synced
 but silently excluded from the build because the casehub-examples POM doesn't list them.
 
-Non-Maven example sets (openclaw, blocks-ui, pages) are excluded from the POM.
+Non-Maven example sets (openclaw, mosaic, pages) are excluded from the POM.
 
 **Parent POM resolution:** Example POMs follow two patterns across the ecosystem:
 
@@ -290,7 +290,7 @@ Structure:
    - **openclaw** (Docker Compose): requires Docker. Images are built from the
      source repo — the README documents `docker compose up` and any required
      environment variables. No external registry dependency.
-   - **blocks-ui** (TypeScript/Vite): requires Node.js 20+. Run `npm install`
+   - **mosaic** (TypeScript/Vite): requires Node.js 20+. Run `npm install`
      then `npm run dev`. May require a running CaseHub backend — documented
      per example.
    - **pages** (TypeScript/webpack): requires Node.js 20+. Run `npm install`

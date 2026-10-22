@@ -22,7 +22,7 @@ except ImportError:
     sys.exit(1)
 
 PRODUCT_REPOS = [
-    "aml", "blocks", "blocks-ui", "casehub-langchain4j", "chat-app",
+    "aml", "blocks", "mosaic", "casehub-langchain4j", "chat-app",
     "claudony", "clinical", "connectors", "desiredstate", "devtown",
     "drafthouse", "eidos", "engine", "examples", "fsitrading", "iot",
     "ledger", "life", "neocortex", "openclaw", "ops", "pages",

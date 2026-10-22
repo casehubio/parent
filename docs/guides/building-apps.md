@@ -25,9 +25,9 @@ Every CaseHub application follows this pattern:
 
 ### Shared Building Blocks
 
-**Before implementing a new capability, check what blocks + blocks-ui provide.**
+**Before implementing a new capability, check what blocks + mosaic provide.**
 
-| Capability | blocks (Java) | blocks-ui (TS) | Notes |
+| Capability | blocks (Java) | mosaic (TS) | Notes |
 |---|---|---|---|
 | **Routing** | `TrustRoutingPolicyResolver`, `TrustRoutingPolicyKeys`, LLM/CBR agent routing | — | Preference-to-policy; AI-powered strategies |
 | **Oversight gates** | `ActionRiskClassifier` SPI, `ChainedReactiveActionRiskClassifier` | `approval-gate` | Gate lifecycle + risk classification |
@@ -41,14 +41,14 @@ Every CaseHub application follows this pattern:
 | **KPI metrics** | — | `kpi-metric-row` | Responsive grid, sparklines, trends, status colours |
 | **Agentic orchestration** | `Patterns` DSL (Supervisor, Sequence, Loop, Parallel, Voting, Debate, Conditional, HTN) | — | Compositional orchestration framework |
 
-**Placement rule:** If 2+ apps need the same component, extract to blocks (Java) or blocks-ui (TS). If app-specific, keep it in the app repo.
+**Placement rule:** If 2+ apps need the same component, extract to blocks (Java) or mosaic (TS). If app-specific, keep it in the app repo.
 
 ### Per-App Implementation Status
 
 | App | Layers | Trust | CBR | Oversight | Web UI | GDPR | Notifications | Notes |
 |---|---|---|---|---|---|---|---|---|
-| **AML** | 1–6, 8, 9 | ✅ L6 | ✅ L8 (memory) | ✅ L9 (`AmlActionRiskClassifier`) | ✅ (Lit + blocks-ui) | ✅ L4 (entity erasure) | L2 SLA | SAR filing gate; officer review lifecycle |
-| **Clinical** | 1–10 | ✅ L7 | ✅ L8 (patient/site/AE) | ✅ L8 (SUSAR criteria) | ✅ (Quinoa + blocks-ui demo) | ✅ L8 (Art.17 + withdraw) | ✅ (AE, PI, sponsor) | IND deadline; 4-role RBAC |
+| **AML** | 1–6, 8, 9 | ✅ L6 | ✅ L8 (memory) | ✅ L9 (`AmlActionRiskClassifier`) | ✅ (Lit + mosaic) | ✅ L4 (entity erasure) | L2 SLA | SAR filing gate; officer review lifecycle |
+| **Clinical** | 1–10 | ✅ L7 | ✅ L8 (patient/site/AE) | ✅ L8 (SUSAR criteria) | ✅ (Quinoa + mosaic demo) | ✅ L8 (Art.17 + withdraw) | ✅ (AE, PI, sponsor) | IND deadline; 4-role RBAC |
 | **DevTown** | 1, 3, 4, 5, 6 | ✅ L6 | ✅ (contributor/reviewer/CBR routing) | ✅ L5 (8 action types) | ✅ (governance workbench) | ✅ (actor + memory erasure) | pending | Merge queue; incident feedback; 5-role RBAC |
 | **Life** | 2–6, 8 | ✅ L6 | ✅ (6 domain schemas) | ✅ L5 (RBAC-differentiated) | pending | ✅ L4 (actor + ledger) | planned | CBR plan adaptation; read-side API; jurisdiction |
 | **Drafthouse** | — | — | — | — | ✅ (Quinoa + casehub-pages) | — | — | 7 brainstorm + 10 debate MCP tools; Eidos reviewer registry |
@@ -103,7 +103,7 @@ Every CaseHub application follows this pattern:
 ### Oversight Gates
 
 **Shared pattern:** `ActionRiskClassifier` SPI (blocks) → `ActionGateWorkItemHandler` (engine-work-adapter) → WorkItem → resume.  
-→ [repos/casehub-blocks/consumer-guide.md](../repos/casehub-blocks/consumer-guide.md) §Oversight package
+→ [repos/casehub-agency/consumer-guide.md](../repos/casehub-agency/consumer-guide.md) §Oversight package
 
 **Per-app:**
 - **AML:** [casehub-aml.md](../repos/casehub-aml/consumer-guide.md) §Layer 9 — PEP entities gate to compliance review; TRANSACTION_BLOCKING inverts (gates on low confidence)
@@ -114,7 +114,7 @@ Every CaseHub application follows this pattern:
 
 ### Web UI Composition
 
-**Shared pattern:** Quinoa serves pages webapp → YAML dashboard → `hostPanel` embeds blocks-ui + app panels → SSE updates.  
+**Shared pattern:** Quinoa serves pages webapp → YAML dashboard → `hostPanel` embeds mosaic + app panels → SSE updates.  
 → [platform/ui-architecture.md](../platform/ui-architecture.md)
 
 **Per-app:**
@@ -125,7 +125,7 @@ Every CaseHub application follows this pattern:
 - **QuarkMind:** [quarkmind.md](../repos/quarkmind/consumer-guide.md) — Three.js 3D visualiser, 65+ sprites, Electron wrapper
 
 **Component examples:**
-- **AML:** `work-item-inbox` (blocks-ui) + `aml-transaction-graph` (aml-specific) + `trust-score-panel` (blocks-ui) + `approval-gate` (blocks-ui)
+- **AML:** `work-item-inbox` (mosaic) + `aml-transaction-graph` (aml-specific) + `trust-score-panel` (mosaic) + `approval-gate` (mosaic)
 - **DevTown:** `work-item-inbox` + `devtown-pr-diff` + `channel-activity` + `trust-score-panel`
 - **Drafthouse:** `work-item-inbox` + `drafthouse-content-viewer` + `case-timeline` + `approval-gate`
 
@@ -170,7 +170,7 @@ Every CaseHub application follows this pattern:
 | **Needs an LLM in the loop** | blocks (Java) | LLM routing, debate protocol, prompt enrichment |
 | **Uses classical AI** | blocks (Java) | Bayesian routing, CBR feature extraction |
 | **Composes qhorus + engine + work** | blocks (Java) | Oversight gate lifecycle, channel agent dispatch |
-| **Platform-concept visualisation** | blocks-ui (TS) | `trust-score-panel`, `channel-activity`, `work-item-inbox` |
+| **Platform-concept visualisation** | mosaic (TS) | `trust-score-panel`, `channel-activity`, `work-item-inbox` |
 | **Infrastructure (data pipeline, layout)** | pages (TS) | `SSEManager`, YAML parser, `DataSet` model |
 | **Foundation primitive** | platform, engine | Notification engine, blackboard, case lifecycle |
 | **App-specific domain logic** | app repo | AML transaction graph, clinical SUSAR criteria |
@@ -184,7 +184,7 @@ Every CaseHub application follows this pattern:
 | Oversight gate lifecycle | openclaw, engine-api | blocks (oversight package) | blocks#23 |
 | AI routing strategies (LLM, CBR) | — | blocks (routing.agent package) | blocks#30 |
 
-**Reference:** [casehub-blocks.md](../repos/casehub-blocks/consumer-guide.md) §Blocks Scope Criteria
+**Reference:** [casehub-agency.md](../repos/casehub-agency/consumer-guide.md) §Blocks Scope Criteria
 
 ---
 
@@ -228,7 +228,7 @@ Apps build capability by layer — each layer adds one foundation module. The tu
 **Per-app deep-dives with full layer details:**
 
 - **AML:** [casehub-aml.md](../repos/casehub-aml/consumer-guide.md) — Layers 1–6, 8, 9 complete; GDPR erasure, investigation workbench UI
-- **Clinical:** [casehub-clinical.md](../repos/casehub-clinical/consumer-guide.md) — Layers 1–10 complete; IND deadline, blocks-ui demo, 4-role RBAC, CBR Phase 1
+- **Clinical:** [casehub-clinical.md](../repos/casehub-clinical/consumer-guide.md) — Layers 1–10 complete; IND deadline, mosaic demo, 4-role RBAC, CBR Phase 1
 - **DevTown:** [casehub-devtown.md](../repos/casehub-devtown/consumer-guide.md) — Layers 1, 3, 4, 5, 6 complete; merge queue, CBR routing, 5-role RBAC, governance workbench
 - **Life:** [casehub-life.md](../repos/casehub-life/consumer-guide.md) — Layers 2–6, 8 complete; CBR (6 schemas + plan adaptation), read-side API, GDPR, jurisdiction, RBAC
 - **Drafthouse:** [casehub-drafthouse.md](../repos/casehub-drafthouse/consumer-guide.md) — Brainstorming + debate MCP tools, casehub-pages adoption, Eidos reviewer registry, debate persistence
@@ -245,8 +245,8 @@ Apps build capability by layer — each layer adds one foundation module. The tu
 - **Boundary rules:** [platform/boundary-rules.md](../platform/boundary-rules.md)
 - **Session conventions:** [AGENTIC-HARNESS-GUIDE.md](../AGENTIC-HARNESS-GUIDE.md)
 - **Application inventory:** [APPLICATIONS.md](../APPLICATIONS.md)
-- **blocks scope criteria:** [casehub-blocks.md](../repos/casehub-blocks/consumer-guide.md) §Blocks Scope Criteria
-- **blocks-ui design philosophy:** [casehub-blocks-ui.md](../repos/casehub-blocks-ui/consumer-guide.md) §Design Philosophy
+- **blocks scope criteria:** [casehub-agency.md](../repos/casehub-agency/consumer-guide.md) §Blocks Scope Criteria
+- **mosaic design philosophy:** [casehub-mosaic.md](../repos/casehub-mosaic/consumer-guide.md) §Design Philosophy
 - **UI architecture:** [platform/ui-architecture.md](../platform/ui-architecture.md)
 - **Routing:** [platform/routing.md](../platform/routing.md)
 - **CBR:** [platform/cbr.md](../platform/cbr.md)

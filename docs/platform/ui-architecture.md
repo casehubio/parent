@@ -1,13 +1,13 @@
 # UI Architecture
 
-> **Scope:** pages → blocks-ui → app UI layering, composition patterns, component catalogue
-> **Audience:** App builders primarily; platform builders extending pages/blocks-ui
-> **Key repos:** casehub-pages (infrastructure), casehub-blocks-ui (domain components)
+> **Scope:** pages → mosaic → app UI layering, composition patterns, component catalogue
+> **Audience:** App builders primarily; platform builders extending pages/mosaic
+> **Key repos:** casehub-pages (infrastructure), casehub-mosaic (domain components)
 > **Protocols:** custom-event-shadow-dom, lit-immutable-collections
 
 ## Overview
 
-CaseHub UI is built in three layers. Each layer has a clear boundary and defined contracts. Apps compose UIs by combining infrastructure (pages), domain components (blocks-ui), and app-specific panels.
+CaseHub UI is built in three layers. Each layer has a clear boundary and defined contracts. Apps compose UIs by combining infrastructure (pages), domain components (mosaic), and app-specific panels.
 
 ## Three-Layer Model
 
@@ -15,11 +15,11 @@ CaseHub UI is built in three layers. Each layer has a clear boundary and defined
 ┌────────────────────────────────────────────────┐
 │ Layer 3: App UI (aml, devtown, drafthouse)    │
 │ App-specific panels, domain logic, workflows  │
-│ Consumes: pages APIs + blocks-ui components   │
+│ Consumes: pages APIs + mosaic components   │
 └────────────────────────────────────────────────┘
                     ↓
 ┌────────────────────────────────────────────────┐
-│ Layer 2: blocks-ui (domain components)        │
+│ Layer 2: mosaic (domain components)        │
 │ Shared, domain-aware UI components            │
 │ Consumes: pages APIs (registerPanel, events)  │
 │ Examples: work-item-inbox, trust-score-panel  │
@@ -32,7 +32,7 @@ CaseHub UI is built in three layers. Each layer has a clear boundary and defined
 └────────────────────────────────────────────────┘
 ```
 
-**Key principle:** Layers are unidirectional. blocks-ui depends on pages, apps depend on both. pages knows nothing about domain concepts (work items, trust scores, agents). blocks-ui knows CaseHub domain concepts but not app-specific workflows.
+**Key principle:** Layers are unidirectional. mosaic depends on pages, apps depend on both. pages knows nothing about domain concepts (work items, trust scores, agents). mosaic knows CaseHub domain concepts but not app-specific workflows.
 
 ## Layer 1: pages (Infrastructure)
 
@@ -113,7 +113,7 @@ When a component is bound to a data source in YAML (`dataRef: "myData"`), the pa
 
 #### pages-event
 
-**Purpose:** Custom events for inter-component communication. All blocks-ui components communicate via `pages-event` — no direct component-to-component coupling.
+**Purpose:** Custom events for inter-component communication. All mosaic components communicate via `pages-event` — no direct component-to-component coupling.
 
 **Dispatch:**
 
@@ -173,9 +173,9 @@ Back to data layer (re-resolve)
 3. Client fires `pages-event` with the payload
 4. Components listen for `pages-event` and update their data
 
-## Layer 2: blocks-ui (Domain Components)
+## Layer 2: mosaic (Domain Components)
 
-**Repository:** casehub-blocks-ui
+**Repository:** casehub-mosaic
 
 **What it provides:** Shared UI components for CaseHub applications. Each component consumes pages APIs but knows nothing about a specific app's domain model.
 
@@ -206,7 +206,7 @@ Back to data layer (re-resolve)
 
 ### Design Philosophy
 
-**Framework-agnostic:** Web Components where possible. No React, Vue, or Angular dependency in blocks-ui. Apps can use any framework.
+**Framework-agnostic:** Web Components where possible. No React, Vue, or Angular dependency in mosaic. Apps can use any framework.
 
 **Dataset contracts:** Each component defines what data shape it consumes (TypeScript interface). The data source is external (pages data pipeline, REST API, SSE).
 
@@ -214,17 +214,17 @@ Back to data layer (re-resolve)
 
 **Standalone testable:** Every component works in a test harness AND embedded via pages `hostPanel`. Test harness uses `@casehubio/pages-iframe-dev`.
 
-**Shared theme:** `BlocksTheme` (from `blocks-ui-core`) provides consistent design tokens. All components consume the theme.
+**Shared theme:** `BlocksTheme` (from `mosaic-core`) provides consistent design tokens. All components consume the theme.
 
-### blocks-ui-core
+### mosaic-core
 
-**Shared utilities for all blocks-ui components:**
+**Shared utilities for all mosaic components:**
 
 - **Theme:** `BlocksTheme` — OKLCH-based colour scales, spacing, typography. Injects CSS custom properties.
 - **Dataset helpers:** Typed interfaces for common data shapes (work item, trust score, case).
 - **Event contracts:** TypeScript types for `pages-event` detail payloads.
 - **A11y mixins:** Shared ARIA attribute helpers, keyboard navigation utilities.
-- **SSE manager:** Wrapper around `@casehubio/pages-data` SSE with blocks-ui conventions.
+- **SSE manager:** Wrapper around `@casehubio/pages-data` SSE with mosaic conventions.
 - **SharedTimerController:** Lit reactive controller for shared timers (e.g. "time ago" labels that update every 30s across all components).
 - **blocks-confirm-dialog:** Shared confirmation dialog Web Component (used by approval-gate, work-item-detail).
 - **schema-form:** JSON Schema-driven form generator (used for dynamic config panels).
@@ -249,7 +249,7 @@ Apps compose UIs via **Quinoa + pages runtime + hostPanel**:
 
 1. **Quinoa** (Quarkus extension) serves the pages webapp from `src/main/webui/`
 2. **pages runtime** loads YAML dashboard definitions from the server
-3. **hostPanel** embeds blocks-ui components and app-specific panels
+3. **hostPanel** embeds mosaic components and app-specific panels
 
 **Example (AML investigation dashboard):**
 
@@ -269,7 +269,7 @@ layout:
 
 **How it works:**
 
-1. AML app registers both blocks-ui panels (`work-item-inbox`) and app-specific panels (`aml-transaction-graph`) via `registerPanel()`
+1. AML app registers both mosaic panels (`work-item-inbox`) and app-specific panels (`aml-transaction-graph`) via `registerPanel()`
 2. Quinoa serves the YAML and the webapp bundle
 3. pages runtime parses the YAML, creates the panels, wires data bindings
 4. SSE updates flow from the AML backend → pages-push → SSEManager → components
@@ -285,41 +285,41 @@ layout:
 
 **What does NOT belong in the app layer:**
 
-- Generic work item rendering → use `work-item-inbox` from blocks-ui
-- Generic data tables → use `data-table` from blocks-ui
-- Trust score visualisation → use `trust-score-panel` from blocks-ui
+- Generic work item rendering → use `work-item-inbox` from mosaic
+- Generic data tables → use `data-table` from mosaic
+- Trust score visualisation → use `trust-score-panel` from mosaic
 
-**Boundary rule:** If 2+ apps need the same component, extract it to blocks-ui. If it's app-specific, keep it in the app repo.
+**Boundary rule:** If 2+ apps need the same component, extract it to mosaic. If it's app-specific, keep it in the app repo.
 
 ## How Apps Compose UIs
 
 ### AML (Anti-Money Laundering)
 
 **Key panels:**
-- `work-item-inbox` (blocks-ui) — investigation queue
+- `work-item-inbox` (mosaic) — investigation queue
 - `aml-transaction-graph` (aml-specific) — network graph of related transactions
-- `trust-score-panel` (blocks-ui) — investigator trust scores
-- `approval-gate` (blocks-ui) — SAR filing approval
+- `trust-score-panel` (mosaic) — investigator trust scores
+- `approval-gate` (mosaic) — SAR filing approval
 
 **Data sources:** AML REST API (alerts, transactions, entities), ledger REST API (trust scores), SSE (real-time alert updates).
 
 ### DevTown (PR Review)
 
 **Key panels:**
-- `work-item-inbox` (blocks-ui) — PR review queue
+- `work-item-inbox` (mosaic) — PR review queue
 - `devtown-pr-diff` (devtown-specific) — side-by-side diff viewer
-- `channel-activity` (blocks-ui) — deliberation channel feed
-- `trust-score-panel` (blocks-ui) — reviewer trust scores
+- `channel-activity` (mosaic) — deliberation channel feed
+- `trust-score-panel` (mosaic) — reviewer trust scores
 
 **Data sources:** GitHub API (PRs, comments, commits), work REST API (work items), SSE (PR state changes).
 
 ### Drafthouse (Content Review)
 
 **Key panels:**
-- `work-item-inbox` (blocks-ui) — content moderation queue
+- `work-item-inbox` (mosaic) — content moderation queue
 - `drafthouse-content-viewer` (drafthouse-specific) — multi-format content renderer (text, image, video)
-- `case-timeline` (blocks-ui) — moderation history
-- `approval-gate` (blocks-ui) — escalation gate
+- `case-timeline` (mosaic) — moderation history
+- `approval-gate` (mosaic) — escalation gate
 
 **Data sources:** Drafthouse REST API (content items, moderation actions), SSE (real-time content updates).
 
@@ -346,7 +346,7 @@ yarn typecheck
 yarn lint
 ```
 
-### blocks-ui Build
+### mosaic Build
 
 ```bash
 yarn install
@@ -357,19 +357,19 @@ yarn typecheck
 
 ### App Integration — Maven SNAPSHOT (ADR-0001)
 
-Apps consume pages + blocks-ui via **Maven SNAPSHOT artifacts**, not npm packages directly. See [casehub-pages ADR-0001](https://github.com/casehubio/casehub-pages/blob/main/docs/adr/0001-cross-repo-frontend-dependency-management.md).
+Apps consume pages + mosaic via **Maven SNAPSHOT artifacts**, not npm packages directly. See [casehub-pages ADR-0001](https://github.com/casehubio/casehub-pages/blob/main/docs/adr/0001-cross-repo-frontend-dependency-management.md).
 
 **Three-tier consumption model:**
 
 | Boundary | Mechanism |
 |----------|-----------|
-| Within pages/blocks-ui monorepo | Yarn `workspace:*` (instant linking) |
-| Cross-repo (CaseHub apps ← pages/blocks-ui) | Maven SNAPSHOT via `portal:` resolutions |
+| Within pages/mosaic monorepo | Yarn `workspace:*` (instant linking) |
+| Cross-repo (CaseHub apps ← pages/mosaic) | Maven SNAPSHOT via `portal:` resolutions |
 | External consumers (non-CaseHub) | Published npm packages |
 
 **How it works:**
 
-1. Pages and blocks-ui CI runs `yarn pack` on each package (resolves `workspace:*` → real versions), packages into Maven artifacts (`casehub-pages-npm`, `casehub-blocks-ui-npm`), and deploys to GitHub Maven Packages
+1. Pages and mosaic CI runs `yarn pack` on each package (resolves `workspace:*` → real versions), packages into Maven artifacts (`casehub-pages-npm`, `casehub-mosaic-npm`), and deploys to GitHub Maven Packages
 2. Consumer app's `pom.xml` declares Maven dependencies + `maven-dependency-plugin:unpack` extracts packages to `src/main/webui/.casehub-packages/`
 3. Consumer app's `package.json` uses `portal:` resolutions pointing to `.casehub-packages/`, preventing any npm registry lookups
 4. **Quinoa** runs `yarn install` (resolves from local portals) → `yarn build` → serves from `META-INF/resources/`
@@ -377,7 +377,7 @@ Apps consume pages + blocks-ui via **Maven SNAPSHOT artifacts**, not npm package
 **Local development:**
 
 ```bash
-# In pages (or blocks-ui):
+# In pages (or mosaic):
 yarn build && mvn -f npm-packages/pom.xml install
 
 # In consumer app:
@@ -447,7 +447,7 @@ class MyChartComponent extends LitElement {
 - **Vitest / Jest** — unit tests for all packages
 - **Component tests** — `@casehubio/pages-iframe-dev` test harness for iframe components
 
-### blocks-ui Tests
+### mosaic Tests
 
 - **Vitest** — unit tests for all components
 - **Playwright** (future) — E2E tests for interaction flows
@@ -455,11 +455,11 @@ class MyChartComponent extends LitElement {
 ### App Tests
 
 - **Quarkus Test** — backend integration tests
-- **Playwright** — E2E tests for full workflows (pages + blocks-ui + app panels)
+- **Playwright** — E2E tests for full workflows (pages + mosaic + app panels)
 
 ## See Also
 
 - [pages Repository](https://github.com/casehubio/pages) — infrastructure layer
-- [blocks-ui Repository](https://github.com/casehubio/blocks-ui) — domain component catalogue
+- [mosaic Repository](https://github.com/casehubio/mosaic) — domain component catalogue
 - [Protocols: custom-event-shadow-dom](https://github.com/casehubio/garden/blob/main/docs/protocols/casehub/custom-event-shadow-dom.md)
 - [Protocols: lit-immutable-collections](https://github.com/casehubio/garden/blob/main/docs/protocols/casehub/lit-immutable-collections.md)

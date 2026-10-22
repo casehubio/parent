@@ -53,7 +53,7 @@ Module structure (api, runtime, rest, testing, memory, signing), save pipeline, 
 
 ### Blocks (agentic patterns & social cognition)
 25 modules (903 Java sources): compositional agentic orchestration (5 SPIs, 8 topology patterns, YAML surface), BDI agent intelligence (beliefs, intentions, coalitions, judgment), social cognition framework (90+ types — mood, drives, narrative identity, goals, emergence), structured conversation protocol (epistemic common ground, convergence detection), temporal event summarisation, AI-powered agent routing (LLM + CBR, 5 signal providers), prompt optimisation (variant generation, few-shot), agent memory hygiene, trust intake & vouching, speech pipeline (STT/TTS with social cognition)
-→ [repos/casehub-blocks/contributor-guide.md](repos/casehub-blocks/contributor-guide.md)
+→ [repos/casehub-agency/contributor-guide.md](repos/casehub-agency/contributor-guide.md)
 25 modules · depends on: qhorus-api, work-api, engine-api, worker-api · depended on by: drafthouse, engine, aml, devtown, clinical, quarkmind
 
 ### Connectors (external integrations)
@@ -79,11 +79,11 @@ RasEngine, SituationEvaluator (two-phase), 5 ganglion types (incl. SituationWatc
 ### Pages (web framework & scenario automation)
 28 TS packages + 17 Java modules: data pipeline, event system, table, form, primitives, tokens, viz (15 chart types incl. heatmap, density, treemap), graph-core + graph-renderer (ELK/stack-column/radial layout), diagram-core, ARIA scenario framework (hierarchical composition, MCP domain, virtual clock), visual builder (pre-alpha), schema (Zod), filter-bar, property-palette. Java: auth, runtime, push (JDBC + Redis EventStore), MCP/GraphQL ARIA resolver, scenario compiler, scenario-client, data-iotdb, data-prometheus, Quinoa integration
 → [repos/casehub-pages/contributor-guide.md](repos/casehub-pages/contributor-guide.md)
-28 TS + 17 Java modules · depends on: nothing · depended on by: blocks-ui, all app UIs
+28 TS + 17 Java modules · depends on: nothing · depended on by: mosaic, all app UIs
 
 ### Blocks UI (shared components)
 60 components across 9 packages (479 TS source files): data patterns (DataSourceMixin, EventStreamController, TrendSourceMixin), Shadow DOM conventions, portal resolution, document workbench (9 panels), graph stencils, agent personality UI (catalog → avatar → manifest → profile), evolution conductor dashboard, operations infrastructure (cluster, service, topology, reconciliation), trust visualization (score → routing → decision → feedback → audit), structured deliberation UI (convergence + epistemic common ground)
-→ [repos/casehub-blocks-ui/contributor-guide.md](repos/casehub-blocks-ui/contributor-guide.md)
+→ [repos/casehub-mosaic/contributor-guide.md](repos/casehub-mosaic/contributor-guide.md)
 60 components · depends on: pages · depended on by: life, devtown, clinical, aml, chat-app, claudony, drafthouse
 
 ### OpenClaw (OpenClaw bridge)

@@ -1902,9 +1902,9 @@ entries:
   - level: 2
     text: Component Map — What Goes Where
   - level: 3
-    text: blocks-ui components (used directly)
+    text: mosaic components (used directly)
   - level: 3
-    text: blocks-ui enhancements needed
+    text: mosaic enhancements needed
   - level: 3
     text: AML-specific components (remain in this repo)
   - level: 3
@@ -3749,9 +3749,9 @@ entries:
   - level: 2
     text: Component Map — What Goes Where
   - level: 3
-    text: blocks-ui components (used directly)
+    text: mosaic components (used directly)
   - level: 3
-    text: blocks-ui enhancements needed
+    text: mosaic enhancements needed
   - level: 3
     text: AML-specific components (remain in this repo)
   - level: 3
@@ -4259,55 +4259,55 @@ entries:
   - level: 2
     text: Key Directories
   - level: 2
-    text: 'Package: `io.casehub.blocks.agent`'
+    text: 'Package: `io.casehub.agency.core.invoke`'
   - level: 2
-    text: 'Package: `io.casehub.blocks.attestation`'
+    text: 'Package: `io.casehub.agency.governance.attestation`'
   - level: 2
-    text: 'Package: `io.casehub.blocks.trust`'
+    text: 'Package: `io.casehub.agency.governance.trust`'
   - level: 2
-    text: 'Package: `io.casehub.blocks.channel`'
+    text: 'Package: `io.casehub.agency.communication.dispatch`'
   - level: 2
-    text: 'Package: `io.casehub.blocks.channel.summary`'
+    text: 'Package: `io.casehub.agency.communication.channel.summary`'
   - level: 2
-    text: 'Package: `io.casehub.blocks.conversation`'
+    text: 'Package: `io.casehub.agency.deliberation.conversation`'
   - level: 2
-    text: 'Package: `io.casehub.blocks.conversation.orchestration`'
+    text: 'Package: `io.casehub.agency.deliberation.conversation.orchestration`'
   - level: 2
-    text: 'Package: `io.casehub.blocks.normative`'
+    text: 'Package: `io.casehub.agency.deliberation.normative`'
   - level: 2
-    text: 'Package: `io.casehub.blocks.negotiation`'
+    text: 'Package: `io.casehub.agency.deliberation.negotiation`'
   - level: 2
-    text: 'Package: `io.casehub.blocks.oversight`'
+    text: 'Package: `io.casehub.agency.oversight`'
   - level: 2
-    text: 'Package: `io.casehub.blocks.agentic`'
+    text: 'Package: `io.casehub.agency.core`'
   - level: 2
-    text: 'Package: `io.casehub.blocks.agentic.social.drive`'
+    text: 'Package: `io.casehub.agency.core.social.drive`'
   - level: 2
-    text: 'Package: `io.casehub.blocks.agentic.social.goal`'
+    text: 'Package: `io.casehub.agency.core.social.goal`'
   - level: 2
-    text: 'Package: `io.casehub.blocks.routing`'
+    text: 'Package: `io.casehub.agency.governance.routing`'
   - level: 2
-    text: 'Package: `io.casehub.blocks.rag`'
+    text: 'Package: `io.casehub.agency.perception.rag`'
   - level: 2
-    text: 'Package: `io.casehub.blocks.routing.agent`'
+    text: 'Package: `io.casehub.agency.governance.routing.agent`'
   - level: 2
-    text: 'Package: `io.casehub.blocks.prompt`'
+    text: 'Package: `io.casehub.agency.optimisation.prompt`'
   - level: 3
-    text: 'Sub-package: `io.casehub.blocks.prompt.optimiser`'
+    text: 'Sub-package: `io.casehub.agency.optimisation.prompt.optimiser`'
   - level: 3
-    text: 'Sub-package: `io.casehub.blocks.prompt.runtime`'
+    text: 'Sub-package: `io.casehub.agency.optimisation.prompt.runtime`'
   - level: 2
-    text: 'Package: `io.casehub.blocks.summarisation`'
+    text: 'Package: `io.casehub.agency.summarisation`'
   - level: 2
-    text: 'Sub-package: `io.casehub.blocks.summarisation.observation`'
+    text: 'Sub-package: `io.casehub.agency.perception.observation`'
   - level: 2
-    text: 'Sub-package: `io.casehub.blocks.summarisation.observation.affordance`'
+    text: 'Sub-package: `io.casehub.agency.perception.observation.affordance`'
   - level: 2
-    text: 'Sub-package: `io.casehub.blocks.summarisation.llm`'
+    text: 'Sub-package: `io.casehub.agency.perception.llm`'
   - level: 2
-    text: 'Sub-package: `io.casehub.blocks.summarisation.narrative`'
+    text: 'Sub-package: `io.casehub.agency.perception.narrative`'
   - level: 2
-    text: 'Package: `io.casehub.blocks.speech.sherpa`'
+    text: 'Package: `io.casehub.agency.speech.sherpa`'
   - level: 2
     text: Dependencies
   - level: 2
@@ -4340,7 +4340,7 @@ entries:
   source: project
   headings:
   - level: 1
-    text: casehub-blocks
+    text: casehub-agency
   - level: 2
     text: What This Is
   - level: 2
@@ -5545,7 +5545,7 @@ entries:
   source: project
   headings:
   - level: 1
-    text: casehub-blocks -- Consumer Guide
+    text: casehub-agency -- Consumer Guide
   - level: 2
     text: What This Module Does
   - level: 2
@@ -5553,21 +5553,21 @@ entries:
   - level: 2
     text: Packages
   - level: 3
-    text: '`io.casehub.blocks.channel`'
+    text: '`io.casehub.agency.communication.dispatch`'
   - level: 3
-    text: '`io.casehub.blocks.channel.summary`'
+    text: '`io.casehub.agency.communication.channel.summary`'
   - level: 3
-    text: '`io.casehub.blocks.attestation`'
+    text: '`io.casehub.agency.governance.attestation`'
   - level: 3
-    text: '`io.casehub.blocks.conversation`'
+    text: '`io.casehub.agency.deliberation.conversation`'
   - level: 3
-    text: '`io.casehub.blocks.conversation.orchestration`'
+    text: '`io.casehub.agency.deliberation.conversation.orchestration`'
   - level: 3
-    text: '`io.casehub.blocks.normative`'
+    text: '`io.casehub.agency.deliberation.normative`'
   - level: 3
-    text: '`io.casehub.blocks.negotiation`'
+    text: '`io.casehub.agency.deliberation.negotiation`'
   - level: 3
-    text: '`io.casehub.blocks.agentic`'
+    text: '`io.casehub.agency.core`'
   - level: 4
     text: Root types (`agentic`)
   - level: 4
@@ -5589,29 +5589,29 @@ entries:
   - level: 4
     text: '`agentic.pattern` -- Pattern DSL'
   - level: 3
-    text: '`io.casehub.blocks.routing`'
+    text: '`io.casehub.agency.governance.routing`'
   - level: 3
-    text: '`io.casehub.blocks.routing.agent`'
+    text: '`io.casehub.agency.governance.routing.agent`'
   - level: 3
-    text: '`io.casehub.blocks.rag`'
+    text: '`io.casehub.agency.perception.rag`'
   - level: 3
-    text: '`io.casehub.blocks.summarisation`'
+    text: '`io.casehub.agency.summarisation`'
   - level: 3
-    text: '`io.casehub.blocks.summarisation.llm`'
+    text: '`io.casehub.agency.perception.llm`'
   - level: 3
-    text: '`io.casehub.blocks.summarisation.observation`'
+    text: '`io.casehub.agency.perception.observation`'
   - level: 3
-    text: '`io.casehub.blocks.summarisation.observation.affordance`'
+    text: '`io.casehub.agency.perception.observation.affordance`'
   - level: 3
-    text: '`io.casehub.blocks.agentic.yaml` (module: `blocks-agentic-yaml`)'
+    text: '`io.casehub.agency.core.yaml` (module: `blocks-agentic-yaml`)'
   - level: 3
-    text: '`io.casehub.blocks.summarisation.narrative`'
+    text: '`io.casehub.agency.perception.narrative`'
   - level: 3
-    text: '`io.casehub.blocks.speech` (module: `blocks-speech-api`)'
+    text: '`io.casehub.agency.speech` (module: `blocks-speech-api`)'
   - level: 3
-    text: '`io.casehub.blocks.agentic.social.prompt` (module: `blocks`)'
+    text: '`io.casehub.agency.core.social.prompt` (module: `blocks`)'
   - level: 3
-    text: '`io.casehub.blocks.speech.sherpa` (module: `blocks-speech-sherpa`)'
+    text: '`io.casehub.agency.speech.sherpa` (module: `blocks-speech-sherpa`)'
   - level: 2
     text: Key Integration Patterns
   - level: 2
@@ -5626,7 +5626,7 @@ entries:
   source: project
   headings:
   - level: 1
-    text: casehub-blocks -- Contributor Guide
+    text: casehub-agency -- Contributor Guide
   - level: 2
     text: Module Structure
   - level: 2
@@ -5679,7 +5679,7 @@ entries:
   - level: 2
     text: Primitives Inventory
   - level: 3
-    text: Five Agentic SPIs (casehub-blocks)
+    text: Five Agentic SPIs (casehub-agency)
   - level: 3
     text: Speech Acts (9, casehub-qhorus)
   - level: 3
@@ -5687,11 +5687,11 @@ entries:
   - level: 3
     text: Commitment Lifecycle (7 states, casehub-qhorus)
   - level: 3
-    text: Conversation Protocol (casehub-blocks)
+    text: Conversation Protocol (casehub-agency)
   - level: 3
     text: Routing Signal Providers (casehub-engine + blocks)
   - level: 3
-    text: Agent Types (5, casehub-blocks)
+    text: Agent Types (5, casehub-agency)
   - level: 3
     text: Execution Drivers (2)
   - level: 3
@@ -5758,14 +5758,14 @@ entries:
   - level: 3
     text: 'Task 4: CLAUDE.md update (blocks)'
   - level: 2
-    text: 'Package: `io.casehub.blocks.channel.summary`'
+    text: 'Package: `io.casehub.agency.communication.channel.summary`'
   last_modified: '2026-07-22'
 - path: docs/plans/2026-08-23-blocks-annotations.md
   repo: blocks
   source: project
   headings:
   - level: 1
-    text: casehub-blocks-annotations Implementation Plan
+    text: casehub-agency-annotations Implementation Plan
   - level: 2
     text: Global Constraints
   - level: 2
@@ -5968,7 +5968,7 @@ entries:
   - level: 3
     text: 3.2 Personality (casehub-eidos)
   - level: 3
-    text: 3.3 Conversation & Social (casehub-blocks)
+    text: 3.3 Conversation & Social (casehub-agency)
   - level: 3
     text: 3.4 Trust (casehub-ledger)
   - level: 3
@@ -6715,13 +6715,13 @@ entries:
   - level: 3
     text: New types (4 source files)
   - level: 4
-    text: 1. `KeyedAccumulator<K, E>` — `io.casehub.blocks.summarisation`
+    text: 1. `KeyedAccumulator<K, E>` — `io.casehub.agency.summarisation`
   - level: 4
-    text: 2. `KeyedSummarisationRunner<K, IN, OUT>` — `io.casehub.blocks.summarisation`
+    text: 2. `KeyedSummarisationRunner<K, IN, OUT>` — `io.casehub.agency.summarisation`
   - level: 4
-    text: 3. `ChannelEventAdapter<E>` — `io.casehub.blocks.channel`
+    text: 3. `ChannelEventAdapter<E>` — `io.casehub.agency.communication.dispatch`
   - level: 4
-    text: 4. `ChannelEventPublisher<E>` — `io.casehub.blocks.channel`
+    text: 4. `ChannelEventPublisher<E>` — `io.casehub.agency.communication.dispatch`
   - level: 3
     text: Pipeline composition
   - level: 3
@@ -7224,7 +7224,7 @@ entries:
   - level: 2
     text: Architecture
   - level: 3
-    text: 'Package: `io.casehub.blocks.negotiation`'
+    text: 'Package: `io.casehub.agency.deliberation.negotiation`'
   - level: 3
     text: Speech-Act Mapping
   - level: 3
@@ -7287,7 +7287,7 @@ entries:
   - level: 2
     text: Architecture
   - level: 3
-    text: 'Package: `io.casehub.blocks.negotiation`'
+    text: 'Package: `io.casehub.agency.deliberation.negotiation`'
   - level: 3
     text: Speech-Act Mapping
   - level: 3
@@ -7394,7 +7394,7 @@ entries:
   - level: 2
     text: Architecture
   - level: 3
-    text: 'Package: `io.casehub.blocks.normative`'
+    text: 'Package: `io.casehub.agency.deliberation.normative`'
   - level: 3
     text: Dependency direction
   - level: 2
@@ -7462,7 +7462,7 @@ entries:
   source: project
   headings:
   - level: 1
-    text: casehub-blocks-annotations Design
+    text: casehub-agency-annotations Design
   - level: 2
     text: Motivation
   - level: 2
@@ -7720,7 +7720,7 @@ entries:
   - level: 4
     text: AgentGoal — add attributes field
   - level: 3
-    text: 'Blocks (new package: `io.casehub.blocks.agentic.social.goal`)'
+    text: 'Blocks (new package: `io.casehub.agency.core.social.goal`)'
   - level: 4
     text: DriveGoalMapper (functional interface — SPI)
   - level: 4
@@ -7828,7 +7828,7 @@ entries:
   - level: 2
     text: Type System
   - level: 3
-    text: 'Package: `io.casehub.blocks.agentic.social.narrative`'
+    text: 'Package: `io.casehub.agency.core.social.narrative`'
   - level: 4
     text: NarrativeFragment (sealed interface)
   - level: 4
@@ -7858,7 +7858,7 @@ entries:
   - level: 3
     text: ReflectionQueryStore (blocks)
   - level: 3
-    text: 'Package: `io.casehub.blocks.agentic.social.emergence`'
+    text: 'Package: `io.casehub.agency.core.social.emergence`'
   - level: 4
     text: SocialNorm (record)
   - level: 4
@@ -8221,7 +8221,7 @@ entries:
   - level: 2
     text: Type System
   - level: 3
-    text: 'Package: `io.casehub.blocks.agentic.social.goal`'
+    text: 'Package: `io.casehub.agency.core.social.goal`'
   - level: 4
     text: GoalEscalationPolicy (SPI)
   - level: 4
@@ -8305,7 +8305,7 @@ entries:
   - level: 2
     text: What This Spec Adds
   - level: 2
-    text: 'Package: `io.casehub.blocks.agentic.judgment`'
+    text: 'Package: `io.casehub.agency.deliberation.judgment`'
   - level: 3
     text: JudgmentPolicy
   - level: 3
@@ -8966,7 +8966,7 @@ entries:
   - level: 3
     text: 5.5 Module dependencies
   - level: 2
-    text: 6. Client-Side Components (blocks-ui avatar package)
+    text: 6. Client-Side Components (mosaic avatar package)
   - level: 3
     text: 6.1 `<casehub-avatar>`
   - level: 3
@@ -8978,7 +8978,7 @@ entries:
   - level: 3
     text: 6.5 Default avatar model
   - level: 2
-    text: 7. Demo App (blocks-ui/examples/avatar-demo/)
+    text: 7. Demo App (mosaic/examples/avatar-demo/)
   - level: 1
     text: Browser opens http://localhost:8080
   - level: 1
@@ -8990,7 +8990,7 @@ entries:
   - level: 3
     text: 8.1 blocks (speech-ws) — JUnit 5 + Mockito
   - level: 3
-    text: 8.2 blocks-ui (avatar package) — vitest
+    text: 8.2 mosaic (avatar package) — vitest
   - level: 3
     text: 8.3 Demo (avatar-demo) — @QuarkusTest + Playwright
   - level: 2
@@ -9033,7 +9033,7 @@ entries:
   - level: 2
     text: 'D14: GECToR ONNX export — script + pre-export'
   - level: 2
-    text: 'D15: Avatar module placement — split across blocks and blocks-ui'
+    text: 'D15: Avatar module placement — split across blocks and mosaic'
   - level: 2
     text: 'D16: WebSocket protocol — binary + text frame separation'
   - level: 2
@@ -9043,7 +9043,7 @@ entries:
   - level: 2
     text: 'D19: Tier 1 scope — speech pipeline only'
   - level: 2
-    text: 'D20: Demo app — blocks-ui/examples/'
+    text: 'D20: Demo app — mosaic/examples/'
   - level: 2
     text: 'D21: Testing strategy — meaningful tests at each level'
   last_modified: '2026-08-27'
@@ -12076,7 +12076,7 @@ entries:
   source: project
   headings:
   - level: 1
-    text: Specs Index — casehub-blocks
+    text: Specs Index — casehub-agency
   last_modified: '2026-06-29'
 - path: specs/annotation-driven-model/2026-08-14-annotation-driven-agent-model-design.md
   repo: blocks (workspace)
@@ -12410,7 +12410,7 @@ entries:
   - level: 2
     text: Type System
   - level: 3
-    text: 'Package: `io.casehub.blocks.agentic.social.narrative`'
+    text: 'Package: `io.casehub.agency.core.social.narrative`'
   - level: 4
     text: NarrativeFragment (sealed interface)
   - level: 4
@@ -12440,7 +12440,7 @@ entries:
   - level: 3
     text: ReflectionQueryStore (blocks)
   - level: 3
-    text: 'Package: `io.casehub.blocks.agentic.social.emergence`'
+    text: 'Package: `io.casehub.agency.core.social.emergence`'
   - level: 4
     text: SocialNorm (record)
   - level: 4
@@ -14489,7 +14489,7 @@ entries:
     text: 'D7: Three audiences, three representations — YAML / Java / TS'
   last_modified: '2026-08-24'
 - path: CLAUDE.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -14526,11 +14526,11 @@ entries:
     text: Project Artifacts
   last_modified: '2026-09-30'
 - path: README.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
-    text: casehub-blocks-ui
+    text: casehub-mosaic
   - level: 2
     text: Components
   - level: 3
@@ -14546,7 +14546,7 @@ entries:
   - level: 3
     text: Core Utilities
   - level: 2
-    text: Infrastructure (`@casehubio/blocks-ui-core`)
+    text: Infrastructure (`@casehubio/mosaic-core`)
   - level: 2
     text: REST APIs Consumed
   - level: 2
@@ -14557,7 +14557,7 @@ entries:
     text: Documentation
   last_modified: '2026-07-10'
 - path: docs/adr/0001-layered-layout-rule-engine.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -14586,49 +14586,49 @@ entries:
     text: Links
   last_modified: '2026-09-11'
 - path: docs/adr/INDEX.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
     text: ADR Index
   last_modified: '2026-09-11'
 - path: docs/blog/2026-06-10-mdp01-filter-model-type-safety.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
     text: Melviz Gets a Type System for Filters
   last_modified: '2026-09-11'
 - path: docs/blog/2026-06-11-mdp01-grouping-aggregation-null.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
     text: Grouping, Aggregation, and the Null Question
   last_modified: '2026-09-11'
 - path: docs/blog/2026-06-12-mdp01-expression-eval-lifecycle.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
     text: Expression Evaluation and the Parse-Resolve-Execute Lifecycle
   last_modified: '2026-09-11'
 - path: docs/blog/2026-06-12-mdp02-dataset-manager-orchestration.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
     text: DataSetManager and the Thin Orchestration Layer
   last_modified: '2026-09-11'
 - path: docs/blog/2026-06-13-mdp01-external-dataset-shape-problem.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
     text: ExternalDataSetDef and the Shape Problem
   last_modified: '2026-09-11'
 - path: docs/blog/2026-06-15-mdp01-casehub-component-zero-dep-split.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -14637,7 +14637,7 @@ entries:
     text: The Layout Renderer
   last_modified: '2026-09-11'
 - path: docs/blog/2026-06-17-mdp01-lazy-rendering-gallery.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -14652,7 +14652,7 @@ entries:
     text: The gallery at 90%
   last_modified: '2026-09-11'
 - path: docs/blog/2026-06-18-mdp01-runtime-improvements.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -14667,7 +14667,7 @@ entries:
     text: The extension APIs
   last_modified: '2026-09-11'
 - path: docs/blog/2026-06-18-mdp02-native-forms.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -14678,7 +14678,7 @@ entries:
     text: The TS/YAML Toggle
   last_modified: '2026-09-11'
 - path: docs/blog/2026-06-20-mdp01-casehub-pages-rename.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -14687,7 +14687,7 @@ entries:
     text: Ecosystem integration
   last_modified: '2026-09-11'
 - path: docs/blog/2026-06-21-mdp01-ts-strict-enforcement.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -14702,7 +14702,7 @@ entries:
     text: Issues Filed
   last_modified: '2026-09-11'
 - path: docs/blog/2026-06-21-mdp02-ts-quality-sweep.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -14715,7 +14715,7 @@ entries:
     text: ESLint strict-type-checked
   last_modified: '2026-09-11'
 - path: docs/blog/2026-06-21-mdp03-backlog-sweep-and-nav-rendering.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -14726,7 +14726,7 @@ entries:
     text: Prometheus parser fix
   last_modified: '2026-09-11'
 - path: docs/blog/2026-06-22-mdp01-smoke-tests-eslint-zero.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -14743,12 +14743,12 @@ entries:
     text: The ESLint/TSC type resolution conflict
   last_modified: '2026-09-11'
 - path: docs/blog/2026-06-23-mdp01-arc42-issue-remap.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-09-11'
 - path: docs/blog/2026-06-23-mdp02-publishable-quinoa-convention.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -14759,7 +14759,7 @@ entries:
     text: What shipped
   last_modified: '2026-09-11'
 - path: docs/blog/2026-06-23-mdp02-theme-export-loading.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -14774,7 +14774,7 @@ entries:
     text: LLM documentation
   last_modified: '2026-09-11'
 - path: docs/blog/2026-06-24-mdp01-event-protocol-wrong.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -14787,7 +14787,7 @@ entries:
     text: Toggle was the missing UX primitive
   last_modified: '2026-09-11'
 - path: docs/blog/2026-06-25-mdp01-three-leftovers-view-state.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -14806,12 +14806,12 @@ entries:
     text: Where this leaves the pipeline
   last_modified: '2026-09-11'
 - path: docs/blog/2026-06-25-mdp01-view-state-split-personality.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-09-11'
 - path: docs/blog/2026-06-26-mdp01-four-domains-one-gallery.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -14828,17 +14828,17 @@ entries:
     text: Playwright tests for regression
   last_modified: '2026-09-11'
 - path: docs/blog/2026-06-27-mdp01-parser-ate-its-aggregates.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-09-11'
 - path: docs/blog/2026-06-27-mdp02-gallery-triage.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-09-11'
 - path: docs/blog/2026-06-27-mdp03-small-issues-loose-ends.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -14851,7 +14851,7 @@ entries:
     text: 'Maps: the missing registerMap'
   last_modified: '2026-09-11'
 - path: docs/blog/2026-06-29-mdp01-the-last-rename.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -14866,12 +14866,12 @@ entries:
     text: What it is now
   last_modified: '2026-09-11'
 - path: docs/blog/2026-06-29-mdp02-context-resolution-capabilities.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-09-11'
 - path: docs/blog/2026-06-29-mdp02-event-model-three-issues.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -14890,22 +14890,22 @@ entries:
     text: The small things
   last_modified: '2026-09-11'
 - path: docs/blog/2026-06-30-mdp01-five-issues-one-connection.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-09-11'
 - path: docs/blog/2026-06-30-mdp01-the-abstraction-that-was-missing.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-09-11'
 - path: docs/blog/2026-06-30-mdp01-the-dashboard-problem.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-09-11'
 - path: docs/blog/2026-06-30-mdp02-three-primitives-one-pipeline.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -14918,7 +14918,7 @@ entries:
     text: What this enables
   last_modified: '2026-09-11'
 - path: docs/blog/2026-07-01-mdp01-the-first-web-component.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -14933,17 +14933,17 @@ entries:
     text: Where this leaves us
   last_modified: '2026-09-11'
 - path: docs/blog/2026-07-01-mdp02-layout-as-first-class.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-09-11'
 - path: docs/blog/2026-07-02-mdp01-completing-the-data-module.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-09-11'
 - path: docs/blog/2026-07-02-mdp01-dedup-semantics-question.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -14958,17 +14958,17 @@ entries:
     text: Where this leaves things
   last_modified: '2026-09-11'
 - path: docs/blog/2026-07-02-mdp01-the-optional-backend.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-09-11'
 - path: docs/blog/2026-07-03-mdp01-wiring-pushdown-to-frontend.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-09-11'
 - path: docs/blog/2026-07-04-mdp01-four-fixes-one-branch.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -14981,7 +14981,7 @@ entries:
     text: Killing unsafe-eval
   last_modified: '2026-09-11'
 - path: docs/blog/2026-07-04-mdp02-closing-the-review-loop.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -14994,12 +14994,12 @@ entries:
     text: 0.3.0
   last_modified: '2026-09-11'
 - path: docs/blog/2026-07-05-mdp01-colour-science-and-protocol-handshakes.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-09-11'
 - path: docs/blog/2026-07-05-mdp02-version-drift-and-forgotten-repos.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -15008,7 +15008,7 @@ entries:
     text: Making it stick
   last_modified: '2026-09-11'
 - path: docs/blog/2026-07-05-mdp03-primitives-push-down.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -15019,61 +15019,61 @@ entries:
     text: Two new components
   last_modified: '2026-09-11'
 - path: docs/blog/2026-07-06-mdp01-iframe-wire-contract.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-09-11'
 - path: docs/blog/2026-07-06-mdp01-sse-crosses-the-repo-line.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
     text: casehub-pages — SSE Crosses the Repo Line
   - level: 2
-    text: 'What I was trying to achieve: move SSEManager from blocks-ui to pages and make it work with named SSE events'
+    text: 'What I was trying to achieve: move SSEManager from mosaic to pages and make it work with named SSE events'
   - level: 2
     text: 'What we believed going in: the extraction would be the hard part'
   - level: 2
     text: Publishing turned out to be the real obstacle
   - level: 2
-    text: blocks-ui migration was the easy part
+    text: mosaic migration was the easy part
   - level: 2
     text: Where this leaves the migration
   last_modified: '2026-09-11'
 - path: docs/blog/2026-07-06-mdp01-three-bugs-where-there-was-one.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
     text: Three Bugs Where There Was One
   last_modified: '2026-08-10'
 - path: docs/blog/2026-07-06-mdp01-trie-that-was-always-there.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-09-11'
 - path: docs/blog/2026-07-06-mdp01-writing-rules-from-the-garden.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-09-11'
 - path: docs/blog/2026-07-07-mdp01-the-interface-already-there.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-09-11'
 - path: docs/blog/2026-07-07-mdp02-event-mode-grows-up.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-09-11'
 - path: docs/blog/2026-07-09-mdp01-nine-abstractions-for-one-job.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-09-11'
 - path: docs/blog/2026-07-09-mdp01-the-sse-question-had-the-wrong-premise.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -15084,22 +15084,22 @@ entries:
     text: The branch archaeology
   last_modified: '2026-08-10'
 - path: docs/blog/2026-07-10-mdp01-the-controller-was-the-point.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-08-10'
 - path: docs/blog/2026-07-10-mdp02-sparklines-and-the-mixin-question.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-08-10'
 - path: docs/blog/2026-07-10-mdp03-the-table-came-home.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-08-10'
 - path: docs/blog/2026-07-11-mdp01-fetch-is-just-push.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -15112,12 +15112,12 @@ entries:
     text: Where It Stands
   last_modified: '2026-08-10'
 - path: docs/blog/2026-07-11-mdp01-the-type-already-there.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-09-11'
 - path: docs/blog/2026-07-11-mdp02-the-pipeline-closes.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -15128,7 +15128,7 @@ entries:
     text: Five Consumers Left
   last_modified: '2026-08-10'
 - path: docs/blog/2026-07-12-mdp01-the-gallery-that-wouldnt-render.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -15147,7 +15147,7 @@ entries:
     text: 205 chart titles moved off canvas
   last_modified: '2026-09-11'
 - path: docs/blog/2026-07-13-mdp01-four-small-things.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -15160,44 +15160,44 @@ entries:
     text: The action button that already existed
   last_modified: '2026-09-11'
 - path: docs/blog/2026-07-13-mdp01-the-missing-ux-pattern.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-08-10'
 - path: docs/blog/2026-07-13-mdp02-closing-table-spec-gaps.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-09-11'
 - path: docs/blog/2026-07-13-mdp02-three-repos-one-component-library.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-08-10'
 - path: docs/blog/2026-07-13-mdp03-the-build-that-lied.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
     text: The Build That Lied
   last_modified: '2026-08-10'
 - path: docs/blog/2026-07-13-mdp03-the-platform-gave-us-the-modal.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-09-11'
 - path: docs/blog/2026-07-14-mdp01-phantom-imports.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-09-11'
 - path: docs/blog/2026-07-14-mdp02-the-refresh-that-wasnt.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-09-11'
 - path: docs/blog/2026-07-16-mdp01-the-select-that-lost-its-way.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -15206,22 +15206,22 @@ entries:
     text: The dropdown that appeared in the wrong place
   last_modified: '2026-08-10'
 - path: docs/blog/2026-07-17-mdp01-four-follow-ons-two-kinds-of-grouping.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-09-11'
 - path: docs/blog/2026-07-17-mdp01-the-styles-that-never-arrived.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-08-10'
 - path: docs/blog/2026-07-17-mdp02-the-css-that-looked-like-it-worked.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-08-10'
 - path: docs/blog/2026-07-18-mdp01-the-form-that-lived-in-the-wrong-house.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -15232,7 +15232,7 @@ entries:
     text: The three-tab example
   last_modified: '2026-08-10'
 - path: docs/blog/2026-07-19-mdp01-validation-as-pure-function.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -15243,7 +15243,7 @@ entries:
     text: The IntelliJ gotcha
   last_modified: '2026-09-11'
 - path: docs/blog/2026-07-19-mdp01-why-every-data-table-gets-spanning-wrong.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -15256,12 +15256,12 @@ entries:
     text: What shipped
   last_modified: '2026-08-10'
 - path: docs/blog/2026-07-19-mdp02-killing-the-row-grid.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-09-11'
 - path: docs/blog/2026-07-19-mdp02-the-connector-that-was-missing.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -15274,7 +15274,7 @@ entries:
     text: Pipeline adoption
   last_modified: '2026-09-11'
 - path: docs/blog/2026-07-21-mdp01-trust-workbench.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -15289,7 +15289,7 @@ entries:
     text: What's not there yet
   last_modified: '2026-08-21'
 - path: docs/blog/2026-07-21-mdp02-schema-driven-notification-forms.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -15306,7 +15306,7 @@ entries:
     text: Numbers
   last_modified: '2026-08-10'
 - path: docs/blog/2026-07-21-schema-driven-notification-forms.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -15323,7 +15323,7 @@ entries:
     text: Numbers
   last_modified: '2026-08-01'
 - path: docs/blog/2026-07-22-mdp01-ecosystem-alignment-and-density.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -15334,7 +15334,7 @@ entries:
     text: The density problem
   last_modified: '2026-09-11'
 - path: docs/blog/2026-07-23-mdp01-when-themes-became-programs.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -15349,7 +15349,7 @@ entries:
     text: Build-time, not runtime
   last_modified: '2026-09-11'
 - path: docs/blog/2026-07-25-mdp01-the-pipeline-was-already-there.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -15364,7 +15364,7 @@ entries:
     text: What we left alone
   last_modified: '2026-08-10'
 - path: docs/blog/2026-07-25-mdp02-namespace-hygiene-and-the-barrel-that-bites.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -15377,12 +15377,12 @@ entries:
     text: 59 tags, one prefix
   last_modified: '2026-08-10'
 - path: docs/blog/2026-07-27-mdp01-the-rename-that-found-three-bugs.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-09-11'
 - path: docs/blog/2026-07-28-mdp01-every-data-table-gets-variable-heights-wrong.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -15399,7 +15399,7 @@ entries:
     text: What the review caught
   last_modified: '2026-08-01'
 - path: docs/blog/2026-07-28-mdp01-three-iterations-to-maven.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -15416,19 +15416,19 @@ entries:
     text: What changed
   last_modified: '2026-09-11'
 - path: docs/blog/2026-07-28-mdp02-three-tiers-for-one-design-system.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-09-11'
 - path: docs/blog/2026-07-29-mdp01-the-property-that-does-nothing.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
     text: The Property That Does Nothing
   last_modified: '2026-08-10'
 - path: docs/blog/2026-07-30-mdp01-the-browser-did-the-hard-part.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -15447,7 +15447,7 @@ entries:
     text: Where this leaves things
   last_modified: '2026-09-11'
 - path: docs/blog/2026-07-31-mdp01-cross-repo-coordination.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -15462,7 +15462,7 @@ entries:
     text: Why this matters beyond devtown
   last_modified: '2026-09-11'
 - path: docs/blog/2026-08-01-mdp01-visual-case-editor.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -15483,7 +15483,7 @@ entries:
     text: What's next
   last_modified: '2026-09-11'
 - path: docs/blog/2026-08-01-mdp02-seeing-cases.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -15508,7 +15508,7 @@ entries:
     text: What's next
   last_modified: '2026-09-11'
 - path: docs/blog/2026-08-02-mdp01-progress-is-not-a-field.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -15523,7 +15523,7 @@ entries:
     text: What this opens
   last_modified: '2026-09-11'
 - path: docs/blog/2026-08-02-mdp01-the-layer-that-made-things-worse.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -15540,7 +15540,7 @@ entries:
     text: What This Opens
   last_modified: '2026-09-11'
 - path: docs/blog/2026-08-03-mdp01-from-yaml-to-graph-in-one-session.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -15555,14 +15555,14 @@ entries:
     text: What's next
   last_modified: '2026-08-10'
 - path: docs/blog/2026-08-03-mdp01-three-issues-one-pipeline.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
     text: Three Issues, One Pipeline
   last_modified: '2026-09-11'
 - path: docs/blog/2026-08-03-mdp02-the-editor-edits.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -15575,24 +15575,24 @@ entries:
     text: What it is now
   last_modified: '2026-08-10'
 - path: docs/blog/2026-08-04-mdp01-decoration-contracts.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-09-11'
 - path: docs/blog/2026-08-04-mdp01-dock-workbench-composable-primitives.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
     text: 'Dock Workbench: Composable Primitives Over Monolithic Controllers'
   last_modified: '2026-09-11'
 - path: docs/blog/2026-08-04-mdp01-the-table-that-hid-its-own-data.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-08-10'
 - path: docs/blog/2026-08-04-mdp03-clearing-backlog-batch-fixes.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -15607,12 +15607,12 @@ entries:
     text: What got deferred
   last_modified: '2026-09-11'
 - path: docs/blog/2026-08-05-mdp01-one-badge-to-rule-them-all.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-08-10'
 - path: docs/blog/2026-08-05-mdp01-where-does-pagination-go.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -15625,84 +15625,84 @@ entries:
     text: Where it stands
   last_modified: '2026-09-11'
 - path: docs/blog/2026-08-06-mdp01-pipeline-learns-to-page.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
     text: The pipeline learns to ask for pages
   last_modified: '2026-09-11'
 - path: docs/blog/2026-08-07-mdp01-breaking-eventstore-spi-for-durability.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-09-11'
 - path: docs/blog/2026-08-09-mdp01-neutral-scale-two-modes.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-09-11'
 - path: docs/blog/2026-08-10-mdp01-selection-context-bridge.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-09-11'
 - path: docs/blog/2026-08-10-mdp02-three-viz-wrappers-and-a-spacing-fix.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-09-11'
 - path: docs/blog/2026-08-10-mdp03-stale-positions-and-engine-purity.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-09-11'
 - path: docs/blog/2026-08-11-mdp01-scenario-format-spec.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-09-11'
 - path: docs/blog/2026-08-11-mdp01-worker-functions-get-a-face.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-08-11'
 - path: docs/blog/2026-08-18-mdp01-closing-the-dsl-surface-gap.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-09-11'
 - path: docs/blog/2026-08-18-mdp02-two-packaging-fixes-and-a-weakmap.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-09-11'
 - path: docs/blog/2026-08-18-mdp03-three-properties-and-a-raw-import.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-09-11'
 - path: docs/blog/2026-08-20-mdp01-first-consumer-changes-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-09-11'
 - path: docs/blog/2026-08-20-mdp01-gallery-needed-a-server.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-09-11'
 - path: docs/blog/2026-08-20-mdp02-distributed-executor-protocol.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-09-11'
 - path: docs/blog/2026-08-21-mdp01-protocol-to-proof.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-09-11'
 - path: docs/blog/2026-08-21-mdp02-scenario-controller-ui.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -15719,12 +15719,12 @@ entries:
     text: What This Opens Up
   last_modified: '2026-09-11'
 - path: docs/blog/2026-08-22-mdp05-when-inheritance-fails-sharing-renderers.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-08-23'
 - path: docs/blog/2026-08-23-mdp01-scenario-engine-live.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -15743,12 +15743,12 @@ entries:
     text: What's Next
   last_modified: '2026-09-11'
 - path: docs/blog/2026-08-23-mdp01-the-extraction-that-found-its-layers.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-09-11'
 - path: docs/blog/2026-08-23-mdp02-yaml-viewer-visual-feedback.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -15763,24 +15763,24 @@ entries:
     text: Epic Complete
   last_modified: '2026-09-11'
 - path: docs/blog/2026-08-23-timeline-extends-pages.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-08-23'
 - path: docs/blog/2026-08-26-mdp01-the-diagram-that-saves-itself.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
     text: The Diagram That Saves Itself
   last_modified: '2026-08-25'
 - path: docs/blog/2026-08-26-mdp01-the-reviewer-was-wrong-and-right.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-08-26'
 - path: docs/blog/2026-08-27-mdp01-drag-from-anywhere.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -15795,14 +15795,14 @@ entries:
     text: What This Opens Up
   last_modified: '2026-09-11'
 - path: docs/blog/2026-08-27-mdp01-schemas-that-know-their-shape.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
     text: Schemas That Know Their Shape
   last_modified: '2026-08-27'
 - path: docs/blog/2026-08-27-mdp02-panel-activation-hash-binding.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -15819,7 +15819,7 @@ entries:
     text: What this opens up
   last_modified: '2026-09-11'
 - path: docs/blog/2026-09-01-mdp01-diagrams-that-drill-into-each-other.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -15834,7 +15834,7 @@ entries:
     text: What this opens up
   last_modified: '2026-09-02'
 - path: docs/blog/2026-09-02-mdp01-the-audio-pipeline-nobody-documents.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -15857,7 +15857,7 @@ entries:
     text: What this opens up
   last_modified: '2026-09-04'
 - path: docs/blog/2026-09-03-mdp01-the-native-lib-problem.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -15874,7 +15874,7 @@ entries:
     text: The build-time trick
   last_modified: '2026-09-04'
 - path: docs/blog/2026-09-03-mp01-case-flow-viewer.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -15887,7 +15887,7 @@ entries:
     text: What it opens up
   last_modified: '2026-09-03'
 - path: docs/blog/2026-09-04-mdp01-recursive-forms.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -15902,7 +15902,7 @@ entries:
     text: What Landed
   last_modified: '2026-09-11'
 - path: docs/blog/2026-09-04-mdp01-the-bugs-tests-cant-find.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -15917,24 +15917,24 @@ entries:
     text: The testing gap
   last_modified: '2026-09-04'
 - path: docs/blog/2026-09-05-mdp01-the-editor-that-understands-yaml.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-09-11'
 - path: docs/blog/2026-09-06-mdp01-schemaform-palette-embed.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
     text: The migration that found three bugs it wasn't looking for
   last_modified: '2026-09-11'
 - path: docs/blog/2026-09-07-mdp01-zod-schemas-from-source.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-09-07'
 - path: docs/blog/2026-09-10-mdp01-building-lsp-from-schema-walker.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -15949,18 +15949,18 @@ entries:
     text: What This Opens Up
   last_modified: '2026-09-11'
 - path: docs/blog/2026-09-27-mdp01-the-last-d3-component.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
     text: The Last d3 Component
   last_modified: '2026-09-27'
 - path: docs/guides/consumer-guide.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
-    text: casehub-blocks-ui — Consumer Guide
+    text: casehub-mosaic — Consumer Guide
   - level: 2
     text: Purpose
   - level: 2
@@ -16021,11 +16021,11 @@ entries:
     text: What It Does NOT Do
   last_modified: '2026-09-03'
 - path: docs/guides/contributor-guide.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
-    text: casehub-blocks-ui — Contributor Guide
+    text: casehub-mosaic — Contributor Guide
   - level: 2
     text: Internal Architecture
   - level: 3
@@ -16037,9 +16037,9 @@ entries:
   - level: 2
     text: Full Module Details
   - level: 3
-    text: blocks-ui-schema (`packages/blocks-ui-schema`)
+    text: mosaic-schema (`packages/mosaic-schema`)
   - level: 3
-    text: blocks-ui-core (`packages/blocks-ui-core`)
+    text: mosaic-core (`packages/mosaic-core`)
   - level: 3
     text: graph-stencil-case (`packages/graph-stencil-case`)
   - level: 3
@@ -16138,7 +16138,7 @@ entries:
     text: Design Documents
   last_modified: '2026-09-27'
 - path: docs/plans/2026-07-05-queue-board-ux-redesign.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -16167,7 +16167,7 @@ entries:
     text: 'Task 10: Remove queue-board and queue-card'
   last_modified: '2026-07-06'
 - path: docs/plans/2026-07-10-migrate-data-table-to-pages.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -16181,16 +16181,16 @@ entries:
   - level: 3
     text: 'Task 3: Update pages root configuration'
   - level: 3
-    text: 'Task 4: Update blocks-ui-core — remove mixins, update confirm-dialog'
+    text: 'Task 4: Update mosaic-core — remove mixins, update confirm-dialog'
   - level: 3
-    text: 'Task 5: Update blocks-ui consumers — a11y mixin imports'
+    text: 'Task 5: Update mosaic consumers — a11y mixin imports'
   - level: 3
-    text: 'Task 6: Update blocks-ui consumers — data-table imports'
+    text: 'Task 6: Update mosaic consumers — data-table imports'
   - level: 3
-    text: 'Task 7: Cleanup — remove data-table from blocks-ui, update pages-runtime'
+    text: 'Task 7: Cleanup — remove data-table from mosaic, update pages-runtime'
   last_modified: '2026-07-11'
 - path: docs/plans/2026-07-10-trust-score-trend-sparkline.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -16213,7 +16213,7 @@ entries:
     text: 'Task 7: Build Verification and Full Test Suite'
   last_modified: '2026-07-10'
 - path: docs/plans/2026-07-14-blocks-timeline.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -16240,7 +16240,7 @@ entries:
     text: 'Task 9: Example page — custom strategy'
   last_modified: '2026-07-14'
 - path: docs/plans/2026-07-16-grouped-data-view-plan.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -16259,7 +16259,7 @@ entries:
     text: 'Task 5: CLAUDE.md and workspace registration'
   last_modified: '2026-07-16'
 - path: docs/plans/2026-07-20-trust-workbench.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -16278,7 +16278,7 @@ entries:
     text: 'Task 5: Full build verification and CLAUDE.md update'
   last_modified: '2026-07-21'
 - path: docs/plans/2026-07-21-subscription-editor-and-preferences.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -16288,7 +16288,7 @@ entries:
   - level: 3
     text: 'Task 1: pages-form Schema Improvements'
   - level: 3
-    text: 'Task 2: blocks-ui Type Updates, Event Topics, Dependencies'
+    text: 'Task 2: mosaic Type Updates, Event Topics, Dependencies'
   - level: 3
     text: 'Task 3: Subscription Editor'
   - level: 3
@@ -16303,7 +16303,7 @@ entries:
     text: 'Task 8: GDPR Erasure Action Migration'
   last_modified: '2026-08-01'
 - path: docs/plans/2026-07-28-data-table-variable-heights-column-resize.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -16322,53 +16322,53 @@ entries:
     text: 'Task 5: Tests + integration verification'
   last_modified: '2026-08-01'
 - path: docs/protocols/INDEX.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
-    text: Protocols — blocks-ui
+    text: Protocols — mosaic
   - level: 2
-    text: blocks-ui
+    text: mosaic
   last_modified: '2026-09-30'
-- path: docs/protocols/blocks-ui/INDEX.md
-  repo: blocks-ui
+- path: docs/protocols/mosaic/INDEX.md
+  repo: mosaic
   source: project
   headings:
   - level: 1
-    text: blocks-ui Protocols
+    text: mosaic Protocols
   last_modified: '2026-09-30'
-- path: docs/protocols/blocks-ui/component-customisation-pattern.md
-  repo: blocks-ui
+- path: docs/protocols/mosaic/component-customisation-pattern.md
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-07-17'
-- path: docs/protocols/blocks-ui/component-registry-props.md
-  repo: blocks-ui
+- path: docs/protocols/mosaic/component-registry-props.md
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-09-07'
-- path: docs/protocols/blocks-ui/custom-event-namespace-prefix.md
-  repo: blocks-ui
+- path: docs/protocols/mosaic/custom-event-namespace-prefix.md
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-09-30'
-- path: docs/protocols/blocks-ui/diagram-viewer-composition.md
-  repo: blocks-ui
+- path: docs/protocols/mosaic/diagram-viewer-composition.md
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-09-03'
-- path: docs/protocols/blocks-ui/node-decoration-runtime-boundary.md
-  repo: blocks-ui
+- path: docs/protocols/mosaic/node-decoration-runtime-boundary.md
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-09-03'
-- path: docs/protocols/blocks-ui/stencil-package-isolation.md
-  repo: blocks-ui
+- path: docs/protocols/mosaic/stencil-package-isolation.md
+  repo: mosaic
   source: project
   headings: []
   last_modified: '2026-08-06'
 - path: docs/specs/2026-07-04-examples-showcase-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -16411,7 +16411,7 @@ entries:
     text: Scripts
   last_modified: '2026-08-10'
 - path: docs/specs/2026-07-04-work-item-management-ui-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -16435,7 +16435,7 @@ entries:
   - level: 2
     text: 2. Component Architecture
   - level: 3
-    text: Lit Mixins (blocks-ui-core)
+    text: Lit Mixins (mosaic-core)
   - level: 3
     text: Responsive Strategy
   - level: 3
@@ -16511,7 +16511,7 @@ entries:
   - level: 2
     text: 8. SSE Infrastructure & Data Layer
   - level: 3
-    text: SSE Connection Manager (blocks-ui-core)
+    text: SSE Connection Manager (mosaic-core)
   - level: 3
     text: Data Fetching Pattern
   - level: 3
@@ -16532,7 +16532,7 @@ entries:
     text: Token Extraction Plan
   last_modified: '2026-08-10'
 - path: docs/specs/2026-07-05-queue-board-ux-redesign.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -16587,7 +16587,7 @@ entries:
     text: Deferred Items
   last_modified: '2026-07-06'
 - path: docs/specs/2026-07-06-pages-data-table-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -16650,7 +16650,7 @@ entries:
     text: Garden Entries Considered
   last_modified: '2026-07-06'
 - path: docs/specs/2026-07-06-review-findings-ui-primitives.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -16667,7 +16667,7 @@ entries:
     text: '5. Deferred: kpi-metric-row density-compact'
   last_modified: '2026-07-06'
 - path: docs/specs/2026-07-06-ui-primitives-batch-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -16774,7 +16774,7 @@ entries:
     text: Shared Patterns Across All New Components
   last_modified: '2026-07-06'
 - path: docs/specs/2026-07-07-component-consolidation-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -16893,7 +16893,7 @@ entries:
     text: Implementation order
   last_modified: '2026-07-07'
 - path: docs/specs/2026-07-08-approval-gate-response-payload-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -16914,7 +16914,7 @@ entries:
     text: Scope
   last_modified: '2026-07-08'
 - path: docs/specs/2026-07-08-generic-workbench-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -16932,11 +16932,11 @@ entries:
   - level: 2
     text: Components
   - level: 3
-    text: '`<split-workbench>` — `@casehubio/blocks-ui-split-workbench`'
+    text: '`<split-workbench>` — `@casehubio/mosaic-split-workbench`'
   - level: 3
-    text: '`<list-pane>` — `@casehubio/blocks-ui-list-pane`'
+    text: '`<list-pane>` — `@casehubio/mosaic-list-pane`'
   - level: 3
-    text: '`<detail-pane>` — `@casehubio/blocks-ui-detail-pane`'
+    text: '`<detail-pane>` — `@casehubio/mosaic-detail-pane`'
   - level: 2
     text: Accessibility
   - level: 3
@@ -16950,11 +16950,11 @@ entries:
   - level: 2
     text: Migration Plan
   - level: 3
-    text: Step 1 — Build generic components in blocks-ui
+    text: Step 1 — Build generic components in mosaic
   - level: 3
     text: Step 1b — Refactor work-item-workbench onto split-workbench
   - level: 3
-    text: Step 2 — Migrate AML to consume blocks-ui components
+    text: Step 2 — Migrate AML to consume mosaic components
   - level: 3
     text: End state
   - level: 2
@@ -16965,7 +16965,7 @@ entries:
     text: Garden Entries Referenced
   last_modified: '2026-07-08'
 - path: docs/specs/2026-07-09-datasource-mixin-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -17028,7 +17028,7 @@ entries:
     text: Acceptance criteria
   last_modified: '2026-07-10'
 - path: docs/specs/2026-07-10-migrate-data-table-to-pages-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -17050,17 +17050,17 @@ entries:
   - level: 2
     text: Consumer Updates
   - level: 3
-    text: A11y mixin consumers in blocks-ui
+    text: A11y mixin consumers in mosaic
   - level: 3
-    text: Data table consumers in blocks-ui
+    text: Data table consumers in mosaic
   - level: 3
-    text: Internal blocks-ui-core update
+    text: Internal mosaic-core update
   - level: 3
     text: Dependency changes per consumer
   - level: 2
     text: Cleanup
   - level: 3
-    text: blocks-ui removals
+    text: mosaic removals
   - level: 3
     text: pages updates
   - level: 3
@@ -17075,7 +17075,7 @@ entries:
     text: Verification
   last_modified: '2026-07-11'
 - path: docs/specs/2026-07-10-trust-score-trend-sparkline-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -17129,9 +17129,9 @@ entries:
   - level: 2
     text: Testing Strategy
   - level: 3
-    text: blocks-ui-core — renderSparkline
+    text: mosaic-core — renderSparkline
   - level: 3
-    text: blocks-ui-core — TrendSourceMixin
+    text: mosaic-core — TrendSourceMixin
   - level: 3
     text: trust-score-panel
   - level: 3
@@ -17142,7 +17142,7 @@ entries:
     text: File Inventory
   last_modified: '2026-07-10'
 - path: docs/specs/2026-07-11-typeddataset-native-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -17166,13 +17166,13 @@ entries:
   - level: 4
     text: Layer 2 — Extend SourceFactory (pages-component)
   - level: 4
-    text: Layer 3 — Fix fetchSource (blocks-ui → blocks-ui-core)
+    text: Layer 3 — Fix fetchSource (mosaic → mosaic-core)
   - level: 4
     text: Layer 4 — Fix the table (pages-data-table → pages-table)
   - level: 4
-    text: Layer 5 — Propagate types through blocks-ui
+    text: Layer 5 — Propagate types through mosaic
   - level: 4
-    text: Layer 6 — Migrate consumers (blocks-ui)
+    text: Layer 6 — Migrate consumers (mosaic)
   - level: 3
     text: VizTarget cascade
   - level: 3
@@ -17187,7 +17187,7 @@ entries:
     text: Scope
   last_modified: '2026-07-12'
 - path: docs/specs/2026-07-13-blocks-timeline-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -17246,11 +17246,11 @@ entries:
     text: What's Not In Scope
   last_modified: '2026-07-14'
 - path: docs/specs/2026-07-13-channel-activity-promotion-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
-    text: Channel Activity — Promote Connectors Chat Primitives to blocks-ui
+    text: Channel Activity — Promote Connectors Chat Primitives to mosaic
   - level: 2
     text: Summary
   - level: 2
@@ -17260,7 +17260,7 @@ entries:
   - level: 2
     text: Architecture
   - level: 3
-    text: What Moves to blocks-ui
+    text: What Moves to mosaic
   - level: 3
     text: What Moves to a Standalone Chat App Module
   - level: 3
@@ -17319,17 +17319,17 @@ entries:
     text: Additional Test Coverage
   last_modified: '2026-07-13'
 - path: docs/specs/2026-07-14-clinical-ui-promotion-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
-    text: Clinical UI Promotion — blocks-ui Design
+    text: Clinical UI Promotion — mosaic Design
   - level: 2
     text: Summary
   - level: 2
     text: Decisions
   - level: 2
-    text: 'Part 1: blocks-ui-core Additions'
+    text: 'Part 1: mosaic-core Additions'
   - level: 3
     text: Current architecture
   - level: 3
@@ -17377,7 +17377,7 @@ entries:
   - level: 3
     text: Test coverage
   - level: 4
-    text: blocks-ui-core additions tests
+    text: mosaic-core additions tests
   - level: 4
     text: commitmentLifecycleStrategy tests (in blocks-timeline)
   - level: 4
@@ -17394,7 +17394,7 @@ entries:
     text: Ordering
   last_modified: '2026-07-15'
 - path: docs/specs/2026-07-16-grouped-data-view-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -17473,7 +17473,7 @@ entries:
     text: Package Structure
   last_modified: '2026-07-16'
 - path: docs/specs/2026-07-16-routing-rationale-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -17528,7 +17528,7 @@ entries:
     text: Deferred Issues
   last_modified: '2026-07-16'
 - path: docs/specs/2026-07-20-composable-case-explorer-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -17620,7 +17620,7 @@ entries:
   - level: 3
     text: Per-app (devtown, claudony, AML, clinical, openclaw)
   - level: 3
-    text: blocks-ui (this repo)
+    text: mosaic (this repo)
   - level: 2
     text: 10. Error Handling, Loading States, and Accessibility
   - level: 3
@@ -17649,7 +17649,7 @@ entries:
     text: 13. Scope
   last_modified: '2026-07-20'
 - path: docs/specs/2026-07-20-trust-workbench-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -17684,7 +17684,7 @@ entries:
     text: Deferred issues
   last_modified: '2026-07-21'
 - path: docs/specs/2026-07-21-subscription-editor-and-preferences-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -17753,7 +17753,7 @@ entries:
     text: Cross-Repo Impact
   last_modified: '2026-07-21'
 - path: docs/specs/2026-07-23-opt-in-delivery-tracking-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -17784,7 +17784,7 @@ entries:
     text: Testing Strategy
   last_modified: '2026-09-11'
 - path: docs/specs/2026-07-24-preferences-editor-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -17845,7 +17845,7 @@ entries:
     text: 10. Protocol Compliance
   last_modified: '2026-07-25'
 - path: docs/specs/2026-07-28-data-table-variable-heights-column-resize-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -17966,7 +17966,7 @@ entries:
     text: Scope Exclusions
   last_modified: '2026-08-01'
 - path: docs/specs/2026-08-01-visual-diagram-editor-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -18035,7 +18035,7 @@ entries:
     text: 8. Non-Goals
   last_modified: '2026-09-11'
 - path: docs/specs/agent-setup-wizard/2026-09-20-agent-setup-wizard-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -18081,7 +18081,7 @@ entries:
   - level: 3
     text: Integration
   - level: 2
-    text: Type Additions to blocks-ui-core
+    text: Type Additions to mosaic-core
   - level: 3
     text: Manifest types (from platform agent-config-core)
   - level: 3
@@ -18098,7 +18098,7 @@ entries:
     text: References
   last_modified: '2026-09-27'
 - path: docs/specs/agent-setup-wizard/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -18123,7 +18123,7 @@ entries:
     text: 'D8: Relationship management approach'
   last_modified: '2026-09-27'
 - path: docs/specs/diagram-editing-infrastructure/2026-08-26-diagram-editing-infrastructure-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -18143,7 +18143,7 @@ entries:
   - level: 3
     text: 4.3 Default EditPolicy
   - level: 3
-    text: 4.4 Palette component (in casehub-diagram, blocks-ui)
+    text: 4.4 Palette component (in casehub-diagram, mosaic)
   - level: 3
     text: 4.5 Node chooser popover
   - level: 3
@@ -18212,7 +18212,7 @@ entries:
     text: 13. References
   last_modified: '2026-09-11'
 - path: docs/specs/diagram-editing-infrastructure/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -18241,7 +18241,7 @@ entries:
     text: 'D11: Undo integration for editing interactions'
   last_modified: '2026-09-11'
 - path: docs/specs/feature-graph-stencils/2026-08-03-phase0-schema-verification-type-generation-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -18280,7 +18280,7 @@ entries:
     text: 6. Dependencies
   last_modified: '2026-08-03'
 - path: docs/specs/feature-graph-stencils/2026-08-03-phase2-case-stencil-viewer-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -18319,7 +18319,7 @@ entries:
     text: 7. Dependencies
   last_modified: '2026-08-03'
 - path: docs/specs/feature-graph-stencils/2026-08-03-phase3-property-editing-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -18376,7 +18376,7 @@ entries:
     text: 10. Review Findings Addressed
   last_modified: '2026-08-03'
 - path: docs/specs/feature-graph-stencils/2026-08-03-phase4-structural-editing-persistence-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -18451,7 +18451,7 @@ entries:
     text: 11. Review Findings Addressed
   last_modified: '2026-08-03'
 - path: docs/specs/feature-graph-stencils/2026-08-04-phase7-runtime-overlay-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -18512,7 +18512,7 @@ entries:
     text: 9. Dependencies
   last_modified: '2026-08-04'
 - path: docs/specs/feature-graph-stencils/phase0-schema-audit-findings.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -18529,7 +18529,7 @@ entries:
     text: Conclusion
   last_modified: '2026-08-03'
 - path: docs/specs/issue-100-goals-aims-constraints/2026-07-25-goals-constraints-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -18588,7 +18588,7 @@ entries:
     text: Test Coverage
   last_modified: '2026-09-11'
 - path: docs/specs/issue-106-swf-diagram/2026-08-05-swf-diagram-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -18685,7 +18685,7 @@ entries:
     text: 12. Out of Scope
   last_modified: '2026-08-06'
 - path: docs/specs/issue-107-htn-dag-visualiser/2026-08-06-htn-dag-visualiser-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -18772,7 +18772,7 @@ entries:
     text: 14. Dependencies
   last_modified: '2026-08-06'
 - path: docs/specs/issue-108-worker-function-drill-down/2026-08-11-worker-function-drill-down-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -18817,7 +18817,7 @@ entries:
     text: Scope Boundaries
   last_modified: '2026-08-11'
 - path: docs/specs/issue-108-worker-function-drill-down/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -18840,7 +18840,7 @@ entries:
     text: 'D8: Form integration architecture'
   last_modified: '2026-08-11'
 - path: docs/specs/issue-109-runtime-state-badges/2026-08-05-runtime-state-badges-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -18889,7 +18889,7 @@ entries:
     text: Testing
   last_modified: '2026-08-05'
 - path: docs/specs/issue-110-conversation-protocol/2026-08-07-conversation-protocol-viewer-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -18982,7 +18982,7 @@ entries:
     text: Protocols Applied
   last_modified: '2026-08-08'
 - path: docs/specs/issue-111-orchestration-monitor/2026-08-07-orchestration-monitor-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -18990,9 +18990,9 @@ entries:
   - level: 2
     text: Summary
   - level: 2
-    text: 'Architecture: Extend blocks-ui-core + two new components'
+    text: 'Architecture: Extend mosaic-core + two new components'
   - level: 2
-    text: 1. Domain Types (`blocks-ui-core/src/types/orchestration.ts`)
+    text: 1. Domain Types (`mosaic-core/src/types/orchestration.ts`)
   - level: 3
     text: Execution lifecycle
   - level: 3
@@ -19069,7 +19069,7 @@ entries:
     text: File Inventory
   last_modified: '2026-08-08'
 - path: docs/specs/issue-112-investigation-triage-logic/2026-07-21-investigation-triage-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -19116,7 +19116,7 @@ entries:
     text: Modified files
   last_modified: '2026-09-11'
 - path: docs/specs/issue-1149-evolution-ui/2026-09-26-evolution-conductor-ui-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -19203,7 +19203,7 @@ entries:
     text: References
   last_modified: '2026-09-27'
 - path: docs/specs/issue-1149-evolution-ui/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -19220,7 +19220,7 @@ entries:
     text: 'D5: Workbench as summary bar + tabbed content'
   last_modified: '2026-09-27'
 - path: docs/specs/issue-117-extract-shared-primitives/2026-09-06-shared-primitives-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -19228,7 +19228,7 @@ entries:
   - level: 2
     text: Summary
   - level: 2
-    text: New module in blocks-ui-core
+    text: New module in mosaic-core
   - level: 2
     text: API
   - level: 3
@@ -19265,7 +19265,7 @@ entries:
     text: References
   last_modified: '2026-09-06'
 - path: docs/specs/issue-117-extract-shared-primitives/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -19276,7 +19276,7 @@ entries:
     text: 'D3: formatTimestamp API — options with unified default'
   last_modified: '2026-09-06'
 - path: docs/specs/issue-118-case-dependency-graph/2026-08-08-case-dependency-graph-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -19341,7 +19341,7 @@ entries:
     text: What This Is Not
   last_modified: '2026-08-09'
 - path: docs/specs/issue-123-timeline-extends-pages/2026-08-22-timeline-extends-pages-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -19394,7 +19394,7 @@ entries:
     text: References
   last_modified: '2026-08-23'
 - path: docs/specs/issue-123-timeline-extends-pages/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -19415,11 +19415,11 @@ entries:
     text: 'D8: Strategy binding — no change needed'
   last_modified: '2026-08-23'
 - path: docs/specs/issue-123-worker-session-mgmt/2026-07-27-session-workbench-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
-    text: Session Workbench — blocks-ui Component Design
+    text: Session Workbench — mosaic Component Design
   - level: 2
     text: Overview
   - level: 2
@@ -19462,7 +19462,7 @@ entries:
     text: Testing Strategy
   last_modified: '2026-09-11'
 - path: docs/specs/issue-124-showcase-gallery-coverage/2026-08-20-combined-diagram-composition-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -19499,7 +19499,7 @@ entries:
     text: References
   last_modified: '2026-08-21'
 - path: docs/specs/issue-124-showcase-gallery-coverage/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -19512,7 +19512,7 @@ entries:
     text: 'D3: Thumbnail sizes'
   last_modified: '2026-08-21'
 - path: docs/specs/issue-126-event-trail-base/2026-08-23-event-trail-extraction-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -19538,7 +19538,7 @@ entries:
   - level: 3
     text: Styling
   - level: 2
-    text: 'Part 2: `<blocks-event-trail>` (blocks-ui#126)'
+    text: 'Part 2: `<blocks-event-trail>` (mosaic#126)'
   - level: 3
     text: Properties
   - level: 3
@@ -19568,7 +19568,7 @@ entries:
   - level: 3
     text: casehub-pages
   - level: 3
-    text: blocks-ui
+    text: mosaic
   - level: 2
     text: Build order (slot execution)
   - level: 2
@@ -19583,7 +19583,7 @@ entries:
     text: References
   last_modified: '2026-08-23'
 - path: docs/specs/issue-126-event-trail-base/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -19600,7 +19600,7 @@ entries:
     text: 'D5: Build order and cross-repo execution'
   last_modified: '2026-08-23'
 - path: docs/specs/issue-136-rich-property-schemas/2026-08-27-rich-property-schemas-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -19667,7 +19667,7 @@ entries:
     text: References
   last_modified: '2026-08-27'
 - path: docs/specs/issue-136-rich-property-schemas/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -19680,7 +19680,7 @@ entries:
     text: 'D4: Schema registration timing'
   last_modified: '2026-08-27'
 - path: docs/specs/issue-137-channel-activity-wrapper/2026-08-26-channel-activity-wrapper-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -19749,7 +19749,7 @@ entries:
     text: References
   last_modified: '2026-08-26'
 - path: docs/specs/issue-137-channel-activity-wrapper/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -19762,7 +19762,7 @@ entries:
     text: 'D4: Optional panel layout'
   last_modified: '2026-08-26'
 - path: docs/specs/issue-140-wire-pages-palettes/2026-08-27-wire-pages-palettes-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -19813,7 +19813,7 @@ entries:
     text: References
   last_modified: '2026-08-27'
 - path: docs/specs/issue-140-wire-pages-palettes/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -19828,7 +19828,7 @@ entries:
     text: 'D4: Showcase strategy'
   last_modified: '2026-08-27'
 - path: docs/specs/issue-150-case-flow-viewer/2026-09-02-case-flow-viewer-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -19879,7 +19879,7 @@ entries:
     text: References
   last_modified: '2026-09-03'
 - path: docs/specs/issue-150-case-flow-viewer/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -19896,7 +19896,7 @@ entries:
     text: 'D6: Trust score rendering — extend NodeDecoration with pills array'
   last_modified: '2026-09-03'
 - path: docs/specs/issue-152-worker-task-pane/2026-09-03-worker-task-pane-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -19953,7 +19953,7 @@ entries:
     text: References
   last_modified: '2026-09-04'
 - path: docs/specs/issue-152-worker-task-pane/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -19976,7 +19976,7 @@ entries:
     text: 'D9: Workspace result communication'
   last_modified: '2026-09-04'
 - path: docs/specs/issue-153-push-update-support/2026-09-04-push-update-support-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -20027,7 +20027,7 @@ entries:
     text: References
   last_modified: '2026-09-04'
 - path: docs/specs/issue-153-push-update-support/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -20044,7 +20044,7 @@ entries:
     text: 'D6: Connection sharing via PushPool'
   last_modified: '2026-09-04'
 - path: docs/specs/issue-155-org-diagram/2026-09-05-org-diagram-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -20099,7 +20099,7 @@ entries:
     text: References
   last_modified: '2026-09-07'
 - path: docs/specs/issue-155-org-diagram/2026-09-07-global-handle-optimizer-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -20122,7 +20122,7 @@ entries:
     text: References
   last_modified: '2026-09-07'
 - path: docs/specs/issue-155-org-diagram/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -20157,19 +20157,19 @@ entries:
     text: 'D15: ELK ports — not used'
   last_modified: '2026-09-07'
 - path: docs/specs/issue-156-zod-schemas/2026-09-07-zod-schema-generation-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
-    text: Auto-generate Zod schemas for blocks-ui components
+    text: Auto-generate Zod schemas for mosaic components
   - level: 2
     text: Problem
   - level: 2
     text: Design
   - level: 3
-    text: 1. BlocksComponentRegistry (blocks-ui-schema)
+    text: 1. BlocksComponentRegistry (mosaic-schema)
   - level: 3
-    text: 2. blocks-ui-schema package (new)
+    text: 2. mosaic-schema package (new)
   - level: 3
     text: 3. Generator (scripts/generate-schemas.ts)
   - level: 3
@@ -20186,7 +20186,7 @@ entries:
     text: References
   last_modified: '2026-09-07'
 - path: docs/specs/issue-156-zod-schemas/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -20201,7 +20201,7 @@ entries:
     text: 'D5: Schema consumption and distribution'
   last_modified: '2026-09-07'
 - path: docs/specs/issue-157-rich-org-diagram/2026-09-08-rich-org-diagram-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -20282,7 +20282,7 @@ entries:
     text: Deferred Items
   last_modified: '2026-09-11'
 - path: docs/specs/issue-157-rich-org-diagram/2026-09-10-layout-rule-engine-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -20321,7 +20321,7 @@ entries:
     text: Implementation Plan
   last_modified: '2026-09-11'
 - path: docs/specs/issue-157-rich-org-diagram/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -20346,7 +20346,7 @@ entries:
     text: 'D10: Relationship highlighting — separate pure function'
   last_modified: '2026-09-11'
 - path: docs/specs/issue-158-lsp-schema-refinements/2026-09-17-discriminator-aware-schema-generation-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -20425,7 +20425,7 @@ entries:
     text: References
   last_modified: '2026-09-27'
 - path: docs/specs/issue-158-lsp-schema-refinements/2026-09-17-domain-schema-assembly-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -20459,11 +20459,11 @@ entries:
   - level: 2
     text: Delivery Phases
   - level: 3
-    text: Phase 1 — JCEF split editor + CI (blocks-ui only)
+    text: Phase 1 — JCEF split editor + CI (mosaic only)
   - level: 3
     text: Phase 2 — Extensible workbench + native IntelliJ panels (pages dependency)
   - level: 3
-    text: Phase 3 — Structural editing (blocks-ui, after phase 2)
+    text: Phase 3 — Structural editing (mosaic, after phase 2)
   - level: 2
     text: Cross-Repo Coordination
   - level: 3
@@ -20473,14 +20473,14 @@ entries:
   - level: 3
     text: Phase 1
   - level: 3
-    text: Phase 2 (blocks-ui side only)
+    text: Phase 2 (mosaic side only)
   - level: 2
     text: Testing Strategy
   - level: 2
     text: References
   last_modified: '2026-09-27'
 - path: docs/specs/issue-158-lsp-schema-refinements/2026-09-25-ows-1.0-stencil-completeness-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -20537,7 +20537,7 @@ entries:
     text: References
   last_modified: '2026-09-27'
 - path: docs/specs/issue-158-lsp-schema-refinements/2026-09-25-swf-edge-click-palette-drag-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -20545,7 +20545,7 @@ entries:
   - level: 2
     text: Overview
   - level: 2
-    text: 'Track 1: Edge Click Picker (interim, blocks-ui only)'
+    text: 'Track 1: Edge Click Picker (interim, mosaic only)'
   - level: 3
     text: Current State
   - level: 3
@@ -20578,7 +20578,7 @@ entries:
     text: References
   last_modified: '2026-09-27'
 - path: docs/specs/issue-158-lsp-schema-refinements/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -20605,7 +20605,7 @@ entries:
     text: 'D11: Picker positioning on edge click — reuse existing picker with edge context'
   last_modified: '2026-09-27'
 - path: docs/specs/issue-165-cbr-collection-manager-async/2026-07-19-cbr-collection-manager-async-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -20634,7 +20634,7 @@ entries:
     text: Follow-up
   last_modified: '2026-09-11'
 - path: docs/specs/issue-167-archetype-avatar-system/2026-09-21-archetype-avatar-system-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -20731,7 +20731,7 @@ entries:
     text: References
   last_modified: '2026-09-28'
 - path: docs/specs/issue-167-archetype-avatar-system/2026-09-27-fullcast-expansion-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -20756,7 +20756,7 @@ entries:
     text: References
   last_modified: '2026-09-28'
 - path: docs/specs/issue-167-archetype-avatar-system/2026-09-28-avatar-wizard-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -20795,7 +20795,7 @@ entries:
     text: References
   last_modified: '2026-09-28'
 - path: docs/specs/issue-167-archetype-avatar-system/2026-09-28-personality-profile-mode-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -20818,7 +20818,7 @@ entries:
     text: References
   last_modified: '2026-09-28'
 - path: docs/specs/issue-167-archetype-avatar-system/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -20867,7 +20867,7 @@ entries:
     text: 'D21: Avatar grid layout — 12×4 family grid with progressive dimming'
   last_modified: '2026-09-28'
 - path: docs/specs/issue-167-archetype-avatar-system/gemini-scummbar-prompts.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -20904,7 +20904,7 @@ entries:
     text: Verification Checklist (run after each batch)
   last_modified: '2026-09-28'
 - path: docs/specs/issue-167-archetype-avatar-system/part-catalogue.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -20973,7 +20973,7 @@ entries:
     text: Uniqueness audit
   last_modified: '2026-09-28'
 - path: docs/specs/issue-167-archetype-avatar-system/personality-profile-decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -20990,7 +20990,7 @@ entries:
     text: 'D26: Output event — full personality profile'
   last_modified: '2026-09-28'
 - path: docs/specs/issue-167-archetype-avatar-system/scummbar-cast.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -21031,7 +21031,7 @@ entries:
     text: Using This Reference
   last_modified: '2026-09-28'
 - path: docs/specs/issue-167-archetype-avatar-system/scummbar-gen-prompts.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -21074,7 +21074,7 @@ entries:
     text: Colour-to-Variable Mapping
   last_modified: '2026-09-28'
 - path: docs/specs/issue-176-native-jars/2026-09-03-native-jars-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -21137,7 +21137,7 @@ entries:
     text: References
   last_modified: '2026-09-04'
 - path: docs/specs/issue-176-native-jars/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -21150,7 +21150,7 @@ entries:
     text: 'D4: Runtime extraction cache strategy'
   last_modified: '2026-09-04'
 - path: docs/specs/issue-184-vad/2026-09-02-voice-activity-detection-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -21187,7 +21187,7 @@ entries:
     text: References
   last_modified: '2026-09-04'
 - path: docs/specs/issue-184-vad/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -21204,7 +21204,7 @@ entries:
     text: 'D6: Pipeline ordering — denoise → VAD → STT'
   last_modified: '2026-09-04'
 - path: docs/specs/issue-188-evolution-conductor-operational/2026-09-28-evolution-operational-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -21249,7 +21249,7 @@ entries:
     text: References
   last_modified: '2026-09-28'
 - path: docs/specs/issue-188-evolution-conductor-operational/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -21264,7 +21264,7 @@ entries:
     text: 'D5: Extend detail-pane with render callbacks (REVISED after decision review)'
   last_modified: '2026-09-28'
 - path: docs/specs/issue-190-speech-denoising/2026-09-02-speech-denoising-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -21305,7 +21305,7 @@ entries:
     text: References
   last_modified: '2026-09-04'
 - path: docs/specs/issue-190-speech-denoising/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -21320,7 +21320,7 @@ entries:
     text: 'D5: Runtime configurability — all pipeline stages toggleable'
   last_modified: '2026-09-04'
 - path: docs/specs/issue-191-speaker-diarization/2026-09-03-speaker-diarization-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -21391,7 +21391,7 @@ entries:
     text: References
   last_modified: '2026-09-04'
 - path: docs/specs/issue-191-speaker-diarization/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -21414,7 +21414,7 @@ entries:
     text: 'D9: Module placement — speech-api SPI, speech-sherpa implementation'
   last_modified: '2026-09-04'
 - path: docs/specs/issue-210-agent-manifest-editor/2026-09-28-agent-manifest-editor-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -21426,7 +21426,7 @@ entries:
   - level: 2
     text: Data Model
   - level: 3
-    text: Type mirrors (`blocks-ui-core/src/types/manifest.ts`)
+    text: Type mirrors (`mosaic-core/src/types/manifest.ts`)
   - level: 3
     text: Provider endpoint response (`agent-manifest-editor.ts`)
   - level: 3
@@ -21471,7 +21471,7 @@ entries:
     text: References
   last_modified: '2026-09-29'
 - path: docs/specs/issue-210-agent-manifest-editor/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -21502,7 +21502,7 @@ entries:
     text: 'D12: Provider extensibility — dynamic rendering from backend'
   last_modified: '2026-09-29'
 - path: docs/specs/issue-215-manifest-editor-ux-redesign/2026-09-29-manifest-editor-ux-redesign-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -21527,7 +21527,7 @@ entries:
     text: References
   last_modified: '2026-09-29'
 - path: docs/specs/issue-215-manifest-editor-ux-redesign/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -21544,7 +21544,7 @@ entries:
     text: 'D5: Alias resolution preview'
   last_modified: '2026-09-29'
 - path: docs/specs/issue-216-211-avatar-catalog/2026-09-29-agent-catalog-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -21585,7 +21585,7 @@ entries:
     text: References
   last_modified: '2026-09-29'
 - path: docs/specs/issue-216-211-avatar-catalog/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -21608,7 +21608,7 @@ entries:
     text: 'D8: Avatar rendering — direct import'
   last_modified: '2026-09-29'
 - path: docs/specs/issue-222-schema-form-nested/2026-09-03-nested-schema-form-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -21703,7 +21703,7 @@ entries:
     text: References
   last_modified: '2026-09-11'
 - path: docs/specs/issue-222-schema-form-nested/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -21736,7 +21736,7 @@ entries:
     text: 'D14: Event propagation model for nested field changes'
   last_modified: '2026-09-11'
 - path: docs/specs/issue-237-structured-progress/2026-08-01-progress-model-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -21810,7 +21810,7 @@ entries:
   - level: 3
     text: Anchoring composition
   - level: 3
-    text: casehub-blocks (blocks#62)
+    text: casehub-agency (blocks#62)
   - level: 3
     text: qhorus
   - level: 2
@@ -21829,7 +21829,7 @@ entries:
     text: Scope Boundaries
   last_modified: '2026-09-11'
 - path: docs/specs/issue-289-master-detail-selection/2026-08-10-selection-context-bridge-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -21860,7 +21860,7 @@ entries:
     text: Testing Strategy
   last_modified: '2026-09-11'
 - path: docs/specs/issue-289-master-detail-selection/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -21875,7 +21875,7 @@ entries:
     text: 'D5: Relationship to existing record-selection-via-filter mechanism'
   last_modified: '2026-09-11'
 - path: docs/specs/issue-294-server-examples-tab/2026-08-20-server-examples-tab-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -21916,7 +21916,7 @@ entries:
     text: References
   last_modified: '2026-09-11'
 - path: docs/specs/issue-294-server-examples-tab/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -21927,7 +21927,7 @@ entries:
     text: 'D3: Server-tab demo scope'
   last_modified: '2026-09-11'
 - path: docs/specs/issue-299-selection-dataset-builders/2026-08-11-selection-dataset-builders-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -21954,7 +21954,7 @@ entries:
     text: Testing Strategy
   last_modified: '2026-09-11'
 - path: docs/specs/issue-299-selection-dataset-builders/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -21967,7 +21967,7 @@ entries:
     text: 'D4: Runtime behaviour of selectionSource'
   last_modified: '2026-09-11'
 - path: docs/specs/issue-300-selection-forwarding/2026-08-11-selection-forwarding-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -21994,7 +21994,7 @@ entries:
     text: Testing Strategy
   last_modified: '2026-09-11'
 - path: docs/specs/issue-300-selection-forwarding/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -22003,7 +22003,7 @@ entries:
     text: 'D2: How host-panels declare selection interest'
   last_modified: '2026-09-11'
 - path: docs/specs/issue-302-network-heatmap/2026-08-31-network-heatmap-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -22028,14 +22028,14 @@ entries:
     text: References
   last_modified: '2026-09-11'
 - path: docs/specs/issue-302-network-heatmap/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
     text: 'D1: Node positioning strategy'
   last_modified: '2026-09-11'
 - path: docs/specs/issue-303-floating-engine-autowire/2026-08-10-floating-engine-autowire-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -22092,7 +22092,7 @@ entries:
     text: 8. File Impact Summary
   last_modified: '2026-09-11'
 - path: docs/specs/issue-303-floating-engine-autowire/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -22111,7 +22111,7 @@ entries:
     text: 'D7: Tab-bar drag fix — Dockview config first, CSS fallback'
   last_modified: '2026-09-11'
 - path: docs/specs/issue-309-floating-ux-polish/2026-08-11-floating-ux-polish-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -22218,7 +22218,7 @@ entries:
     text: 9. File Impact Summary
   last_modified: '2026-09-11'
 - path: docs/specs/issue-309-floating-ux-polish/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -22233,7 +22233,7 @@ entries:
     text: 'D5: Frame animations — CSS enter/exit + Web Animations API for presets'
   last_modified: '2026-09-11'
 - path: docs/specs/issue-317-dsl-composition-gaps/2026-08-17-dsl-composition-gaps-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -22285,7 +22285,7 @@ entries:
   - level: 3
     text: Files changed
   - level: 3
-    text: Extensibility for blocks-ui
+    text: Extensibility for mosaic
   - level: 2
     text: 'Work item 4: Master-detail convenience builder (D2)'
   - level: 3
@@ -22302,7 +22302,7 @@ entries:
     text: References
   last_modified: '2026-09-11'
 - path: docs/specs/issue-317-dsl-composition-gaps/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -22317,7 +22317,7 @@ entries:
     text: 'D4: Event timeline — new PagesEventTimeline component (distinct from existing PagesTimeline)'
   last_modified: '2026-09-11'
 - path: docs/specs/issue-318-viz-shadow-dom-fixes/2026-08-18-viz-shadow-dom-fixes-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -22335,7 +22335,7 @@ entries:
   - level: 3
     text: No barrel or package.json changes
   - level: 3
-    text: blocks-ui Maven SNAPSHOT instructions
+    text: mosaic Maven SNAPSHOT instructions
   - level: 2
     text: 'Fix 2: Shadow-aware CSS injection (#319)'
   - level: 3
@@ -22358,7 +22358,7 @@ entries:
     text: References
   last_modified: '2026-09-11'
 - path: docs/specs/issue-318-viz-shadow-dom-fixes/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -22367,7 +22367,7 @@ entries:
     text: 'D2: CSS isolation — shadow-aware injection with per-root ref-counting'
   last_modified: '2026-09-11'
 - path: docs/specs/issue-320-graphcanvas-public-props/2026-08-18-graphcanvas-public-props-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -22410,7 +22410,7 @@ entries:
     text: References
   last_modified: '2026-09-11'
 - path: docs/specs/issue-320-graphcanvas-public-props/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -22421,7 +22421,7 @@ entries:
     text: 'D3: React Flow base CSS bundled into getIsolationCSS()'
   last_modified: '2026-09-11'
 - path: docs/specs/issue-345-recursive-container-model/2026-08-23-recursive-container-model-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -22496,7 +22496,7 @@ entries:
     text: References
   last_modified: '2026-09-11'
 - path: docs/specs/issue-345-recursive-container-model/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -22515,7 +22515,7 @@ entries:
     text: 'D7: Tree walking — unified traversal via Entry.childContainer'
   last_modified: '2026-09-11'
 - path: docs/specs/issue-352-showcase-interactive/2026-08-31-showcase-interactive-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -22544,14 +22544,14 @@ entries:
     text: References
   last_modified: '2026-09-11'
 - path: docs/specs/issue-352-showcase-interactive/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
     text: 'D1: Config UI approach'
   last_modified: '2026-09-11'
 - path: docs/specs/issue-372-pages-code-editor/2026-09-04-pages-code-editor-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -22606,7 +22606,7 @@ entries:
     text: References
   last_modified: '2026-09-11'
 - path: docs/specs/issue-372-pages-code-editor/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -22627,7 +22627,7 @@ entries:
     text: 'D8: Language intelligence architecture — LSP, separate issue'
   last_modified: '2026-09-11'
 - path: docs/specs/issue-375-migrate-schemaform-palette/2026-09-05-migrate-schemaform-palette-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -22662,7 +22662,7 @@ entries:
     text: References
   last_modified: '2026-09-11'
 - path: docs/specs/issue-375-migrate-schemaform-palette/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -22681,7 +22681,7 @@ entries:
     text: 'D6: Data mirror pre-seeding'
   last_modified: '2026-09-11'
 - path: docs/specs/issue-378-diagram-editing-infra/2026-08-27-pipeline-examples-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -22716,7 +22716,7 @@ entries:
     text: References
   last_modified: '2026-09-11'
 - path: docs/specs/issue-378-diagram-editing-infra/pipeline-examples-decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -22731,7 +22731,7 @@ entries:
     text: 'D4: Technical approach for gallery integration'
   last_modified: '2026-09-11'
 - path: docs/specs/issue-392-consolidate-fieldschema/2026-08-31-consolidate-fieldschema-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -22756,14 +22756,14 @@ entries:
     text: References
   last_modified: '2026-09-11'
 - path: docs/specs/issue-392-consolidate-fieldschema/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
     text: 'D1: Canonical location for FieldSchema'
   last_modified: '2026-09-11'
 - path: docs/specs/issue-396-composite-rest-snapshot/2026-08-31-composite-snapshot-fix-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -22788,7 +22788,7 @@ entries:
     text: References
   last_modified: '2026-09-11'
 - path: docs/specs/issue-396-composite-rest-snapshot/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -22797,7 +22797,7 @@ entries:
     text: 'D2: Genuine server snapshot semantics'
   last_modified: '2026-09-11'
 - path: docs/specs/issue-397-fittopleft-clips-tall/2026-08-31-fittopleft-fix-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -22824,14 +22824,14 @@ entries:
     text: References
   last_modified: '2026-09-11'
 - path: docs/specs/issue-397-fittopleft-clips-tall/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
     text: 'D1: Bounds computation strategy for nested nodes'
   last_modified: '2026-09-11'
 - path: docs/specs/issue-404-node-decoration-pills/2026-09-03-node-decoration-pills-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -22858,7 +22858,7 @@ entries:
     text: References
   last_modified: '2026-09-11'
 - path: docs/specs/issue-404-node-decoration-pills/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -22867,7 +22867,7 @@ entries:
     text: 'D2: Pill visual placement'
   last_modified: '2026-09-11'
 - path: docs/specs/issue-407-lsp-ide-plugins/2026-09-10-lsp-ide-plugins-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -22935,7 +22935,7 @@ entries:
   - level: 3
     text: In pages (new package)
   - level: 3
-    text: In blocks-ui (new packages)
+    text: In mosaic (new packages)
   - level: 3
     text: Challenge Pass
   - level: 2
@@ -22947,14 +22947,14 @@ entries:
   - level: 3
     text: Slot 1 — pages
   - level: 3
-    text: Slot 2 — blocks-ui
+    text: Slot 2 — mosaic
   - level: 2
     text: Tracking
   - level: 2
     text: References
   last_modified: '2026-09-11'
 - path: docs/specs/issue-407-lsp-ide-plugins/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -22991,7 +22991,7 @@ entries:
     text: 'D15: Cross-File Reference Resolution'
   last_modified: '2026-09-11'
 - path: docs/specs/issue-408-scenario-engine/2026-08-12-example-applications-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -23032,7 +23032,7 @@ entries:
     text: Create
   last_modified: '2026-09-11'
 - path: docs/specs/issue-408-scenario-engine/2026-08-20-distributed-executor-protocol-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -23143,7 +23143,7 @@ entries:
     text: References
   last_modified: '2026-09-11'
 - path: docs/specs/issue-408-scenario-engine/2026-08-21-scenario-controller-ui-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -23210,7 +23210,7 @@ entries:
     text: References
   last_modified: '2026-09-11'
 - path: docs/specs/issue-408-scenario-engine/2026-08-22-controller-compact-overlay-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -23243,7 +23243,7 @@ entries:
     text: References
   last_modified: '2026-09-11'
 - path: docs/specs/issue-408-scenario-engine/2026-08-23-visual-feedback-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -23270,7 +23270,7 @@ entries:
     text: References
   last_modified: '2026-09-11'
 - path: docs/specs/issue-408-scenario-engine/2026-08-23-yaml-flyout-viewer-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -23301,7 +23301,7 @@ entries:
     text: References
   last_modified: '2026-09-11'
 - path: docs/specs/issue-408-scenario-engine/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -23372,7 +23372,7 @@ entries:
     text: 'D27: Typing animation is scenario-only'
   last_modified: '2026-09-11'
 - path: docs/specs/issue-408-yaml-schema-completion/2026-09-05-yaml-schema-completion-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -23433,7 +23433,7 @@ entries:
     text: References
   last_modified: '2026-09-11'
 - path: docs/specs/issue-408-yaml-schema-completion/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -23448,7 +23448,7 @@ entries:
     text: 'D4: Initial component scope'
   last_modified: '2026-09-11'
 - path: docs/specs/issue-411-auto-generate-zod-schemas/2026-09-06-auto-generate-zod-schemas-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -23505,7 +23505,7 @@ entries:
     text: References
   last_modified: '2026-09-11'
 - path: docs/specs/issue-411-auto-generate-zod-schemas/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -23518,7 +23518,7 @@ entries:
     text: 'D3: Desugarer integration'
   last_modified: '2026-09-11'
 - path: docs/specs/issue-415-theme-designer/2026-09-07-theme-designer-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -23575,7 +23575,7 @@ entries:
     text: References
   last_modified: '2026-09-11'
 - path: docs/specs/issue-415-theme-designer/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -23592,7 +23592,7 @@ entries:
     text: 'D5: Server-side theme storage'
   last_modified: '2026-09-11'
 - path: docs/specs/issue-46-pages-floating-workspace/2026-08-10-floating-workspace-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -23687,7 +23687,7 @@ entries:
     text: 10. What Stays in Trellis
   last_modified: '2026-09-11'
 - path: docs/specs/issue-84-85-data-table-enhancements/2026-07-28-data-table-variable-heights-column-resize-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -23808,11 +23808,11 @@ entries:
     text: Scope Exclusions
   last_modified: '2026-08-03'
 - path: docs/specs/issue-94-blocks-prefix-and-cleanup/2026-07-25-blocks-prefix-and-cleanup-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
-    text: blocks-ui prefix rename and cleanup
+    text: mosaic prefix rename and cleanup
   - level: 2
     text: '#88 — Fix pages-modal duplicate CustomElementRegistry crash'
   - level: 2
@@ -23827,11 +23827,11 @@ entries:
     text: Out of scope
   last_modified: '2026-08-10'
 - path: docs/specs/issue-95-align-table-pipeline/2026-07-25-align-table-pipeline-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
-    text: Align blocks-ui table components with pages pipeline
+    text: Align mosaic table components with pages pipeline
   - level: 2
     text: Problem
   - level: 2
@@ -23858,7 +23858,7 @@ entries:
     text: Affected files
   last_modified: '2026-08-10'
 - path: docs/specs/issue-99-commitment-lifecycle-viz/2026-07-28-commitment-viz-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -23870,7 +23870,7 @@ entries:
   - level: 2
     text: Package Structure
   - level: 2
-    text: Type Promotion to blocks-ui-core
+    text: Type Promotion to mosaic-core
   - level: 2
     text: Type Foundation
   - level: 3
@@ -23897,7 +23897,7 @@ entries:
     text: Future Work (Not This Branch)
   last_modified: '2026-08-10'
 - path: docs/specs/panel-activation-hash-binding/2026-08-27-panel-activation-hash-binding-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -23956,7 +23956,7 @@ entries:
     text: References
   last_modified: '2026-09-11'
 - path: docs/specs/panel-activation-hash-binding/2026-08-28-edge-splice-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -24005,7 +24005,7 @@ entries:
     text: References
   last_modified: '2026-09-11'
 - path: docs/specs/panel-activation-hash-binding/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -24022,7 +24022,7 @@ entries:
     text: 'D5: Naming — activateDockPanel, not activatePanel'
   last_modified: '2026-09-11'
 - path: docs/specs/panel-activation-hash-binding/edge-splice-decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -24041,7 +24041,7 @@ entries:
     text: 'D6: Composition model — moveNodeToEdge as atomic edit'
   last_modified: '2026-09-11'
 - path: docs/specs/script-library/2026-08-29-script-library-automation-platform-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -24132,7 +24132,7 @@ entries:
     text: References
   last_modified: '2026-09-11'
 - path: docs/specs/workspace-compositor/2026-08-13-workspace-compositor-design.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 1
@@ -24193,7 +24193,7 @@ entries:
     text: 12. File Impact Summary
   last_modified: '2026-09-11'
 - path: docs/specs/workspace-compositor/decisions.md
-  repo: blocks-ui
+  repo: mosaic
   source: project
   headings:
   - level: 2
@@ -24210,14 +24210,14 @@ entries:
     text: 'D6: Split creation — tab drag to edge with preview overlay'
   last_modified: '2026-09-11'
 - path: blog/2026-07-06-mdp01-three-bugs-where-there-was-one.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings:
   - level: 2
     text: Three Bugs Where There Was One
   last_modified: '2026-07-19'
 - path: blog/2026-07-09-mdp01-the-sse-question-had-the-wrong-premise.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings:
   - level: 2
@@ -24228,22 +24228,22 @@ entries:
     text: The branch archaeology
   last_modified: '2026-07-09'
 - path: blog/2026-07-10-mdp01-the-controller-was-the-point.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings: []
   last_modified: '2026-07-10'
 - path: blog/2026-07-10-mdp02-sparklines-and-the-mixin-question.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings: []
   last_modified: '2026-07-10'
 - path: blog/2026-07-10-mdp03-the-table-came-home.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings: []
   last_modified: '2026-07-11'
 - path: blog/2026-07-11-mdp01-fetch-is-just-push.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings:
   - level: 2
@@ -24256,7 +24256,7 @@ entries:
     text: Where It Stands
   last_modified: '2026-07-19'
 - path: blog/2026-07-11-mdp02-the-pipeline-closes.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings:
   - level: 2
@@ -24267,24 +24267,24 @@ entries:
     text: Five Consumers Left
   last_modified: '2026-07-19'
 - path: blog/2026-07-13-mdp01-the-missing-ux-pattern.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings: []
   last_modified: '2026-07-13'
 - path: blog/2026-07-13-mdp02-three-repos-one-component-library.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings: []
   last_modified: '2026-07-13'
 - path: blog/2026-07-13-mdp03-the-build-that-lied.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings:
   - level: 1
     text: The Build That Lied
   last_modified: '2026-07-13'
 - path: blog/2026-07-16-mdp01-the-select-that-lost-its-way.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings:
   - level: 2
@@ -24293,17 +24293,17 @@ entries:
     text: The dropdown that appeared in the wrong place
   last_modified: '2026-07-16'
 - path: blog/2026-07-17-mdp01-the-styles-that-never-arrived.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings: []
   last_modified: '2026-07-17'
 - path: blog/2026-07-17-mdp02-the-css-that-looked-like-it-worked.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings: []
   last_modified: '2026-07-17'
 - path: blog/2026-07-18-mdp01-the-form-that-lived-in-the-wrong-house.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings:
   - level: 2
@@ -24314,7 +24314,7 @@ entries:
     text: The three-tab example
   last_modified: '2026-07-18'
 - path: blog/2026-07-19-mdp01-why-every-data-table-gets-spanning-wrong.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings:
   - level: 2
@@ -24327,7 +24327,7 @@ entries:
     text: What shipped
   last_modified: '2026-07-19'
 - path: blog/2026-07-21-mdp01-trust-workbench.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings:
   - level: 2
@@ -24342,7 +24342,7 @@ entries:
     text: What's not there yet
   last_modified: '2026-09-02'
 - path: blog/2026-07-21-mdp02-schema-driven-notification-forms.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings:
   - level: 1
@@ -24359,7 +24359,7 @@ entries:
     text: Numbers
   last_modified: '2026-07-21'
 - path: blog/2026-07-21-schema-driven-notification-forms.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings:
   - level: 1
@@ -24376,7 +24376,7 @@ entries:
     text: Numbers
   last_modified: '2026-08-02'
 - path: blog/2026-07-25-mdp01-the-pipeline-was-already-there.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings:
   - level: 1
@@ -24391,7 +24391,7 @@ entries:
     text: What we left alone
   last_modified: '2026-07-25'
 - path: blog/2026-07-25-mdp02-namespace-hygiene-and-the-barrel-that-bites.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings:
   - level: 1
@@ -24404,7 +24404,7 @@ entries:
     text: 59 tags, one prefix
   last_modified: '2026-07-26'
 - path: blog/2026-07-28-mdp01-every-data-table-gets-variable-heights-wrong.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings:
   - level: 2
@@ -24421,14 +24421,14 @@ entries:
     text: What the review caught
   last_modified: '2026-08-02'
 - path: blog/2026-07-29-mdp01-the-property-that-does-nothing.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings:
   - level: 2
     text: The Property That Does Nothing
   last_modified: '2026-07-29'
 - path: blog/2026-08-03-mdp01-from-yaml-to-graph-in-one-session.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings:
   - level: 2
@@ -24443,7 +24443,7 @@ entries:
     text: What's next
   last_modified: '2026-08-03'
 - path: blog/2026-08-03-mdp02-the-editor-edits.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings:
   - level: 2
@@ -24456,22 +24456,22 @@ entries:
     text: What it is now
   last_modified: '2026-08-03'
 - path: blog/2026-08-04-mdp01-the-table-that-hid-its-own-data.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings: []
   last_modified: '2026-08-04'
 - path: blog/2026-08-05-mdp01-one-badge-to-rule-them-all.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings: []
   last_modified: '2026-08-05'
 - path: blog/2026-08-11-mdp01-worker-functions-get-a-face.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings: []
   last_modified: '2026-09-02'
 - path: blog/2026-09-01-mdp01-diagrams-that-drill-into-each-other.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings:
   - level: 2
@@ -24486,7 +24486,7 @@ entries:
     text: What this opens up
   last_modified: '2026-09-02'
 - path: blog/2026-09-02-mdp01-the-audio-pipeline-nobody-documents.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings:
   - level: 1
@@ -24509,7 +24509,7 @@ entries:
     text: What this opens up
   last_modified: '2026-09-02'
 - path: blog/2026-09-03-mdp01-the-native-lib-problem.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings:
   - level: 1
@@ -24526,7 +24526,7 @@ entries:
     text: The build-time trick
   last_modified: '2026-09-03'
 - path: blog/2026-09-04-mdp01-the-bugs-tests-cant-find.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings:
   - level: 2
@@ -24541,26 +24541,26 @@ entries:
     text: The testing gap
   last_modified: '2026-09-04'
 - path: blog/2026-09-07-mdp01-zod-schemas-from-source.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings: []
   last_modified: '2026-09-07'
 - path: blog/2026-09-27-mdp01-the-last-d3-component.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings:
   - level: 1
     text: The Last d3 Component
   last_modified: '2026-09-27'
 - path: specs/INDEX.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings:
   - level: 1
     text: Specs
   last_modified: '2026-06-30'
 - path: specs/agent-setup-wizard/2026-09-20-agent-setup-wizard-design.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings:
   - level: 1
@@ -24606,7 +24606,7 @@ entries:
   - level: 3
     text: Integration
   - level: 2
-    text: Type Additions to blocks-ui-core
+    text: Type Additions to mosaic-core
   - level: 3
     text: Manifest types (from platform agent-config-core)
   - level: 3
@@ -24623,7 +24623,7 @@ entries:
     text: References
   last_modified: '2026-09-20'
 - path: specs/agent-setup-wizard/decisions.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings:
   - level: 1
@@ -24648,7 +24648,7 @@ entries:
     text: 'D8: Relationship management approach'
   last_modified: '2026-09-20'
 - path: specs/issue-1149-evolution-ui/2026-09-26-evolution-conductor-ui-design.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings:
   - level: 1
@@ -24735,7 +24735,7 @@ entries:
     text: References
   last_modified: '2026-09-27'
 - path: specs/issue-1149-evolution-ui/decisions.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings:
   - level: 1
@@ -24752,7 +24752,7 @@ entries:
     text: 'D5: Workbench as summary bar + tabbed content'
   last_modified: '2026-09-26'
 - path: specs/issue-117-extract-shared-primitives/2026-09-06-shared-primitives-design.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings:
   - level: 1
@@ -24760,7 +24760,7 @@ entries:
   - level: 2
     text: Summary
   - level: 2
-    text: New module in blocks-ui-core
+    text: New module in mosaic-core
   - level: 2
     text: API
   - level: 3
@@ -24797,7 +24797,7 @@ entries:
     text: References
   last_modified: '2026-09-06'
 - path: specs/issue-117-extract-shared-primitives/decisions.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings:
   - level: 2
@@ -24808,19 +24808,19 @@ entries:
     text: 'D3: formatTimestamp API — options with unified default'
   last_modified: '2026-09-06'
 - path: specs/issue-156-zod-schemas/2026-09-07-zod-schema-generation-design.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings:
   - level: 1
-    text: Auto-generate Zod schemas for blocks-ui components
+    text: Auto-generate Zod schemas for mosaic components
   - level: 2
     text: Problem
   - level: 2
     text: Design
   - level: 3
-    text: 1. BlocksComponentRegistry (blocks-ui-schema)
+    text: 1. BlocksComponentRegistry (mosaic-schema)
   - level: 3
-    text: 2. blocks-ui-schema package (new)
+    text: 2. mosaic-schema package (new)
   - level: 3
     text: 3. Generator (scripts/generate-schemas.ts)
   - level: 3
@@ -24837,7 +24837,7 @@ entries:
     text: References
   last_modified: '2026-09-07'
 - path: specs/issue-156-zod-schemas/decisions.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings:
   - level: 2
@@ -24852,7 +24852,7 @@ entries:
     text: 'D5: Schema consumption and distribution'
   last_modified: '2026-09-07'
 - path: specs/issue-157-rich-org-diagram/2026-09-08-rich-org-diagram-design.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings:
   - level: 1
@@ -24933,7 +24933,7 @@ entries:
     text: Deferred Items
   last_modified: '2026-09-08'
 - path: specs/issue-157-rich-org-diagram/2026-09-10-layout-rule-engine-design.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings:
   - level: 1
@@ -24972,7 +24972,7 @@ entries:
     text: Implementation Plan
   last_modified: '2026-09-10'
 - path: specs/issue-157-rich-org-diagram/decisions.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings:
   - level: 2
@@ -24997,7 +24997,7 @@ entries:
     text: 'D10: Relationship highlighting — separate pure function'
   last_modified: '2026-09-08'
 - path: specs/issue-158-lsp-schema-refinements/2026-09-17-discriminator-aware-schema-generation-design.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings:
   - level: 1
@@ -25076,7 +25076,7 @@ entries:
     text: References
   last_modified: '2026-09-17'
 - path: specs/issue-158-lsp-schema-refinements/2026-09-17-domain-schema-assembly-design.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings:
   - level: 1
@@ -25110,11 +25110,11 @@ entries:
   - level: 2
     text: Delivery Phases
   - level: 3
-    text: Phase 1 — JCEF split editor + CI (blocks-ui only)
+    text: Phase 1 — JCEF split editor + CI (mosaic only)
   - level: 3
     text: Phase 2 — Extensible workbench + native IntelliJ panels (pages dependency)
   - level: 3
-    text: Phase 3 — Structural editing (blocks-ui, after phase 2)
+    text: Phase 3 — Structural editing (mosaic, after phase 2)
   - level: 2
     text: Cross-Repo Coordination
   - level: 3
@@ -25124,14 +25124,14 @@ entries:
   - level: 3
     text: Phase 1
   - level: 3
-    text: Phase 2 (blocks-ui side only)
+    text: Phase 2 (mosaic side only)
   - level: 2
     text: Testing Strategy
   - level: 2
     text: References
   last_modified: '2026-09-17'
 - path: specs/issue-158-lsp-schema-refinements/2026-09-25-ows-1.0-stencil-completeness-design.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings:
   - level: 1
@@ -25188,7 +25188,7 @@ entries:
     text: References
   last_modified: '2026-09-25'
 - path: specs/issue-158-lsp-schema-refinements/2026-09-25-swf-edge-click-palette-drag-design.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings:
   - level: 1
@@ -25196,7 +25196,7 @@ entries:
   - level: 2
     text: Overview
   - level: 2
-    text: 'Track 1: Edge Click Picker (interim, blocks-ui only)'
+    text: 'Track 1: Edge Click Picker (interim, mosaic only)'
   - level: 3
     text: Current State
   - level: 3
@@ -25229,7 +25229,7 @@ entries:
     text: References
   last_modified: '2026-09-25'
 - path: specs/issue-158-lsp-schema-refinements/decisions.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings:
   - level: 2
@@ -25256,7 +25256,7 @@ entries:
     text: 'D11: Picker positioning on edge click — reuse existing picker with edge context'
   last_modified: '2026-09-25'
 - path: specs/issue-176-native-jars/2026-09-03-native-jars-design.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings:
   - level: 1
@@ -25319,7 +25319,7 @@ entries:
     text: References
   last_modified: '2026-09-03'
 - path: specs/issue-176-native-jars/decisions.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings:
   - level: 2
@@ -25332,7 +25332,7 @@ entries:
     text: 'D4: Runtime extraction cache strategy'
   last_modified: '2026-09-03'
 - path: specs/issue-184-vad/2026-09-02-voice-activity-detection-design.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings:
   - level: 1
@@ -25369,7 +25369,7 @@ entries:
     text: References
   last_modified: '2026-09-02'
 - path: specs/issue-184-vad/decisions.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings:
   - level: 2
@@ -25386,7 +25386,7 @@ entries:
     text: 'D6: Pipeline ordering — denoise → VAD → STT'
   last_modified: '2026-09-02'
 - path: specs/issue-190-speech-denoising/2026-09-02-speech-denoising-design.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings:
   - level: 1
@@ -25427,7 +25427,7 @@ entries:
     text: References
   last_modified: '2026-09-02'
 - path: specs/issue-190-speech-denoising/decisions.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings:
   - level: 2
@@ -25442,7 +25442,7 @@ entries:
     text: 'D5: Runtime configurability — all pipeline stages toggleable'
   last_modified: '2026-09-02'
 - path: specs/issue-191-speaker-diarization/2026-09-03-speaker-diarization-design.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings:
   - level: 1
@@ -25513,7 +25513,7 @@ entries:
     text: References
   last_modified: '2026-09-03'
 - path: specs/issue-191-speaker-diarization/decisions.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings:
   - level: 2
@@ -25536,7 +25536,7 @@ entries:
     text: 'D9: Module placement — speech-api SPI, speech-sherpa implementation'
   last_modified: '2026-09-03'
 - path: specs/issue-84-85-data-table-enhancements/2026-07-28-data-table-variable-heights-column-resize-design.md
-  repo: blocks-ui (workspace)
+  repo: mosaic (workspace)
   source: project
   headings:
   - level: 1
@@ -27089,7 +27089,7 @@ entries:
   - level: 3
     text: WebSocket protocol changes
   - level: 2
-    text: 3. Frontend — blocks-ui-channel-activity
+    text: 3. Frontend — mosaic-channel-activity
   - level: 3
     text: New types
   - level: 3
@@ -27113,7 +27113,7 @@ entries:
   - level: 2
     text: 7. Testing Strategy
   - level: 3
-    text: blocks-ui-channel-activity (vitest + jsdom)
+    text: mosaic-channel-activity (vitest + jsdom)
   - level: 3
     text: chat-app backend (JUnit)
   - level: 3
@@ -27432,7 +27432,7 @@ entries:
   source: project
   headings:
   - level: 1
-    text: Session Workbench — blocks-ui Component Design
+    text: Session Workbench — mosaic Component Design
   - level: 2
     text: Overview
   - level: 2
@@ -27578,7 +27578,7 @@ entries:
   - level: 3
     text: Anchoring composition
   - level: 3
-    text: casehub-blocks (blocks#62)
+    text: casehub-agency (blocks#62)
   - level: 3
     text: qhorus
   - level: 2
@@ -27812,7 +27812,7 @@ entries:
   - level: 3
     text: '12.1 qhorus-api: Correction/Retraction Modeling (R1-01, R1-02)'
   - level: 3
-    text: '12.2 blocks-ui: TypeScript MessageType Sync (R1-09)'
+    text: '12.2 mosaic: TypeScript MessageType Sync (R1-09)'
   - level: 3
     text: '12.3 qhorus-api: Message-Scoped Erasure (R1-04)'
   - level: 3
@@ -27861,7 +27861,7 @@ entries:
   - level: 2
     text: 'D14: Theme designer access'
   - level: 2
-    text: 'D15: Consume latest pages/blocks-ui'
+    text: 'D15: Consume latest pages/mosaic'
   - level: 2
     text: 'D16: Resizable panels via PointerEvent drag handles'
   last_modified: '2026-09-21'
@@ -27884,7 +27884,7 @@ entries:
   - level: 3
     text: 'Layer 3: qhorus push — displayOrder in dataset and channel replace broadcast'
   - level: 3
-    text: 'Layer 4: blocks-ui — D&D interaction in channel-nav.ts'
+    text: 'Layer 4: mosaic — D&D interaction in channel-nav.ts'
   - level: 4
     text: 4a. Types and events
   - level: 4
@@ -27902,7 +27902,7 @@ entries:
   - level: 2
     text: Testing Strategy
   - level: 3
-    text: blocks-ui (vitest + jsdom)
+    text: mosaic (vitest + jsdom)
   - level: 3
     text: chat-app (Java)
   - level: 3
@@ -28219,11 +28219,11 @@ entries:
   - level: 3
     text: 'Layer 1: Backend — delete stale forks, add unread counts (chat-app + qhorus)'
   - level: 3
-    text: 'Layer 2: Frontend types — QhorusChannel (blocks-ui)'
+    text: 'Layer 2: Frontend types — QhorusChannel (mosaic)'
   - level: 3
-    text: 'Layer 3: Frontend controller — ChannelStateController (blocks-ui)'
+    text: 'Layer 3: Frontend controller — ChannelStateController (mosaic)'
   - level: 3
-    text: 'Layer 4: Frontend component — ChannelNavElement (blocks-ui)'
+    text: 'Layer 4: Frontend component — ChannelNavElement (mosaic)'
   - level: 4
     text: Property API — data-driven mode selection
   - level: 4
@@ -28333,11 +28333,11 @@ entries:
   - level: 3
     text: 'Layer 1: Backend — delete stale forks, add unread counts (chat-app + qhorus)'
   - level: 3
-    text: 'Layer 2: Frontend types — QhorusChannel (blocks-ui)'
+    text: 'Layer 2: Frontend types — QhorusChannel (mosaic)'
   - level: 3
-    text: 'Layer 3: Frontend controller — ChannelStateController (blocks-ui)'
+    text: 'Layer 3: Frontend controller — ChannelStateController (mosaic)'
   - level: 3
-    text: 'Layer 4: Frontend component — ChannelNavElement (blocks-ui)'
+    text: 'Layer 4: Frontend component — ChannelNavElement (mosaic)'
   - level: 4
     text: Property API — data-driven mode selection
   - level: 4
@@ -28503,7 +28503,7 @@ entries:
   - level: 2
     text: Test Count and Status
   - level: 1
-    text: Pages (must be first — blocks-ui depends on it)
+    text: Pages (must be first — mosaic depends on it)
   - level: 1
     text: Blocks-ui
   - level: 2
@@ -32340,13 +32340,13 @@ entries:
   - level: 3
     text: Consumer apps (one-line change each)
   - level: 3
-    text: blocks-ui components
+    text: mosaic components
   - level: 2
     text: Testing
   - level: 2
     text: Theme picker component
   - level: 3
-    text: blocks-ui showcase integration
+    text: mosaic showcase integration
   - level: 3
     text: App integration examples
   - level: 2
@@ -34473,13 +34473,13 @@ entries:
   - level: 3
     text: Consumer apps (one-line change each)
   - level: 3
-    text: blocks-ui components
+    text: mosaic components
   - level: 2
     text: Testing
   - level: 2
     text: Theme picker component
   - level: 3
-    text: blocks-ui showcase integration
+    text: mosaic showcase integration
   - level: 3
     text: App integration examples
   - level: 2
@@ -37658,12 +37658,12 @@ entries:
   - level: 2
     text: Test plan
   last_modified: '2026-07-29'
-- path: docs/specs/2026-07-07-blocks-ui-migration-design.md
+- path: docs/specs/2026-07-07-mosaic-migration-design.md
   repo: clinical
   source: project
   headings:
   - level: 1
-    text: Clinical Product UI — blocks-ui Migration Design Spec
+    text: Clinical Product UI — mosaic Migration Design Spec
   - level: 2
     text: Purpose
   - level: 2
@@ -37683,15 +37683,15 @@ entries:
   - level: 2
     text: Why Two Workbenches (Not One)
   - level: 2
-    text: blocks-ui Component Consumption
+    text: mosaic Component Consumption
   - level: 3
     text: Production-ready (no blockers)
   - level: 3
-    text: Stubbed until blocks-ui builds them
+    text: Stubbed until mosaic builds them
   - level: 3
     text: Blocked on AML promotion
   - level: 2
-    text: Promotion Candidates — Components Clinical Builds for blocks-ui
+    text: Promotion Candidates — Components Clinical Builds for mosaic
   - level: 3
     text: '`<commitment-lifecycle>`'
   - level: 3
@@ -37725,13 +37725,13 @@ entries:
   - level: 2
     text: Error Strategy
   - level: 2
-    text: Requirements on blocks-ui Components
+    text: Requirements on mosaic Components
   - level: 2
     text: Dependency & Sequencing
   - level: 3
     text: Ready now (no blockers)
   - level: 3
-    text: Blocked on blocks-ui
+    text: Blocked on mosaic
   - level: 3
     text: Blocked on AML promotion
   - level: 3
@@ -37739,7 +37739,7 @@ entries:
   - level: 2
     text: Cross-Repo Coordination
   - level: 3
-    text: blocks-ui#35 — parent epic
+    text: mosaic#35 — parent epic
   - level: 3
     text: Overlap with AML
   - level: 3
@@ -46308,7 +46308,7 @@ entries:
   - level: 2
     text: Design Decisions
   - level: 3
-    text: Reuse pages-primitives and blocks-ui-core — don't rebuild
+    text: Reuse pages-primitives and mosaic-core — don't rebuild
   - level: 3
     text: Use `pages-data-table` for notification rows
   - level: 3
@@ -46316,7 +46316,7 @@ entries:
   - level: 3
     text: SSE for push, REST for queries and mutations
   - level: 3
-    text: Use `WorkIdentity` from blocks-ui-core for user context
+    text: Use `WorkIdentity` from mosaic-core for user context
   - level: 3
     text: Personal subscriptions fully editable, system subscriptions read-only
   - level: 2
@@ -46376,7 +46376,7 @@ entries:
   - level: 2
     text: Reuse Map
   - level: 2
-    text: Known Garden Gotchas (from blocks-ui implementation)
+    text: Known Garden Gotchas (from mosaic implementation)
   - level: 2
     text: Dependencies & Blockers
   - level: 2
@@ -46830,7 +46830,7 @@ entries:
   - level: 3
     text: Anchoring composition
   - level: 3
-    text: casehub-blocks (blocks#62)
+    text: casehub-agency (blocks#62)
   - level: 3
     text: qhorus
   - level: 2
@@ -47437,7 +47437,7 @@ entries:
   source: project
   headings:
   - level: 1
-    text: Session Workbench — blocks-ui Component Design
+    text: Session Workbench — mosaic Component Design
   - level: 2
     text: Overview
   - level: 2
@@ -47853,7 +47853,7 @@ entries:
   - level: 3
     text: Anchoring composition
   - level: 3
-    text: casehub-blocks (blocks#62)
+    text: casehub-agency (blocks#62)
   - level: 3
     text: qhorus
   - level: 2
@@ -53087,7 +53087,7 @@ entries:
   - level: 3
     text: 9.3 casehub-work — Human-in-the-Loop Escalation
   - level: 3
-    text: 9.4 casehub-blocks — Event Summarisation for Operational Intelligence
+    text: 9.4 casehub-agency — Event Summarisation for Operational Intelligence
   - level: 3
     text: 9.5 casehub-qhorus — AI Agent Integration
   - level: 3
@@ -56011,9 +56011,9 @@ entries:
   - level: 3
     text: 3.1 Summarisation API Extraction (D8)
   - level: 3
-    text: 3.2 Bridge Module — `casehub-blocks-cloudevents`
+    text: 3.2 Bridge Module — `casehub-agency-cloudevents`
   - level: 3
-    text: 3.3 YAML Surface — `casehub-blocks-summarisation-yaml`
+    text: 3.3 YAML Surface — `casehub-agency-summarisation-yaml`
   - level: 4
     text: 3.3.1 Composable Runtime Model
   - level: 4
@@ -57332,9 +57332,9 @@ entries:
   - level: 3
     text: 3.1 Summarisation API Extraction (D8)
   - level: 3
-    text: 3.2 Bridge Module — `casehub-blocks-cloudevents`
+    text: 3.2 Bridge Module — `casehub-agency-cloudevents`
   - level: 3
-    text: 3.3 YAML Surface — `casehub-blocks-summarisation-yaml`
+    text: 3.3 YAML Surface — `casehub-agency-summarisation-yaml`
   - level: 4
     text: 3.3.1 Composable Runtime Model
   - level: 4
@@ -58597,7 +58597,7 @@ entries:
   - level: 3
     text: Additional Shipped Capabilities
   - level: 3
-    text: casehub-blocks — Foundation Consolidation
+    text: casehub-agency — Foundation Consolidation
   - level: 3
     text: The Closed Feedback Loop
   - level: 2
@@ -58716,7 +58716,7 @@ entries:
   - level: 3
     text: 3.5 Additional Shipped Capabilities
   - level: 3
-    text: 3.6 casehub-blocks — Foundation Consolidation
+    text: 3.6 casehub-agency — Foundation Consolidation
   - level: 3
     text: 3.7 New Platform Capabilities (since v5)
   - level: 3
@@ -59311,7 +59311,7 @@ entries:
   - level: 3
     text: 'Task 2: Engine-rest — GoalEvaluationResponse DTOs and goals endpoint'
   - level: 3
-    text: 'Task 3: blocks-ui — EntityReader and ResponseReader interfaces'
+    text: 'Task 3: mosaic — EntityReader and ResponseReader interfaces'
   - level: 3
     text: 'Task 4: devtown — Add casehub-engine-rest Maven dependency'
   - level: 1
@@ -61229,9 +61229,9 @@ entries:
   - level: 3
     text: 'Existing endpoint: Context'
   - level: 2
-    text: blocks-ui changes
+    text: mosaic changes
   - level: 3
-    text: EntityReader pattern (blocks-ui#90)
+    text: EntityReader pattern (mosaic#90)
   - level: 2
     text: devtown changes
   - level: 3
@@ -61880,9 +61880,9 @@ entries:
   - level: 3
     text: REST endpoints in GovernanceResource
   - level: 2
-    text: blocks-ui Component
+    text: mosaic Component
   - level: 3
-    text: blocks-ui-contributor-workbench
+    text: mosaic-contributor-workbench
   - level: 2
     text: Frontend — Contributors View
   - level: 3
@@ -63897,9 +63897,9 @@ entries:
   - level: 3
     text: 'Existing endpoint: Context'
   - level: 2
-    text: blocks-ui changes
+    text: mosaic changes
   - level: 3
-    text: EntityReader pattern (blocks-ui#90)
+    text: EntityReader pattern (mosaic#90)
   - level: 2
     text: devtown changes
   - level: 3
@@ -67493,7 +67493,7 @@ entries:
   source: project
   headings:
   - level: 1
-    text: 'P5: Structured Conversation Protocol Extraction to casehub-blocks'
+    text: 'P5: Structured Conversation Protocol Extraction to casehub-agency'
   - level: 2
     text: Problem
   - level: 2
@@ -67563,7 +67563,7 @@ entries:
   - level: 2
     text: Testing
   - level: 3
-    text: In casehub-blocks (~30-35 tests)
+    text: In casehub-agency (~30-35 tests)
   - level: 3
     text: In DraftHouse (adapted existing tests)
   - level: 2
@@ -67738,7 +67738,7 @@ entries:
   - level: 3
     text: 5.1 DraftHouse as the document layer
   - level: 3
-    text: 5.2 blocks-ui alignment
+    text: 5.2 mosaic alignment
   - level: 3
     text: 5.3 The reusable component vision
   - level: 2
@@ -67838,7 +67838,7 @@ entries:
   source: project
   headings:
   - level: 1
-    text: Lit Migration — Vanilla Web Components to Lit + blocks-ui Compatibility
+    text: Lit Migration — Vanilla Web Components to Lit + mosaic Compatibility
   - level: 2
     text: Goal
   - level: 2
@@ -68251,7 +68251,7 @@ entries:
   source: project
   headings:
   - level: 1
-    text: 'Design: Extract Document Panels as @casehubio/blocks-ui-document-workbench'
+    text: 'Design: Extract Document Panels as @casehubio/mosaic-document-workbench'
   - level: 2
     text: Overview
   - level: 2
@@ -68963,7 +68963,7 @@ entries:
   - level: 3
     text: 5.1 DraftHouse as the document layer
   - level: 3
-    text: 5.2 blocks-ui alignment
+    text: 5.2 mosaic alignment
   - level: 3
     text: 5.3 The reusable component vision
   - level: 2
@@ -81263,7 +81263,7 @@ entries:
   - level: 3
     text: casehub-engine (`~/claude/casehub/engine`)
   - level: 3
-    text: casehub-blocks (`~/claude/casehub/blocks`)
+    text: casehub-agency (`~/claude/casehub/blocks`)
   - level: 2
     text: What the Design Docs Planned
   - level: 3
@@ -87608,7 +87608,7 @@ entries:
   - level: 3
     text: Anchoring composition
   - level: 3
-    text: casehub-blocks (blocks#62)
+    text: casehub-agency (blocks#62)
   - level: 3
     text: qhorus
   - level: 2
@@ -91058,7 +91058,7 @@ entries:
   - level: 2
     text: 'Cross-Cutting: The Drive System (Motivation)'
   - level: 3
-    text: Blocks (`blocks-core`, `io.casehub.blocks.agentic.social.drive`)
+    text: Blocks (`blocks-core`, `io.casehub.agency.core.social.drive`)
   - level: 3
     text: 'Built-in drive sources:'
   - level: 3
@@ -91066,7 +91066,7 @@ entries:
   - level: 2
     text: 'Cross-Cutting: Narrative (Inner Thoughts)'
   - level: 3
-    text: Blocks (`blocks-core`, `io.casehub.blocks.agentic.social.narrative`)
+    text: Blocks (`blocks-core`, `io.casehub.agency.core.social.narrative`)
   - level: 3
     text: 'Key insight: Narrative modulates drives via `NarrativeModulation`. The agent''s inner story ("I''ve been struggling
       with this module") shifts drive intensities, which shifts goal proposals. The narrative is not just reporting — it''s
@@ -92010,7 +92010,7 @@ entries:
   source: project
   headings:
   - level: 1
-    text: Session Workbench — blocks-ui Component Design
+    text: Session Workbench — mosaic Component Design
   - level: 2
     text: Overview
   - level: 2
@@ -92549,7 +92549,7 @@ entries:
   - level: 3
     text: Anchoring composition
   - level: 3
-    text: casehub-blocks (blocks#62)
+    text: casehub-agency (blocks#62)
   - level: 3
     text: qhorus
   - level: 2
@@ -95485,9 +95485,9 @@ entries:
   - level: 3
     text: Work — Human-in-the-Loop (casehub-work-annotations)
   - level: 3
-    text: Blocks — Governance (casehub-blocks-annotations)
+    text: Blocks — Governance (casehub-agency-annotations)
   - level: 3
-    text: Blocks — Orchestration Patterns (casehub-blocks-annotations)
+    text: Blocks — Orchestration Patterns (casehub-agency-annotations)
   - level: 3
     text: Desiredstate — Reconciliation (casehub-desiredstate-annotations)
   - level: 3
@@ -95519,7 +95519,7 @@ entries:
   - level: 2
     text: Epic Structure
   - level: 3
-    text: 'Epic: Annotation-Driven Agent Programming Model (casehubio/blocks#115)'
+    text: 'Epic: Annotation-Driven Agent Programming Model (casehubio/agency#115)'
   - level: 3
     text: Batch planning (wrap windows)
   - level: 2
@@ -100841,7 +100841,7 @@ entries:
   - level: 2
     text: 'Cross-Cutting: The Drive System (Motivation)'
   - level: 3
-    text: Blocks (`blocks-core`, `io.casehub.blocks.agentic.social.drive`)
+    text: Blocks (`blocks-core`, `io.casehub.agency.core.social.drive`)
   - level: 3
     text: 'Built-in drive sources:'
   - level: 3
@@ -100849,7 +100849,7 @@ entries:
   - level: 2
     text: 'Cross-Cutting: Narrative (Inner Thoughts)'
   - level: 3
-    text: Blocks (`blocks-core`, `io.casehub.blocks.agentic.social.narrative`)
+    text: Blocks (`blocks-core`, `io.casehub.agency.core.social.narrative`)
   - level: 3
     text: 'Key insight: Narrative modulates drives via `NarrativeModulation`. The agent''s inner story ("I''ve been struggling
       with this module") shifts drive intensities, which shifts goal proposals. The narrative is not just reporting — it''s
@@ -103645,13 +103645,13 @@ entries:
   - level: 1
     text: casehub-pages — SSE Crosses the Repo Line
   - level: 2
-    text: 'What I was trying to achieve: move SSEManager from blocks-ui to pages and make it work with named SSE events'
+    text: 'What I was trying to achieve: move SSEManager from mosaic to pages and make it work with named SSE events'
   - level: 2
     text: 'What we believed going in: the extraction would be the hard part'
   - level: 2
     text: Publishing turned out to be the real obstacle
   - level: 2
-    text: blocks-ui migration was the easy part
+    text: mosaic migration was the easy part
   - level: 2
     text: Where this leaves the migration
   last_modified: '2026-08-27'
@@ -104021,7 +104021,7 @@ entries:
   - level: 2
     text: 'The design question: where does the narrator get its events?'
   - level: 2
-    text: What already existed in casehub-blocks
+    text: What already existed in casehub-agency
   - level: 2
     text: The architecture that emerged
   - level: 2
@@ -104991,7 +104991,7 @@ entries:
   source: project
   headings:
   - level: 1
-    text: Session Workbench — blocks-ui Component Design
+    text: Session Workbench — mosaic Component Design
   - level: 2
     text: Overview
   - level: 2
@@ -105878,7 +105878,7 @@ entries:
   - level: 3
     text: Anchoring composition
   - level: 3
-    text: casehub-blocks (blocks#62)
+    text: casehub-agency (blocks#62)
   - level: 3
     text: qhorus
   - level: 2
@@ -106559,7 +106559,7 @@ entries:
   - level: 3
     text: Files changed
   - level: 3
-    text: Extensibility for blocks-ui
+    text: Extensibility for mosaic
   - level: 2
     text: 'Work item 4: Master-detail convenience builder (D2)'
   - level: 3
@@ -106609,7 +106609,7 @@ entries:
   - level: 3
     text: No barrel or package.json changes
   - level: 3
-    text: blocks-ui Maven SNAPSHOT instructions
+    text: mosaic Maven SNAPSHOT instructions
   - level: 2
     text: 'Fix 2: Shadow-aware CSS injection (#319)'
   - level: 3
@@ -106966,7 +106966,7 @@ entries:
   - level: 2
     text: 7. Cross-Repo Work
   - level: 3
-    text: 7.1 casehub-blocks
+    text: 7.1 casehub-agency
   - level: 3
     text: 7.2 casehub-examples/wacky-manor
   - level: 2
@@ -107091,7 +107091,7 @@ entries:
   source: project
   headings:
   - level: 1
-    text: Helpdesk UI Upgrade — blocks-ui Components, Runtime State, Push
+    text: Helpdesk UI Upgrade — mosaic Components, Runtime State, Push
   - level: 2
     text: Summary
   - level: 2
@@ -107796,7 +107796,7 @@ entries:
   - level: 2
     text: 5. Cross-Repo Work
   - level: 3
-    text: 5.1 blocks (casehubio/blocks)
+    text: 5.1 blocks (casehubio/agency)
   - level: 3
     text: 5.2 examples/wacky-manor (this repo)
   - level: 2
@@ -107826,7 +107826,7 @@ entries:
   source: project
   headings:
   - level: 1
-    text: Phase 2.6 — ObservationAccumulator Wiring with casehub-blocks
+    text: Phase 2.6 — ObservationAccumulator Wiring with casehub-agency
   - level: 2
     text: Goal
   - level: 2
@@ -110626,7 +110626,7 @@ entries:
   - level: 2
     text: Summary
   - level: 2
-    text: §1 blocks-ui Dependency
+    text: §1 mosaic Dependency
   - level: 3
     text: Maven (app/pom.xml)
   - level: 3
@@ -110658,7 +110658,7 @@ entries:
   - level: 3
     text: Dock-Workbench Placement
   - level: 3
-    text: blocks-ui Component Configuration
+    text: mosaic Component Configuration
   - level: 2
     text: §6 Testing Strategy
   - level: 3
@@ -110685,7 +110685,7 @@ entries:
   source: project
   headings:
   - level: 2
-    text: 'D0: Use blocks-ui components — no custom replacements'
+    text: 'D0: Use mosaic components — no custom replacements'
   - level: 2
     text: 'D1: Blocks-ui components via hostPanel — no combined custom panel'
   - level: 2
@@ -110746,7 +110746,7 @@ entries:
   - level: 3
     text: §4.4 New REST Endpoints
   - level: 3
-    text: §4.5 blocks-ui Component Registration
+    text: §4.5 mosaic Component Registration
   - level: 2
     text: §5 WebSocket Push Topic Summary
   - level: 2
@@ -111086,7 +111086,7 @@ entries:
   - level: 3
     text: blocks (Java) — 7 categories
   - level: 3
-    text: blocks-ui (TS) — Components used
+    text: mosaic (TS) — Components used
   - level: 3
     text: neocortex — Capabilities used
   - level: 3
@@ -112180,7 +112180,7 @@ entries:
   - level: 2
     text: Summary
   - level: 2
-    text: §1 blocks-ui Dependency
+    text: §1 mosaic Dependency
   - level: 3
     text: Maven (app/pom.xml)
   - level: 3
@@ -112212,7 +112212,7 @@ entries:
   - level: 3
     text: Dock-Workbench Placement
   - level: 3
-    text: blocks-ui Component Configuration
+    text: mosaic Component Configuration
   - level: 2
     text: §6 Testing Strategy
   - level: 3
@@ -112239,7 +112239,7 @@ entries:
   source: project
   headings:
   - level: 2
-    text: 'D0: Use blocks-ui components — no custom replacements'
+    text: 'D0: Use mosaic components — no custom replacements'
   - level: 2
     text: 'D1: Blocks-ui components via hostPanel — no combined custom panel'
   - level: 2
@@ -112300,7 +112300,7 @@ entries:
   - level: 3
     text: §4.4 New REST Endpoints
   - level: 3
-    text: §4.5 blocks-ui Component Registration
+    text: §4.5 mosaic Component Registration
   - level: 2
     text: §5 WebSocket Push Topic Summary
   - level: 2
@@ -112554,7 +112554,7 @@ entries:
   - level: 3
     text: blocks (Java) — 7 categories
   - level: 3
-    text: blocks-ui (TS) — Components used
+    text: mosaic (TS) — Components used
   - level: 3
     text: neocortex — Capabilities used
   - level: 3
@@ -112849,7 +112849,7 @@ entries:
   source: project
   headings: []
   last_modified: '2026-08-17'
-- path: docs/blog/2026-08-19-mdp01-blocks-ui-hostpanel.md
+- path: docs/blog/2026-08-19-mdp01-mosaic-hostpanel.md
   repo: iot
   source: project
   headings: []
@@ -115238,12 +115238,12 @@ entries:
   - level: 2
     text: §6 Scope Boundaries
   last_modified: '2026-08-05'
-- path: docs/specs/issue-95-blocks-ui-integration/2026-08-18-blocks-ui-integration-design.md
+- path: docs/specs/issue-95-mosaic-integration/2026-08-18-mosaic-integration-design.md
   repo: iot
   source: project
   headings:
   - level: 1
-    text: Replace Manual Webapp UI with blocks-ui Components
+    text: Replace Manual Webapp UI with mosaic Components
   - level: 2
     text: Summary
   - level: 2
@@ -115257,7 +115257,7 @@ entries:
   - level: 2
     text: Component Registration
   - level: 2
-    text: 'blocks-ui Change: `configure()` on `blocks-detail-pane`'
+    text: 'mosaic Change: `configure()` on `blocks-detail-pane`'
   - level: 2
     text: KPI REST Endpoints (IoT webapp — Java)
   - level: 3
@@ -115283,11 +115283,11 @@ entries:
   - level: 3
     text: 'Phase 2: Work items (uses DSL layout composition)'
   - level: 3
-    text: 'Phase 3: Device detail (requires blocks-ui change)'
+    text: 'Phase 3: Device detail (requires mosaic change)'
   - level: 2
     text: Test Plan
   - level: 3
-    text: blocks-ui (`blocks-detail-pane` — configure method)
+    text: mosaic (`blocks-detail-pane` — configure method)
   - level: 3
     text: IoT webapp (Java)
   - level: 3
@@ -115297,7 +115297,7 @@ entries:
   - level: 2
     text: References
   last_modified: '2026-08-19'
-- path: docs/specs/issue-95-blocks-ui-integration/decisions.md
+- path: docs/specs/issue-95-mosaic-integration/decisions.md
   repo: iot
   source: project
   headings:
@@ -115322,7 +115322,7 @@ entries:
   source: project
   headings: []
   last_modified: '2026-08-17'
-- path: blog/2026-08-19-mdp01-blocks-ui-hostpanel.md
+- path: blog/2026-08-19-mdp01-mosaic-hostpanel.md
   repo: iot (workspace)
   source: project
   headings: []
@@ -115479,12 +115479,12 @@ entries:
   - level: 2
     text: References
   last_modified: '2026-08-20'
-- path: specs/issue-95-blocks-ui-integration/2026-08-18-blocks-ui-integration-design.md
+- path: specs/issue-95-mosaic-integration/2026-08-18-mosaic-integration-design.md
   repo: iot (workspace)
   source: project
   headings:
   - level: 1
-    text: Replace Manual Webapp UI with blocks-ui Components
+    text: Replace Manual Webapp UI with mosaic Components
   - level: 2
     text: Summary
   - level: 2
@@ -115498,7 +115498,7 @@ entries:
   - level: 2
     text: Component Registration
   - level: 2
-    text: 'blocks-ui Change: `configure()` on `blocks-detail-pane`'
+    text: 'mosaic Change: `configure()` on `blocks-detail-pane`'
   - level: 2
     text: KPI REST Endpoints (IoT webapp — Java)
   - level: 3
@@ -115524,11 +115524,11 @@ entries:
   - level: 3
     text: 'Phase 2: Work items (uses DSL layout composition)'
   - level: 3
-    text: 'Phase 3: Device detail (requires blocks-ui change)'
+    text: 'Phase 3: Device detail (requires mosaic change)'
   - level: 2
     text: Test Plan
   - level: 3
-    text: blocks-ui (`blocks-detail-pane` — configure method)
+    text: mosaic (`blocks-detail-pane` — configure method)
   - level: 3
     text: IoT webapp (Java)
   - level: 3
@@ -115538,7 +115538,7 @@ entries:
   - level: 2
     text: References
   last_modified: '2026-08-19'
-- path: specs/issue-95-blocks-ui-integration/decisions.md
+- path: specs/issue-95-mosaic-integration/decisions.md
   repo: iot (workspace)
   source: project
   headings:
@@ -122100,7 +122100,7 @@ entries:
   - level: 3
     text: Anchoring composition
   - level: 3
-    text: casehub-blocks (blocks#62)
+    text: casehub-agency (blocks#62)
   - level: 3
     text: qhorus
   - level: 2
@@ -122941,7 +122941,7 @@ entries:
   source: project
   headings:
   - level: 1
-    text: Session Workbench — blocks-ui Component Design
+    text: Session Workbench — mosaic Component Design
   - level: 2
     text: Overview
   - level: 2
@@ -123861,7 +123861,7 @@ entries:
   - level: 3
     text: Anchoring composition
   - level: 3
-    text: casehub-blocks (blocks#62)
+    text: casehub-agency (blocks#62)
   - level: 3
     text: qhorus
   - level: 2
@@ -130493,7 +130493,7 @@ entries:
   - level: 3
     text: 9.3 Sync Endpoints (Production Mode)
   - level: 2
-    text: 10. New blocks-ui Components
+    text: 10. New mosaic Components
   - level: 3
     text: 10.1 Components to Build
   - level: 3
@@ -130513,7 +130513,7 @@ entries:
   - level: 2
     text: 12. Cross-Module Dependencies
   - level: 3
-    text: 12.1 blocks-ui
+    text: 12.1 mosaic
   - level: 3
     text: 12.2 casehub-life backend
   - level: 3
@@ -137792,7 +137792,7 @@ entries:
   source: project
   headings:
   - level: 1
-    text: Session Workbench — blocks-ui Component Design
+    text: Session Workbench — mosaic Component Design
   - level: 2
     text: Overview
   - level: 2
@@ -139038,7 +139038,7 @@ entries:
   - level: 3
     text: Anchoring composition
   - level: 3
-    text: casehub-blocks (blocks#62)
+    text: casehub-agency (blocks#62)
   - level: 3
     text: qhorus
   - level: 2
@@ -142452,7 +142452,7 @@ entries:
   source: project
   headings:
   - level: 1
-    text: Helpdesk UI Upgrade — blocks-ui Components, Runtime State, Push
+    text: Helpdesk UI Upgrade — mosaic Components, Runtime State, Push
   - level: 2
     text: Summary
   - level: 2
@@ -148983,7 +148983,7 @@ entries:
   source: project
   headings: []
   last_modified: '2026-08-10'
-- path: docs/blog/2026-07-17-mdp01-consuming-blocks-ui.md
+- path: docs/blog/2026-07-17-mdp01-consuming-mosaic.md
   repo: openclaw
   source: project
   headings: []
@@ -150371,7 +150371,7 @@ entries:
   - level: 2
     text: Component Architecture
   - level: 3
-    text: Generic Components (blocks-ui candidates)
+    text: Generic Components (mosaic candidates)
   - level: 3
     text: OpenClaw-Specific Components
   - level: 3
@@ -151088,7 +151088,7 @@ entries:
   source: project
   headings: []
   last_modified: '2026-07-23'
-- path: blog/2026-07-17-mdp01-consuming-blocks-ui.md
+- path: blog/2026-07-17-mdp01-consuming-mosaic.md
   repo: openclaw (workspace)
   source: project
   headings: []
@@ -153573,7 +153573,7 @@ entries:
   - level: 3
     text: New in casehub-ops
   - level: 3
-    text: New blocks-ui components (in casehub/blocks-ui repo)
+    text: New mosaic components (in casehub/mosaic repo)
   - level: 3
     text: Maven dependencies for app/
   - level: 2
@@ -155428,7 +155428,7 @@ entries:
   - level: 3
     text: CaseDefinitionRegistrar changes
   - level: 2
-    text: blocks-ui Components
+    text: mosaic Components
   - level: 3
     text: 1. blocks-service-card
   - level: 3
@@ -155450,7 +155450,7 @@ entries:
   - level: 3
     text: casehub-ops (test files)
   - level: 3
-    text: blocks-ui (new components)
+    text: mosaic (new components)
   - level: 2
     text: Test Plan
   - level: 3
@@ -155462,7 +155462,7 @@ entries:
   - level: 3
     text: ApplicationLifecycleService tests
   - level: 3
-    text: blocks-ui component tests
+    text: mosaic component tests
   - level: 2
     text: Known Limitations
   last_modified: '2026-08-14'
@@ -156484,7 +156484,7 @@ entries:
   - level: 3
     text: CaseDefinitionRegistrar changes
   - level: 2
-    text: blocks-ui Components
+    text: mosaic Components
   - level: 3
     text: 1. blocks-service-card
   - level: 3
@@ -156506,7 +156506,7 @@ entries:
   - level: 3
     text: casehub-ops (test files)
   - level: 3
-    text: blocks-ui (new components)
+    text: mosaic (new components)
   - level: 2
     text: Test Plan
   - level: 3
@@ -156518,7 +156518,7 @@ entries:
   - level: 3
     text: ApplicationLifecycleService tests
   - level: 3
-    text: blocks-ui component tests
+    text: mosaic component tests
   - level: 2
     text: Known Limitations
   last_modified: '2026-08-14'
@@ -157606,13 +157606,13 @@ entries:
   - level: 1
     text: casehub-pages — SSE Crosses the Repo Line
   - level: 2
-    text: 'What I was trying to achieve: move SSEManager from blocks-ui to pages and make it work with named SSE events'
+    text: 'What I was trying to achieve: move SSEManager from mosaic to pages and make it work with named SSE events'
   - level: 2
     text: 'What we believed going in: the extraction would be the hard part'
   - level: 2
     text: Publishing turned out to be the real obstacle
   - level: 2
-    text: blocks-ui migration was the easy part
+    text: mosaic migration was the easy part
   - level: 2
     text: Where this leaves the migration
   last_modified: '2026-08-10'
@@ -158864,7 +158864,7 @@ entries:
   - level: 3
     text: 'Task 1: casehub-pages Example Migration (Phase 8)'
   - level: 3
-    text: 'Task 2: blocks-ui Component + Example Migration (Phase 9)'
+    text: 'Task 2: mosaic Component + Example Migration (Phase 9)'
   - level: 3
     text: 'Task 3: aml + clinical Component Migration (Phase 10)'
   - level: 3
@@ -158920,7 +158920,7 @@ entries:
   - level: 3
     text: Task 3 — EventStream + connection pool (TypeScript, pages-data)
   - level: 3
-    text: Task 4 — EventStreamController Lit adapter (TypeScript, blocks-ui-core — separate repo)
+    text: Task 4 — EventStreamController Lit adapter (TypeScript, mosaic-core — separate repo)
   - level: 3
     text: Task 5 — Documentation (CLAUDE.md updates)
   - level: 3
@@ -162531,7 +162531,7 @@ entries:
   - level: 2
     text: 7. Component Migration
   - level: 3
-    text: 7.1 blocks-ui Components
+    text: 7.1 mosaic Components
   - level: 3
     text: 7.2 aml Components
   - level: 3
@@ -162541,7 +162541,7 @@ entries:
   - level: 3
     text: 8.1 casehub-pages Examples
   - level: 3
-    text: 8.2 blocks-ui Examples
+    text: 8.2 mosaic Examples
   - level: 2
     text: 9. Test Strategy
   - level: 3
@@ -162577,7 +162577,7 @@ entries:
   - level: 3
     text: 'Phase 8: Example Migration (casehub-pages)'
   - level: 3
-    text: 'Phase 9: blocks-ui Component Migration'
+    text: 'Phase 9: mosaic Component Migration'
   - level: 3
     text: 'Phase 10: aml + clinical Component Migration'
   - level: 3
@@ -162781,7 +162781,7 @@ entries:
   - level: 3
     text: PagesElement migration
   - level: 3
-    text: blocks-ui adapter (blocks-ui#44 scope, not pages)
+    text: mosaic adapter (mosaic#44 scope, not pages)
   - level: 2
     text: 'Deliverable 4: Source factory unification'
   - level: 3
@@ -162811,7 +162811,7 @@ entries:
   - level: 3
     text: pages-viz
   - level: 3
-    text: blocks-ui (separate repo, blocks-ui#44)
+    text: mosaic (separate repo, mosaic#44)
   - level: 2
     text: Future work enabled
   - level: 3
@@ -163454,13 +163454,13 @@ entries:
   - level: 3
     text: Consumer apps (one-line change each)
   - level: 3
-    text: blocks-ui components
+    text: mosaic components
   - level: 2
     text: Testing
   - level: 2
     text: Theme picker component
   - level: 3
-    text: blocks-ui showcase integration
+    text: mosaic showcase integration
   - level: 3
     text: App integration examples
   - level: 2
@@ -163655,7 +163655,7 @@ entries:
   - level: 3
     text: 4.3 Default EditPolicy
   - level: 3
-    text: 4.4 Palette component (in casehub-diagram, blocks-ui)
+    text: 4.4 Palette component (in casehub-diagram, mosaic)
   - level: 3
     text: 4.5 Node chooser popover
   - level: 3
@@ -164670,7 +164670,7 @@ entries:
   source: project
   headings:
   - level: 1
-    text: Session Workbench — blocks-ui Component Design
+    text: Session Workbench — mosaic Component Design
   - level: 2
     text: Overview
   - level: 2
@@ -165034,7 +165034,7 @@ entries:
   - level: 3
     text: Anchoring composition
   - level: 3
-    text: casehub-blocks (blocks#62)
+    text: casehub-agency (blocks#62)
   - level: 3
     text: qhorus
   - level: 2
@@ -165945,7 +165945,7 @@ entries:
   - level: 3
     text: Files changed
   - level: 3
-    text: Extensibility for blocks-ui
+    text: Extensibility for mosaic
   - level: 2
     text: 'Work item 4: Master-detail convenience builder (D2)'
   - level: 3
@@ -165995,7 +165995,7 @@ entries:
   - level: 3
     text: No barrel or package.json changes
   - level: 3
-    text: blocks-ui Maven SNAPSHOT instructions
+    text: mosaic Maven SNAPSHOT instructions
   - level: 2
     text: 'Fix 2: Shadow-aware CSS injection (#319)'
   - level: 3
@@ -166568,7 +166568,7 @@ entries:
   - level: 2
     text: 'Deferred: Duration Editor'
   - level: 2
-    text: blocks-ui Migration
+    text: mosaic Migration
   - level: 2
     text: File Structure
   - level: 2
@@ -166798,9 +166798,9 @@ entries:
   - level: 2
     text: 6. Integration Pattern
   - level: 3
-    text: 6.1 Domain adapter wiring (blocks-ui)
+    text: 6.1 Domain adapter wiring (mosaic)
   - level: 3
-    text: 6.2 Node chooser wiring (blocks-ui)
+    text: 6.2 Node chooser wiring (mosaic)
   - level: 2
     text: 7. Shadow DOM
   - level: 2
@@ -167155,7 +167155,7 @@ entries:
   - level: 3
     text: In pages (new package)
   - level: 3
-    text: In blocks-ui (new packages)
+    text: In mosaic (new packages)
   - level: 3
     text: Challenge Pass
   - level: 2
@@ -167167,7 +167167,7 @@ entries:
   - level: 3
     text: Slot 1 — pages
   - level: 3
-    text: Slot 2 — blocks-ui
+    text: Slot 2 — mosaic
   - level: 2
     text: Tracking
   - level: 2
@@ -168182,7 +168182,7 @@ entries:
   - level: 3
     text: ARIA Compliance
   - level: 3
-    text: blocks-ui Migration
+    text: mosaic Migration
   - level: 2
     text: 'Part 3: Examples Showcase'
   - level: 2
@@ -168901,7 +168901,7 @@ entries:
   - level: 3
     text: ARIA Compliance
   - level: 3
-    text: blocks-ui Migration
+    text: mosaic Migration
   - level: 2
     text: 'Part 3: Examples Showcase'
   - level: 2
@@ -169203,7 +169203,7 @@ entries:
   - level: 3
     text: 4.6 Exports
   - level: 2
-    text: 5. Impact on Consumers (blocks-ui)
+    text: 5. Impact on Consumers (mosaic)
   - level: 2
     text: 6. Testing
   - level: 2
@@ -172464,13 +172464,13 @@ entries:
   - level: 3
     text: SSE Integration
   - level: 2
-    text: 'Layer 2: blocks-ui (Domain Components)'
+    text: 'Layer 2: mosaic (Domain Components)'
   - level: 3
     text: Component Catalogue
   - level: 3
     text: Design Philosophy
   - level: 3
-    text: blocks-ui-core
+    text: mosaic-core
   - level: 3
     text: Maturity Levels
   - level: 2
@@ -172504,11 +172504,11 @@ entries:
   - level: 1
     text: Linting (ESLint with strict-type-checked rules)
   - level: 3
-    text: blocks-ui Build
+    text: mosaic Build
   - level: 3
     text: App Integration — Maven SNAPSHOT (ADR-0001)
   - level: 1
-    text: 'In pages (or blocks-ui):'
+    text: 'In pages (or mosaic):'
   - level: 1
     text: 'In consumer app:'
   - level: 2
@@ -172524,7 +172524,7 @@ entries:
   - level: 3
     text: pages Tests
   - level: 3
-    text: blocks-ui Tests
+    text: mosaic Tests
   - level: 3
     text: App Tests
   - level: 2
@@ -174179,7 +174179,7 @@ entries:
   source: project
   headings:
   - level: 1
-    text: Session Workbench — blocks-ui Component Design
+    text: Session Workbench — mosaic Component Design
   - level: 2
     text: Overview
   - level: 2
@@ -174875,7 +174875,7 @@ entries:
   - level: 3
     text: Anchoring composition
   - level: 3
-    text: casehub-blocks (blocks#62)
+    text: casehub-agency (blocks#62)
   - level: 3
     text: qhorus
   - level: 2
@@ -175108,7 +175108,7 @@ entries:
   source: project
   headings:
   - level: 1
-    text: Helpdesk UI Upgrade — blocks-ui Components, Runtime State, Push
+    text: Helpdesk UI Upgrade — mosaic Components, Runtime State, Push
   - level: 2
     text: Summary
   - level: 2
@@ -182728,7 +182728,7 @@ entries:
   source: project
   headings:
   - level: 1
-    text: Session Workbench — blocks-ui Component Design
+    text: Session Workbench — mosaic Component Design
   - level: 2
     text: Overview
   - level: 2
@@ -183673,7 +183673,7 @@ entries:
   - level: 3
     text: Anchoring composition
   - level: 3
-    text: casehub-blocks (blocks#62)
+    text: casehub-agency (blocks#62)
   - level: 3
     text: qhorus
   - level: 2
@@ -202738,7 +202738,7 @@ entries:
   - level: 3
     text: Anchoring composition
   - level: 3
-    text: casehub-blocks (blocks#62)
+    text: casehub-agency (blocks#62)
   - level: 3
     text: qhorus
   - level: 2
@@ -203167,7 +203167,7 @@ entries:
   source: project
   headings:
   - level: 1
-    text: Session Workbench — blocks-ui Component Design
+    text: Session Workbench — mosaic Component Design
   - level: 2
     text: Overview
   - level: 2
@@ -203620,7 +203620,7 @@ entries:
   - level: 3
     text: Anchoring composition
   - level: 3
-    text: casehub-blocks (blocks#62)
+    text: casehub-agency (blocks#62)
   - level: 3
     text: qhorus
   - level: 2
@@ -215019,7 +215019,7 @@ entries:
   - level: 2
     text: Design Decisions
   - level: 2
-    text: Generic Layer — `io.casehub.blocks.summarisation`
+    text: Generic Layer — `io.casehub.agency.summarisation`
   - level: 3
     text: Types
   - level: 3
@@ -217459,12 +217459,12 @@ entries:
   - level: 2
     text: 'D35: Deleted quarkmind-chat-agent classes'
   last_modified: '2026-08-25'
-- path: docs/specs/issue-289-workbench-blocks-ui/2026-08-26-workbench-blocks-ui-design.md
+- path: docs/specs/issue-289-workbench-mosaic/2026-08-26-workbench-mosaic-design.md
   repo: quarkmind
   source: project
   headings:
   - level: 1
-    text: Workbench blocks-ui Migration + Commentary Surfacing
+    text: Workbench mosaic Migration + Commentary Surfacing
   - level: 2
     text: 1. Overview
   - level: 2
@@ -217518,12 +217518,12 @@ entries:
   - level: 2
     text: References
   last_modified: '2026-08-27'
-- path: docs/specs/issue-289-workbench-blocks-ui/decisions.md
+- path: docs/specs/issue-289-workbench-mosaic/decisions.md
   repo: quarkmind
   source: project
   headings:
   - level: 1
-    text: 'Decisions — #289 Workbench blocks-ui migration + commentary surfacing'
+    text: 'Decisions — #289 Workbench mosaic migration + commentary surfacing'
   - level: 2
     text: 'D1: Workbench migration scope'
   - level: 2
@@ -223768,7 +223768,7 @@ entries:
   - level: 2
     text: The review that changed the design
   - level: 2
-    text: What blocks-ui composition looks like in practice
+    text: What mosaic composition looks like in practice
   - level: 2
     text: The enrichment gap
   - level: 2
@@ -224358,7 +224358,7 @@ entries:
   - level: 3
     text: REST Endpoints (additional)
   - level: 2
-    text: New blocks-ui Components
+    text: New mosaic Components
   - level: 3
     text: '`<attck-matrix>`'
   - level: 3
@@ -224586,11 +224586,11 @@ entries:
   - level: 2
     text: Components
   - level: 3
-    text: '`blocks-trust-score-panel` (existing blocks-ui)'
+    text: '`blocks-trust-score-panel` (existing mosaic)'
   - level: 3
-    text: '`blocks-routing-rationale` (existing blocks-ui)'
+    text: '`blocks-routing-rationale` (existing mosaic)'
   - level: 3
-    text: '`blocks-similarity-panel` (existing blocks-ui)'
+    text: '`blocks-similarity-panel` (existing mosaic)'
   - level: 3
     text: '`soc-cbr-summary` (NEW — SOC-specific)'
   - level: 3
@@ -224676,7 +224676,7 @@ entries:
   - level: 3
     text: Expandable row detail
   - level: 2
-    text: 'Component 2: `<blocks-compliance-summary>` (blocks-ui, used directly)'
+    text: 'Component 2: `<blocks-compliance-summary>` (mosaic, used directly)'
   - level: 3
     text: REST endpoint
   - level: 3
@@ -224690,7 +224690,7 @@ entries:
   - level: 3
     text: Query time range
   - level: 2
-    text: 'Component 3: `<blocks-gdpr-erasure-action>` (blocks-ui, used directly)'
+    text: 'Component 3: `<blocks-gdpr-erasure-action>` (mosaic, used directly)'
   - level: 3
     text: Semantic mapping (R1-09 resolution)
   - level: 3
@@ -224737,11 +224737,11 @@ entries:
   - level: 2
     text: 'D2: Compliance summary computation model'
   - level: 2
-    text: 'D3: GDPR erasure flow — use blocks-ui component'
+    text: 'D3: GDPR erasure flow — use mosaic component'
   - level: 2
     text: 'D4: RBAC for erasure endpoint'
   - level: 2
-    text: 'D5: Component strategy — maximise blocks-ui reuse'
+    text: 'D5: Component strategy — maximise mosaic reuse'
   last_modified: '2026-08-23'
 - path: docs/specs/issue-32-incident-summary-createdat/2026-08-18-incident-summary-createdat-design.md
   repo: soc
@@ -231069,7 +231069,7 @@ entries:
   - level: 3
     text: Anchoring composition
   - level: 3
-    text: casehub-blocks (blocks#62)
+    text: casehub-agency (blocks#62)
   - level: 3
     text: qhorus
   - level: 2
@@ -231295,7 +231295,7 @@ entries:
   source: project
   headings:
   - level: 1
-    text: Session Workbench — blocks-ui Component Design
+    text: Session Workbench — mosaic Component Design
   - level: 2
     text: Overview
   - level: 2
@@ -231609,7 +231609,7 @@ entries:
   - level: 3
     text: Anchoring composition
   - level: 3
-    text: casehub-blocks (blocks#62)
+    text: casehub-agency (blocks#62)
   - level: 3
     text: qhorus
   - level: 2
@@ -237040,7 +237040,7 @@ entries:
   - level: 3
     text: Anchoring composition
   - level: 3
-    text: casehub-blocks (blocks#62)
+    text: casehub-agency (blocks#62)
   - level: 3
     text: qhorus
   - level: 2
@@ -237266,7 +237266,7 @@ entries:
   source: project
   headings:
   - level: 1
-    text: Session Workbench — blocks-ui Component Design
+    text: Session Workbench — mosaic Component Design
   - level: 2
     text: Overview
   - level: 2
@@ -237580,7 +237580,7 @@ entries:
   - level: 3
     text: Anchoring composition
   - level: 3
-    text: casehub-blocks (blocks#62)
+    text: casehub-agency (blocks#62)
   - level: 3
     text: qhorus
   - level: 2

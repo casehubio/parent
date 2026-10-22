@@ -303,7 +303,7 @@ Pages (framework-level, domain-agnostic)
     ├── Category index (grouped palette data)
     └── PropertySchema definitions per work stencil (consumed by casehub-diagram-properties)
 
-blocks-ui (domain-specific, consumes Pages)
+mosaic (domain-specific, consumes Pages)
 │
 ├── @casehubio/graph-stencil-case
 │   ├── Case domain adapter
@@ -323,7 +323,7 @@ blocks-ui (domain-specific, consumes Pages)
 │   ├── Drill-down integration (expand SWF Worker → sub-graph of workflow steps)
 │   └── SWF runtime overlay adapter (step execution state, lineage)
 │
-└── casehub-diagram (Lit components for blocks-ui)
+└── casehub-diagram (Lit components for mosaic)
     ├── <casehub-diagram> — layout shell (composition root)
     │   Assembles sub-components, persistence backend config,
     │   case-explorer integration (entity-detail renderer — see §3.5)
@@ -339,7 +339,7 @@ blocks-ui (domain-specific, consumes Pages)
 
 ### 3.5 Relationship to case-explorer
 
-blocks-ui's `case-explorer` (#87) is a registration-based entity browser for case *instances* — runtime entities with lifecycle status, commands, and relationships. The diagram editor visualizes case *definitions* — the YAML structure that defines what a case type can do.
+mosaic's `case-explorer` (#87) is a registration-based entity browser for case *instances* — runtime entities with lifecycle status, commands, and relationships. The diagram editor visualizes case *definitions* — the YAML structure that defines what a case type can do.
 
 They are complementary views of different data:
 
@@ -391,9 +391,9 @@ They are complementary views of different data:
 
 ### 3.3 Stencil definition contract
 
-**`StencilTemplate`** is a `TemplateResult` or `SVGTemplateResult` from lit-html. Stencils are authored in Lit (since they live in blocks-ui). The rendering pipeline in graph-renderer wraps each `StencilTemplate` into a React Flow custom node component — the stencil author never touches React.
+**`StencilTemplate`** is a `TemplateResult` or `SVGTemplateResult` from lit-html. Stencils are authored in Lit (since they live in mosaic). The rendering pipeline in graph-renderer wraps each `StencilTemplate` into a React Flow custom node component — the stencil author never touches React.
 
-**`PropertySchema`** is a standard JSON Schema object scoped to the stencil's YAML element. It reuses the CaseDefinition.yaml JSON Schema `$defs` directly — e.g., the Binding stencil's PropertySchema is the `#/$defs/Binding` schema subset. Complex types (HumanTask with `oneOf` constraints, Trigger with exclusive `oneOf`) are handled by JSON Schema's existing composition keywords. Phase 3's schema-driven form generation consumes PropertySchema via the same pipeline as blocks-ui's existing `schema-form` component in pages-primitives.
+**`PropertySchema`** is a standard JSON Schema object scoped to the stencil's YAML element. It reuses the CaseDefinition.yaml JSON Schema `$defs` directly — e.g., the Binding stencil's PropertySchema is the `#/$defs/Binding` schema subset. Complex types (HumanTask with `oneOf` constraints, Trigger with exclusive `oneOf`) are handled by JSON Schema's existing composition keywords. Phase 3's schema-driven form generation consumes PropertySchema via the same pipeline as mosaic's existing `schema-form` component in pages-primitives.
 
 ```typescript
 import { TemplateResult, SVGTemplateResult } from 'lit-html';
@@ -660,7 +660,7 @@ Phase 1B (graph-renderer) ──┤ parallel
 
 1. **SWF visual language** — should the SWF drill-down render workflow steps in CaseHub's visual language (unified) or adopt SWF community visual conventions (familiar to SWF users)? Recommendation: CaseHub visual language for consistency, since SWF is always experienced through CaseHub.
 
-2. **blocks-ui package structure** — new workspace packages (recommended) vs subdirectories in existing blocks-ui structure. Recommendation: new workspace packages for type-safe boundaries and independent consumption.
+2. **mosaic package structure** — new workspace packages (recommended) vs subdirectories in existing mosaic structure. Recommendation: new workspace packages for type-safe boundaries and independent consumption.
 
 3. **@xyflow/lit timeline** — when to invest in a native Lit binding for xyflow. Not before Phase 4 is complete. Could be contributed upstream to the xyflow project.
 

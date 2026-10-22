@@ -61,14 +61,14 @@
 **Alternatives:**
 - Manual EventConnection from pages-data — more boilerplate, duplicates what EventStreamController provides
 - loadSite() with push data sources — the pages DSL pipeline handles push natively, but the scenario controller requires imperative interactive UI (step pacing, text preview, form population) that doesn't fit the declarative pages model
-**Rationale:** EventStreamController auto-manages WebSocket lifecycle (connect on hostConnected, disconnect on hostDisconnected), triggers requestUpdate() on events, exposes `latest`, `all`, and `status`. Designed for exactly this use case. Now lives in pages-component (moved from blocks-ui-core).
+**Rationale:** EventStreamController auto-manages WebSocket lifecycle (connect on hostConnected, disconnect on hostDisconnected), triggers requestUpdate() on events, exposes `latest`, `all`, and `status`. Designed for exactly this use case. Now lives in pages-component (moved from mosaic-core).
 **Trade-offs:** Commits to Lit as the component framework. This is a continuation of the existing helpdesk app (already Lit/Vite) and is explicit here.
 **Exploration:** quick
 **Status:** revised (R1-01/R1-02: loadSite() bypass made explicit with rationale; Lit commitment documented)
 
 ## D2: Frontend Architecture
 
-**Choice:** Single Lit shell component composing blocks-ui/pages components inline
+**Choice:** Single Lit shell component composing mosaic/pages components inline
 **Alternatives:**
 - loadSite() with pages DSL — the platform's primary rendering API, but the scenario controller panel requires imperative interactive elements (step-by-step pacing, form population, push event observation) that don't fit the declarative pages component tree model
 - Split into sub-components — more modular but adds indirection that obscures learning

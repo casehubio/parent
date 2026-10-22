@@ -1,4 +1,4 @@
-# Helpdesk UI Upgrade — blocks-ui Components, Runtime State, Push
+# Helpdesk UI Upgrade — mosaic Components, Runtime State, Push
 
 **Issue:** casehubio/parent#412
 **Branch:** `issue-408-scenario-engine`
@@ -6,7 +6,7 @@
 
 ## Summary
 
-Replace the vanilla Lit ops dashboard in `casehub-examples/helpdesk` with platform components (blocks-ui, pages) and real-time push via the pages-push WebSocket wire protocol. Add a scenario controller panel for step-by-step demo pacing.
+Replace the vanilla Lit ops dashboard in `casehub-examples/helpdesk` with platform components (mosaic, pages) and real-time push via the pages-push WebSocket wire protocol. Add a scenario controller panel for step-by-step demo pacing.
 
 ## Goals
 
@@ -128,14 +128,14 @@ The structured hierarchy demonstrates the platform's trie-based topic matching (
 
 ### Framework
 
-Lit + Vite (continuation of existing helpdesk app). The shell component is a single `LitElement` that composes blocks-ui and pages components inline.
+Lit + Vite (continuation of existing helpdesk app). The shell component is a single `LitElement` that composes mosaic and pages components inline.
 
 ### Dependencies (new)
 
 - `@casehubio/pages-component` — `EventStreamController` (Lit Reactive Controller for WebSocket push)
-- `@casehubio/blocks-ui-kpi-metric-row` — KPI metric cards
+- `@casehubio/mosaic-kpi-metric-row` — KPI metric cards
 - `@casehubio/pages-table` — interactive data table
-- `@casehubio/blocks-ui-blocks-timeline` — strategy-driven timeline
+- `@casehubio/mosaic-blocks-timeline` — strategy-driven timeline
 
 Package names must be verified against each package's `package.json` `name` field — directory names don't always match (GE-20260803-17fc03).
 
@@ -382,10 +382,10 @@ User clicks "Resolve" on ticket (dashboard or controller)
 
 | File | Change |
 |------|--------|
-| `package.json` | Add blocks-ui, pages-component, pages-table dependencies |
-| `src/helpdesk-app.ts` | Rewrite — push connection, blocks-ui/pages component composition, scenario controller |
+| `package.json` | Add mosaic, pages-component, pages-table dependencies |
+| `src/helpdesk-app.ts` | Rewrite — push connection, mosaic/pages component composition, scenario controller |
 | `src/pipeline-strategy.ts` | New — HelpdeskPipelineStrategy for blocks-timeline |
-| `vite.config.ts` | Add Vite aliases for @casehubio/* packages (resolve from source trees, following blocks-ui-examples pattern) |
+| `vite.config.ts` | Add Vite aliases for @casehubio/* packages (resolve from source trees, following mosaic-examples pattern) |
 
 ---
 

@@ -43,6 +43,7 @@ declare -A REPO_OVERRIDE=(
 # quarkus-langchain4j is under a different GitHub org
 declare -A ORG_OVERRIDE=(
   [quarkus-langchain4j]="quarkusio"
+  [casehub-mosaic]="mdproctor"
   [fsitrading]="mdproctor"
   [soc]="mdproctor"
 )

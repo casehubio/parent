@@ -2,7 +2,7 @@
 
 > **Scope:** The 4 CBR steps (Retrieve, Reuse, Revise, Retain) and their platform homes
 > **Audience:** All
-> **Key repos:** casehub-neocortex (retrieval), casehub-engine (reuse), casehub-ledger (retain), casehub-blocks (feature extraction)
+> **Key repos:** casehub-neocortex (retrieval), casehub-engine (reuse), casehub-ledger (retain), casehub-agency (feature extraction)
 
 ## Overview
 
@@ -29,7 +29,7 @@ Problem (CaseFile features)
         ↓ top-k cases
 ┌──────────────────────────────┐
 │ 2. REUSE                     │  casehub-engine
-│    Select solution from      │  casehub-blocks
+│    Select solution from      │  casehub-agency
 │    retrieved cases           │  (routing strategies)
 └──────────────────────────────┘
         ↓ chosen solution
@@ -93,7 +93,7 @@ Problem (CaseFile features)
 
 ### 2. Reuse — Select a Solution from Retrieved Cases
 
-**Owner:** casehub-engine (worker routing), casehub-blocks (implementation routing, in progress)
+**Owner:** casehub-engine (worker routing), casehub-agency (implementation routing, in progress)
 
 Two distinct sub-problems:
 
@@ -160,7 +160,7 @@ The LLM sees this evidence and makes the final selection.
 
 ### 3b. Revise (Outcome Feedback) — Record and Learn from Outcomes
 
-**Owner:** Application tier + casehub-blocks
+**Owner:** Application tier + casehub-agency
 
 **Key classes:**
 - `RoutingOutcomeRecorder` (blocks) — records agent routing outcomes into CBR memory

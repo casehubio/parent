@@ -13,11 +13,11 @@ Org-level parent POM and BOM for the [casehubio](https://github.com/casehubio) e
 | [casehub-worker](https://github.com/casehubio/casehub-worker) | [![casehub-worker](https://github.com/casehubio/casehub-worker/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/casehub-worker/actions/workflows/publish.yml) |
 | [casehub-ledger](https://github.com/casehubio/ledger) | [![casehub-ledger](https://github.com/casehubio/ledger/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/ledger/actions/workflows/publish.yml) |
 | [casehub-connectors](https://github.com/casehubio/connectors) | [![casehub-connectors](https://github.com/casehubio/connectors/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/connectors/actions/workflows/publish.yml) |
-| [casehub-blocks](https://github.com/casehubio/blocks) | [![casehub-blocks](https://github.com/casehubio/blocks/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/blocks/actions/workflows/publish.yml) |
+| [casehub-agency](https://github.com/casehubio/agency) | [![casehub-agency](https://github.com/casehubio/agency/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/agency/actions/workflows/publish.yml) |
 | [casehub-work](https://github.com/casehubio/work) | [![casehub-work](https://github.com/casehubio/work/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/work/actions/workflows/publish.yml) |
 | [casehub-qhorus](https://github.com/casehubio/qhorus) | [![casehub-qhorus](https://github.com/casehubio/qhorus/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/qhorus/actions/workflows/publish.yml) |
 | [casehub-pages](https://github.com/casehubio/casehub-pages) | [![casehub-pages](https://github.com/casehubio/casehub-pages/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/casehubio/casehub-pages/actions/workflows/ci.yml) |
-| [casehub-blocks-ui](https://github.com/casehubio/blocks-ui) | [![casehub-blocks-ui](https://github.com/casehubio/blocks-ui/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/casehubio/blocks-ui/actions/workflows/ci.yml) |
+| [casehub-mosaic](https://github.com/mdproctor/casehub-mosaic) | [![casehub-mosaic](https://github.com/mdproctor/casehub-mosaic/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/mdproctor/casehub-mosaic/actions/workflows/ci.yml) |
 | [casehub-eidos](https://github.com/casehubio/eidos) | [![casehub-eidos](https://github.com/casehubio/eidos/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/eidos/actions/workflows/publish.yml) |
 | [casehub-neocortex](https://github.com/casehubio/neocortex) | [![casehub-neocortex](https://github.com/casehubio/neocortex/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/neocortex/actions/workflows/publish.yml) |
 | [casehub-iot](https://github.com/casehubio/iot) | [![casehub-iot](https://github.com/casehubio/iot/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/iot/actions/workflows/publish.yml) |
@@ -157,7 +157,7 @@ Each project in the ecosystem has its own Maven parent (casehub projects use int
 | `casehub-work` | `io.casehub` | `casehubio/work` | ledger, connectors |
 | `casehub-qhorus` | `io.casehub` | `casehubio/qhorus` | ledger, work |
 | `casehub-pages` | TypeScript/Yarn | `casehubio/casehub-pages` | — (runtime iframe embedding) |
-| `casehub-blocks-ui` | TypeScript/Yarn | `casehubio/blocks-ui` | pages (consumes pages-data, pages-component, pages-table) |
+| `casehub-mosaic` | TypeScript/Yarn | `mdproctor/casehub-mosaic` | pages (consumes pages-data, pages-component, pages-table) |
 | `casehub-neocortex` | `io.casehub` | `casehubio/neocortex` | platform |
 | `casehub-iot` | `io.casehub` | `casehubio/iot` | platform |
 | `casehub-desiredstate` | `io.casehub` | `casehubio/casehub-desiredstate` | platform |

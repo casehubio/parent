@@ -14,7 +14,7 @@ CaseHub has grown to 32 repos, ~206 BOM dependencies, and 27 repo deep-dives. Th
 
 1. **New capabilities undocumented.** Platform shipped a full notification/subscription system (platform#142-149). CBR integration now spans engine, neocortex, clinical, blocks. Blocks (Java) owns shared routing strategies, compliance record types, feature extraction SPIs, and agentic orchestration patterns. None of this is in PLATFORM.md or any single discovery point.
 
-2. **UI layer invisible.** Five+ apps now have web UIs (AML, Claudony, Drafthouse, IoT, DevTown, Connectors). `casehub-pages` provides foundation web component infrastructure. `casehub-blocks-ui` provides 14 shared domain components. There is no UI architecture document, no `pages` deep-dive, and PLATFORM.md is entirely backend-focused. An LLM working in AML doesn't know `blocks-ui`'s `work-item-inbox` or `trust-score-panel` exist.
+2. **UI layer invisible.** Five+ apps now have web UIs (AML, Claudony, Drafthouse, IoT, DevTown, Connectors). `casehub-pages` provides foundation web component infrastructure. `casehub-mosaic` provides 14 shared domain components. There is no UI architecture document, no `pages` deep-dive, and PLATFORM.md is entirely backend-focused. An LLM working in AML doesn't know `mosaic`'s `work-item-inbox` or `trust-score-panel` exist.
 
 3. **Stale names and references.** CorpusStore → EmbeddingIngestor, casehub-neural-text → casehub-neocortex, melviz → casehub-pages, WorkBroker → AgentRoutingStrategy. Deep-dives reference types that no longer exist.
 
@@ -28,7 +28,7 @@ After this restructuring:
 
 1. **An LLM starting a new app (e.g. SOC) can discover in <200 lines of reading what exists across the entire platform** — shared Java patterns, shared UI components, platform SPIs to implement, and how other apps solved the same problems.
 
-2. **An LLM in any app repo never rebuilds something that already exists in blocks, blocks-ui, or another app** — because the discovery index and app-builder guide make existing capabilities findable before the LLM starts designing.
+2. **An LLM in any app repo never rebuilds something that already exists in blocks, mosaic, or another app** — because the discovery index and app-builder guide make existing capabilities findable before the LLM starts designing.
 
 3. **An LLM doing a spec review can check platform coherence by loading ~150 lines (INDEX.md) + the relevant topic chunks (~200-300 lines each)** instead of all of PLATFORM.md (685 lines of dense, cross-cutting content where most is irrelevant to the task at hand). The skill integration is efficient — the LLM loads only the chunks that matter.
 
@@ -48,7 +48,7 @@ After this restructuring:
 
 **A4. Cross-app learning via a pattern catalogue is more valuable than per-repo isolation.** We assume that apps benefit from seeing how other apps solved problems. This creates a maintenance cost — every new app capability should be reflected in the catalogue. Is this cost worth the coherence benefit?
 
-**A5. The extraction placement criteria (blocks scope) are correct and stable.** We rely on the existing blocks scope criteria (AI/LLM patterns, classical AI, cross-foundation composition) and the blocks-ui scope (platform-concept visualization). If these criteria are wrong, the guides will give wrong placement advice.
+**A5. The extraction placement criteria (blocks scope) are correct and stable.** We rely on the existing blocks scope criteria (AI/LLM patterns, classical AI, cross-foundation composition) and the mosaic scope (platform-concept visualization). If these criteria are wrong, the guides will give wrong placement advice.
 
 **A6. PLATFORM.md can be retired as a redirect.** We assume no external consumer depends on PLATFORM.md being a single file. GitHub raw URLs to PLATFORM.md exist in every repo's CLAUDE.md. The redirect must not break these.
 
@@ -113,7 +113,7 @@ docs/
 │   ├── notifications.md            # NEW — subscription engine, delivery pipeline
 │   ├── cbr.md                      # CBR capability map (absorbs CBR-CAPABILITY.md)
 │   ├── routing.md                  # NEW — routing strategies, 4-layer ownership
-│   ├── ui-architecture.md          # NEW — pages → blocks-ui → app UI layering
+│   ├── ui-architecture.md          # NEW — pages → mosaic → app UI layering
 │   ├── privacy.md                  # GDPR erasure, PII sanitisation
 │   ├── overlap-risks.md            # Known semantic collisions + placement violations
 │   └── protocols.md                # Protocol summary, audience mapping, garden links
@@ -223,14 +223,14 @@ Skills that currently say "consult PLATFORM.md" get updated to say "consult INDE
 - **Pages** — web component framework, data pipelines, layouts
   → [repos/casehub-pages.md]
 - **Blocks UI** — 14 shared domain components (work items, trust, SLA)
-  → [repos/casehub-blocks-ui.md]
-- **UI Architecture** — pages → blocks-ui → app UI layering
+  → [repos/casehub-mosaic.md]
+- **UI Architecture** — pages → mosaic → app UI layering
   → [platform/ui-architecture.md]
   → protocols: [custom-event-shadow-dom], [lit-immutable-collections]
 
 ## Shared Java Patterns
 - **Blocks** — agentic orchestration, routing, oversight, conversation
-  → [repos/casehub-blocks.md]
+  → [repos/casehub-agency.md]
   → scope criteria, consolidation epic, placement decisions
 
 ## Persistence & Data
@@ -329,13 +329,13 @@ The app-builder guide is the anti-blind-spot document. It prevents duplication b
 
 1. **The Pattern** — bring your domain, use the platform, modify nothing below. Link to boundary-rules.md. Link to AGENTIC-HARNESS-GUIDE.md for session conventions.
 
-2. **App Capability Matrix** — grid of all apps × all capabilities, showing layer numbers and completion status. Two-part: shared building blocks (blocks + blocks-ui) first, then per-app implementation status. "Starting a new app?" decision tree based on domain similarity.
+2. **App Capability Matrix** — grid of all apps × all capabilities, showing layer numbers and completion status. Two-part: shared building blocks (blocks + mosaic) first, then per-app implementation status. "Starting a new app?" decision tree based on domain similarity.
 
 3. **Pattern Catalogue** — organized by concern (case types, trust routing, oversight gates, web UI composition, GDPR erasure, etc.). Each entry is compact:
-   - **Shared pattern** — what blocks/blocks-ui/platform provides (one line + link to topic chunk)
+   - **Shared pattern** — what blocks/mosaic/platform provides (one line + link to topic chunk)
    - **Per-app references** — brief links to the relevant deep-dive sections (no inline details)
 
-4. **Where Does a Reusable Pattern Belong?** — placement criteria table covering blocks (Java), blocks-ui (TypeScript), platform, engine, and app repos. References blocks scope criteria. Includes worked examples from consolidation epic #28.
+4. **Where Does a Reusable Pattern Belong?** — placement criteria table covering blocks (Java), mosaic (TypeScript), platform, engine, and app repos. References blocks scope criteria. Includes worked examples from consolidation epic #28.
 
 5. **Protocols for App Builders** — subset of protocols relevant to app development, grouped by concern.
 
@@ -432,7 +432,7 @@ The restructuring label is accurate for the overall shape (monolith → chunks),
 | `docs/platform/notifications.md` | Subscription engine, delivery (NEW content) | ~200 |
 | `docs/platform/cbr.md` | CBR capability map (absorbs CBR-CAPABILITY.md) | ~200 |
 | `docs/platform/routing.md` | Routing strategies, 4-layer ownership (NEW content) | ~250 |
-| `docs/platform/ui-architecture.md` | pages → blocks-ui → app layering (NEW content) | ~300 |
+| `docs/platform/ui-architecture.md` | pages → mosaic → app layering (NEW content) | ~300 |
 | `docs/platform/privacy.md` | GDPR erasure, PII sanitisation | ~100 |
 | `docs/platform/overlap-risks.md` | Known collisions + placement violations | ~150 |
 | `docs/platform/protocols.md` | Protocol summary, audience mapping | ~150 |
@@ -442,8 +442,8 @@ The restructuring label is accurate for the overall shape (monolith → chunks),
 
 | File | Status | What's stale or missing |
 |---|---|---|
-| `casehub-blocks.md` | **UPDATE** | Says "scaffold" — needs full module structure, scope criteria, consumers, consolidation epic |
-| `casehub-blocks-ui.md` | **UPDATE** | Missing notification-inbox, data-table, work-item-workbench, maturity levels |
+| `casehub-agency.md` | **UPDATE** | Says "scaffold" — needs full module structure, scope criteria, consumers, consolidation epic |
+| `casehub-mosaic.md` | **UPDATE** | Missing notification-inbox, data-table, work-item-workbench, maturity levels |
 | `casehub-platform.md` | **UPDATE** | Missing notification/subscription system, EventTypeRegistry, DataSource SPI |
 | `casehub-engine.md` | **UPDATE** | Missing CBR bridge, types/labels, RoutingOutcomeRecorder, CaseDefinition classification |
 | `casehub-neocortex.md` | **UPDATE** | Stale names (CorpusStore→EmbeddingIngestor), missing Matryoshka, quantization, CBR reconciliation |
@@ -494,7 +494,7 @@ The restructuring label is accurate for the overall shape (monolith → chunks),
 
 | File | Change |
 |---|---|
-| `APPLICATIONS.md` | Add UI status column, blocks-ui usage, cross-references to pattern catalogue |
+| `APPLICATIONS.md` | Add UI status column, mosaic usage, cross-references to pattern catalogue |
 | `ARCHITECTURE.md` | Update header — replace "Supplement to PLATFORM.md" with standalone description referencing the new structure |
 | `arc42stories-casehub-profile.md` | Remap 6 section-specific PLATFORM.md references to new chunk locations (see §arc42stories-casehub-profile.md Remapping below) |
 | `config-architecture.md` | Remap all PLATFORM.md topic ownership entries to their new chunk locations (see §config-architecture.md Remapping below) |
@@ -538,7 +538,7 @@ Every repo's CLAUDE.md currently references PLATFORM.md. After restructuring:
 
 **Platform/foundation repos** (platform, engine, ledger, work, qhorus, eidos, connectors, neocortex, workers, worker, iot, ras, desiredstate, ops, openclaw, flow) → point to INDEX.md + building-platform.md + own deep-dive
 
-**Shared pattern repos** (blocks, blocks-ui, pages) → point to INDEX.md + building-platform.md + platform/ui-architecture.md + own deep-dive
+**Shared pattern repos** (blocks, mosaic, pages) → point to INDEX.md + building-platform.md + platform/ui-architecture.md + own deep-dive
 
 **App repos** (aml, clinical, devtown, life, drafthouse, quarkmind, soc, fsitrading) → point to INDEX.md + building-apps.md + own deep-dive
 

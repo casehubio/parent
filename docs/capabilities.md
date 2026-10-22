@@ -81,8 +81,8 @@
 
 | Capability | What it does | Consumer chunk | Repo |
 |------------|-------------|----------------|------|
-| Agentic orchestration | 5 SPIs, 8 topologies (supervisor, sequence, loop, parallel, voting, debate, HTN), YAML surface | repos/casehub-blocks/capabilities/orchestration.md | blocks |
-| Conversation protocol | Epistemic common ground, convergence detection, structured deliberation | repos/casehub-blocks/capabilities/conversation.md | blocks |
+| Agentic orchestration | 5 SPIs, 8 topologies (supervisor, sequence, loop, parallel, voting, debate, HTN), YAML surface | repos/casehub-agency/capabilities/orchestration.md | blocks |
+| Conversation protocol | Epistemic common ground, convergence detection, structured deliberation | repos/casehub-agency/capabilities/conversation.md | blocks |
 | Social cognition | 90+ types — mood, drives, narrative identity, goals, emergence, all rendering as PromptSections | — | blocks |
 | BDI agent intelligence | Beliefs, intentions, coalitions, judgment framework | — | blocks |
 | Prompt optimisation | Variant generation, few-shot injection, runtime customisation | — | blocks |
@@ -117,9 +117,9 @@
 | Visual builder | Dashboard authoring workbench with document model and component catalog (pre-alpha) | — | pages |
 | Step orchestration | Barrier, signal, quorum, correlation primitives; 13-layer DecoratorChain pipeline | — | pages |
 | Data visualisation | 15 chart types (heatmap, density, treemap, etc.), timeline, statistic components | — | pages |
-| Domain components | 60 shared components across 9 packages (work items, trust, SLA, channel, agent personality, evolution) | repos/casehub-blocks-ui/capabilities/domain-components.md | blocks-ui |
-| Agent personality UI | Visual agent identity configuration: catalog → avatar → manifest → profile | — | blocks-ui |
-| Evolution conductor | Operational dashboard for gated agent improvement streams | — | blocks-ui |
+| Domain components | 60 shared components across 9 packages (work items, trust, SLA, channel, agent personality, evolution) | repos/casehub-mosaic/capabilities/domain-components.md | mosaic |
+| Agent personality UI | Visual agent identity configuration: catalog → avatar → manifest → profile | — | mosaic |
+| Evolution conductor | Operational dashboard for gated agent improvement streams | — | mosaic |
 
 ---
 

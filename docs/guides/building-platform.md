@@ -4,7 +4,7 @@
 > **Scope:** Navigation, boundary rules, SPI design, capability addition checklist
 > **See also:** [Building Apps](building-apps.md) for app-tier development
 
-This is the lighter companion to building-apps.md. If you're extending casehub-platform, ledger, work, qhorus, engine, eidos, neocortex, connectors, workers, iot, ras, desiredstate, blocks, blocks-ui, pages, or openclaw — this is your entry point.
+This is the lighter companion to building-apps.md. If you're extending casehub-platform, ledger, work, qhorus, engine, eidos, neocortex, connectors, workers, iot, ras, desiredstate, blocks, mosaic, pages, or openclaw — this is your entry point.
 
 ---
 
@@ -97,7 +97,7 @@ All platform builders must know the cross-cutting rules. These apply regardless 
 | Agent Mesh | [platform/agent-mesh.md](../platform/agent-mesh.md) — 3-channel normative layout, mesh participation |
 | Routing | [platform/routing.md](../platform/routing.md) — trust-weighted, semantic, CBR-evidence agent selection |
 | CBR | [platform/cbr.md](../platform/cbr.md) — case-based reasoning capability map |
-| UI Architecture | [platform/ui-architecture.md](../platform/ui-architecture.md) — pages → blocks-ui → app UI layering |
+| UI Architecture | [platform/ui-architecture.md](../platform/ui-architecture.md) — pages → mosaic → app UI layering |
 
 ---
 

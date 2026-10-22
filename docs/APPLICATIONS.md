@@ -22,11 +22,11 @@ The pattern: **bring your domain, use the platform, modify nothing below.**
 
 ## Repository Map
 
-| Repo | GitHub | Domain | UI | blocks-ui Components | Status |
+| Repo | GitHub | Domain | UI | mosaic Components | Status |
 |------|--------|--------|-----|---------------------|--------|
 | `casehub-devtown` | [casehubio/devtown](https://github.com/casehubio/devtown) | AI-assisted software development — PR review, merge queue with batch composition/bisection/SLA, trust-weighted reviewer routing, CBR-enhanced matching | Web UI (Quinoa) | work-item-inbox, trust-score-panel, channel-activity | Active |
 | `casehub-aml` | [casehubio/aml](https://github.com/casehubio/aml) | Anti-money laundering investigation — FinCEN-compliant audit, SAR workflow, adaptive investigation paths, GDPR Art.17 erasure | Web UI (Quinoa) | work-item-inbox, accountability-view, investigation-view | Active |
-| `casehub-clinical` | [casehubio/clinical](https://github.com/casehubio/clinical) | Clinical trial coordination — GCP/FDA compliance, multi-site sub-cases, adverse event escalation, IND deadline enforcement, GDPR patient-scoped erasure | Web UI (Quinoa + blocks-ui) | approval-gate, sla-indicator, kpi-metric-row, data-table, work-item-inbox | Active |
+| `casehub-clinical` | [casehubio/clinical](https://github.com/casehubio/clinical) | Clinical trial coordination — GCP/FDA compliance, multi-site sub-cases, adverse event escalation, IND deadline enforcement, GDPR patient-scoped erasure | Web UI (Quinoa + mosaic) | approval-gate, sla-indicator, kpi-metric-row, data-table, work-item-inbox | Active |
 | `casehub-life` | [casehubio/life](https://github.com/casehubio/life) | Personal life automation — household coordination, health, finance, elder care, legal compliance; 6 case hubs (appointment, home maintenance, travel, care, contractor, financial review); AgentExec direct-call integration, GDPR actor erasure | No UI yet | — | Layers 2–6, 8 complete (work + qhorus + ledger + engine + trust routing + CBR) |
 | `casehub-drafthouse` | [casehubio/drafthouse](https://github.com/casehubio/drafthouse) | MCP-driven document review + multi-participant LLM debate. 7 brainstorming MCP tools, 10 debate MCP tools, structured design-review output, document timeline, context meter, export. Multi-LLM reviewer registry (Eidos identity model). Debate session persistence with pluggable Store SPI. | Web UI (Quinoa + casehub-pages) | — | Active |
 | `quarkmind` | [casehubio/quarkmind](https://github.com/casehubio/quarkmind) | StarCraft II game AI — living lab proving the CaseHub harness pattern at millisecond game-loop granularity outside regulated domains. Pattern classifier, phase-adaptive dominance, milestone-based trust scoring. | SC2 client integration | — | Active |

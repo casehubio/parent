@@ -50,7 +50,7 @@
 
     <!-- Application modules (build/modules-applications.csv) -->
     <module>../openclaw</module>
-    <module>../devtown</module>
+    <!-- <module>../devtown</module> temporarily excluded: corrupt pom.xml on active branch -->
     <module>../aml</module>
     <module>../clinical</module>
     <module>../life</module>

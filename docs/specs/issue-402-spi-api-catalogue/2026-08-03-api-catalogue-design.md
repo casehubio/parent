@@ -230,7 +230,7 @@ The generation step:
 3. `git diff --quiet docs/guides/api/` — only commit if content changed
 4. If changed: `git commit` with `[skip ci]` in the message (prevents re-triggering)
 
-**TypeScript repos (pages, blocks-ui):**
+**TypeScript repos (pages, mosaic):**
 
 Add a `typedoc` npm script with `typedoc-plugin-markdown`. Configuration in `typedoc.json` within each repo:
 - Entry points (barrel exports from `index.ts`)
@@ -240,7 +240,7 @@ Add a `typedoc` npm script with `typedoc-plugin-markdown`. Configuration in `typ
 Same clean-slate + diff-gate + `[skip ci]` pattern as Java.
 
 **TypeScript-specific considerations:**
-- blocks-ui is a monorepo with workspaces (`packages/*/src/index.ts`). TypeDoc supports multiple entry points — configure one per workspace package.
+- mosaic is a monorepo with workspaces (`packages/*/src/index.ts`). TypeDoc supports multiple entry points — configure one per workspace package.
 - TypeDoc resolves types from `tsconfig.json`. Ensure `tsconfig.json` includes all packages that should be documented.
 - Web component metadata (attributes, events, slots) may require a TypeDoc plugin or custom theme to extract from decorators/static fields.
 
@@ -358,7 +358,7 @@ No duplication between layers. Guides explain intent. API catalogue documents co
 ## Implementation Sequence
 
 1. **Evaluate Java doclet** — run jmarkdoc and neuhalje against engine-api. Check output quality, determinism, type hierarchy inclusion, JDK compatibility.
-2. **Evaluate TypeDoc** — run typedoc + typedoc-plugin-markdown against pages. Check output quality, determinism, monorepo support (blocks-ui workspaces), web component metadata extraction.
+2. **Evaluate TypeDoc** — run typedoc + typedoc-plugin-markdown against pages. Check output quality, determinism, monorepo support (mosaic workspaces), web component metadata extraction.
 3. **Configure one Java repo** (engine) — add doclet config to engine-api pom.xml, generate docs/guides/api/, verify output, commit
 4. **Configure one TS repo** (pages) — add typedoc config, generate docs/guides/api/, verify output, commit
 5. **Update sync-guides.sh gate** — add `docs/guides/api/` directory check to the gate condition
@@ -366,7 +366,7 @@ No duplication between layers. Guides explain intent. API catalogue documents co
 7. **Build cross-repo overlay** — Python script reading aggregated doclet output, generating cross-repo-implementations.md
 8. **Write docs/api/INDEX.md** — platform-wide API discovery index linking to docs/repos/*/api/
 9. **Roll out to remaining Java repos** — add doclet config per repo. Verify each repo's `-api` module or package filter is correct before configuring.
-10. **Roll out to remaining TS repos** (blocks-ui) — add typedoc config
+10. **Roll out to remaining TS repos** (mosaic) — add typedoc config
 11. **Per-repo CI** — add generation step to each repo's workflow (source-path-filtered trigger, `[skip ci]` commits, `contents: write` permission)
 12. **Parent CI workflow** — add generate-api-catalogue.yml (sync + overlay + index)
 13. **Update docs/INDEX.md and consumer-index.md** — link to new API catalogue

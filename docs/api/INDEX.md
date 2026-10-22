@@ -19,7 +19,7 @@
 | **worker** | 20 | Worker, Capability, WorkerFunction, WorkerResult, WorkerScope | [API](../repos/casehub-worker/api/) |
 | **neocortex** | 225 | InferenceModel, CaseRetriever, RAG pipelines, CBR, agent memory | [API](../repos/casehub-neocortex/api/) |
 | **platform** | 39 | CurrentPrincipal, PreferenceProvider, notifications, expressions, ACL | [API](../repos/casehub-platform/api/) |
-| **blocks** | 253 | Agentic orchestration, conversation protocol, routing strategies, summarisation | [API](../repos/casehub-blocks/api/) |
+| **blocks** | 253 | Agentic orchestration, conversation protocol, routing strategies, summarisation | [API](../repos/casehub-agency/api/) |
 
 ### Infrastructure
 

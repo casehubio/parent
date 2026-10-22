@@ -30,9 +30,9 @@ Four tiers, always kept separate:
 | `casehub-iot` | [casehubio/iot](https://github.com/casehubio/iot) | Typed IoT device abstraction layer — DeviceEntity hierarchy (Matter-aligned) | Foundation |
 | `casehub-ras` | [casehubio/casehub-ras](https://github.com/casehubio/casehub-ras) | Reticular Activating System — situational awareness and reactive case creation | Foundation |
 | `casehub-desiredstate` | [casehubio/casehub-desiredstate](https://github.com/casehubio/casehub-desiredstate) | Generic desired-state management runtime | Foundation |
-| `casehub-blocks` | [casehubio/blocks](https://github.com/casehubio/blocks) | Agentic orchestration patterns (routing, decomposition, execution drivers), trust routing, oversight gates, summarisation, conversation management | Foundation-adjacent |
+| `casehub-agency` | [casehubio/agency](https://github.com/casehubio/agency) | Agentic orchestration patterns (routing, decomposition, execution drivers), trust routing, oversight gates, summarisation, conversation management | Foundation-adjacent |
 | `casehub-langchain4j` | [casehubio/casehub-langchain4j](https://github.com/casehubio/casehub-langchain4j) | Enterprise enrichment for LangChain4j — audit, tenancy, governance, hybrid search. Complementary, not competitive. | Integration |
-| `casehub-blocks-ui` | [casehubio/blocks-ui](https://github.com/casehubio/blocks-ui) | 21 shared UI components — work-item inbox/workbench, trust-score-panel, channel-activity, approval-gate, SLA indicators, compliance, GDPR erasure, similarity, KPI metrics | Foundation-adjacent |
+| `casehub-mosaic` | [casehubio/mosaic](https://github.com/casehubio/mosaic) | 21 shared UI components — work-item inbox/workbench, trust-score-panel, channel-activity, approval-gate, SLA indicators, compliance, GDPR erasure, similarity, KPI metrics | Foundation-adjacent |
 | `casehub-engine` | [casehubio/engine](https://github.com/casehubio/engine) | Hybrid choreography+blackboard orchestration engine | Orchestration |
 | `claudony` | [casehubio/claudony](https://github.com/casehubio/claudony) | Remote Claude CLI sessions + unified ecosystem dashboard | Integration |
 | `casehub-openclaw` | [casehubio/openclaw](https://github.com/casehubio/openclaw) | CaseHub × OpenClaw integration | Integration |
@@ -68,16 +68,16 @@ casehub-parent              (BOM — publish first; all others import it)
   casehub-engine            (depends on casehub-work-core + optionally ledger + eidos-api)
   casehub-ras               (depends on casehub-platform-api + engine-api)
   casehub-desiredstate      (depends on casehub-platform-api)
-  casehub-blocks            (depends on qhorus-api, work-api, engine-api)
+  casehub-agency            (depends on qhorus-api, work-api, engine-api)
   casehub-langchain4j       (depends on platform, ledger, neocortex, engine — LC4j enterprise enrichment)
-  casehub-blocks-ui         (TypeScript/Yarn; depends on casehub-pages)
+  casehub-mosaic         (TypeScript/Yarn; depends on casehub-pages)
   casehub-engine-ai         (optional — depends on engine-api)
   casehub-engine-flow       (optional — depends on engine-common only)
   claudony                  (depends on qhorus + implements engine SPIs)
   casehub-openclaw          (depends on qhorus + engine SPIs)
   casehub-workers           (depends on engine-api + engine-common)
   casehub-ops               (depends on desiredstate + platform-api)
-  casehub-chat-app          (depends on connectors + pages + blocks-ui)
+  casehub-chat-app          (depends on connectors + pages + mosaic)
 
   — Application tier (opt-in, off by default in CI) —
   casehub-life

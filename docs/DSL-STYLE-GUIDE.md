@@ -331,9 +331,9 @@ appear in blocks (agentic orchestration).
 Concern implementations should be importable as a vocabulary:
 
 ```java
-import static io.casehub.blocks.agentic.Routing.*;
-import static io.casehub.blocks.agentic.Activation.*;
-import static io.casehub.blocks.agentic.Termination.*;
+import static io.casehub.agency.core.Routing.*;
+import static io.casehub.agency.core.Activation.*;
+import static io.casehub.agency.core.Termination.*;
 
 orchestration("pipeline")
     .route(llmSelected(chatModel))

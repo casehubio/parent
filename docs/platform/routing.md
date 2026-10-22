@@ -2,7 +2,7 @@
 
 > **Scope:** Agent routing strategies — trust-weighted, semantic, LLM-reasoned, CBR-evidence
 > **Audience:** All (app builders configure routing; platform builders extend strategies)
-> **Key repos:** casehub-ledger (score computation), casehub-blocks (policy config + AI strategies), casehub-engine (classical strategy execution)
+> **Key repos:** casehub-ledger (score computation), casehub-agency (policy config + AI strategies), casehub-engine (classical strategy execution)
 
 ## Overview
 
@@ -18,7 +18,7 @@ The routing system selects which agent (human or AI worker) should handle a task
 └─────────────────────────────────────────────────┘
                     ↓
 ┌─────────────────────────────────────────────────┐
-│ 2. Policy Configuration (casehub-blocks)        │
+│ 2. Policy Configuration (casehub-agency)        │
 │    TrustRoutingPolicyResolver                   │
 │    Loads policy from preferences                │
 └─────────────────────────────────────────────────┘
@@ -30,7 +30,7 @@ The routing system selects which agent (human or AI worker) should handle a task
 └─────────────────────────────────────────────────┘
                     ↓
 ┌─────────────────────────────────────────────────┐
-│ 4. AI Strategy Execution (casehub-blocks)       │
+│ 4. AI Strategy Execution (casehub-agency)       │
 │    LlmAgentRoutingStrategy                      │
 │    CbrAgentRoutingStrategy                      │
 └─────────────────────────────────────────────────┘
@@ -52,7 +52,7 @@ Computes trust scores from ledger entries and publishes them as events. The scor
 
 ## Layer 2: Policy Configuration (blocks + engine-api)
 
-**Owners:** casehub-blocks (utilities) + domain repos (implementation)
+**Owners:** casehub-agency (utilities) + domain repos (implementation)
 
 **Key classes:**
 - `TrustRoutingPolicyKeys` (blocks) — shared preference key constants
@@ -105,7 +105,7 @@ Embedding-based re-ranking. Compares the task description embedding to agent cap
 
 ## Layer 4: AI Strategy Execution (blocks)
 
-**Owner:** casehub-blocks (routing.agent package)
+**Owner:** casehub-agency (routing.agent package)
 
 Two AI-powered strategies that optionally compose with trust classification:
 

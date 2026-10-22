@@ -2665,88 +2665,88 @@
       </dependency>
 
       <!-- ================================================================ -->
-      <!-- casehub-blocks                                                   -->
+      <!-- casehub-agency                                                   -->
       <!-- ================================================================ -->
       <dependency>
         <groupId>io.casehub</groupId>
-        <artifactId>casehub-blocks</artifactId>
+        <artifactId>casehub-agency</artifactId>
         <version>${casehub.version}</version>
       </dependency>
 
       
       <dependency>
         <groupId>io.casehub</groupId>
-        <artifactId>casehub-blocks-agentic-yaml</artifactId>
+        <artifactId>casehub-agency-agentic-yaml</artifactId>
         <version>${casehub.version}</version>
       </dependency>
       <dependency>
         <groupId>io.casehub</groupId>
-        <artifactId>casehub-blocks-agentic-yaml-deployment</artifactId>
+        <artifactId>casehub-agency-agentic-yaml-deployment</artifactId>
         <version>${casehub.version}</version>
       </dependency>
       <dependency>
         <groupId>io.casehub</groupId>
-        <artifactId>casehub-blocks-annotations-parent</artifactId>
+        <artifactId>casehub-agency-annotations-parent</artifactId>
         <version>${casehub.version}</version>
       </dependency>
       <dependency>
         <groupId>io.casehub</groupId>
-        <artifactId>casehub-blocks-cloudevents</artifactId>
+        <artifactId>casehub-agency-cloudevents</artifactId>
         <version>${casehub.version}</version>
       </dependency>
       <dependency>
         <groupId>io.casehub</groupId>
-        <artifactId>casehub-blocks-core</artifactId>
+        <artifactId>casehub-agency-core</artifactId>
         <version>${casehub.version}</version>
       </dependency>
       <dependency>
         <groupId>io.casehub</groupId>
-        <artifactId>casehub-blocks-engine-adapter</artifactId>
+        <artifactId>casehub-agency-engine-adapter</artifactId>
         <version>${casehub.version}</version>
       </dependency>
       <dependency>
         <groupId>io.casehub</groupId>
-        <artifactId>casehub-blocks-engine-adapter-core</artifactId>
+        <artifactId>casehub-agency-engine-adapter-core</artifactId>
         <version>${casehub.version}</version>
       </dependency>
       <dependency>
         <groupId>io.casehub</groupId>
-        <artifactId>casehub-blocks-engine-adapter-spring</artifactId>
+        <artifactId>casehub-agency-engine-adapter-spring</artifactId>
         <version>${casehub.version}</version>
       </dependency>
       <dependency>
         <groupId>io.casehub</groupId>
-        <artifactId>casehub-blocks-speech-api</artifactId>
+        <artifactId>casehub-agency-speech-api</artifactId>
         <version>${casehub.version}</version>
       </dependency>
       <dependency>
         <groupId>io.casehub</groupId>
-        <artifactId>casehub-blocks-speech-sherpa</artifactId>
+        <artifactId>casehub-agency-speech-sherpa</artifactId>
         <version>${casehub.version}</version>
       </dependency>
       <dependency>
         <groupId>io.casehub</groupId>
-        <artifactId>casehub-blocks-speech-ws</artifactId>
+        <artifactId>casehub-agency-speech-ws</artifactId>
         <version>${casehub.version}</version>
       </dependency>
       <dependency>
         <groupId>io.casehub</groupId>
-        <artifactId>casehub-blocks-spring</artifactId>
+        <artifactId>casehub-agency-spring</artifactId>
         <version>${casehub.version}</version>
       </dependency>
       <dependency>
         <groupId>io.casehub</groupId>
-        <artifactId>casehub-blocks-summarisation-api</artifactId>
+        <artifactId>casehub-agency-summarisation-api</artifactId>
         <version>${casehub.version}</version>
       </dependency>
       <dependency>
         <groupId>io.casehub</groupId>
-        <artifactId>casehub-blocks-summarisation-yaml</artifactId>
+        <artifactId>casehub-agency-summarisation-yaml</artifactId>
         <version>${casehub.version}</version>
       </dependency>
       <dependency>
         <groupId>io.casehub</groupId>
-        <artifactId>casehub-blocks-summarisation-yaml-deployment</artifactId>
+        <artifactId>casehub-agency-summarisation-yaml-deployment</artifactId>
         <version>${casehub.version}</version>
       </dependency>
       <dependency>

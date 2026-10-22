@@ -58,7 +58,7 @@ Key types: `InferenceModel`, `CaseRetriever`, `EmbeddingIngestor`, `CaseMemorySt
 ## Shared Patterns
 
 **Blocks** — agentic orchestration (5 SPIs, 8 topologies, YAML surface), BDI agent intelligence (beliefs, intentions, coalitions, judgment), social cognition framework (90+ types — mood, drives, narrative, goals, emergence), conversation protocol (epistemic common ground, convergence), temporal summarisation, prompt optimisation, agent memory hygiene, trust intake
-→ [repos/casehub-blocks/consumer-guide.md](repos/casehub-blocks/consumer-guide.md)
+→ [repos/casehub-agency/consumer-guide.md](repos/casehub-agency/consumer-guide.md)
 Key types: `ExecutionPlan`, `RoutingStrategy`, `DecompositionStrategy`, `ConversationProtocol`, `EventStreamBus`, `SocialCognitionRenderer`
 
 **Platform** — shared services: identity, preferences, notifications, expressions (MVEL/JQ/JEXL), DataSource alpha network, ACL, credentials, agent infrastructure
@@ -74,7 +74,7 @@ Key types: `CurrentPrincipal`, `PreferenceProvider`, `NotificationBridge`, `Expr
 Key types: `ConfigurablePanel`, `DataReceiver`, `DataSourceMixin`, `PagesTable`, `FilterModel`, `ScenarioCompiler`
 
 **Blocks UI** — 60 shared domain components across 9 packages (work items, trust, SLA, channel activity, oversight, compliance, document workbench, graph stencils, agent personality UI, evolution conductor, operations infrastructure, deliberation UI)
-→ [repos/casehub-blocks-ui/consumer-guide.md](repos/casehub-blocks-ui/consumer-guide.md)
+→ [repos/casehub-mosaic/consumer-guide.md](repos/casehub-mosaic/consumer-guide.md)
 Key components: `split-workbench`, `work-item-inbox`, `channel-feed`, `trust-score-panel`, `kpi-metric-row`, `agent-personality-editor`, `evolution-conductor`
 
 ---

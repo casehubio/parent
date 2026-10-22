@@ -268,7 +268,7 @@ rollback conditions. The conductor manages promotion across phases,
 ensuring agents improve measurably before gaining broader
 responsibilities.
 
-Surface in the UI via the Evolution Conductor dashboard (blocks-ui
+Surface in the UI via the Evolution Conductor dashboard (mosaic
 component). First consumer: DevTown for PR review agent improvement.
 
 ### Oversight Gates

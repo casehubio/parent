@@ -44,7 +44,7 @@ jobs:
             casehubio/chat-app \
             casehubio/devtown \
             casehubio/aml \
-            casehubio/blocks \
+            casehubio/agency \
             casehubio/casehub-langchain4j \
             casehubio/casehub-mosaic \
             casehubio/clinical \

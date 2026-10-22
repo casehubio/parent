@@ -209,7 +209,7 @@ Foundation repos first (highest blast radius → most downstream consumers):
 | Wave | Repos | Rationale |
 |------|-------|-----------|
 | 1 (foundation) | platform, worker, ledger, connectors, work, qhorus, eidos, neocortex, engine, iot | API/SPI changes cascade to all consumers |
-| 2 (orchestration) | ras, desiredstate, blocks, blocks-ui, claudony, openclaw, workers, ops, pages | Integration layer — consumes foundation, consumed by apps |
+| 2 (orchestration) | ras, desiredstate, blocks, mosaic, claudony, openclaw, workers, ops, pages | Integration layer — consumes foundation, consumed by apps |
 | 3 (application) | devtown, aml, clinical, life, drafthouse, quarkmind, soc, fsitrading, chat-app | Leaf nodes — consume platform, not consumed |
 
 ### 4.3 Per-Repo Audit Process

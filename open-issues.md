@@ -28,7 +28,7 @@
 | **292** | Developer onboarding: Maven archetype + isx template | L | Med | None directly (consumes platform, ledger as deps) | Maven archetype `casehub-quickstart`. Zero-to-running-app. Not blocked |
 | **294** | epic: Reusable Platform Primitives | XL | High | engine, qhorus, ledger, eidos, drafthouse, claudony, openclaw, desiredstate — all contribute or consume primitives | **Epic.** Vision/tracking. 10 built/in-progress, 7 new to design. Has child issues |
 | **295** | epic: CloudEvent adapter consistency | S | Low | connectors — new adapter; iot — adapter fix; qhorus — adapter fix; platform — poll/camel conformance; work — WorkCloudEventAdapter | **Epic.** 3/7 closed. 5 open follow-ups across 4 repos |
-| **310** | Epic: casehub-blocks — reusable building blocks | XL | High | openclaw — delete local OversightGateService; engine — move classification types; drafthouse — extract 6 patterns; claudony — depend on blocks; qhorus, work — blocks builds on their primitives | **Epic.** New repo. 11 blocks identified. Sequence: repo setup → oversight gate → drafthouse patterns |
+| **310** | Epic: casehub-agency — reusable building blocks | XL | High | openclaw — delete local OversightGateService; engine — move classification types; drafthouse — extract 6 patterns; claudony — depend on blocks; qhorus, work — blocks builds on their primitives | **Epic.** New repo. 11 blocks identified. Sequence: repo setup → oversight gate → drafthouse patterns |
 | **315** | docs: sync casehub-neocortex deep-dive | XS | Low | neocortex — source of changes (Matryoshka + quantization, neocortex#31) | Docs-only. Update `docs/repos/casehub-neocortex.md`. Straightforward |
 
 ---
@@ -305,7 +305,7 @@
 
 ---
 
-### #310 — Epic: casehub-blocks — reusable building blocks
+### #310 — Epic: casehub-agency — reusable building blocks
 
 **Scale:** XL | **Complexity:** High
 
@@ -317,7 +317,7 @@
 - qhorus — blocks builds on channels/commitments as primitives
 - work — blocks builds on task lifecycle as primitives
 
-**Notes:** Epic. New repo `casehubio/blocks`. Single Maven module depending on qhorus-api + work-api + engine-api. 11 blocks identified (7 coordination patterns, 4 infra utilities). Sequencing: repo setup → oversight gate extraction → drafthouse pattern extraction → new patterns.
+**Notes:** Epic. New repo `casehubio/agency`. Single Maven module depending on qhorus-api + work-api + engine-api. 11 blocks identified (7 coordination patterns, 4 infra utilities). Sequencing: repo setup → oversight gate extraction → drafthouse pattern extraction → new patterns.
 
 ---
 

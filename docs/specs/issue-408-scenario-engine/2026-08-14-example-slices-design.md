@@ -32,7 +32,7 @@ Each slice is in a different domain — one capability focus per domain, never r
 | 2 | **Code Review** (software) | DEBATE, conversation protocol, convergence, epistemic ground | Speech acts, obligations, common ground |
 | 3 | **Incident Response** (security) | SUPERVISOR, oversight gates, trust scoring, routing rationale | Graduated autonomy, risk classification |
 | 4 | **Construction Planning** (engineering) | HTN, GOAP, decomposition strategies, compound plans | Sub-cases, CompletionSemantics (All/MofN/FirstWins), task trees |
-| 5 | **Procurement** (supply chain) | Negotiation, contract net, commitment lifecycle | NegotiationProjection (casehubio/blocks#104), speech acts |
+| 5 | **Procurement** (supply chain) | Negotiation, contract net, commitment lifecycle | NegotiationProjection (casehubio/agency#104), speech acts |
 | 6 | **Factory Floor** (manufacturing) | Agent Mesh, channel semantics, affordances, disposition routing | Work/observe/oversight channels, ACTIVE/REACTIVE/SILENT |
 | 7 | **Shipment Tracking** (logistics) | Tiered summarisation, observation pipeline, real-time tracking | Per-shipment → per-route → fleet-wide summarisation tiers |
 | 8 | **Loan Application** (financial) | Pipeline with gates, M-of-N approval, oversight | Multi-approver sign-off, regulated stage transitions |
@@ -205,7 +205,7 @@ spec:
 - Ticket status card (shows case milestones: created → classified → assigned → resolved)
 - Notification feed
 
-**Ops tab** (new — existing blocks-ui components):
+**Ops tab** (new — existing mosaic components):
 - `<blocks-work-item-workbench>` — inbox + detail for the specialist queue
 - `<blocks-case-explorer>` — browse active/completed cases, view plan items
 - Case detail showing milestones, workers dispatched, work item status
