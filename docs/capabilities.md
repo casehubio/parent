@@ -81,13 +81,13 @@
 
 | Capability | What it does | Consumer chunk | Repo |
 |------------|-------------|----------------|------|
-| Agentic orchestration | 5 SPIs, 8 topologies (supervisor, sequence, loop, parallel, voting, debate, HTN), YAML surface | repos/casehub-agency/capabilities/orchestration.md | blocks |
-| Conversation protocol | Epistemic common ground, convergence detection, structured deliberation | repos/casehub-agency/capabilities/conversation.md | blocks |
-| Social cognition | 90+ types — mood, drives, narrative identity, goals, emergence, all rendering as PromptSections | — | blocks |
-| BDI agent intelligence | Beliefs, intentions, coalitions, judgment framework | — | blocks |
-| Prompt optimisation | Variant generation, few-shot injection, runtime customisation | — | blocks |
-| Agent memory hygiene | Confidence scoring, integrity checks, retention policies | — | blocks |
-| Decision narratives | Raw platform signals → human-readable accountability explanations | — | blocks |
+| Agentic orchestration | 5 SPIs, 8 topologies (supervisor, sequence, loop, parallel, voting, debate, HTN), YAML surface | repos/casehub-agency/capabilities/orchestration.md | agency |
+| Conversation protocol | Epistemic common ground, convergence detection, structured deliberation | repos/casehub-agency/capabilities/conversation.md | agency |
+| Social cognition | 90+ types — mood, drives, narrative identity, goals, emergence, all rendering as PromptSections | — | agency |
+| BDI agent intelligence | Beliefs, intentions, coalitions, judgment framework | — | agency |
+| Prompt optimisation | Variant generation, few-shot injection, runtime customisation | — | agency |
+| Agent memory hygiene | Confidence scoring, integrity checks, retention policies | — | agency |
+| Decision narratives | Raw platform signals → human-readable accountability explanations | — | agency |
 
 ## Integration & Connectors
 

@@ -4237,7 +4237,7 @@ entries:
     text: 'D3: @RolesAllowed placement — class-level vs method-level'
   last_modified: '2026-09-07'
 - path: CLAUDE.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -4336,7 +4336,7 @@ entries:
     text: Work Tracking
   last_modified: '2026-09-28'
 - path: README.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -4353,7 +4353,7 @@ entries:
     text: Part of
   last_modified: '2026-06-29'
 - path: docs/adr/0001-cbr-coordination-memory-architecture.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -4386,7 +4386,7 @@ entries:
     text: Links
   last_modified: '2026-07-29'
 - path: docs/adr/0002-channel-observer-composition-over-context-enrichment.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -4401,7 +4401,7 @@ entries:
     text: Consequences
   last_modified: '2026-08-14'
 - path: docs/adr/0003-propose-message-type-commissive-speech-acts.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -4430,7 +4430,7 @@ entries:
     text: Links
   last_modified: '2026-08-15'
 - path: docs/adr/0004-own-orchestration-annotations.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -4463,7 +4463,7 @@ entries:
     text: Links
   last_modified: '2026-08-22'
 - path: docs/adr/ADR-0001-drive-compositor-pattern.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -4478,21 +4478,21 @@ entries:
     text: Alternatives Considered
   last_modified: '2026-08-21'
 - path: docs/adr/INDEX.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
     text: ADR Index
   last_modified: '2026-08-22'
 - path: docs/agentic-orchestration-research.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
     text: Agentic Orchestration Research — pointer
   last_modified: '2026-07-26'
 - path: docs/blog/2026-07-01-mdp01-wiring-the-audit-spine.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
@@ -4503,36 +4503,36 @@ entries:
     text: The dependency tier question
   last_modified: '2026-08-10'
 - path: docs/blog/2026-07-02-mdp01-what-belongs-in-a-shared-library.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
     text: What belongs in a shared library — and what doesn't
   last_modified: '2026-08-10'
 - path: docs/blog/2026-07-05-mdp01-where-the-line-is.md
-  repo: blocks
+  repo: agency
   source: project
   headings: []
   last_modified: '2026-08-10'
 - path: docs/blog/2026-07-06-mdp01-composable-routing-enrichment.md
-  repo: blocks
+  repo: agency
   source: project
   headings: []
   last_modified: '2026-08-10'
 - path: docs/blog/2026-07-06-mdp01-three-bugs-where-there-was-one.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
     text: Three Bugs Where There Was One
   last_modified: '2026-09-04'
 - path: docs/blog/2026-07-08-mdp01-the-framework-already-packed.md
-  repo: blocks
+  repo: agency
   source: project
   headings: []
   last_modified: '2026-08-10'
 - path: docs/blog/2026-07-09-mdp01-the-sse-question-had-the-wrong-premise.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
@@ -4543,12 +4543,12 @@ entries:
     text: The branch archaeology
   last_modified: '2026-09-04'
 - path: docs/blog/2026-07-10-mdp01-the-controller-was-the-point.md
-  repo: blocks
+  repo: agency
   source: project
   headings: []
   last_modified: '2026-09-04'
 - path: docs/blog/2026-07-10-mdp01-type-system-as-architecture.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
@@ -4561,17 +4561,17 @@ entries:
     text: The Architectural Question
   last_modified: '2026-08-10'
 - path: docs/blog/2026-07-10-mdp02-sparklines-and-the-mixin-question.md
-  repo: blocks
+  repo: agency
   source: project
   headings: []
   last_modified: '2026-09-04'
 - path: docs/blog/2026-07-10-mdp03-the-table-came-home.md
-  repo: blocks
+  repo: agency
   source: project
   headings: []
   last_modified: '2026-09-04'
 - path: docs/blog/2026-07-11-mdp01-fetch-is-just-push.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
@@ -4584,7 +4584,7 @@ entries:
     text: Where It Stands
   last_modified: '2026-09-04'
 - path: docs/blog/2026-07-11-mdp02-the-pipeline-closes.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
@@ -4595,7 +4595,7 @@ entries:
     text: Five Consumers Left
   last_modified: '2026-09-04'
 - path: docs/blog/2026-07-12-mdp02-two-interfaces-one-vocabulary.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
@@ -4608,31 +4608,31 @@ entries:
     text: The Decomposition Factory Question
   last_modified: '2026-08-10'
 - path: docs/blog/2026-07-13-mdp01-the-missing-ux-pattern.md
-  repo: blocks
+  repo: agency
   source: project
   headings: []
   last_modified: '2026-09-04'
 - path: docs/blog/2026-07-13-mdp02-three-repos-one-component-library.md
-  repo: blocks
+  repo: agency
   source: project
   headings: []
   last_modified: '2026-09-04'
 - path: docs/blog/2026-07-13-mdp03-the-build-that-lied.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
     text: The Build That Lied
   last_modified: '2026-09-04'
 - path: docs/blog/2026-07-14-mdp01-the-grouped-window-nobody-had.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
     text: The Grouped Window Nobody Had
   last_modified: '2026-08-10'
 - path: docs/blog/2026-07-16-mdp01-the-select-that-lost-its-way.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
@@ -4641,17 +4641,17 @@ entries:
     text: The dropdown that appeared in the wrong place
   last_modified: '2026-09-04'
 - path: docs/blog/2026-07-17-mdp01-the-styles-that-never-arrived.md
-  repo: blocks
+  repo: agency
   source: project
   headings: []
   last_modified: '2026-09-04'
 - path: docs/blog/2026-07-17-mdp02-the-css-that-looked-like-it-worked.md
-  repo: blocks
+  repo: agency
   source: project
   headings: []
   last_modified: '2026-09-04'
 - path: docs/blog/2026-07-18-mdp01-the-form-that-lived-in-the-wrong-house.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
@@ -4662,7 +4662,7 @@ entries:
     text: The three-tab example
   last_modified: '2026-09-04'
 - path: docs/blog/2026-07-19-mdp01-why-every-data-table-gets-spanning-wrong.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
@@ -4675,12 +4675,12 @@ entries:
     text: What shipped
   last_modified: '2026-09-04'
 - path: docs/blog/2026-07-21-conversation-folds.md
-  repo: blocks
+  repo: agency
   source: project
   headings: []
   last_modified: '2026-08-10'
 - path: docs/blog/2026-07-21-mdp02-schema-driven-notification-forms.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -4697,7 +4697,7 @@ entries:
     text: Numbers
   last_modified: '2026-09-04'
 - path: docs/blog/2026-07-21-schema-driven-notification-forms.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -4714,7 +4714,7 @@ entries:
     text: Numbers
   last_modified: '2026-09-04'
 - path: docs/blog/2026-07-23-mdp01-the-glue-that-was-always-missing.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -4727,12 +4727,12 @@ entries:
     text: What I didn't build
   last_modified: '2026-08-10'
 - path: docs/blog/2026-07-25-mdp01-the-last-mile.md
-  repo: blocks
+  repo: agency
   source: project
   headings: []
   last_modified: '2026-08-10'
 - path: docs/blog/2026-07-25-mdp01-the-pipeline-was-already-there.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -4747,7 +4747,7 @@ entries:
     text: What we left alone
   last_modified: '2026-09-04'
 - path: docs/blog/2026-07-25-mdp02-namespace-hygiene-and-the-barrel-that-bites.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -4760,12 +4760,12 @@ entries:
     text: 59 tags, one prefix
   last_modified: '2026-09-04'
 - path: docs/blog/2026-07-26-mdp01-planning-the-unified-model.md
-  repo: blocks
+  repo: agency
   source: project
   headings: []
   last_modified: '2026-08-12'
 - path: docs/blog/2026-07-28-mdp01-every-data-table-gets-variable-heights-wrong.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
@@ -4782,7 +4782,7 @@ entries:
     text: What the review caught
   last_modified: '2026-09-04'
 - path: docs/blog/2026-07-28-mdp01-the-format-that-makes-llms-act.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
@@ -4795,7 +4795,7 @@ entries:
     text: The adversarial review
   last_modified: '2026-08-10'
 - path: docs/blog/2026-07-29-mdp01-the-planning-primitives.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
@@ -4812,14 +4812,14 @@ entries:
     text: Conversation projection hook
   last_modified: '2026-08-10'
 - path: docs/blog/2026-07-29-mdp01-the-property-that-does-nothing.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
     text: The Property That Does Nothing
   last_modified: '2026-09-04'
 - path: docs/blog/2026-07-29-mdp01-the-summary-that-knows-what-it-is.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
@@ -4828,12 +4828,12 @@ entries:
     text: Why the separation matters
   last_modified: '2026-08-10'
 - path: docs/blog/2026-07-30-mdp01-closing-the-loop-on-supervisor-mode.md
-  repo: blocks
+  repo: agency
   source: project
   headings: []
   last_modified: '2026-08-10'
 - path: docs/blog/2026-08-01-mdp01-teaching-a-planner-to-rank.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 3
@@ -4846,7 +4846,7 @@ entries:
     text: Where this goes
   last_modified: '2026-08-10'
 - path: docs/blog/2026-08-02-mdp01-the-planner-that-decides-its-own-depth.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
@@ -4859,7 +4859,7 @@ entries:
     text: Where this fits
   last_modified: '2026-08-12'
 - path: docs/blog/2026-08-03-mdp01-from-yaml-to-graph-in-one-session.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
@@ -4874,7 +4874,7 @@ entries:
     text: What's next
   last_modified: '2026-09-04'
 - path: docs/blog/2026-08-03-mdp02-the-editor-edits.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
@@ -4887,27 +4887,27 @@ entries:
     text: What it is now
   last_modified: '2026-09-04'
 - path: docs/blog/2026-08-04-mdp01-the-fourth-supplementary-input.md
-  repo: blocks
+  repo: agency
   source: project
   headings: []
   last_modified: '2026-08-10'
 - path: docs/blog/2026-08-04-mdp01-the-table-that-hid-its-own-data.md
-  repo: blocks
+  repo: agency
   source: project
   headings: []
   last_modified: '2026-09-04'
 - path: docs/blog/2026-08-04-mdp02-push-not-pull-thread-summaries.md
-  repo: blocks
+  repo: agency
   source: project
   headings: []
   last_modified: '2026-08-10'
 - path: docs/blog/2026-08-05-mdp01-one-badge-to-rule-them-all.md
-  repo: blocks
+  repo: agency
   source: project
   headings: []
   last_modified: '2026-09-04'
 - path: docs/blog/2026-08-09-mdp01-the-channel-that-completes-the-loop.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
@@ -4922,24 +4922,24 @@ entries:
     text: What's next
   last_modified: '2026-08-10'
 - path: docs/blog/2026-08-10-mdp01-the-budget-that-wasnt-a-number.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
     text: The Budget That Wasn't a Number
   last_modified: '2026-08-11'
 - path: docs/blog/2026-08-12-mdp01-the-uni-that-wasnt-earning-its-keep.md
-  repo: blocks
+  repo: agency
   source: project
   headings: []
   last_modified: '2026-08-12'
 - path: docs/blog/2026-08-14-mdp01-the-observer-that-didnt-change-the-driver.md
-  repo: blocks
+  repo: agency
   source: project
   headings: []
   last_modified: '2026-08-14'
 - path: docs/blog/2026-08-14-mdp02-pattern-gaps-speech-acts-and-seven-patterns.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -4954,12 +4954,12 @@ entries:
     text: What this opens up
   last_modified: '2026-08-15'
 - path: docs/blog/2026-08-17-mdp01-the-callback-that-isnt-a-round.md
-  repo: blocks
+  repo: agency
   source: project
   headings: []
   last_modified: '2026-08-17'
 - path: docs/blog/2026-08-20-mdp01-the-memory-that-forgets-on-purpose.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -4974,7 +4974,7 @@ entries:
     text: What's next
   last_modified: '2026-08-20'
 - path: docs/blog/2026-08-20-mdp02-the-drift-that-stays-in-bounds.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -4991,7 +4991,7 @@ entries:
     text: Closing the loop
   last_modified: '2026-08-21'
 - path: docs/blog/2026-08-20-mdp03-the-agent-that-speaks-first.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -5006,7 +5006,7 @@ entries:
     text: Thread safety on the hot path
   last_modified: '2026-08-21'
 - path: docs/blog/2026-08-20-mdp04-the-profile-that-builds-itself.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -5023,7 +5023,7 @@ entries:
     text: What's next
   last_modified: '2026-08-21'
 - path: docs/blog/2026-08-20-mdp05-the-mind-that-reads-minds.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -5040,7 +5040,7 @@ entries:
     text: The inference gap
   last_modified: '2026-08-20'
 - path: docs/blog/2026-08-21-mdp01-the-strategy-that-learns-from-engagement.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -5055,7 +5055,7 @@ entries:
     text: What consumers get
   last_modified: '2026-08-21'
 - path: docs/blog/2026-08-21-mdp02-the-social-brain.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -5070,7 +5070,7 @@ entries:
     text: The test numbers
   last_modified: '2026-08-21'
 - path: docs/blog/2026-08-21-mdp03-the-mood-that-colours-memory.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -5083,7 +5083,7 @@ entries:
     text: What consumers do with it
   last_modified: '2026-08-21'
 - path: docs/blog/2026-08-21-mdp04-what-does-the-agent-want.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -5100,14 +5100,14 @@ entries:
     text: The bet
   last_modified: '2026-08-21'
 - path: docs/blog/2026-08-21-mdp05-the-agent-that-wants.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
     text: The Agent That Wants
   last_modified: '2026-08-21'
 - path: docs/blog/2026-08-22-mdp01-annotation-boundaries-follow-execution-models.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
@@ -5126,26 +5126,26 @@ entries:
     text: Where the collaboration boundary sits
   last_modified: '2026-08-22'
 - path: docs/blog/2026-08-22-mdp01-seeing-what-you-want.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
     text: Seeing What You Want
   last_modified: '2026-08-22'
 - path: docs/blog/2026-08-22-mdp01-the-observation-that-doesnt-know-its-world.md
-  repo: blocks
+  repo: agency
   source: project
   headings: []
   last_modified: '2026-08-31'
 - path: docs/blog/2026-08-23-mdp01-speech-spis.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
     text: Speech SPIs — voice in, voice out
   last_modified: '2026-08-23'
 - path: docs/blog/2026-08-23-mdp01-the-build-extension-that-trusts-the-builder.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -5162,7 +5162,7 @@ entries:
     text: Testing at 60ms, not 6 seconds
   last_modified: '2026-08-23'
 - path: docs/blog/2026-08-23-mdp02-designing-annotations-for-compositional-orchestration.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -5181,7 +5181,7 @@ entries:
     text: What the annotation model reveals about the execution model
   last_modified: '2026-08-23'
 - path: docs/blog/2026-08-23-mdp05-from-wanting-to-doing.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -5196,34 +5196,34 @@ entries:
     text: What Layer 2 doesn't do
   last_modified: '2026-08-23'
 - path: docs/blog/2026-08-24-mdp05-the-agent-that-remembers-its-story.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
     text: The Agent That Remembers Its Story
   last_modified: '2026-08-24'
 - path: docs/blog/2026-08-25-mdp01-the-store-that-serialises-a-sealed-hierarchy.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
     text: The Store That Serialises a Sealed Hierarchy
   last_modified: '2026-08-25'
 - path: docs/blog/2026-08-25-mdp02-the-group-that-decides-to-want.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
     text: The Group That Decides to Want
   last_modified: '2026-08-25'
 - path: docs/blog/2026-08-26-mdp01-the-agent-that-speaks.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
     text: The Agent That Speaks
   - level: 2
-    text: What blocks already knows about being human
+    text: What agency already knows about being human
   - level: 2
     text: 'FFM/Panama: calling native code without the JNI tax'
   - level: 2
@@ -5234,14 +5234,14 @@ entries:
     text: Where speech meets personality
   last_modified: '2026-08-25'
 - path: docs/blog/2026-08-26-mdp01-the-race-the-review-caught.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
     text: The Race the Review Caught
   last_modified: '2026-08-27'
 - path: docs/blog/2026-08-26-mdp02-the-tensor-nobody-reads.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -5256,7 +5256,7 @@ entries:
     text: 'GECToR: Grammar by Tagging'
   last_modified: '2026-08-27'
 - path: docs/blog/2026-08-28-mdp01-the-voice-engine-that-doesnt-export.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
@@ -5269,7 +5269,7 @@ entries:
     text: Dia validates the pattern
   last_modified: '2026-08-29'
 - path: docs/blog/2026-08-29-mdp01-the-quality-cliff.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
@@ -5280,7 +5280,7 @@ entries:
     text: The pivot
   last_modified: '2026-08-29'
 - path: docs/blog/2026-08-30-mdp01-the-pipeline-that-isnt-hard-coded.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -5295,7 +5295,7 @@ entries:
     text: What's ahead
   last_modified: '2026-08-31'
 - path: docs/blog/2026-09-01-mdp01-from-wanting-to-doing.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -5310,7 +5310,7 @@ entries:
     text: What This Opens Up
   last_modified: '2026-08-31'
 - path: docs/blog/2026-09-01-mdp01-the-goal-that-earns-its-rank.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -5327,7 +5327,7 @@ entries:
     text: What This Opens
   last_modified: '2026-09-01'
 - path: docs/blog/2026-09-02-mdp01-the-audio-pipeline-nobody-documents.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -5350,7 +5350,7 @@ entries:
     text: What this opens up
   last_modified: '2026-09-04'
 - path: docs/blog/2026-09-03-mdp01-the-native-lib-problem.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -5367,7 +5367,7 @@ entries:
     text: The build-time trick
   last_modified: '2026-09-04'
 - path: docs/blog/2026-09-04-mdp01-the-bugs-tests-cant-find.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
@@ -5382,7 +5382,7 @@ entries:
     text: The testing gap
   last_modified: '2026-09-04'
 - path: docs/blog/2026-09-05-mdp01-the-prompt-that-knows-its-audience.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -5399,12 +5399,12 @@ entries:
     text: Three layers, zero coupling
   last_modified: '2026-09-05'
 - path: docs/blog/2026-09-05-mdp01-the-silo-that-wasnt.md
-  repo: blocks
+  repo: agency
   source: project
   headings: []
   last_modified: '2026-09-05'
 - path: docs/blog/2026-09-09-mdp01-the-yaml-that-compiles-to-orchestration.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
@@ -5417,21 +5417,21 @@ entries:
     text: What this opens up
   last_modified: '2026-09-08'
 - path: docs/blog/2026-09-10-mdp01-when-the-reviewer-kills-your-architecture.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
     text: When the Reviewer Kills Your Architecture
   last_modified: '2026-09-10'
 - path: docs/blog/2026-09-11-mdp01-the-last-four-gaps.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
     text: The Last Four Gaps
   last_modified: '2026-09-11'
 - path: docs/blog/2026-09-12-mdp01-the-pipeline-that-ate-the-synthesiser.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -5444,7 +5444,7 @@ entries:
     text: What this validates
   last_modified: '2026-09-12'
 - path: docs/blog/2026-09-14-mdp01-when-telling-ais-how-to-think-makes-them-worse.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -5465,7 +5465,7 @@ entries:
     text: Where it falls short
   last_modified: '2026-09-14'
 - path: docs/blog/2026-09-15-mdp01-the-brain-that-couldnt-think.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -5480,7 +5480,7 @@ entries:
     text: The Architectural Insight
   last_modified: '2026-09-15'
 - path: docs/blog/2026-09-24-mdp01-your-agent-doesnt-know-how-it-feels.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -5501,7 +5501,7 @@ entries:
     text: What the Research Already Solved
   last_modified: '2026-09-27'
 - path: docs/conversation-projections-vs-chat-logs.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -5534,14 +5534,14 @@ entries:
     text: The architecture
   last_modified: '2026-07-17'
 - path: docs/execution-backend-architecture.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
     text: Execution Backend Architecture — pointer
   last_modified: '2026-07-26'
 - path: docs/guides/consumer-guide.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -5622,7 +5622,7 @@ entries:
     text: Dependencies
   last_modified: '2026-09-27'
 - path: docs/guides/contributor-guide.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -5671,7 +5671,7 @@ entries:
     text: Design Documents
   last_modified: '2026-09-27'
 - path: docs/pattern-catalog.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -5742,7 +5742,7 @@ entries:
     text: Sources
   last_modified: '2026-08-14'
 - path: docs/plans/2026-07-23-summary-update-hook.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -5752,16 +5752,16 @@ entries:
   - level: 3
     text: 'Task 1: Enrich SummaryUpdateContext (qhorus)'
   - level: 3
-    text: 'Task 2: HeuristicChannelSummariser (blocks)'
+    text: 'Task 2: HeuristicChannelSummariser (agency)'
   - level: 3
-    text: 'Task 3: LlmChannelSummariser (blocks)'
+    text: 'Task 3: LlmChannelSummariser (agency)'
   - level: 3
-    text: 'Task 4: CLAUDE.md update (blocks)'
+    text: 'Task 4: CLAUDE.md update (agency)'
   - level: 2
     text: 'Package: `io.casehub.agency.communication.channel.summary`'
   last_modified: '2026-07-22'
 - path: docs/plans/2026-08-23-blocks-annotations.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -5798,7 +5798,7 @@ entries:
     text: References
   last_modified: '2026-08-23'
 - path: docs/research/2026-07-09-task-decomposition-and-agent-planning-landscape.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -5867,7 +5867,7 @@ entries:
     text: Architecture Comparisons
   last_modified: '2026-07-09'
 - path: docs/research/2026-07-10-orchestration-model-unification.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -5930,7 +5930,7 @@ entries:
     text: 10. Sources
   last_modified: '2026-07-12'
 - path: docs/research/2026-08-16-autonomous-agent-patterns-landscape.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -6013,7 +6013,7 @@ entries:
     text: Relationship to Existing Research
   last_modified: '2026-08-16'
 - path: docs/research/2026-08-26-speech-spi-research.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -6210,14 +6210,14 @@ entries:
     text: Benchmark reference data
   last_modified: '2026-08-31'
 - path: docs/specs/2026-06-30-agentic-orchestration-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
     text: Agentic Orchestration Design — pointer
   last_modified: '2026-08-10'
 - path: docs/specs/2026-06-30-engine-integration-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -6260,7 +6260,7 @@ entries:
     text: Testing Strategy
   last_modified: '2026-08-10'
 - path: docs/specs/2026-07-01-routing-enrichment-accountability-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -6297,7 +6297,7 @@ entries:
     text: Deferred Items
   last_modified: '2026-08-10'
 - path: docs/specs/2026-07-05-activation-metrics-routing-hardening-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -6362,7 +6362,7 @@ entries:
     text: Out of Scope
   last_modified: '2026-07-05'
 - path: docs/specs/2026-07-06-rag-enriched-routing-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -6384,7 +6384,7 @@ entries:
   - level: 3
     text: 6. Engine runtime integration
   - level: 3
-    text: 7. CbrRoutingOutcomeRecorder — blocks implementation
+    text: 7. CbrRoutingOutcomeRecorder — agency implementation
   - level: 3
     text: 8. CbrAgentRoutingStrategy — feature extractor adoption and relationship clarification
   - level: 3
@@ -6397,7 +6397,7 @@ entries:
     text: What is NOT in scope
   last_modified: '2026-07-06'
 - path: docs/specs/2026-07-06-structured-feature-extractor-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -6422,7 +6422,7 @@ entries:
     text: What this does NOT include
   last_modified: '2026-07-07'
 - path: docs/specs/2026-07-07-layered-event-summarisation-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -6468,11 +6468,11 @@ entries:
   - level: 3
     text: 'Phase 1: Improve in quarkmind (on main)'
   - level: 3
-    text: 'Phase 2: Extract to blocks (on issue-27 branch)'
+    text: 'Phase 2: Extract to agency (on issue-27 branch)'
   - level: 3
-    text: 'Phase 3: Wire quarkmind to blocks (on quarkmind main)'
+    text: 'Phase 3: Wire quarkmind to agency (on quarkmind main)'
   - level: 3
-    text: 'Phase 4: Domain-agnostic examples (#38, on blocks branch)'
+    text: 'Phase 4: Domain-agnostic examples (#38, on agency branch)'
   - level: 3
     text: 'Phase 5: Documentation'
   - level: 2
@@ -6483,7 +6483,7 @@ entries:
     text: Acceptance criteria
   last_modified: '2026-09-05'
 - path: docs/specs/2026-07-09-gate-rejection-outcome-recording-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -6514,7 +6514,7 @@ entries:
     text: Repos and modules affected
   last_modified: '2026-07-09'
 - path: docs/specs/2026-07-10-weighted-outcomes-and-llm-decomposition-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -6579,7 +6579,7 @@ entries:
     text: 5. File Change Summary
   last_modified: '2026-07-10'
 - path: docs/specs/2026-07-13-hybrid-decomposition-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -6636,7 +6636,7 @@ entries:
     text: Related issues
   last_modified: '2026-08-09'
 - path: docs/specs/2026-07-13-routing-cbr-enhancements-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -6693,7 +6693,7 @@ entries:
     text: CLAUDE.md updates needed
   last_modified: '2026-07-13'
 - path: docs/specs/2026-07-14-qhorus-channel-summarisation-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -6748,14 +6748,14 @@ entries:
     text: Related issues
   last_modified: '2026-07-14'
 - path: docs/specs/2026-07-15-unified-execution-model.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
     text: Unified Execution Model — pointer
   last_modified: '2026-07-26'
 - path: docs/specs/2026-07-17-topic-aware-conversation-model-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -6789,7 +6789,7 @@ entries:
   - level: 3
     text: 6. What doesn't change
   - level: 2
-    text: 'Deferred: structured progress integration (blocks#62)'
+    text: 'Deferred: structured progress integration (agency#62)'
   - level: 2
     text: Test Strategy
   - level: 3
@@ -6806,7 +6806,7 @@ entries:
     text: Dependencies
   last_modified: '2026-07-17'
 - path: docs/specs/2026-07-21-conversation-folds-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -6893,7 +6893,7 @@ entries:
     text: Integration
   last_modified: '2026-08-31'
 - path: docs/specs/2026-07-21-summary-update-hook-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -6928,7 +6928,7 @@ entries:
     text: Dependencies
   last_modified: '2026-07-22'
 - path: docs/specs/2026-07-30-recursive-llm-decomposition-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -6969,7 +6969,7 @@ entries:
     text: Files changed
   last_modified: '2026-07-31'
 - path: docs/specs/2026-07-31-llm-htn-heuristics-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -7004,7 +7004,7 @@ entries:
     text: References
   last_modified: '2026-08-02'
 - path: docs/specs/2026-08-23-speech-spi-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -7025,7 +7025,7 @@ entries:
     text: References
   last_modified: '2026-08-23'
 - path: docs/specs/annotation-driven-model/2026-08-14-annotation-driven-agent-model-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -7214,7 +7214,7 @@ entries:
     text: Interop tests
   last_modified: '2026-08-17'
 - path: docs/specs/issue-104-negotiation-protocol/2026-08-14-negotiation-protocol-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -7277,7 +7277,7 @@ entries:
     text: Scope Exclusions
   last_modified: '2026-08-14'
 - path: docs/specs/issue-105-pattern-gaps/2026-08-14-negotiation-protocol-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -7342,7 +7342,7 @@ entries:
     text: Scope Exclusions
   last_modified: '2026-08-14'
 - path: docs/specs/issue-105-pattern-gaps/decisions-107.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -7359,7 +7359,7 @@ entries:
     text: 'D5: Resolution output'
   last_modified: '2026-08-14'
 - path: docs/specs/issue-105-pattern-gaps/decisions.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -7384,7 +7384,7 @@ entries:
     text: 'D9: Metadata-free projection dispatch'
   last_modified: '2026-08-14'
 - path: docs/specs/issue-107-normative-conflict-resolution/2026-08-14-normative-conflict-resolution-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -7421,7 +7421,7 @@ entries:
     text: Scope Exclusions
   last_modified: '2026-08-14'
 - path: docs/specs/issue-108-iterative-auction/2026-08-14-iterative-auction-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -7458,7 +7458,7 @@ entries:
     text: Scope Exclusions
   last_modified: '2026-08-14'
 - path: docs/specs/issue-116-blocks-annotations/2026-08-22-blocks-annotations-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -7545,7 +7545,7 @@ entries:
     text: References
   last_modified: '2026-08-23'
 - path: docs/specs/issue-116-blocks-annotations/decisions.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -7568,7 +7568,7 @@ entries:
     text: 'D8: Examples — 3 domains extending engine#945 bases'
   last_modified: '2026-08-23'
 - path: docs/specs/issue-125-round-listener-spi/2026-08-17-conversation-listener-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -7595,7 +7595,7 @@ entries:
     text: References
   last_modified: '2026-08-17'
 - path: docs/specs/issue-125-round-listener-spi/decisions.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
@@ -7604,7 +7604,7 @@ entries:
     text: 'D2: Callback signature — what context does the listener receive?'
   last_modified: '2026-08-17'
 - path: docs/specs/issue-129-drive-architecture/2026-08-21-drive-architecture-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -7665,7 +7665,7 @@ entries:
     text: References
   last_modified: '2026-08-21'
 - path: docs/specs/issue-129-drive-architecture/decisions.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -7692,7 +7692,7 @@ entries:
     text: 'D9: API boundary for drive source data'
   last_modified: '2026-08-21'
 - path: docs/specs/issue-136-autonomous-goal-generation/2026-08-23-autonomous-goal-generation-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -7785,7 +7785,7 @@ entries:
     text: References
   last_modified: '2026-08-23'
 - path: docs/specs/issue-136-autonomous-goal-generation/decisions.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -7810,7 +7810,7 @@ entries:
     text: 'D9: Goal provenance via AgentGoal attributes'
   last_modified: '2026-08-23'
 - path: docs/specs/issue-142-narrative-identity/2026-08-24-narrative-identity-social-emergence-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -7856,7 +7856,7 @@ entries:
   - level: 3
     text: CognitiveObservationSections Extension
   - level: 3
-    text: ReflectionQueryStore (blocks)
+    text: ReflectionQueryStore (agency)
   - level: 3
     text: 'Package: `io.casehub.agency.core.social.emergence`'
   - level: 4
@@ -7917,7 +7917,7 @@ entries:
     text: References
   last_modified: '2026-08-25'
 - path: docs/specs/issue-142-narrative-identity/2026-08-24-narrative-orchestrator-synthesiser-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -7968,7 +7968,7 @@ entries:
     text: References
   last_modified: '2026-08-25'
 - path: docs/specs/issue-142-narrative-identity/decisions.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -8019,7 +8019,7 @@ entries:
     text: 'D21: Compositor gracefully degrades on synthesis failure'
   last_modified: '2026-08-25'
 - path: docs/specs/issue-149-drive-prompt-enrichment/2026-08-22-drive-prompt-enrichment-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -8062,14 +8062,14 @@ entries:
     text: References
   last_modified: '2026-08-22'
 - path: docs/specs/issue-149-drive-prompt-enrichment/decisions.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
     text: 'D1: Tick lifecycle wiring strategy'
   last_modified: '2026-08-22'
 - path: docs/specs/issue-161-innerlife-scheduler-spi/2026-09-16-cognition-scheduler-spi-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -8116,7 +8116,7 @@ entries:
     text: References
   last_modified: '2026-09-16'
 - path: docs/specs/issue-161-innerlife-scheduler-spi/decisions.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
@@ -8133,7 +8133,7 @@ entries:
     text: 'D6: Fix drive ordering — move after source orchestrators'
   last_modified: '2026-09-16'
 - path: docs/specs/issue-165-agentic-yaml-expansion/2026-09-07-agentic-yaml-expansion-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -8184,7 +8184,7 @@ entries:
     text: References
   last_modified: '2026-09-08'
 - path: docs/specs/issue-165-agentic-yaml-expansion/decisions.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -8207,7 +8207,7 @@ entries:
     text: 'D8: ShorthandModule for YAML ergonomics'
   last_modified: '2026-09-08'
 - path: docs/specs/issue-166-goal-priority-escalation/2026-09-01-goal-priority-escalation-cross-axis-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -8270,13 +8270,13 @@ entries:
     text: References
   last_modified: '2026-09-01'
 - path: docs/specs/issue-166-goal-priority-escalation/decisions.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
     text: 'Decisions — #166/#160/#159 Goal Priority Escalation + Cross-Axis Composition'
   - level: 2
-    text: 'D1: Escalation policy lives in blocks, not engine-api'
+    text: 'D1: Escalation policy lives in agency, not engine-api'
   - level: 2
     text: 'D2: Cross-axis composition as internal pipeline step with optional LLM enrichment'
   - level: 2
@@ -8293,7 +8293,7 @@ entries:
     text: 'D8: NarrativeOrchestrator as optional GoalProposalOrchestrator dependency'
   last_modified: '2026-09-01'
 - path: docs/specs/issue-170-governed-yield-agentic/2026-08-29-governed-yield-agentic-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -8342,7 +8342,7 @@ entries:
     text: References
   last_modified: '2026-08-31'
 - path: docs/specs/issue-170-governed-yield-agentic/decisions.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
@@ -8354,7 +8354,7 @@ entries:
   - level: 2
     text: 'D4: LLM-as-caller — already done in engine-adapter (slot 160)'
   - level: 2
-    text: 'D5: Mandatory verification with explicit override — blocks composes engine-api''s JudgmentVerifier'
+    text: 'D5: Mandatory verification with explicit override — agency composes engine-api''s JudgmentVerifier'
   - level: 2
     text: 'D6: Per-verifier failure policy with re-yield-with-feedback default'
   - level: 2
@@ -8363,7 +8363,7 @@ entries:
     text: 'D8: Extension points for future verifiers (E6/E7)'
   last_modified: '2026-08-31'
 - path: docs/specs/issue-175-auto-download-provisioner/2026-08-26-auto-download-provisioner-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -8402,7 +8402,7 @@ entries:
     text: References
   last_modified: '2026-08-26'
 - path: docs/specs/issue-175-auto-download-provisioner/decisions.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
@@ -8417,7 +8417,7 @@ entries:
     text: 'D5: Checksum verification of downloaded native code'
   last_modified: '2026-08-26'
 - path: docs/specs/issue-176-native-jars/2026-09-03-native-jars-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -8480,7 +8480,7 @@ entries:
     text: References
   last_modified: '2026-09-04'
 - path: docs/specs/issue-176-native-jars/decisions.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
@@ -8493,7 +8493,7 @@ entries:
     text: 'D4: Runtime extraction cache strategy'
   last_modified: '2026-09-04'
 - path: docs/specs/issue-184-vad/2026-09-02-voice-activity-detection-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -8530,7 +8530,7 @@ entries:
     text: References
   last_modified: '2026-09-04'
 - path: docs/specs/issue-184-vad/decisions.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
@@ -8547,7 +8547,7 @@ entries:
     text: 'D6: Pipeline ordering — denoise → VAD → STT'
   last_modified: '2026-09-04'
 - path: docs/specs/issue-19-choreographed-event-bus/2026-08-11-choreographed-event-bus-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -8578,7 +8578,7 @@ entries:
     text: Testing Strategy
   last_modified: '2026-08-12'
 - path: docs/specs/issue-19-choreographed-event-bus/decisions.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
@@ -8595,7 +8595,7 @@ entries:
     text: 'D6: OrchestratedDriver scope'
   last_modified: '2026-08-12'
 - path: docs/specs/issue-190-speech-denoising/2026-09-02-speech-denoising-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -8636,7 +8636,7 @@ entries:
     text: References
   last_modified: '2026-09-04'
 - path: docs/specs/issue-190-speech-denoising/decisions.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
@@ -8651,7 +8651,7 @@ entries:
     text: 'D5: Runtime configurability — all pipeline stages toggleable'
   last_modified: '2026-09-04'
 - path: docs/specs/issue-191-speaker-diarization/2026-09-03-speaker-diarization-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -8722,7 +8722,7 @@ entries:
     text: References
   last_modified: '2026-09-04'
 - path: docs/specs/issue-191-speaker-diarization/decisions.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
@@ -8745,7 +8745,7 @@ entries:
     text: 'D9: Module placement — speech-api SPI, speech-sherpa implementation'
   last_modified: '2026-09-04'
 - path: docs/specs/issue-194-talking-avatar-tier1/2026-08-26-auto-download-provisioner-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -8784,7 +8784,7 @@ entries:
     text: References
   last_modified: '2026-08-27'
 - path: docs/specs/issue-194-talking-avatar-tier1/2026-08-26-gector-grammar-filter-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -8831,7 +8831,7 @@ entries:
     text: References
   last_modified: '2026-08-27'
 - path: docs/specs/issue-194-talking-avatar-tier1/2026-08-26-microphone-capture-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -8870,7 +8870,7 @@ entries:
     text: References
   last_modified: '2026-08-27'
 - path: docs/specs/issue-194-talking-avatar-tier1/2026-08-26-phoneme-timing-extraction-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -8915,7 +8915,7 @@ entries:
     text: References
   last_modified: '2026-08-27'
 - path: docs/specs/issue-194-talking-avatar-tier1/2026-08-26-tts-model-auto-detection-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -8930,7 +8930,7 @@ entries:
     text: References
   last_modified: '2026-08-27'
 - path: docs/specs/issue-194-talking-avatar-tier1/2026-08-27-avatar-web-component-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -8988,7 +8988,7 @@ entries:
   - level: 2
     text: 8. Testing Strategy (D21)
   - level: 3
-    text: 8.1 blocks (speech-ws) — JUnit 5 + Mockito
+    text: 8.1 agency (speech-ws) — JUnit 5 + Mockito
   - level: 3
     text: 8.2 mosaic (avatar package) — vitest
   - level: 3
@@ -9001,7 +9001,7 @@ entries:
     text: References
   last_modified: '2026-08-27'
 - path: docs/specs/issue-194-talking-avatar-tier1/decisions.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
@@ -9033,7 +9033,7 @@ entries:
   - level: 2
     text: 'D14: GECToR ONNX export — script + pre-export'
   - level: 2
-    text: 'D15: Avatar module placement — split across blocks and mosaic'
+    text: 'D15: Avatar module placement — split across agency and mosaic'
   - level: 2
     text: 'D16: WebSocket protocol — binary + text frame separation'
   - level: 2
@@ -9048,7 +9048,7 @@ entries:
     text: 'D21: Testing strategy — meaningful tests at each level'
   last_modified: '2026-08-27'
 - path: docs/specs/issue-198-avatar-social-cognition/2026-09-05-avatar-social-cognition-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -9060,7 +9060,7 @@ entries:
   - level: 3
     text: 'Layer 1: speech-api (SPI)'
   - level: 3
-    text: 'Layer 2: blocks (integration)'
+    text: 'Layer 2: agency (integration)'
   - level: 4
     text: SocialPromptAssembler
   - level: 4
@@ -9091,7 +9091,7 @@ entries:
     text: References
   last_modified: '2026-09-27'
 - path: docs/specs/issue-198-avatar-social-cognition/decisions.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -9110,7 +9110,7 @@ entries:
     text: 'D6: Signal feedback loop — conversation events feed back into orchestrators'
   last_modified: '2026-09-05'
 - path: docs/specs/issue-212-stt-pipeline/2026-08-28-stt-accuracy-pipeline-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -9163,7 +9163,7 @@ entries:
     text: References
   last_modified: '2026-08-29'
 - path: docs/specs/issue-212-stt-pipeline/decisions.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -9184,7 +9184,7 @@ entries:
     text: 'D7: Phonetic similarity matching'
   last_modified: '2026-08-29'
 - path: docs/specs/issue-213-fish-speech-tts/2026-08-28-audio8-tts-composable-lipsync-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -9223,7 +9223,7 @@ entries:
     text: References
   last_modified: '2026-08-29'
 - path: docs/specs/issue-213-fish-speech-tts/decisions.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -9246,7 +9246,7 @@ entries:
     text: 'D8: Composable lip-sync pipeline — reusable across all TTS engines (REVISED)'
   last_modified: '2026-08-29'
 - path: docs/specs/issue-233-summarisation-yaml-surface/2026-09-05-summarisation-yaml-surface-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -9311,7 +9311,7 @@ entries:
     text: References
   last_modified: '2026-09-05'
 - path: docs/specs/issue-233-summarisation-yaml-surface/decisions.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
@@ -9344,7 +9344,7 @@ entries:
     text: 'D14: ContentSummariser generification — R replaces SummaryResult'
   last_modified: '2026-09-05'
 - path: docs/specs/issue-241-decision-narratives/2026-09-11-decision-narratives-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -9417,7 +9417,7 @@ entries:
     text: References
   last_modified: '2026-09-12'
 - path: docs/specs/issue-241-decision-narratives/decisions.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -9444,7 +9444,7 @@ entries:
     text: 'D10: Signal integration model'
   last_modified: '2026-09-12'
 - path: docs/specs/issue-242-typed-expr-compilation/2026-09-10-typed-expr-compilation-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -9481,7 +9481,7 @@ entries:
     text: References
   last_modified: '2026-09-10'
 - path: docs/specs/issue-242-typed-expr-compilation/decisions.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -9498,7 +9498,7 @@ entries:
     text: 'D5: Layer 2 descriptor model — yaml-core, deferred'
   last_modified: '2026-09-10'
 - path: docs/specs/issue-247-social-cognition-configs/2026-09-10-social-cognition-configs-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -9537,7 +9537,7 @@ entries:
     text: References
   last_modified: '2026-09-10'
 - path: docs/specs/issue-247-social-cognition-configs/decisions.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -9548,7 +9548,7 @@ entries:
     text: 'D2: Standalone cognition.yaml file'
   last_modified: '2026-09-10'
 - path: docs/specs/issue-248-affordance-world-model/2026-09-10-affordance-world-model-yaml-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -9609,7 +9609,7 @@ entries:
     text: References
   last_modified: '2026-09-11'
 - path: docs/specs/issue-248-affordance-world-model/decisions.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -9624,7 +9624,7 @@ entries:
     text: 'D4: Named filter registry for pipeline'
   last_modified: '2026-09-11'
 - path: docs/specs/issue-249-channel-infrastructure/2026-09-11-channel-infrastructure-yaml-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -9679,7 +9679,7 @@ entries:
     text: References
   last_modified: '2026-09-11'
 - path: docs/specs/issue-249-channel-infrastructure/decisions.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -9692,7 +9692,7 @@ entries:
     text: 'D3: Include NegotiationCompiler'
   last_modified: '2026-09-11'
 - path: docs/specs/issue-250-prompt-optimisation/2026-09-11-prompt-optimisation-yaml-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -9749,7 +9749,7 @@ entries:
     text: References
   last_modified: '2026-09-11'
 - path: docs/specs/issue-250-prompt-optimisation/decisions.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
@@ -9766,7 +9766,7 @@ entries:
     text: 'D6: Per-domain root type with new @BuildStep'
   last_modified: '2026-09-11'
 - path: docs/specs/issue-251-execution-infrastructure/2026-09-11-execution-infrastructure-yaml-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -9809,7 +9809,7 @@ entries:
     text: References
   last_modified: '2026-09-11'
 - path: docs/specs/issue-252-trust-routing-oversight/2026-09-11-trust-routing-oversight-yaml-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -9850,7 +9850,7 @@ entries:
     text: References
   last_modified: '2026-09-11'
 - path: docs/specs/issue-252-trust-routing-oversight/decisions.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
@@ -9863,7 +9863,7 @@ entries:
     text: 'D4: Weight map key handling and spec independence'
   last_modified: '2026-09-11'
 - path: docs/specs/issue-253-speech-configs/2026-09-11-speech-configs-yaml-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -9906,7 +9906,7 @@ entries:
     text: References
   last_modified: '2026-09-11'
 - path: docs/specs/issue-253-speech-configs/decisions.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
@@ -9917,7 +9917,7 @@ entries:
     text: 'D3: Spec categories for the 5 types'
   last_modified: '2026-09-11'
 - path: docs/specs/issue-254-summarisation-gaps/2026-09-11-summarisation-gaps-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -9946,14 +9946,14 @@ entries:
     text: References
   last_modified: '2026-09-11'
 - path: docs/specs/issue-254-summarisation-gaps/decisions.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
     text: 'D1: Full scope — all 6 gaps'
   last_modified: '2026-09-11'
 - path: docs/specs/issue-255-engine-adapter/2026-09-11-engine-adapter-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -9982,7 +9982,7 @@ entries:
     text: References
   last_modified: '2026-09-11'
 - path: docs/specs/issue-255-engine-adapter/decisions.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
@@ -9993,7 +9993,7 @@ entries:
     text: 'D3: Module placement'
   last_modified: '2026-09-11'
 - path: docs/specs/issue-257-e2e-yaml-examples/2026-09-11-e2e-yaml-examples-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -10028,7 +10028,7 @@ entries:
     text: References
   last_modified: '2026-09-11'
 - path: docs/specs/issue-258-historical-encounter-showcase/2026-09-12-historical-encounter-showcase-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -10069,7 +10069,7 @@ entries:
     text: References
   last_modified: '2026-09-13'
 - path: docs/specs/issue-258-historical-encounter-showcase/decisions.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
@@ -10084,7 +10084,7 @@ entries:
     text: 'D5: Conversation loop structure'
   last_modified: '2026-09-13'
 - path: docs/specs/issue-259-narrative-summ-retrofit/2026-09-12-narrative-summarisation-retrofit-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -10145,7 +10145,7 @@ entries:
     text: References
   last_modified: '2026-09-12'
 - path: docs/specs/issue-259-narrative-summ-retrofit/decisions.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -10166,7 +10166,7 @@ entries:
     text: 'D7: Pipeline factory'
   last_modified: '2026-09-12'
 - path: docs/specs/issue-260-cognitive-obs-renderers/2026-09-14-cognitive-obs-renderers-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -10199,7 +10199,7 @@ entries:
     text: References
   last_modified: '2026-09-14'
 - path: docs/specs/issue-260-cognitive-obs-renderers/decisions.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
@@ -10212,7 +10212,7 @@ entries:
     text: 'D4: Belief revision markers — Set parameter, not Belief mutation'
   last_modified: '2026-09-14'
 - path: docs/specs/issue-261-measurement-driven-cognition/2026-09-14-measurement-driven-cognition-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -10269,7 +10269,7 @@ entries:
     text: References
   last_modified: '2026-09-14'
 - path: docs/specs/issue-261-measurement-driven-cognition/2026-09-14-measurement-driven-cognition-findings.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -10342,7 +10342,7 @@ entries:
     text: 11. Conclusion
   last_modified: '2026-09-14'
 - path: docs/specs/issue-261-measurement-driven-cognition/decisions.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
@@ -10352,14 +10352,14 @@ entries:
   - level: 2
     text: 'D3: Single branch, all stages'
   - level: 2
-    text: 'D4: CognitionSnapshot in blocks main scope'
+    text: 'D4: CognitionSnapshot in agency main scope'
   - level: 2
     text: 'D5: Single-turn queries with system-prompt cognition injection'
   - level: 2
     text: 'D6: Automated LLM judge + manual paper'
   last_modified: '2026-09-14'
 - path: docs/specs/issue-270-model-aware-cbr-routing/2026-09-15-model-aware-cbr-routing-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -10384,7 +10384,7 @@ entries:
     text: References
   last_modified: '2026-09-15'
 - path: docs/specs/issue-270-model-aware-cbr-routing/decisions.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
@@ -10395,7 +10395,7 @@ entries:
     text: 'D3: No cold-start logic — defer to engine model selection policy'
   last_modified: '2026-09-15'
 - path: docs/specs/issue-279-strategy-learning-showcase/2026-09-15-cognitive-pipeline-health-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -10430,7 +10430,7 @@ entries:
     text: References
   last_modified: '2026-09-15'
 - path: docs/specs/issue-279-strategy-learning-showcase/decisions.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
@@ -10447,7 +10447,7 @@ entries:
     text: 'D6: LLM proof tests structure'
   last_modified: '2026-09-15'
 - path: docs/specs/issue-282-cognition-context-strategy/2026-09-14-cognition-context-strategy-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -10484,7 +10484,7 @@ entries:
     text: References
   last_modified: '2026-09-14'
 - path: docs/specs/issue-282-cognition-context-strategy/decisions.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
@@ -10499,7 +10499,7 @@ entries:
     text: 'D5: AvatarCognition published interface unchanged'
   last_modified: '2026-09-14'
 - path: docs/specs/issue-293-rag-retrieval-worker-factory/2026-09-21-rag-retrieval-worker-factory-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -10526,7 +10526,7 @@ entries:
     text: References
   last_modified: '2026-09-21'
 - path: docs/specs/issue-293-rag-retrieval-worker-factory/decisions.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -10537,7 +10537,7 @@ entries:
     text: 'D2: Factory API shape'
   last_modified: '2026-09-21'
 - path: docs/specs/issue-296-goal-aware-cognitive-loop/2026-09-23-computational-emotion-research.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -10591,7 +10591,7 @@ entries:
   - level: 2
     text: 6. Integration Path
   - level: 3
-    text: '6.1 Phase 1: OCC Foundation (blocks#296)'
+    text: '6.1 Phase 1: OCC Foundation (agency#296)'
   - level: 3
     text: '6.2 Phase 2: Emotion → Mood Bridge (follow-up)'
   - level: 3
@@ -10630,7 +10630,7 @@ entries:
     text: Temporal Dynamics
   last_modified: '2026-09-27'
 - path: docs/specs/issue-296-goal-aware-cognitive-loop/2026-09-24-goal-aware-cognitive-loop-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -10704,9 +10704,9 @@ entries:
   - level: 3
     text: neocortex (mindmap-intelligence) — new/modified phases
   - level: 3
-    text: blocks (blocks-core) — new orchestrator + extended prompt
+    text: agency (blocks-core) — new orchestrator + extended prompt
   - level: 3
-    text: blocks (agentic-yaml) — DSL extension
+    text: agency (agentic-yaml) — DSL extension
   - level: 3
     text: Goal node property conventions
   - level: 2
@@ -10727,11 +10727,11 @@ entries:
     text: References
   last_modified: '2026-09-27'
 - path: docs/specs/issue-296-goal-aware-cognitive-loop/decisions.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
-    text: Decisions — blocks#296 Goal-Aware Cognitive Loop
+    text: Decisions — agency#296 Goal-Aware Cognitive Loop
   - level: 2
     text: 'D1: Unified goal model for LLM prompt'
   - level: 2
@@ -10746,7 +10746,7 @@ entries:
     text: 'D6: GoalAppraisal SPI with heuristic implementation'
   last_modified: '2026-09-27'
 - path: docs/specs/issue-30-ai-routing-strategy-impls/2026-07-04-ai-routing-strategies-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -10781,7 +10781,7 @@ entries:
     text: Follow-up (not in scope)
   last_modified: '2026-08-10'
 - path: docs/specs/issue-304-cognitive-attention-mediator/2026-09-27-cognitive-attention-mediator-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -10816,7 +10816,7 @@ entries:
     text: References
   last_modified: '2026-09-27'
 - path: docs/specs/issue-304-cognitive-attention-mediator/decisions.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
@@ -10827,7 +10827,7 @@ entries:
     text: 'D3: Section gating override — AttentionRelevance with typed EnumSets'
   last_modified: '2026-09-27'
 - path: docs/specs/issue-359-summarisation-qhorus-integration/2026-07-28-summarisation-qhorus-integration-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -10851,7 +10851,7 @@ entries:
   - level: 3
     text: Qhorus Runtime Changes
   - level: 2
-    text: 'Layer 2: blocks.summarisation — Reusable Algorithm SPI'
+    text: 'Layer 2: agency.summarisation — Reusable Algorithm SPI'
   - level: 3
     text: ContentSummariser<T>
   - level: 3
@@ -10865,7 +10865,7 @@ entries:
   - level: 3
     text: ContentSummariserToSummariser<T> — Pipeline adapter
   - level: 2
-    text: 'Layer 3: blocks.channel.summary — Message-Specific + Adaptation'
+    text: 'Layer 3: agency.channel.summary — Message-Specific + Adaptation'
   - level: 3
     text: HeuristicMessageSummariser
   - level: 3
@@ -10892,7 +10892,7 @@ entries:
     text: Type Inventory
   last_modified: '2026-08-10'
 - path: docs/specs/issue-59-thread-summary-integration/2026-08-04-thread-summary-integration-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -10902,7 +10902,7 @@ entries:
   - level: 2
     text: Design
   - level: 3
-    text: 'Model: push from blocks, storage in qhorus'
+    text: 'Model: push from agency, storage in qhorus'
   - level: 3
     text: 'Trigger: thread-completing message with correlationId'
   - level: 2
@@ -10920,7 +10920,7 @@ entries:
   - level: 3
     text: JPA implementation
   - level: 2
-    text: blocks — ThreadSummaryObserver
+    text: agency — ThreadSummaryObserver
   - level: 3
     text: Injection points
   - level: 3
@@ -10934,7 +10934,7 @@ entries:
   - level: 2
     text: Testing
   - level: 3
-    text: ThreadSummaryObserverTest (blocks)
+    text: ThreadSummaryObserverTest (agency)
   - level: 3
     text: InMemoryThreadSummaryStoreTest (qhorus)
   - level: 2
@@ -10945,7 +10945,7 @@ entries:
     text: Design decisions
   last_modified: '2026-08-04'
 - path: docs/specs/issue-62-structured-progress-conv/2026-08-04-structured-progress-rendering-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -10996,7 +10996,7 @@ entries:
     text: Dependencies
   last_modified: '2026-08-04'
 - path: docs/specs/issue-68-agent-observation-accumulator/2026-07-25-observation-accumulator-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -11047,7 +11047,7 @@ entries:
     text: Related
   last_modified: '2026-08-10'
 - path: docs/specs/issue-69-affordance-renderer/2026-07-28-affordance-renderer-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -11096,18 +11096,18 @@ entries:
     text: Documentation Updates
   last_modified: '2026-08-10'
 - path: docs/specs/issue-77-prompt-size-budgeting/decisions.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
-    text: 'D1: Budget location — engine-api assembler vs blocks wrapper'
+    text: 'D1: Budget location — engine-api assembler vs agency wrapper'
   - level: 2
     text: 'D2: Budget unit — chars vs tokens'
   - level: 2
     text: 'D3: Overflow behavior — skip vs break'
   last_modified: '2026-08-10'
 - path: docs/specs/issue-84-85-data-table-enhancements/2026-07-28-data-table-variable-heights-column-resize-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -11228,7 +11228,7 @@ entries:
     text: Scope Exclusions
   last_modified: '2026-09-04'
 - path: docs/specs/issue-91-conversation-orchestrator/2026-08-05-conversation-orchestrator-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -11331,7 +11331,7 @@ entries:
     text: What This Does NOT Cover
   last_modified: '2026-08-26'
 - path: docs/specs/issue-97-supervisor-channel-obs/2026-08-14-supervisor-channel-observation-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -11372,7 +11372,7 @@ entries:
     text: Testing Strategy
   last_modified: '2026-08-14'
 - path: docs/specs/issue-97-supervisor-channel-obs/decisions.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 2
@@ -11391,7 +11391,7 @@ entries:
     text: 'D6: Factory API'
   last_modified: '2026-08-14'
 - path: docs/specs/issues-78-79-80-81/2026-08-05-trust-attestation-spis-and-diversity-selection-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -11436,7 +11436,7 @@ entries:
     text: Scope Exclusions
   last_modified: '2026-09-03'
 - path: docs/specs/main-217/2026-08-30-tts-pipeline-framework-cosyvoice3-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -11501,7 +11501,7 @@ entries:
     text: References
   last_modified: '2026-08-31'
 - path: docs/specs/main-217/decisions.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -11534,7 +11534,7 @@ entries:
     text: 'D13: Streaming on TextToSpeechService interface — deferred'
   last_modified: '2026-08-31'
 - path: docs/specs/main/2026-08-23-typescript-programming-model-design.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -11585,7 +11585,7 @@ entries:
     text: References
   last_modified: '2026-08-25'
 - path: docs/specs/main/decisions.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -11606,7 +11606,7 @@ entries:
     text: 'D7: Three audiences, three representations — YAML / Java / TS'
   last_modified: '2026-08-25'
 - path: docs/summarisation/CAPABILITY-MATRIX.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -11639,14 +11639,14 @@ entries:
     text: Built-in type tests
   last_modified: '2026-09-05'
 - path: docs/unified-execution-model.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
     text: Unified Execution Model — pointer
   last_modified: '2026-07-15'
 - path: docs/yaml-coverage.md
-  repo: blocks
+  repo: agency
   source: project
   headings:
   - level: 1
@@ -11688,7 +11688,7 @@ entries:
   - level: 3
     text: 13. Core Summarisation Types
   - level: 2
-    text: 'Module: blocks (main)'
+    text: 'Module: agency (main)'
   - level: 3
     text: 14. Social Cognition Configs
   - level: 3
@@ -11727,7 +11727,7 @@ entries:
     text: Summary
   last_modified: '2026-09-20'
 - path: blog/2026-07-01-mdp01-wiring-the-audit-spine.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 2
@@ -11738,29 +11738,29 @@ entries:
     text: The dependency tier question
   last_modified: '2026-07-01'
 - path: blog/2026-07-02-mdp01-what-belongs-in-a-shared-library.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 2
     text: What belongs in a shared library — and what doesn't
   last_modified: '2026-07-02'
 - path: blog/2026-07-05-mdp01-where-the-line-is.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings: []
   last_modified: '2026-07-05'
 - path: blog/2026-07-06-mdp01-composable-routing-enrichment.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings: []
   last_modified: '2026-07-06'
 - path: blog/2026-07-08-mdp01-the-framework-already-packed.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings: []
   last_modified: '2026-07-08'
 - path: blog/2026-07-10-mdp01-type-system-as-architecture.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 2
@@ -11773,7 +11773,7 @@ entries:
     text: The Architectural Question
   last_modified: '2026-07-10'
 - path: blog/2026-07-12-mdp02-two-interfaces-one-vocabulary.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 2
@@ -11786,14 +11786,14 @@ entries:
     text: The Decomposition Factory Question
   last_modified: '2026-07-12'
 - path: blog/2026-07-14-mdp01-the-grouped-window-nobody-had.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 2
     text: The Grouped Window Nobody Had
   last_modified: '2026-07-14'
 - path: blog/2026-07-23-mdp01-the-glue-that-was-always-missing.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -11806,17 +11806,17 @@ entries:
     text: What I didn't build
   last_modified: '2026-07-23'
 - path: blog/2026-07-25-mdp01-the-last-mile.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings: []
   last_modified: '2026-07-25'
 - path: blog/2026-07-26-mdp01-planning-the-unified-model.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings: []
   last_modified: '2026-08-14'
 - path: blog/2026-07-28-mdp01-the-format-that-makes-llms-act.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 2
@@ -11829,7 +11829,7 @@ entries:
     text: The adversarial review
   last_modified: '2026-07-28'
 - path: blog/2026-07-29-mdp01-the-planning-primitives.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 2
@@ -11846,7 +11846,7 @@ entries:
     text: Conversation projection hook
   last_modified: '2026-07-29'
 - path: blog/2026-07-29-mdp01-the-summary-that-knows-what-it-is.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 2
@@ -11855,12 +11855,12 @@ entries:
     text: Why the separation matters
   last_modified: '2026-07-30'
 - path: blog/2026-07-30-mdp01-closing-the-loop-on-supervisor-mode.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings: []
   last_modified: '2026-07-30'
 - path: blog/2026-08-01-mdp01-teaching-a-planner-to-rank.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 3
@@ -11873,7 +11873,7 @@ entries:
     text: Where this goes
   last_modified: '2026-08-01'
 - path: blog/2026-08-02-mdp01-the-planner-that-decides-its-own-depth.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 2
@@ -11886,17 +11886,17 @@ entries:
     text: Where this fits
   last_modified: '2026-08-14'
 - path: blog/2026-08-04-mdp01-the-fourth-supplementary-input.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings: []
   last_modified: '2026-08-04'
 - path: blog/2026-08-04-mdp02-push-not-pull-thread-summaries.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings: []
   last_modified: '2026-08-05'
 - path: blog/2026-08-09-mdp01-the-channel-that-completes-the-loop.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 2
@@ -11911,55 +11911,55 @@ entries:
     text: What's next
   last_modified: '2026-08-09'
 - path: blog/2026-08-10-mdp01-the-budget-that-wasnt-a-number.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 2
     text: The Budget That Wasn't a Number
   last_modified: '2026-08-11'
 - path: blog/2026-08-12-mdp01-the-uni-that-wasnt-earning-its-keep.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings: []
   last_modified: '2026-08-12'
 - path: blog/2026-08-14-mdp01-the-observer-that-didnt-change-the-driver.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings: []
   last_modified: '2026-08-14'
 - path: blog/2026-08-17-mdp01-the-callback-that-isnt-a-round.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings: []
   last_modified: '2026-08-18'
 - path: blog/2026-08-21-mdp05-the-agent-that-wants.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
     text: The Agent That Wants
   last_modified: '2026-08-21'
 - path: blog/2026-08-22-mdp01-the-observation-that-doesnt-know-its-world.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings: []
   last_modified: '2026-08-22'
 - path: blog/2026-08-25-mdp01-the-store-that-serialises-a-sealed-hierarchy.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
     text: The Store That Serialises a Sealed Hierarchy
   last_modified: '2026-08-25'
 - path: blog/2026-08-25-mdp02-the-group-that-decides-to-want.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
     text: The Group That Decides to Want
   last_modified: '2026-08-25'
 - path: blog/2026-08-30-mdp01-the-pipeline-that-isnt-hard-coded.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -11974,7 +11974,7 @@ entries:
     text: What's ahead
   last_modified: '2026-08-30'
 - path: blog/2026-09-05-mdp01-the-prompt-that-knows-its-audience.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -11991,12 +11991,12 @@ entries:
     text: Three layers, zero coupling
   last_modified: '2026-09-05'
 - path: blog/2026-09-05-mdp01-the-silo-that-wasnt.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings: []
   last_modified: '2026-09-05'
 - path: blog/2026-09-09-mdp01-the-yaml-that-compiles-to-orchestration.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 2
@@ -12009,21 +12009,21 @@ entries:
     text: What this opens up
   last_modified: '2026-09-09'
 - path: blog/2026-09-10-mdp01-when-the-reviewer-kills-your-architecture.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
     text: When the Reviewer Kills Your Architecture
   last_modified: '2026-09-10'
 - path: blog/2026-09-11-mdp01-the-last-four-gaps.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
     text: The Last Four Gaps
   last_modified: '2026-09-11'
 - path: blog/2026-09-12-mdp01-the-pipeline-that-ate-the-synthesiser.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -12036,7 +12036,7 @@ entries:
     text: What this validates
   last_modified: '2026-09-12'
 - path: blog/2026-09-14-mdp01-when-telling-ais-how-to-think-makes-them-worse.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -12057,7 +12057,7 @@ entries:
     text: Where it falls short
   last_modified: '2026-09-14'
 - path: blog/2026-09-15-mdp01-the-brain-that-couldnt-think.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -12072,14 +12072,14 @@ entries:
     text: The Architectural Insight
   last_modified: '2026-09-15'
 - path: specs/INDEX.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
     text: Specs Index — casehub-agency
   last_modified: '2026-06-29'
 - path: specs/annotation-driven-model/2026-08-14-annotation-driven-agent-model-design.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -12268,7 +12268,7 @@ entries:
     text: Interop tests
   last_modified: '2026-08-14'
 - path: specs/issue-125-round-listener-spi/2026-08-17-conversation-listener-design.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -12295,7 +12295,7 @@ entries:
     text: References
   last_modified: '2026-08-17'
 - path: specs/issue-125-round-listener-spi/decisions.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 2
@@ -12304,7 +12304,7 @@ entries:
     text: 'D2: Callback signature — what context does the listener receive?'
   last_modified: '2026-08-17'
 - path: specs/issue-129-drive-architecture/2026-08-21-drive-architecture-design.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -12365,7 +12365,7 @@ entries:
     text: References
   last_modified: '2026-08-21'
 - path: specs/issue-129-drive-architecture/decisions.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -12392,7 +12392,7 @@ entries:
     text: 'D9: API boundary for drive source data'
   last_modified: '2026-08-21'
 - path: specs/issue-142-narrative-identity/2026-08-24-narrative-identity-social-emergence-design.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -12438,7 +12438,7 @@ entries:
   - level: 3
     text: CognitiveObservationSections Extension
   - level: 3
-    text: ReflectionQueryStore (blocks)
+    text: ReflectionQueryStore (agency)
   - level: 3
     text: 'Package: `io.casehub.agency.core.social.emergence`'
   - level: 4
@@ -12499,7 +12499,7 @@ entries:
     text: References
   last_modified: '2026-08-24'
 - path: specs/issue-142-narrative-identity/2026-08-24-narrative-orchestrator-synthesiser-design.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -12550,7 +12550,7 @@ entries:
     text: References
   last_modified: '2026-08-24'
 - path: specs/issue-142-narrative-identity/decisions.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -12601,7 +12601,7 @@ entries:
     text: 'D21: Compositor gracefully degrades on synthesis failure'
   last_modified: '2026-08-24'
 - path: specs/issue-161-innerlife-scheduler-spi/2026-09-16-cognition-scheduler-spi-design.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -12648,7 +12648,7 @@ entries:
     text: References
   last_modified: '2026-09-16'
 - path: specs/issue-161-innerlife-scheduler-spi/decisions.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 2
@@ -12665,7 +12665,7 @@ entries:
     text: 'D6: Fix drive ordering — move after source orchestrators'
   last_modified: '2026-09-16'
 - path: specs/issue-165-agentic-yaml-expansion/2026-09-07-agentic-yaml-expansion-design.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -12716,7 +12716,7 @@ entries:
     text: References
   last_modified: '2026-09-07'
 - path: specs/issue-165-agentic-yaml-expansion/decisions.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -12739,7 +12739,7 @@ entries:
     text: 'D8: ShorthandModule for YAML ergonomics'
   last_modified: '2026-09-07'
 - path: specs/issue-19-choreographed-event-bus/2026-08-11-choreographed-event-bus-design.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -12770,7 +12770,7 @@ entries:
     text: Testing Strategy
   last_modified: '2026-08-11'
 - path: specs/issue-19-choreographed-event-bus/decisions.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 2
@@ -12787,7 +12787,7 @@ entries:
     text: 'D6: OrchestratedDriver scope'
   last_modified: '2026-08-11'
 - path: specs/issue-198-avatar-social-cognition/2026-09-05-avatar-social-cognition-design.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -12799,7 +12799,7 @@ entries:
   - level: 3
     text: 'Layer 1: speech-api (SPI)'
   - level: 3
-    text: 'Layer 2: blocks (integration)'
+    text: 'Layer 2: agency (integration)'
   - level: 4
     text: SocialPromptAssembler
   - level: 4
@@ -12830,7 +12830,7 @@ entries:
     text: References
   last_modified: '2026-09-05'
 - path: specs/issue-198-avatar-social-cognition/decisions.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -12849,7 +12849,7 @@ entries:
     text: 'D6: Signal feedback loop — conversation events feed back into orchestrators'
   last_modified: '2026-09-05'
 - path: specs/issue-212-stt-pipeline/2026-08-28-stt-accuracy-pipeline-design.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -12902,7 +12902,7 @@ entries:
     text: References
   last_modified: '2026-08-28'
 - path: specs/issue-212-stt-pipeline/decisions.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -12923,7 +12923,7 @@ entries:
     text: 'D7: Phonetic similarity matching'
   last_modified: '2026-08-28'
 - path: specs/issue-233-summarisation-yaml-surface/2026-09-05-summarisation-yaml-surface-design.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -12988,7 +12988,7 @@ entries:
     text: References
   last_modified: '2026-09-05'
 - path: specs/issue-233-summarisation-yaml-surface/decisions.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 2
@@ -13021,7 +13021,7 @@ entries:
     text: 'D14: ContentSummariser generification — R replaces SummaryResult'
   last_modified: '2026-09-05'
 - path: specs/issue-241-decision-narratives/2026-09-11-decision-narratives-design.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -13094,7 +13094,7 @@ entries:
     text: References
   last_modified: '2026-09-11'
 - path: specs/issue-241-decision-narratives/decisions.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -13121,7 +13121,7 @@ entries:
     text: 'D10: Signal integration model'
   last_modified: '2026-09-11'
 - path: specs/issue-242-typed-expr-compilation/2026-09-10-typed-expr-compilation-design.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -13158,7 +13158,7 @@ entries:
     text: References
   last_modified: '2026-09-10'
 - path: specs/issue-242-typed-expr-compilation/decisions.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -13175,7 +13175,7 @@ entries:
     text: 'D5: Layer 2 descriptor model — yaml-core, deferred'
   last_modified: '2026-09-10'
 - path: specs/issue-247-social-cognition-configs/2026-09-10-social-cognition-configs-design.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -13214,7 +13214,7 @@ entries:
     text: References
   last_modified: '2026-09-10'
 - path: specs/issue-247-social-cognition-configs/decisions.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -13225,7 +13225,7 @@ entries:
     text: 'D2: Standalone cognition.yaml file'
   last_modified: '2026-09-10'
 - path: specs/issue-248-affordance-world-model/2026-09-10-affordance-world-model-yaml-design.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -13286,7 +13286,7 @@ entries:
     text: References
   last_modified: '2026-09-10'
 - path: specs/issue-248-affordance-world-model/decisions.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -13301,7 +13301,7 @@ entries:
     text: 'D4: Named filter registry for pipeline'
   last_modified: '2026-09-10'
 - path: specs/issue-249-channel-infrastructure/2026-09-11-channel-infrastructure-yaml-design.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -13356,7 +13356,7 @@ entries:
     text: References
   last_modified: '2026-09-11'
 - path: specs/issue-249-channel-infrastructure/decisions.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -13369,7 +13369,7 @@ entries:
     text: 'D3: Include NegotiationCompiler'
   last_modified: '2026-09-11'
 - path: specs/issue-250-prompt-optimisation/2026-09-11-prompt-optimisation-yaml-design.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -13426,7 +13426,7 @@ entries:
     text: References
   last_modified: '2026-09-11'
 - path: specs/issue-250-prompt-optimisation/decisions.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 2
@@ -13443,7 +13443,7 @@ entries:
     text: 'D6: Per-domain root type with new @BuildStep'
   last_modified: '2026-09-11'
 - path: specs/issue-251-execution-infrastructure/2026-09-11-execution-infrastructure-yaml-design.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -13486,7 +13486,7 @@ entries:
     text: References
   last_modified: '2026-09-11'
 - path: specs/issue-252-trust-routing-oversight/2026-09-11-trust-routing-oversight-yaml-design.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -13527,7 +13527,7 @@ entries:
     text: References
   last_modified: '2026-09-11'
 - path: specs/issue-252-trust-routing-oversight/decisions.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 2
@@ -13540,7 +13540,7 @@ entries:
     text: 'D4: Weight map key handling and spec independence'
   last_modified: '2026-09-11'
 - path: specs/issue-253-speech-configs/2026-09-11-speech-configs-yaml-design.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -13583,7 +13583,7 @@ entries:
     text: References
   last_modified: '2026-09-11'
 - path: specs/issue-253-speech-configs/decisions.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 2
@@ -13594,7 +13594,7 @@ entries:
     text: 'D3: Spec categories for the 5 types'
   last_modified: '2026-09-11'
 - path: specs/issue-254-summarisation-gaps/2026-09-11-summarisation-gaps-design.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -13623,14 +13623,14 @@ entries:
     text: References
   last_modified: '2026-09-11'
 - path: specs/issue-254-summarisation-gaps/decisions.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 2
     text: 'D1: Full scope — all 6 gaps'
   last_modified: '2026-09-11'
 - path: specs/issue-255-engine-adapter/2026-09-11-engine-adapter-design.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -13659,7 +13659,7 @@ entries:
     text: References
   last_modified: '2026-09-11'
 - path: specs/issue-255-engine-adapter/decisions.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 2
@@ -13670,7 +13670,7 @@ entries:
     text: 'D3: Module placement'
   last_modified: '2026-09-11'
 - path: specs/issue-257-e2e-yaml-examples/2026-09-11-e2e-yaml-examples-design.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -13705,7 +13705,7 @@ entries:
     text: References
   last_modified: '2026-09-11'
 - path: specs/issue-258-historical-encounter-showcase/2026-09-12-historical-encounter-showcase-design.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -13746,7 +13746,7 @@ entries:
     text: References
   last_modified: '2026-09-12'
 - path: specs/issue-258-historical-encounter-showcase/decisions.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 2
@@ -13761,7 +13761,7 @@ entries:
     text: 'D5: Conversation loop structure'
   last_modified: '2026-09-12'
 - path: specs/issue-259-narrative-summ-retrofit/2026-09-12-narrative-summarisation-retrofit-design.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -13822,7 +13822,7 @@ entries:
     text: References
   last_modified: '2026-09-12'
 - path: specs/issue-259-narrative-summ-retrofit/decisions.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -13843,7 +13843,7 @@ entries:
     text: 'D7: Pipeline factory'
   last_modified: '2026-09-12'
 - path: specs/issue-260-cognitive-obs-renderers/2026-09-14-cognitive-obs-renderers-design.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -13876,7 +13876,7 @@ entries:
     text: References
   last_modified: '2026-09-14'
 - path: specs/issue-260-cognitive-obs-renderers/decisions.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 2
@@ -13889,7 +13889,7 @@ entries:
     text: 'D4: Belief revision markers — Set parameter, not Belief mutation'
   last_modified: '2026-09-14'
 - path: specs/issue-261-measurement-driven-cognition/2026-09-14-measurement-driven-cognition-design.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -13946,7 +13946,7 @@ entries:
     text: References
   last_modified: '2026-09-14'
 - path: specs/issue-261-measurement-driven-cognition/2026-09-14-measurement-driven-cognition-findings.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -14019,7 +14019,7 @@ entries:
     text: 11. Conclusion
   last_modified: '2026-09-14'
 - path: specs/issue-261-measurement-driven-cognition/decisions.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 2
@@ -14029,14 +14029,14 @@ entries:
   - level: 2
     text: 'D3: Single branch, all stages'
   - level: 2
-    text: 'D4: CognitionSnapshot in blocks main scope'
+    text: 'D4: CognitionSnapshot in agency main scope'
   - level: 2
     text: 'D5: Single-turn queries with system-prompt cognition injection'
   - level: 2
     text: 'D6: Automated LLM judge + manual paper'
   last_modified: '2026-09-14'
 - path: specs/issue-270-model-aware-cbr-routing/2026-09-15-model-aware-cbr-routing-design.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -14061,7 +14061,7 @@ entries:
     text: References
   last_modified: '2026-09-15'
 - path: specs/issue-270-model-aware-cbr-routing/decisions.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 2
@@ -14072,7 +14072,7 @@ entries:
     text: 'D3: No cold-start logic — defer to engine model selection policy'
   last_modified: '2026-09-15'
 - path: specs/issue-279-strategy-learning-showcase/2026-09-15-cognitive-pipeline-health-design.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -14107,7 +14107,7 @@ entries:
     text: References
   last_modified: '2026-09-15'
 - path: specs/issue-279-strategy-learning-showcase/decisions.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 2
@@ -14124,7 +14124,7 @@ entries:
     text: 'D6: LLM proof tests structure'
   last_modified: '2026-09-15'
 - path: specs/issue-282-cognition-context-strategy/2026-09-14-cognition-context-strategy-design.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -14161,7 +14161,7 @@ entries:
     text: References
   last_modified: '2026-09-14'
 - path: specs/issue-282-cognition-context-strategy/decisions.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 2
@@ -14176,7 +14176,7 @@ entries:
     text: 'D5: AvatarCognition published interface unchanged'
   last_modified: '2026-09-14'
 - path: specs/issue-293-rag-retrieval-worker-factory/2026-09-21-rag-retrieval-worker-factory-design.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -14203,7 +14203,7 @@ entries:
     text: References
   last_modified: '2026-09-21'
 - path: specs/issue-293-rag-retrieval-worker-factory/decisions.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -14214,7 +14214,7 @@ entries:
     text: 'D2: Factory API shape'
   last_modified: '2026-09-21'
 - path: specs/issue-97-supervisor-channel-obs/2026-08-14-supervisor-channel-observation-design.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -14255,7 +14255,7 @@ entries:
     text: Testing Strategy
   last_modified: '2026-08-14'
 - path: specs/issue-97-supervisor-channel-obs/decisions.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 2
@@ -14274,7 +14274,7 @@ entries:
     text: 'D6: Factory API'
   last_modified: '2026-08-14'
 - path: specs/issues-78-79-80-81/2026-08-05-trust-attestation-spis-and-diversity-selection-design.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -14319,7 +14319,7 @@ entries:
     text: Scope Exclusions
   last_modified: '2026-09-03'
 - path: specs/main-217/2026-08-30-tts-pipeline-framework-cosyvoice3-design.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -14384,7 +14384,7 @@ entries:
     text: References
   last_modified: '2026-08-30'
 - path: specs/main-217/decisions.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -14417,7 +14417,7 @@ entries:
     text: 'D13: Streaming on TextToSpeechService interface — deferred'
   last_modified: '2026-08-30'
 - path: specs/main/2026-08-23-typescript-programming-model-design.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -14468,7 +14468,7 @@ entries:
     text: References
   last_modified: '2026-08-24'
 - path: specs/main/decisions.md
-  repo: blocks (workspace)
+  repo: agency (workspace)
   source: project
   headings:
   - level: 1
@@ -21810,7 +21810,7 @@ entries:
   - level: 3
     text: Anchoring composition
   - level: 3
-    text: casehub-agency (blocks#62)
+    text: casehub-agency (agency#62)
   - level: 3
     text: qhorus
   - level: 2
@@ -27578,7 +27578,7 @@ entries:
   - level: 3
     text: Anchoring composition
   - level: 3
-    text: casehub-agency (blocks#62)
+    text: casehub-agency (agency#62)
   - level: 3
     text: qhorus
   - level: 2
@@ -29640,7 +29640,7 @@ entries:
   - level: 2
     text: The SPI couldn't say what it meant
   - level: 2
-    text: 'None of it blocks #77'
+    text: 'None of it agency #77'
   last_modified: '2026-08-10'
 - path: docs/blog/2026-05-01-mdp02-case-panel-and-mcp-cliff.md
   repo: claudony
@@ -33676,7 +33676,7 @@ entries:
   - level: 2
     text: The SPI couldn't say what it meant
   - level: 2
-    text: 'None of it blocks #77'
+    text: 'None of it agency #77'
   last_modified: '2026-05-05'
 - path: blog/2026-05-01-mdp02-case-panel-and-mcp-cliff.md
   repo: claudony (workspace)
@@ -46830,7 +46830,7 @@ entries:
   - level: 3
     text: Anchoring composition
   - level: 3
-    text: casehub-agency (blocks#62)
+    text: casehub-agency (agency#62)
   - level: 3
     text: qhorus
   - level: 2
@@ -47853,7 +47853,7 @@ entries:
   - level: 3
     text: Anchoring composition
   - level: 3
-    text: casehub-agency (blocks#62)
+    text: casehub-agency (agency#62)
   - level: 3
     text: qhorus
   - level: 2
@@ -50057,7 +50057,7 @@ entries:
   - level: 2
     text: 'D4: Static decomposition constraint awareness'
   - level: 2
-    text: 'D5: Scope — engine + blocks companion issue'
+    text: 'D5: Scope — engine + agency companion issue'
   - level: 2
     text: 'D6: Constraint feasibility validation'
   - level: 2
@@ -56037,7 +56037,7 @@ entries:
   - level: 3
     text: 4.3 Additional RAS Ganglion Types
   - level: 2
-    text: 5. Logistics Example — blocks `examples/logistics/`
+    text: 5. Logistics Example — agency `examples/logistics/`
   - level: 3
     text: 5.1 Domain Model
   - level: 3
@@ -56072,9 +56072,9 @@ entries:
   - level: 2
     text: 'D6: Example lives in blocks'
   - level: 2
-    text: 'D7: Composable YAML runtime for blocks summarisation'
+    text: 'D7: Composable YAML runtime for agency summarisation'
   - level: 2
-    text: 'D8: Summarisation types extracted to blocks API module'
+    text: 'D8: Summarisation types extracted to agency API module'
   - level: 2
     text: 'D9: Standard CloudEvent type URIs for built-in summariser output'
   last_modified: '2026-09-13'
@@ -57358,7 +57358,7 @@ entries:
   - level: 3
     text: 4.3 Additional RAS Ganglion Types
   - level: 2
-    text: 5. Logistics Example — blocks `examples/logistics/`
+    text: 5. Logistics Example — agency `examples/logistics/`
   - level: 3
     text: 5.1 Domain Model
   - level: 3
@@ -57393,9 +57393,9 @@ entries:
   - level: 2
     text: 'D6: Example lives in blocks'
   - level: 2
-    text: 'D7: Composable YAML runtime for blocks summarisation'
+    text: 'D7: Composable YAML runtime for agency summarisation'
   - level: 2
-    text: 'D8: Summarisation types extracted to blocks API module'
+    text: 'D8: Summarisation types extracted to agency API module'
   - level: 2
     text: 'D9: Standard CloudEvent type URIs for built-in summariser output'
   last_modified: '2026-09-02'
@@ -61517,7 +61517,7 @@ entries:
   - level: 4
     text: '`DevtownTrustRoutingPolicyProvider` change'
   - level: 2
-    text: 'Component 4: Deferred — blocks#55'
+    text: 'Component 4: Deferred — agency#55'
   - level: 2
     text: Testing strategy
   - level: 3
@@ -68428,7 +68428,7 @@ entries:
   - level: 2
     text: Scope
   - level: 2
-    text: Blocks API surface (shipped in blocks#91)
+    text: Blocks API surface (shipped in agency#91)
   - level: 2
     text: Implementation mapping
   - level: 3
@@ -81281,9 +81281,9 @@ entries:
   - level: 3
     text: PlanningStrategy activation conditions — a design simplification
   - level: 2
-    text: How blocks Fits In
+    text: How agency Fits In
   - level: 3
-    text: 'The key question: blocks patterns vs engine PlanningStrategy'
+    text: 'The key question: agency patterns vs engine PlanningStrategy'
   - level: 3
     text: Two possible integration paths
   - level: 2
@@ -81291,7 +81291,7 @@ entries:
   - level: 3
     text: 1. Write real PlanningStrategy implementations in engine
   - level: 3
-    text: 2. Bridge blocks patterns to engine sub-cases
+    text: 2. Bridge agency patterns to engine sub-cases
   - level: 3
     text: 3. TaskDefinition syntactic sugar (casehub-quarkus)
   - level: 3
@@ -86152,7 +86152,7 @@ entries:
   - level: 3
     text: Wiring changes
   - level: 2
-    text: 10. Validation Against blocks#30
+    text: 10. Validation Against agency#30
   last_modified: '2026-08-24'
 - path: docs/specs/2026-07-04-batch-fixes-design.md
   repo: engine
@@ -87068,7 +87068,7 @@ entries:
   - level: 3
     text: Integration with existing types
   - level: 3
-    text: Blocks-side ParallelDriver (future, tracked under blocks#44)
+    text: Blocks-side ParallelDriver (future, tracked under agency#44)
   - level: 2
     text: Test Plan
   - level: 3
@@ -87306,7 +87306,7 @@ entries:
   - level: 3
     text: 4.2 Generic signatures and platform mappings
   - level: 3
-    text: 4.3 Implication for blocks SPIs
+    text: 4.3 Implication for agency SPIs
   - level: 3
     text: 4.4 The 16-row composition matrix
   - level: 2
@@ -87348,7 +87348,7 @@ entries:
   - level: 4
     text: Supporting infrastructure (6 SPIs)
   - level: 4
-    text: Impact on blocks SPIs
+    text: Impact on agency SPIs
   - level: 4
     text: Platform advantage over LangChain4j
   - level: 3
@@ -87608,7 +87608,7 @@ entries:
   - level: 3
     text: Anchoring composition
   - level: 3
-    text: casehub-agency (blocks#62)
+    text: casehub-agency (agency#62)
   - level: 3
     text: qhorus
   - level: 2
@@ -90424,7 +90424,7 @@ entries:
   - level: 3
     text: For Epic 2 (Cognitive Agent — blocks)
   - level: 3
-    text: For Epic 3 (Research Loop — blocks + neocortex)
+    text: For Epic 3 (Research Loop — agency + neocortex)
   - level: 3
     text: For Epic 4 (Full Cognitive Memory — neocortex)
   - level: 3
@@ -90691,7 +90691,7 @@ entries:
   - level: 2
     text: 9. Prompt Integration (How Cognitive State Becomes Agent Behavior)
   - level: 3
-    text: PromptSection (interface, blocks speech)
+    text: PromptSection (interface, agency speech)
   - level: 3
     text: Concrete Prompt Sections
   - level: 2
@@ -90850,9 +90850,9 @@ entries:
   - level: 2
     text: 12. Extension Points for Blocks and Neocortex
   - level: 3
-    text: For blocks (Epic 2 — Cognitive Agent)
+    text: For agency (Epic 2 — Cognitive Agent)
   - level: 3
-    text: For blocks (Epic 3 — Research Loop)
+    text: For agency (Epic 3 — Research Loop)
   - level: 3
     text: For neocortex (Epic 4 — Cognitive Memory)
   - level: 2
@@ -91269,7 +91269,7 @@ entries:
   - level: 2
     text: 'D90: Audit trail — Ledger-integrated provisioning events'
   - level: 2
-    text: 'D91: Scope — Engine-complete with blocks hooks and full CBR loop'
+    text: 'D91: Scope — Engine-complete with agency hooks and full CBR loop'
   - level: 2
     text: 'D92: Improvement identification model — signals trigger goals'
   - level: 2
@@ -92549,7 +92549,7 @@ entries:
   - level: 3
     text: Anchoring composition
   - level: 3
-    text: casehub-agency (blocks#62)
+    text: casehub-agency (agency#62)
   - level: 3
     text: qhorus
   - level: 2
@@ -95326,7 +95326,7 @@ entries:
   - level: 2
     text: 'D4: Static decomposition constraint awareness'
   - level: 2
-    text: 'D5: Scope — engine + blocks companion issue'
+    text: 'D5: Scope — engine + agency companion issue'
   - level: 2
     text: 'D6: Constraint feasibility validation'
   - level: 2
@@ -96646,7 +96646,7 @@ entries:
   - level: 2
     text: 'D4: Layered design — blocks-ready extension points'
   - level: 2
-    text: 'D5: RAS integration deferred to blocks examples'
+    text: 'D5: RAS integration deferred to agency examples'
   last_modified: '2026-08-20'
 - path: docs/specs/issue-951-yaml-definition-resolution/2026-08-30-definition-ref-design.md
   repo: engine
@@ -100207,7 +100207,7 @@ entries:
   - level: 3
     text: For Epic 2 (Cognitive Agent — blocks)
   - level: 3
-    text: For Epic 3 (Research Loop — blocks + neocortex)
+    text: For Epic 3 (Research Loop — agency + neocortex)
   - level: 3
     text: For Epic 4 (Full Cognitive Memory — neocortex)
   - level: 3
@@ -100474,7 +100474,7 @@ entries:
   - level: 2
     text: 9. Prompt Integration (How Cognitive State Becomes Agent Behavior)
   - level: 3
-    text: PromptSection (interface, blocks speech)
+    text: PromptSection (interface, agency speech)
   - level: 3
     text: Concrete Prompt Sections
   - level: 2
@@ -100633,9 +100633,9 @@ entries:
   - level: 2
     text: 12. Extension Points for Blocks and Neocortex
   - level: 3
-    text: For blocks (Epic 2 — Cognitive Agent)
+    text: For agency (Epic 2 — Cognitive Agent)
   - level: 3
-    text: For blocks (Epic 3 — Research Loop)
+    text: For agency (Epic 3 — Research Loop)
   - level: 3
     text: For neocortex (Epic 4 — Cognitive Memory)
   - level: 2
@@ -101052,7 +101052,7 @@ entries:
   - level: 2
     text: 'D90: Audit trail — Ledger-integrated provisioning events'
   - level: 2
-    text: 'D91: Scope — Engine-complete with blocks hooks and full CBR loop'
+    text: 'D91: Scope — Engine-complete with agency hooks and full CBR loop'
   - level: 2
     text: 'D92: Improvement identification model — signals trigger goals'
   - level: 2
@@ -105429,7 +105429,7 @@ entries:
   - level: 2
     text: 'D7: Scope — all five operations'
   - level: 2
-    text: 'D8: Importance scoring placement — blocks SPIs with heuristic defaults'
+    text: 'D8: Importance scoring placement — agency SPIs with heuristic defaults'
   - level: 2
     text: 'D9: Orchestrator architecture — single-entry tick() + external composition in scheduler'
   - level: 2
@@ -105443,7 +105443,7 @@ entries:
   - level: 2
     text: 'D14: Integrity checking — IntegrityChecker SPI with hybrid default'
   - level: 2
-    text: 'D15: Package placement — blocks.memory (top-level)'
+    text: 'D15: Package placement — agency.memory (top-level)'
   - level: 1
     text: UserModel (#122) Design Decisions
   - level: 2
@@ -105459,7 +105459,7 @@ entries:
   - level: 2
     text: 'D21: Profile structure — fixed core + extensible metadata'
   - level: 2
-    text: 'D22: Package placement — blocks.agentic.social'
+    text: 'D22: Package placement — agency.agentic.social'
   - level: 1
     text: MentalModel (#123) Design Decisions
   - level: 2
@@ -105497,7 +105497,7 @@ entries:
   - level: 2
     text: 'D38: Strategy dimensions — fixed core + extensible metadata'
   - level: 2
-    text: 'D39: Package placement — blocks.agentic.social'
+    text: 'D39: Package placement — agency.agentic.social'
   - level: 2
     text: 'D40: Tick/reflect outcomes — hierarchical sealed interfaces'
   - level: 2
@@ -105878,7 +105878,7 @@ entries:
   - level: 3
     text: Anchoring composition
   - level: 3
-    text: casehub-agency (blocks#62)
+    text: casehub-agency (agency#62)
   - level: 3
     text: qhorus
   - level: 2
@@ -107796,7 +107796,7 @@ entries:
   - level: 2
     text: 5. Cross-Repo Work
   - level: 3
-    text: 5.1 blocks (casehubio/agency)
+    text: 5.1 agency (casehubio/agency)
   - level: 3
     text: 5.2 examples/wacky-manor (this repo)
   - level: 2
@@ -107821,7 +107821,7 @@ entries:
   - level: 2
     text: 'D3: buildExchangeObservation refactoring'
   last_modified: '2026-08-21'
-- path: docs/specs/issue-5-observation-accumulator-blocks/2026-08-01-observation-accumulator-design.md
+- path: docs/specs/issue-5-observation-accumulator-agency/2026-08-01-observation-accumulator-design.md
   repo: examples
   source: project
   headings:
@@ -108246,7 +108246,7 @@ entries:
   - level: 3
     text: WeightedContentScorer
   - level: 2
-    text: Refactored Types (blocks)
+    text: Refactored Types (agency)
   - level: 3
     text: SurpriseScorer
   - level: 3
@@ -108300,7 +108300,7 @@ entries:
   - level: 2
     text: 'D2: actionImportance is a new game-specific ContentScorer, not a renamed SurpriseScorer'
   - level: 2
-    text: 'D3: ScoreableContent extraction — static factory on ScoreableContent for Memory, inline in blocks for ScoredCbrCase'
+    text: 'D3: ScoreableContent extraction — static factory on ScoreableContent for Memory, inline in agency for ScoredCbrCase'
   - level: 2
     text: 'D4: Extend SocialConfig with relationships for initial PAD values (issue #61)'
   - level: 2
@@ -108599,7 +108599,7 @@ entries:
   - level: 2
     text: Cross-Repo Scope
   - level: 3
-    text: CognitionConfig Changes (blocks)
+    text: CognitionConfig Changes (agency)
   - level: 2
     text: Empirical Validation
   - level: 2
@@ -108643,7 +108643,7 @@ entries:
   - level: 1
     text: Decisions — issue-63-fix-cdi-config-beans
   - level: 2
-    text: blocks#283 — Directive-Minimal Architecture
+    text: agency#283 — Directive-Minimal Architecture
   - level: 2
     text: 'D1: Scope — full rewrite vs incremental patching'
   - level: 2
@@ -108782,7 +108782,7 @@ entries:
   - level: 4
     text: TrustEvolutionConfigSpec
   - level: 3
-    text: blocks (CDI layer)
+    text: agency (CDI layer)
   - level: 4
     text: TrustRelevantAction (CDI event)
   - level: 4
@@ -108818,7 +108818,7 @@ entries:
   - level: 3
     text: Unit tests (blocks-agentic-yaml)
   - level: 3
-    text: Unit tests (blocks)
+    text: Unit tests (agency)
   - level: 3
     text: Unit tests (neocortex-mindmap-intelligence)
   - level: 3
@@ -111084,7 +111084,7 @@ entries:
   - level: 2
     text: Platform Pattern Coverage
   - level: 3
-    text: blocks (Java) — 7 categories
+    text: agency (Java) — 7 categories
   - level: 3
     text: mosaic (TS) — Components used
   - level: 3
@@ -112552,7 +112552,7 @@ entries:
   - level: 2
     text: Platform Pattern Coverage
   - level: 3
-    text: blocks (Java) — 7 categories
+    text: agency (Java) — 7 categories
   - level: 3
     text: mosaic (TS) — Components used
   - level: 3
@@ -122100,7 +122100,7 @@ entries:
   - level: 3
     text: Anchoring composition
   - level: 3
-    text: casehub-agency (blocks#62)
+    text: casehub-agency (agency#62)
   - level: 3
     text: qhorus
   - level: 2
@@ -123861,7 +123861,7 @@ entries:
   - level: 3
     text: Anchoring composition
   - level: 3
-    text: casehub-agency (blocks#62)
+    text: casehub-agency (agency#62)
   - level: 3
     text: qhorus
   - level: 2
@@ -126008,7 +126008,7 @@ entries:
   - level: 2
     text: 'D4: Static decomposition constraint awareness'
   - level: 2
-    text: 'D5: Scope — engine + blocks companion issue'
+    text: 'D5: Scope — engine + agency companion issue'
   - level: 2
     text: 'D6: Constraint feasibility validation'
   - level: 2
@@ -133487,7 +133487,7 @@ entries:
   - level: 2
     text: What landed
   - level: 2
-    text: The blocks#303 alignment
+    text: The agency#303 alignment
   last_modified: '2026-09-25'
 - path: docs/blog/2026-09-28-mdp01-when-your-agent-judges-itself.md
   repo: neocortex
@@ -134520,7 +134520,7 @@ entries:
   - level: 3
     text: 'Task 1: TrajectoryGrouper — data types and grouping logic'
   - level: 2
-    text: 'Batch 2: LLM Reflection Synthesizer (blocks)'
+    text: 'Batch 2: LLM Reflection Synthesizer (agency)'
   - level: 3
     text: 'Task 2: LlmReflectionSynthesizer — prompt building, LLM call, response parsing'
   - level: 2
@@ -138230,7 +138230,7 @@ entries:
   - level: 2
     text: 'D7: Scope — all five operations'
   - level: 2
-    text: 'D8: Importance scoring placement — blocks SPIs with heuristic defaults'
+    text: 'D8: Importance scoring placement — agency SPIs with heuristic defaults'
   - level: 2
     text: 'D9: Orchestrator architecture — single-entry tick() + external composition in scheduler'
   - level: 2
@@ -138244,7 +138244,7 @@ entries:
   - level: 2
     text: 'D14: Integrity checking — IntegrityChecker SPI with hybrid default'
   - level: 2
-    text: 'D15: Package placement — blocks.memory (top-level)'
+    text: 'D15: Package placement — agency.memory (top-level)'
   - level: 1
     text: UserModel (#122) Design Decisions
   - level: 2
@@ -138260,7 +138260,7 @@ entries:
   - level: 2
     text: 'D21: Profile structure — fixed core + extensible metadata'
   - level: 2
-    text: 'D22: Package placement — blocks.agentic.social'
+    text: 'D22: Package placement — agency.agentic.social'
   - level: 1
     text: MentalModel (#123) Design Decisions
   - level: 2
@@ -138298,7 +138298,7 @@ entries:
   - level: 2
     text: 'D38: Strategy dimensions — fixed core + extensible metadata'
   - level: 2
-    text: 'D39: Package placement — blocks.agentic.social'
+    text: 'D39: Package placement — agency.agentic.social'
   - level: 2
     text: 'D40: Tick/reflect outcomes — hierarchical sealed interfaces'
   - level: 2
@@ -139038,7 +139038,7 @@ entries:
   - level: 3
     text: Anchoring composition
   - level: 3
-    text: casehub-agency (blocks#62)
+    text: casehub-agency (agency#62)
   - level: 3
     text: qhorus
   - level: 2
@@ -141650,7 +141650,7 @@ entries:
   - level: 4
     text: engine (execution + routing)
   - level: 4
-    text: blocks (behavioral — largest goal subsystem)
+    text: agency (behavioral — largest goal subsystem)
   - level: 4
     text: desiredstate (convergence execution)
   - level: 4
@@ -141670,7 +141670,7 @@ entries:
   - level: 3
     text: 'D2: What happens to eidos GoalSignalStore?'
   - level: 3
-    text: 'D3: What moves from blocks to neocortex?'
+    text: 'D3: What moves from agency to neocortex?'
   - level: 3
     text: 'D4: How does neocortex goal cognition integrate with engine routing?'
   - level: 3
@@ -141788,7 +141788,7 @@ entries:
   - level: 2
     text: 'D2: What happens to eidos GoalSignalStore?'
   - level: 2
-    text: 'D3: What moves from blocks to neocortex?'
+    text: 'D3: What moves from agency to neocortex?'
   - level: 2
     text: 'D4: How does neocortex integrate with engine routing?'
   - level: 2
@@ -142169,7 +142169,7 @@ entries:
   - level: 2
     text: 'D14: Platform consolidation direction'
   - level: 2
-    text: 'D15: Alignment with blocks#303 cognitive state migration'
+    text: 'D15: Alignment with agency#303 cognitive state migration'
   last_modified: '2026-09-25'
 - path: docs/specs/issue-383-agent-occ-emotions/2026-09-28-agent-occ-emotions-design.md
   repo: neocortex
@@ -144196,7 +144196,7 @@ entries:
   - level: 2
     text: What landed
   - level: 2
-    text: The blocks#303 alignment
+    text: The agency#303 alignment
   last_modified: '2026-09-25'
 - path: blog/2026-09-28-mdp01-when-your-agent-judges-itself.md
   repo: neocortex (workspace)
@@ -147657,7 +147657,7 @@ entries:
   - level: 4
     text: engine (execution + routing)
   - level: 4
-    text: blocks (behavioral — largest goal subsystem)
+    text: agency (behavioral — largest goal subsystem)
   - level: 4
     text: desiredstate (convergence execution)
   - level: 4
@@ -147677,7 +147677,7 @@ entries:
   - level: 3
     text: 'D2: What happens to eidos GoalSignalStore?'
   - level: 3
-    text: 'D3: What moves from blocks to neocortex?'
+    text: 'D3: What moves from agency to neocortex?'
   - level: 3
     text: 'D4: How does neocortex goal cognition integrate with engine routing?'
   - level: 3
@@ -147795,7 +147795,7 @@ entries:
   - level: 2
     text: 'D2: What happens to eidos GoalSignalStore?'
   - level: 2
-    text: 'D3: What moves from blocks to neocortex?'
+    text: 'D3: What moves from agency to neocortex?'
   - level: 2
     text: 'D4: How does neocortex integrate with engine routing?'
   - level: 2
@@ -148051,7 +148051,7 @@ entries:
   - level: 2
     text: 'D14: Platform consolidation direction'
   - level: 2
-    text: 'D15: Alignment with blocks#303 cognitive state migration'
+    text: 'D15: Alignment with agency#303 cognitive state migration'
   last_modified: '2026-09-25'
 - path: specs/issue-383-agent-occ-emotions/2026-09-28-agent-occ-emotions-design.md
   repo: neocortex (workspace)
@@ -165034,7 +165034,7 @@ entries:
   - level: 3
     text: Anchoring composition
   - level: 3
-    text: casehub-agency (blocks#62)
+    text: casehub-agency (agency#62)
   - level: 3
     text: qhorus
   - level: 2
@@ -165106,9 +165106,9 @@ entries:
   - level: 2
     text: 3. CSS Isolation
   - level: 3
-    text: '3.1 `all: initial` on container — blocks inheritance'
+    text: '3.1 `all: initial` on container — agency inheritance'
   - level: 3
-    text: 3.2 Scoped revert on children — blocks host element-specific resets
+    text: 3.2 Scoped revert on children — agency host element-specific resets
   - level: 3
     text: 3.3 `applyTheme()` on container — re-declares design tokens
   - level: 3
@@ -171930,7 +171930,7 @@ entries:
   - level: 3
     text: RoutingFeatureExtractor (blocks SPI)
   - level: 3
-    text: CbrRoutingOutcomeRecorder (blocks)
+    text: CbrRoutingOutcomeRecorder (agency)
   - level: 2
     text: Current State
   - level: 2
@@ -172302,7 +172302,7 @@ entries:
   - level: 3
     text: SemanticAgentRoutingStrategy
   - level: 2
-    text: 'Layer 4: AI Strategy Execution (blocks)'
+    text: 'Layer 4: AI Strategy Execution (agency)'
   - level: 3
     text: LlmAgentRoutingStrategy
   - level: 3
@@ -174617,7 +174617,7 @@ entries:
   - level: 2
     text: 'D7: Scope — all five operations'
   - level: 2
-    text: 'D8: Importance scoring placement — blocks SPIs with heuristic defaults'
+    text: 'D8: Importance scoring placement — agency SPIs with heuristic defaults'
   - level: 2
     text: 'D9: Orchestrator architecture — single-entry tick() + external composition in scheduler'
   - level: 2
@@ -174631,7 +174631,7 @@ entries:
   - level: 2
     text: 'D14: Integrity checking — IntegrityChecker SPI with hybrid default'
   - level: 2
-    text: 'D15: Package placement — blocks.memory (top-level)'
+    text: 'D15: Package placement — agency.memory (top-level)'
   - level: 1
     text: UserModel (#122) Design Decisions
   - level: 2
@@ -174647,7 +174647,7 @@ entries:
   - level: 2
     text: 'D21: Profile structure — fixed core + extensible metadata'
   - level: 2
-    text: 'D22: Package placement — blocks.agentic.social'
+    text: 'D22: Package placement — agency.agentic.social'
   - level: 1
     text: MentalModel (#123) Design Decisions
   - level: 2
@@ -174685,7 +174685,7 @@ entries:
   - level: 2
     text: 'D38: Strategy dimensions — fixed core + extensible metadata'
   - level: 2
-    text: 'D39: Package placement — blocks.agentic.social'
+    text: 'D39: Package placement — agency.agentic.social'
   - level: 2
     text: 'D40: Tick/reflect outcomes — hierarchical sealed interfaces'
   - level: 2
@@ -174875,7 +174875,7 @@ entries:
   - level: 3
     text: Anchoring composition
   - level: 3
-    text: casehub-agency (blocks#62)
+    text: casehub-agency (agency#62)
   - level: 3
     text: qhorus
   - level: 2
@@ -183673,7 +183673,7 @@ entries:
   - level: 3
     text: Anchoring composition
   - level: 3
-    text: casehub-agency (blocks#62)
+    text: casehub-agency (agency#62)
   - level: 3
     text: qhorus
   - level: 2
@@ -186950,7 +186950,7 @@ entries:
   - level: 2
     text: 'D2: Default variable prefix — parse-time prefix rewriting via VariablePrefixRewriter'
   - level: 2
-    text: 'D3: Compute blocks — yaml-core data model + platform compilation'
+    text: 'D3: Compute agency — yaml-core data model + platform compilation'
   - level: 2
     text: 'D4: Expression engine defaults — ExpressionContext enum + registry defaults'
   - level: 2
@@ -193204,7 +193204,7 @@ entries:
   - level: 2
     text: 'D2: Default variable prefix — parse-time prefix rewriting via VariablePrefixRewriter'
   - level: 2
-    text: 'D3: Compute blocks — yaml-core data model + platform compilation'
+    text: 'D3: Compute agency — yaml-core data model + platform compilation'
   - level: 2
     text: 'D4: Expression engine defaults — ExpressionContext enum + registry defaults'
   - level: 2
@@ -195256,7 +195256,7 @@ entries:
   - level: 3
     text: The approval gate — `request_approval` + `wait_for_reply`
   - level: 1
-    text: 'Agent posts QUERY and blocks until human responds (or timeout):'
+    text: 'Agent posts QUERY and agency until human responds (or timeout):'
   - level: 3
     text: Watchdogs — automated alerting
   - level: 1
@@ -202738,7 +202738,7 @@ entries:
   - level: 3
     text: Anchoring composition
   - level: 3
-    text: casehub-agency (blocks#62)
+    text: casehub-agency (agency#62)
   - level: 3
     text: qhorus
   - level: 2
@@ -203620,7 +203620,7 @@ entries:
   - level: 3
     text: Anchoring composition
   - level: 3
-    text: casehub-agency (blocks#62)
+    text: casehub-agency (agency#62)
   - level: 3
     text: qhorus
   - level: 2
@@ -206282,7 +206282,7 @@ entries:
   - level: 2
     text: 4. FIPA Got This Right
   - level: 2
-    text: 5. Cost to blocks#104 and Beyond
+    text: 5. Cost to agency#104 and Beyond
   - level: 2
     text: 6. The Minimality Counter-Argument
   last_modified: '2026-08-14'
@@ -208036,7 +208036,7 @@ entries:
   - level: 2
     text: 'D4: Static decomposition constraint awareness'
   - level: 2
-    text: 'D5: Scope — engine + blocks companion issue'
+    text: 'D5: Scope — engine + agency companion issue'
   - level: 2
     text: 'D6: Constraint feasibility validation'
   - level: 2
@@ -209374,7 +209374,7 @@ entries:
   - level: 2
     text: 4. FIPA Got This Right
   - level: 2
-    text: 5. Cost to blocks#104 and Beyond
+    text: 5. Cost to agency#104 and Beyond
   - level: 2
     text: 6. The Minimality Counter-Argument
   last_modified: '2026-08-14'
@@ -215327,7 +215327,7 @@ entries:
   - level: 3
     text: Integration tests (@QuarkusTest)
   - level: 2
-    text: Blocks Validation (blocks#27)
+    text: Blocks Validation (agency#27)
   - level: 2
     text: Configuration
   - level: 3
@@ -217173,7 +217173,7 @@ entries:
   - level: 2
     text: 'D1: Two sub-modules (protocol + agent)'
   - level: 2
-    text: 'D2: Event-driven execution with chat SPI delta + blocks compression'
+    text: 'D2: Event-driven execution with chat SPI delta + agency compression'
   - level: 2
     text: 'D3: Two-tier layering — quarkmind-core / quarkmind-discord'
   - level: 2
@@ -217391,7 +217391,7 @@ entries:
   - level: 2
     text: 'D1: Two sub-modules (protocol + agent)'
   - level: 2
-    text: 'D2: Event-driven execution with chat SPI delta + blocks compression'
+    text: 'D2: Event-driven execution with chat SPI delta + agency compression'
   - level: 2
     text: 'D3: Two-tier layering — quarkmind-core / quarkmind-discord'
   - level: 2
@@ -219259,7 +219259,7 @@ entries:
   - level: 2
     text: 'D1: Two sub-modules (protocol + agent)'
   - level: 2
-    text: 'D2: Event-driven execution with chat SPI delta + blocks compression'
+    text: 'D2: Event-driven execution with chat SPI delta + agency compression'
   - level: 2
     text: 'D3: Two-tier layering — quarkmind-core / quarkmind-discord'
   - level: 2
@@ -231069,7 +231069,7 @@ entries:
   - level: 3
     text: Anchoring composition
   - level: 3
-    text: casehub-agency (blocks#62)
+    text: casehub-agency (agency#62)
   - level: 3
     text: qhorus
   - level: 2
@@ -231609,7 +231609,7 @@ entries:
   - level: 3
     text: Anchoring composition
   - level: 3
-    text: casehub-agency (blocks#62)
+    text: casehub-agency (agency#62)
   - level: 3
     text: qhorus
   - level: 2
@@ -233711,7 +233711,7 @@ entries:
   - level: 2
     text: 'D4: Static decomposition constraint awareness'
   - level: 2
-    text: 'D5: Scope — engine + blocks companion issue'
+    text: 'D5: Scope — engine + agency companion issue'
   - level: 2
     text: 'D6: Constraint feasibility validation'
   - level: 2
@@ -237040,7 +237040,7 @@ entries:
   - level: 3
     text: Anchoring composition
   - level: 3
-    text: casehub-agency (blocks#62)
+    text: casehub-agency (agency#62)
   - level: 3
     text: qhorus
   - level: 2
@@ -237580,7 +237580,7 @@ entries:
   - level: 3
     text: Anchoring composition
   - level: 3
-    text: casehub-agency (blocks#62)
+    text: casehub-agency (agency#62)
   - level: 3
     text: qhorus
   - level: 2
@@ -239555,7 +239555,7 @@ entries:
   - level: 2
     text: 'D4: Static decomposition constraint awareness'
   - level: 2
-    text: 'D5: Scope — engine + blocks companion issue'
+    text: 'D5: Scope — engine + agency companion issue'
   - level: 2
     text: 'D6: Constraint feasibility validation'
   - level: 2

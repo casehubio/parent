@@ -59,7 +59,7 @@ casehub-parent              (BOM — publish first; all others import it)
   casehub-desiredstate      (depends on casehub-platform-api; engine-adapter depends on casehub-engine-common)
   casehub-agency            (depends on casehub-qhorus-api, casehub-work-api, casehub-engine-api — foundation-adjacent library)
   casehub-langchain4j       (depends on casehub-platform-api, casehub-ledger-api, casehub-neocortex-rag-api, casehub-engine-api — enterprise enrichment for LangChain4j)
-  casehub-mosaic         (depends on casehub-pages + engine + work + qhorus + ledger + blocks — TypeScript/Yarn; foundation-adjacent UI components rendering data from the full foundation stack)
+  casehub-mosaic         (depends on casehub-pages + engine + work + qhorus + ledger + agency — TypeScript/Yarn; foundation-adjacent UI components rendering data from the full foundation stack)
   casehub-engine-ai         (optional — depends on casehub-engine-api; adds AgentEmbeddingProvider SPI + SemanticAgentRoutingStrategy)
   casehub-engine-flow       (optional — depends on casehub-engine-common only; enables Worker(Workflow) to dispatch casehub workers from Serverless Workflow steps)
   claudony                  (depends on casehub-qhorus + implements casehub-engine SPIs)
@@ -204,7 +204,7 @@ casehub-parent              (BOM — publish first; all others import it)
 | `casehub-agency` | `casehub-aml` | `app` | (planned) Oversight gate, context tracking |
 | `casehub-agency` | `casehub-clinical` | `runtime` | (planned) Oversight gate, structured conversation |
 | `casehub-agency` | `casehub-life` | `app` | (planned) Context tracking, channel dispatch |
-| `casehub-agency` | `quarkmind` | `quarkmind-agent` | Summarisation framework — `EventStreamBus`, `SummarisationRunner`, etc. (blocks#27) |
+| `casehub-agency` | `quarkmind` | `quarkmind-agent` | Summarisation framework — `EventStreamBus`, `SummarisationRunner`, etc. (agency#27) |
 | `casehub-ledger` (runtime) | `casehub-life` | `app` | Merkle audit, GDPR erasure, trust scoring |
 | `casehub-work` (runtime) | `casehub-life` | `app` | WorkItems with SLA and escalation |
 | `casehub-qhorus` (runtime) | `casehub-life` | `app` | commitment lifecycle, oversight channel |

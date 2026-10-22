@@ -43,13 +43,13 @@ def test_scan_api_docs_finds_interfaces():
 
 def test_scan_source_finds_implementations():
     with tempfile.TemporaryDirectory() as tmpdir:
-        _create_source(tmpdir, "blocks", "LlmStrategy.java", textwrap.dedent("""\
-            package io.casehub.blocks;
+        _create_source(tmpdir, "agency", "LlmStrategy.java", textwrap.dedent("""\
+            package io.casehub.agency;
             public class LlmStrategy implements AgentRoutingStrategy {
             }
         """))
-        _create_source(tmpdir, "blocks", "CbrStrategy.java", textwrap.dedent("""\
-            package io.casehub.blocks;
+        _create_source(tmpdir, "agency", "CbrStrategy.java", textwrap.dedent("""\
+            package io.casehub.agency;
             public class CbrStrategy implements AgentRoutingStrategy {
             }
         """))
@@ -60,7 +60,7 @@ def test_scan_source_finds_implementations():
         """))
         impls = scan_source_implementations(
             {"AgentRoutingStrategy"},
-            [Path(tmpdir) / "blocks", Path(tmpdir) / "engine"],
+            [Path(tmpdir) / "agency", Path(tmpdir) / "engine"],
         )
         assert len(impls["AgentRoutingStrategy"]) == 3
 
@@ -68,7 +68,7 @@ def test_scan_source_finds_implementations():
 def test_build_matrix_filters_single_repo():
     impls = {
         "AgentRoutingStrategy": [
-            {"repo": "blocks", "class": "LlmStrategy"},
+            {"repo": "agency", "class": "LlmStrategy"},
             {"repo": "engine", "class": "DefaultStrategy"},
         ],
         "InternalSpi": [
@@ -83,14 +83,14 @@ def test_build_matrix_filters_single_repo():
 def test_render_markdown_structure():
     matrix = {
         "AgentRoutingStrategy": [
-            {"repo": "blocks", "class": "LlmStrategy"},
+            {"repo": "agency", "class": "LlmStrategy"},
             {"repo": "engine", "class": "DefaultStrategy"},
         ],
     }
     md = render_markdown(matrix)
     assert "# Cross-Repo SPI Implementations" in md
     assert "## AgentRoutingStrategy" in md
-    assert "| blocks | `LlmStrategy` |" in md
+    assert "| agency | `LlmStrategy` |" in md
     assert "| engine | `DefaultStrategy` |" in md
     assert "<!-- Generated" in md
 

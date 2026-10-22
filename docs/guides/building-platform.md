@@ -4,7 +4,7 @@
 > **Scope:** Navigation, boundary rules, SPI design, capability addition checklist
 > **See also:** [Building Apps](building-apps.md) for app-tier development
 
-This is the lighter companion to building-apps.md. If you're extending casehub-platform, ledger, work, qhorus, engine, eidos, neocortex, connectors, workers, iot, ras, desiredstate, blocks, mosaic, pages, or openclaw — this is your entry point.
+This is the lighter companion to building-apps.md. If you're extending casehub-platform, ledger, work, qhorus, engine, eidos, neocortex, connectors, workers, iot, ras, desiredstate, agency, mosaic, pages, or openclaw — this is your entry point.
 
 ---
 

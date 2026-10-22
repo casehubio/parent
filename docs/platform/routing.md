@@ -36,7 +36,7 @@ The routing system selects which agent (human or AI worker) should handle a task
 └─────────────────────────────────────────────────┘
 ```
 
-**Ownership principle:** Each layer lives where its differentiating dependency lives. Trust-weighted strategy lives in engine-ledger because it depends on ledger APIs. LLM strategy lives in blocks because it depends on AgentProvider (platform AI runtime). Semantic strategy lives in engine-ai because it depends on embedding models.
+**Ownership principle:** Each layer lives where its differentiating dependency lives. Trust-weighted strategy lives in engine-ledger because it depends on ledger APIs. LLM strategy lives in agency because it depends on AgentProvider (platform AI runtime). Semantic strategy lives in engine-ai because it depends on embedding models.
 
 ## Layer 1: Score Computation (ledger)
 
@@ -50,13 +50,13 @@ Computes trust scores from ledger entries and publishes them as events. The scor
 
 **Where scores come from:** Outcome attestations recorded in the ledger. Every time a task completes, the outcome (success/failure, confidence, compliance) is written to the ledger. The scorer aggregates these outcomes into a Beta distribution per actor-context-capability.
 
-## Layer 2: Policy Configuration (blocks + engine-api)
+## Layer 2: Policy Configuration (agency + engine-api)
 
 **Owners:** casehub-agency (utilities) + domain repos (implementation)
 
 **Key classes:**
-- `TrustRoutingPolicyKeys` (blocks) — shared preference key constants
-- `TrustRoutingPolicyResolver` (blocks) — loads policy from preference store
+- `TrustRoutingPolicyKeys` (agency) — shared preference key constants
+- `TrustRoutingPolicyResolver` (agency) — loads policy from preference store
 - `TrustRoutingPolicyProvider` (engine-api SPI) — domain repos implement this
 
 **What it does:** Converts user preferences into a `TrustRoutingPolicy` object. Policy includes:
@@ -103,7 +103,7 @@ Embedding-based re-ranking. Compares the task description embedding to agent cap
 
 **When to use:** Tasks where semantic match matters more than historical trust (e.g. "find an agent who understands Rust async runtime internals" — exact trust history may not exist, but embedding similarity can identify the right specialist).
 
-## Layer 4: AI Strategy Execution (blocks)
+## Layer 4: AI Strategy Execution (agency)
 
 **Owner:** casehub-agency (routing.agent package)
 

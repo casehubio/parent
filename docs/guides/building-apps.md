@@ -25,9 +25,9 @@ Every CaseHub application follows this pattern:
 
 ### Shared Building Blocks
 
-**Before implementing a new capability, check what blocks + mosaic provide.**
+**Before implementing a new capability, check what agency + mosaic provide.**
 
-| Capability | blocks (Java) | mosaic (TS) | Notes |
+| Capability | agency (Java) | mosaic (TS) | Notes |
 |---|---|---|---|
 | **Routing** | `TrustRoutingPolicyResolver`, `TrustRoutingPolicyKeys`, LLM/CBR agent routing | — | Preference-to-policy; AI-powered strategies |
 | **Oversight gates** | `ActionRiskClassifier` SPI, `ChainedReactiveActionRiskClassifier` | `approval-gate` | Gate lifecycle + risk classification |
@@ -41,7 +41,7 @@ Every CaseHub application follows this pattern:
 | **KPI metrics** | — | `kpi-metric-row` | Responsive grid, sparklines, trends, status colours |
 | **Agentic orchestration** | `Patterns` DSL (Supervisor, Sequence, Loop, Parallel, Voting, Debate, Conditional, HTN) | — | Compositional orchestration framework |
 
-**Placement rule:** If 2+ apps need the same component, extract to blocks (Java) or mosaic (TS). If app-specific, keep it in the app repo.
+**Placement rule:** If 2+ apps need the same component, extract to agency (Java) or mosaic (TS). If app-specific, keep it in the app repo.
 
 ### Per-App Implementation Status
 
@@ -52,7 +52,7 @@ Every CaseHub application follows this pattern:
 | **DevTown** | 1, 3, 4, 5, 6 | ✅ L6 | ✅ (contributor/reviewer/CBR routing) | ✅ L5 (8 action types) | ✅ (governance workbench) | ✅ (actor + memory erasure) | pending | Merge queue; incident feedback; 5-role RBAC |
 | **Life** | 2–6, 8 | ✅ L6 | ✅ (6 domain schemas) | ✅ L5 (RBAC-differentiated) | pending | ✅ L4 (actor + ledger) | planned | CBR plan adaptation; read-side API; jurisdiction |
 | **Drafthouse** | — | — | — | — | ✅ (Quinoa + casehub-pages) | — | — | 7 brainstorm + 10 debate MCP tools; Eidos reviewer registry |
-| **QuarkMind** | 2–7 | ✅ L6 (strategy) | — | — | ✅ (3D SC2) | — | — | Real-time game AI; blocks summarisation |
+| **QuarkMind** | 2–7 | ✅ L6 (strategy) | — | — | ✅ (3D SC2) | — | — | Real-time game AI; agency summarisation |
 | **SOC** | scaffold | — | planned | planned | planned | planned | planned | Cyber incident response |
 | **FSI Trading** | scaffold | — | planned | planned | planned | planned | planned | Trading automation |
 
@@ -90,7 +90,7 @@ Every CaseHub application follows this pattern:
 
 ### Trust Routing
 
-**Shared pattern:** Bayesian Beta scoring (ledger) + preference-driven policy (blocks) + classical strategies (engine) + AI strategies (blocks).  
+**Shared pattern:** Bayesian Beta scoring (ledger) + preference-driven policy (agency) + classical strategies (engine) + AI strategies (agency).  
 → [platform/routing.md](../platform/routing.md)
 
 **Per-app:**
@@ -102,7 +102,7 @@ Every CaseHub application follows this pattern:
 
 ### Oversight Gates
 
-**Shared pattern:** `ActionRiskClassifier` SPI (blocks) → `ActionGateWorkItemHandler` (engine-work-adapter) → WorkItem → resume.  
+**Shared pattern:** `ActionRiskClassifier` SPI (agency) → `ActionGateWorkItemHandler` (engine-work-adapter) → WorkItem → resume.  
 → [repos/casehub-agency/consumer-guide.md](../repos/casehub-agency/consumer-guide.md) §Oversight package
 
 **Per-app:**
@@ -167,9 +167,9 @@ Every CaseHub application follows this pattern:
 
 | Criteria | Destination | Examples |
 |---|---|---|
-| **Needs an LLM in the loop** | blocks (Java) | LLM routing, debate protocol, prompt enrichment |
-| **Uses classical AI** | blocks (Java) | Bayesian routing, CBR feature extraction |
-| **Composes qhorus + engine + work** | blocks (Java) | Oversight gate lifecycle, channel agent dispatch |
+| **Needs an LLM in the loop** | agency (Java) | LLM routing, debate protocol, prompt enrichment |
+| **Uses classical AI** | agency (Java) | Bayesian routing, CBR feature extraction |
+| **Composes qhorus + engine + work** | agency (Java) | Oversight gate lifecycle, channel agent dispatch |
 | **Platform-concept visualisation** | mosaic (TS) | `trust-score-panel`, `channel-activity`, `work-item-inbox` |
 | **Infrastructure (data pipeline, layout)** | pages (TS) | `SSEManager`, YAML parser, `DataSet` model |
 | **Foundation primitive** | platform, engine | Notification engine, blackboard, case lifecycle |
@@ -179,10 +179,10 @@ Every CaseHub application follows this pattern:
 
 | Pattern | Was duplicated in | Extracted to | Issue |
 |---|---|---|---|
-| Trust routing policy loading | aml, devtown, clinical, life | blocks (routing package) | blocks#17 |
-| Debate channel infrastructure | drafthouse | blocks (conversation package) | blocks#22 |
-| Oversight gate lifecycle | openclaw, engine-api | blocks (oversight package) | blocks#23 |
-| AI routing strategies (LLM, CBR) | — | blocks (routing.agent package) | blocks#30 |
+| Trust routing policy loading | aml, devtown, clinical, life | agency (routing package) | agency#17 |
+| Debate channel infrastructure | drafthouse | agency (conversation package) | agency#22 |
+| Oversight gate lifecycle | openclaw, engine-api | agency (oversight package) | agency#23 |
+| AI routing strategies (LLM, CBR) | — | agency (routing.agent package) | agency#30 |
 
 **Reference:** [casehub-agency.md](../repos/casehub-agency/consumer-guide.md) §Blocks Scope Criteria
 
@@ -232,7 +232,7 @@ Apps build capability by layer — each layer adds one foundation module. The tu
 - **DevTown:** [casehub-devtown.md](../repos/casehub-devtown/consumer-guide.md) — Layers 1, 3, 4, 5, 6 complete; merge queue, CBR routing, 5-role RBAC, governance workbench
 - **Life:** [casehub-life.md](../repos/casehub-life/consumer-guide.md) — Layers 2–6, 8 complete; CBR (6 schemas + plan adaptation), read-side API, GDPR, jurisdiction, RBAC
 - **Drafthouse:** [casehub-drafthouse.md](../repos/casehub-drafthouse/consumer-guide.md) — Brainstorming + debate MCP tools, casehub-pages adoption, Eidos reviewer registry, debate persistence
-- **QuarkMind:** [quarkmind.md](../repos/quarkmind/consumer-guide.md) — Layers 2–7 complete; blocks summarisation
+- **QuarkMind:** [quarkmind.md](../repos/quarkmind/consumer-guide.md) — Layers 2–7 complete; agency summarisation
 
 **Cross-app learning:** Read the layer sections in each deep-dive to see how different domains solve the same integration challenges (CDI wiring, YAML bindings, preference loading).
 
@@ -245,7 +245,7 @@ Apps build capability by layer — each layer adds one foundation module. The tu
 - **Boundary rules:** [platform/boundary-rules.md](../platform/boundary-rules.md)
 - **Session conventions:** [AGENTIC-HARNESS-GUIDE.md](../AGENTIC-HARNESS-GUIDE.md)
 - **Application inventory:** [APPLICATIONS.md](../APPLICATIONS.md)
-- **blocks scope criteria:** [casehub-agency.md](../repos/casehub-agency/consumer-guide.md) §Blocks Scope Criteria
+- **agency scope criteria:** [casehub-agency.md](../repos/casehub-agency/consumer-guide.md) §Agency Scope Criteria
 - **mosaic design philosophy:** [casehub-mosaic.md](../repos/casehub-mosaic/consumer-guide.md) §Design Philosophy
 - **UI architecture:** [platform/ui-architecture.md](../platform/ui-architecture.md)
 - **Routing:** [platform/routing.md](../platform/routing.md)

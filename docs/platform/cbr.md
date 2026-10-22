@@ -103,7 +103,7 @@ Two distinct sub-problems:
 
 **Key classes:**
 - `TrustWeightedAgentStrategy` (engine-ledger) — trust-based worker selection
-- `CbrAgentRoutingStrategy` (blocks) — CBR-evidence worker selection
+- `CbrAgentRoutingStrategy` (agency) — CBR-evidence worker selection
 
 **How it works:**
 
@@ -115,7 +115,7 @@ Two distinct sub-problems:
 
 **Trust integration:** `CbrAgentRoutingStrategy` optionally composes with `TrustCandidateClassifier`. If trust services are available, CBR retrieval is constrained to QUALIFIED candidates only (trust score above threshold). This prevents the LLM from selecting a historically poor performer just because they handled a similar case once.
 
-**Prompt enrichment:** `CbrRoutingPromptSection` (blocks) renders past CBR outcomes as a prompt section. Example:
+**Prompt enrichment:** `CbrRoutingPromptSection` (agency) renders past CBR outcomes as a prompt section. Example:
 
 ```
 Past similar cases:
@@ -163,8 +163,8 @@ The LLM sees this evidence and makes the final selection.
 **Owner:** Application tier + casehub-agency
 
 **Key classes:**
-- `RoutingOutcomeRecorder` (blocks) — records agent routing outcomes into CBR memory
-- `CaseOutcomeObserver` (blocks) — records case-level completion outcomes
+- `RoutingOutcomeRecorder` (agency) — records agent routing outcomes into CBR memory
+- `CaseOutcomeObserver` (agency) — records case-level completion outcomes
 - `CbrCaseMemoryStore` (neocortex) — CBR-specific memory store wrapper for outcome recording
 
 **How it works:**
@@ -198,7 +198,7 @@ Two complementary stores:
 
 **MemoryEmitter (neocortex):** `@ApplicationScoped` fire-and-forget CDI wrapper around `CaseMemoryStore.store()`. Replaces boilerplate (null-check, build `MemoryInput`, try-catch) with a single `emit()` call. Used by aml, clinical, devtown, life, and iot for CBR outcome recording.
 
-**Outcome recording:** `RoutingOutcomeRecorder` (blocks) and `CaseOutcomeObserver` (blocks) write outcomes to CBR memory. The recorder is invoked after task completion, not at routing time.
+**Outcome recording:** `RoutingOutcomeRecorder` (agency) and `CaseOutcomeObserver` (agency) write outcomes to CBR memory. The recorder is invoked after task completion, not at routing time.
 
 **Active memory management:** Temporal decay — older case memories lose relevance over time. Supersession SPI — newer cases explicitly supersede older ones. CBR reconciliation provides batch upsert, orphan cleanup, and disaster recovery for Qdrant-backed stores.
 
@@ -258,9 +258,9 @@ Two complementary stores:
 - `retrieve(features, k)` → top-k similar cases
 - `recordOutcome(caseId, outcome)` → update outcome after completion
 
-**Integration with routing:** `CbrAgentRoutingStrategy` (blocks) calls this service at routing time.
+**Integration with routing:** `CbrAgentRoutingStrategy` (agency) calls this service at routing time.
 
-### RoutingFeatureExtractor (blocks SPI)
+### RoutingFeatureExtractor (agency SPI)
 
 **Purpose:** Extract features from the routing context for CBR similarity queries.
 
@@ -275,7 +275,7 @@ public interface RoutingFeatureExtractor {
 
 **Domain extension:** Implement this SPI to extract domain-specific features (e.g. transaction pattern cluster for AML, adverse event type for clinical, opponent race for QuarkMind).
 
-### CbrRoutingOutcomeRecorder (blocks)
+### CbrRoutingOutcomeRecorder (agency)
 
 **Purpose:** Record routing outcomes for future CBR retrieval.
 
@@ -293,7 +293,7 @@ public interface RoutingFeatureExtractor {
 |----------|----------------------|-----|
 | Retain | casehub-ledger trust scores (trust credence only) | No full case representation stored for similarity retrieval — `CaseMemoryStore` adapters exist but no harness has wired for CBR yet |
 | Retrieve | `HybridCaseRetriever` (neocortex), `CbrRetrievalService` (engine) | SPIs exist, not yet wired to CBR retrieval in any harness |
-| Reuse (workers) | `CbrAgentRoutingStrategy` (blocks) | Implemented, not yet deployed in any harness |
+| Reuse (workers) | `CbrAgentRoutingStrategy` (agency) | Implemented, not yet deployed in any harness |
 | Reuse (implementations) | Application-layer workarounds (QuarkMind `StrategyTrustRouter`) | `ImplementationRoutingStrategy` missing from engine |
 | Revise | Not implemented | Adaptive plan templates not defined |
 

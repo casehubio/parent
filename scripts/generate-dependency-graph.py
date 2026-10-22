@@ -8,7 +8,7 @@ import xml.etree.ElementTree as ET
 REPOS = [
     'platform', 'worker', 'ledger', 'connectors', 'work', 'qhorus',
     'eidos', 'neocortex', 'engine', 'iot', 'ras', 'desiredstate',
-    'blocks', 'casehub-mosaic', 'claudony', 'openclaw', 'workers', 'ops',
+    'agency', 'casehub-mosaic', 'claudony', 'openclaw', 'workers', 'ops',
     'pages', 'devtown', 'aml', 'clinical', 'life', 'drafthouse',
     'quarkmind', 'soc', 'fsitrading', 'chat-app', 'flow',
 ]

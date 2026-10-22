@@ -110,5 +110,5 @@ Audit repos in dependency blast radius order:
 | Wave | Repos | Rationale |
 |------|-------|-----------|
 | 1 (foundation) | platform, worker, ledger, connectors, work, qhorus, eidos, neocortex, engine, iot | API/SPI changes cascade to all consumers |
-| 2 (orchestration) | ras, desiredstate, blocks, mosaic, claudony, openclaw, workers, ops, pages | Integration layer |
+| 2 (orchestration) | ras, desiredstate, agency, mosaic, claudony, openclaw, workers, ops, pages | Integration layer |
 | 3 (application) | devtown, aml, clinical, life, drafthouse, quarkmind, soc, fsitrading, chat-app | Leaf nodes |

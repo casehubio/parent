@@ -30,7 +30,7 @@ BUILD_REPOS = [
     "platform", "casehub-worker", "ledger", "work", "qhorus", "engine", "eidos",
     "connectors", "iot", "casehub-desiredstate", "casehub-ras", "openclaw", "claudony",
     "casehub-ops", "devtown", "workers", "life", "aml", "clinical", "soc",
-    "fsitrading", "blocks", "neocortex", "quarkmind",
+    "fsitrading", "agency", "neocortex", "quarkmind",
 ]
 
 EXAMPLE_PATTERNS = ("example", "examples", "demo", "integration-test", "compat-test")

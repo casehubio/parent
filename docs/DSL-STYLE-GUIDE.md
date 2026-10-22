@@ -324,7 +324,7 @@ Wherever a condition, predicate, or expression is accepted, provide all three:
 
 This is a platform convention, not a per-module choice. It appears in engine
 (Goal, Stage, Binding, Milestone), work (WorkItem conditions), and should
-appear in blocks (agentic orchestration).
+appear in agency (agentic orchestration).
 
 ### 3. Static Factory Imports for Vocabulary
 
