@@ -303,7 +303,7 @@ Key components (all LitElement):
 | `channel-panel` | `channel-panel.ts` | Channel feed + input (superseded by workbench for case-bound sessions) |
 | `key-bar` | `key-bar.ts` | Touch device special keys |
 
-UI components consumed from `@casehubio/blocks-ui-channel-activity` (channel-feed, channel-input, channel-task-panel, channel-correlation-panel, channel-artifact-panel) and `@casehubio/pages-ui-tokens` (design tokens). Delivered via Maven SNAPSHOT artifacts (WebJar pattern).
+UI components consumed from `@casehubio/mosaic-channel-activity` (channel-feed, channel-input, channel-task-panel, channel-correlation-panel, channel-artifact-panel) and `@casehubio/pages-ui-tokens` (design tokens). Delivered via Maven SNAPSHOT artifacts (WebJar pattern).
 
 `theme.ts` bridges `--pages-*` design tokens to claudony's legacy CSS variable names via `initTheme()`.
 
@@ -453,7 +453,7 @@ JAVA_HOME=$(/usr/libexec/java_home -v 26) mvn test -Pe2e
 - Conversation maturity: general-purpose channels, reactions, member/presence panels, responsive layouts (#177, #178, #190, #191, #192, #179)
 - Multi-tenancy foundation: `TenantContext` SPI, tenant-filtered `SessionRegistry`, scoped/unscoped query paths
 - Dual MCP endpoints: `/mcp` (8 session tools), `/qhorus` (40+ agent mesh tools)
-- Frontend: Quinoa + esbuild + Lit 3; blocks-ui and pages-ui components via Maven SNAPSHOT
+- Frontend: Quinoa + esbuild + Lit 3; mosaic and pages-ui components via Maven SNAPSHOT
 - ADR-0005: CaseHub integration is optional -- Claudony works as a standalone session manager
 
 ---

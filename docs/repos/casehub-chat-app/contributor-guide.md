@@ -93,7 +93,7 @@ The frontend is a Lit-based single-page app bootstrapped via casehub-pages runti
 
 4. **Responsive layout:** Three modes based on viewport width. Desktop: dock strip + independent left/right panels. Tablet: dock strip + unified sidebar with tab switcher. Phone: hamburger menu + slide-in drawers (left for nav, right for other panels) with swipe gesture support.
 
-5. **Commitment visualisation:** `decorateCommitmentRanges()` from blocks-ui-commitment-viz computes range decorations from messages and commitments. The workbench passes a `renderContent` callback to `channel-feed` that renders `commitment-range-bar` inline at the start of each commitment range.
+5. **Commitment visualisation:** `decorateCommitmentRanges()` from mosaic-commitment-viz computes range decorations from messages and commitments. The workbench passes a `renderContent` callback to `channel-feed` that renders `commitment-range-bar` inline at the start of each commitment range.
 
 ### Authentication
 
@@ -126,7 +126,7 @@ Add the method to `ChatResource.java`. All endpoints follow the same pattern: pa
 
 ### Adding a New Channel Event
 
-1. Define the event topic in blocks-ui-channel-activity's `ChannelEventTopics` (or as a local constant in `types.ts`)
+1. Define the event topic in mosaic-channel-activity's `ChannelEventTopics` (or as a local constant in `types.ts`)
 2. Add the case to `QhorusWorkbenchElement._onChatEvent`
 3. Implement the handler method (typically an `authenticatedFetch` call to a REST endpoint)
 
@@ -142,7 +142,7 @@ JAVA_HOME=$(/usr/libexec/java_home -v 26) mvn clean install -Pui   # with fronte
 
 The `ui` profile activates `quarkus-quinoa` which installs Node, runs `npm install`, and builds the frontend via esbuild.
 
-Frontend npm packages from casehub-pages and blocks-ui are delivered as Maven SNAPSHOT WebJars. The `maven-dependency-plugin` unpacks them to `src/main/webui/.casehub-packages/` during the `initialize` phase. Yarn `portal:` resolutions in `package.json` point to these unpacked directories.
+Frontend npm packages from casehub-pages and mosaic are delivered as Maven SNAPSHOT WebJars. The `maven-dependency-plugin` unpacks them to `src/main/webui/.casehub-packages/` during the `initialize` phase. Yarn `portal:` resolutions in `package.json` point to these unpacked directories.
 
 ### Frontend
 
@@ -180,7 +180,7 @@ Migrated from `casehub-connectors/chat-demo` to a standalone repo. The original 
 - **#18** Chat UI integration tests (topic sidebar, message grouping, reaction rendering)
 - **#16** Scroll-to-new-messages pill
 - **#13** Replace window.confirm/prompt with blocks-confirm-dialog
-- **#12** Integrate blocks-ui-core accessibility mixins
+- **#12** Integrate mosaic-core accessibility mixins
 - **#11** Add pages-data-request pipeline to composites
 - **#10** Migrate workbench to split/dockBar layout
 - **#9** Embed qhorus workbench in claudony for live channel observation

@@ -26,7 +26,7 @@ casehub-clinical/
       service/         — core services, listeners, ledger writers, SPI defaults (50+ classes)
     src/main/resources/clinical/   — 7 YAML case definitions
     src/main/resources/db/migration/   — Flyway migrations (default/ and qhorus/)
-    src/main/webui/    — Lit-based TypeScript frontend (Quinoa/esbuild, casehub-pages + blocks-ui)
+    src/main/webui/    — Lit-based TypeScript frontend (Quinoa/esbuild, casehub-pages + mosaic)
 ```
 
 **Active Record exception:** clinical has no downstream JPA consumers. Panache entities live in `runtime/` only; `api/` holds enums, constants, CDI events, and SPI interfaces only.
@@ -318,7 +318,7 @@ These apply to any consumer adding casehub-engine. Documented from clinical Laye
 
 ## Web UI Architecture
 
-TypeScript frontend at `runtime/src/main/webui/`. Uses casehub-pages DSL for page composition and casehub-blocks-ui for components.
+TypeScript frontend at `runtime/src/main/webui/`. Uses casehub-pages DSL for page composition and casehub-mosaic for components.
 
 **Views** (`src/views/`):
 - `work-queue.ts` — compliance officer work queue
@@ -336,7 +336,7 @@ TypeScript frontend at `runtime/src/main/webui/`. Uses casehub-pages DSL for pag
 
 **Test suite:** Vitest tests in `src/__tests__/` covering all views and components.
 
-**Build:** Quinoa (quarkus-quinoa) with esbuild. NPM packages resolved from Maven artifacts via `casehub-pages-npm` and `casehub-blocks-ui-npm` (unpacked to `.casehub-packages/` at Maven initialize phase).
+**Build:** Quinoa (quarkus-quinoa) with esbuild. NPM packages resolved from Maven artifacts via `casehub-pages-npm` and `casehub-mosaic-npm` (unpacked to `.casehub-packages/` at Maven initialize phase).
 
 ## Key Epics
 

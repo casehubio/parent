@@ -45,7 +45,7 @@ Chapters 1--2 implemented (August 2026). Working vertical slices: domain model, 
 - Arena integration -- observation context injected into strategy agent evaluations
 - WebSocket push via pages-push EventBroadcaster -- live ticks, bars, trends, regime to browser
 - Minimal fsi-market-panel web component (Quinoa + esbuild) proving end-to-end push path
-- Sequence + Loop orchestration model via casehub-blocks patterns
+- Sequence + Loop orchestration model via casehub-agency patterns
 - 39 REST endpoints (see API section below)
 - Dual-datasource configuration (H2 dev, PostgreSQL prod)
 
@@ -75,11 +75,11 @@ Chapters 1--2 implemented (August 2026). Working vertical slices: domain model, 
 - Typed push payloads: IncidentPushPayload (3 records), WorkItemPushPayload (5 records)
 - FsiWorkItemPushListener observing WorkItemLifecycleEvent (scope-filtered to fsitrading)
 - SLA deadline fields (claimDeadline, completionDeadline) on IncidentRecord + V107 migration
-- 8 blocks-ui panels wired to trading desk dock-workbench (defaultOpen: false, temporary placement for C5b Ops Centre)
+- 8 mosaic panels wired to trading desk dock-workbench (defaultOpen: false, temporary placement for C5b Ops Centre)
 
 **Implemented (C5b Ops Centre Composition + Topic Unification):**
 - Multi-page site with tabs() navigation -- Trading Desk + Ops Centre pages
-- Ops Centre: 11 panels (1 DSL incident dashboard + 10 blocks-ui hostPanel)
+- Ops Centre: 11 panels (1 DSL incident dashboard + 10 mosaic hostPanel)
 - Trading Desk: ops panels moved to Ops Centre, audit + preferences panels added to bottom zone
 - Push topic separators unified to colon-only (TopicRegistry trie requirement)
 - Topic entity names unified to singular (`incident:*`, `work-item:*`)

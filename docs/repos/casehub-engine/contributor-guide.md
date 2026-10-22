@@ -75,7 +75,7 @@ Activated by adding to the consumer's classpath — same CDI/Spring discovery pa
 ### Relocated Modules
 
 - `casehub-work-adapter` → `casehub-work-engine-adapter` in the casehub-work repo
-- `casehub-blocks-engine-adapter` → `casehub-blocks-engine-adapter` in the casehub-blocks repo
+- `casehub-agency-engine-adapter` → `casehub-agency-engine-adapter` in the casehub-agency repo
 
 ---
 
