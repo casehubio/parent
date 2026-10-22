@@ -22,7 +22,7 @@ jobs:
       - name: Clone child repos
         run: |
           mkdir -p /tmp/casehub
-          repos="platform worker ledger connectors work qhorus eidos neocortex engine iot ras desiredstate blocks casehub-mosaic claudony openclaw workers ops pages devtown aml clinical life drafthouse quarkmind soc fsitrading chat-app flow"
+          repos="platform worker ledger connectors work qhorus eidos neocortex engine iot ras desiredstate agency casehub-mosaic claudony openclaw workers ops pages devtown aml clinical life drafthouse quarkmind soc fsitrading chat-app flow"
           for repo in $repos; do
             gh repo clone casehubio/$repo /tmp/casehub/$repo -- --depth 1 2>/dev/null || echo "Skipping $repo"
           done

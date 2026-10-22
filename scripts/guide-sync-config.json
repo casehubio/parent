@@ -9,7 +9,7 @@
     {"name": "iot",          "org": "casehubio"},
     {"name": "ras",          "org": "casehubio", "repo": "casehub-ras"},
     {"name": "desiredstate", "org": "casehubio", "repo": "casehub-desiredstate"},
-    {"name": "blocks",       "org": "casehubio"},
+    {"name": "agency",       "org": "casehubio"},
     {"name": "casehub-langchain4j", "org": "casehubio"},
     {"name": "casehub-mosaic", "org": "casehubio"},
     {"name": "engine",       "org": "casehubio"},

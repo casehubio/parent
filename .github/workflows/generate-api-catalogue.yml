@@ -24,7 +24,7 @@ jobs:
       - name: Check out peer repos for source scanning
         run: |
           mkdir -p /tmp/repos
-          for repo in engine blocks work platform neocortex eidos ledger qhorus worker ras desiredstate connectors ops iot; do
+          for repo in engine agency work platform neocortex eidos ledger qhorus worker ras desiredstate connectors ops iot; do
             git clone --quiet --depth=1 "https://x-access-token:${{ secrets.GH_PAT }}@github.com/casehubio/$repo.git" "/tmp/repos/$repo" 2>/dev/null || echo "SKIP $repo: clone failed"
           done
 

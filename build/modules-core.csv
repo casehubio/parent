@@ -12,11 +12,11 @@ qhorus,platform,ledger,connectors,eidos
 work,platform,ledger,engine,qhorus
 engine,platform,ledger,connectors,eidos,neocortex,qhorus,work,worker
 pages
-blocks,platform,ledger,neocortex,eidos,engine,qhorus,work,worker
+agency,platform,ledger,neocortex,eidos,engine,qhorus,work,worker
 casehub-langchain4j,platform,ledger,neocortex,engine
-casehub-mosaic,pages,engine,work,qhorus,ledger,blocks
+casehub-mosaic,pages,engine,work,qhorus,ledger,agency
 workers,platform,engine,worker
 claudony,platform,ledger,engine,qhorus,work,worker
-ops,platform,ledger,desiredstate,eidos,engine,iot,qhorus,ras,work,blocks
+ops,platform,ledger,desiredstate,eidos,engine,iot,qhorus,ras,work,agency
 iot,platform,ledger,connectors,engine,life,neocortex,ras,work,worker
 chat-app,platform,qhorus,life
