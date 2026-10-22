@@ -120,6 +120,11 @@
       <!-- langchain4j — pin to single version across platform-agent (1.19.0) and engine/eidos (1.14.1) -->
       <dependency>
         <groupId>dev.langchain4j</groupId>
+        <artifactId>langchain4j</artifactId>
+        <version>${langchain4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>dev.langchain4j</groupId>
         <artifactId>langchain4j-core</artifactId>
         <version>${langchain4j.version}</version>
       </dependency>
