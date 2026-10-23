@@ -17,9 +17,12 @@ ROOT = Path(__file__).resolve().parent.parent
 CORE_CSV  = ROOT / 'build' / 'modules-core.csv'
 APP_CSV   = ROOT / 'build' / 'modules-applications.csv'
 BUILD_ALL_YML  = ROOT / '.github' / 'workflows' / 'build-all.yml'
+AGGREGATOR_XML = ROOT / 'aggregator.xml'
 
 BEGIN = '      # -- BEGIN GENERATED'
 END   = '      # -- END GENERATED'
+AGG_BEGIN = '    <!-- BEGIN GENERATED -->'
+AGG_END   = '    <!-- END GENERATED -->'
 
 # Repos that deviate from casehubio/<name>
 REPO_OVERRIDE = {'pages': 'casehubio/casehub-pages'}
@@ -29,6 +32,8 @@ PRIVATE = {'quarkmind', 'flow'}
 SUBDIR = {'drafthouse': 'server'}
 # Repos using yarn instead of maven
 YARN = {'pages'}
+# Repos excluded from the Maven aggregator (yarn-only builds)
+NON_MAVEN = {'pages', 'casehub-mosaic'}
 
 
 def load_csv(path):
@@ -135,20 +140,48 @@ def generate_incr(core, apps):
     return '\n'.join(parts) + '\n'
 
 
+# ── aggregator.xml ──────────────────────────────────────────────────────────
+
+def generate_aggregator(core, apps):
+    lines = []
+    lines.append('    <!-- Core modules (build/modules-core.csv) -->')
+    for mod in core:
+        name = mod['name']
+        if name in NON_MAVEN:
+            lines.append(f'    <!-- {name}: yarn-only, not a Maven module -->')
+            continue
+        sub = SUBDIR.get(name, '')
+        path = '../' + name + ('/' + sub if sub else '')
+        lines.append(f'    <module>{path}</module>')
+
+    lines.append('')
+    lines.append('    <!-- Application modules (build/modules-applications.csv) -->')
+    for mod in apps:
+        name = mod['name']
+        if name in NON_MAVEN:
+            lines.append(f'    <!-- {name}: yarn-only, not a Maven module -->')
+            continue
+        sub = SUBDIR.get(name, '')
+        path = '../' + name + ('/' + sub if sub else '')
+        lines.append(f'    <module>{path}</module>')
+
+    return '\n'.join(lines) + '\n'
+
+
 # ── File rewriter ─────────────────────────────────────────────────────────────
 
-def rewrite(path, generated):
+def rewrite(path, generated, begin_marker, end_marker):
     text = path.read_text()
-    before = text.find(BEGIN)
-    after  = text.find(END)
+    before = text.find(begin_marker)
+    after  = text.find(end_marker)
     if before == -1 or after == -1:
         print(f'ERROR: markers not found in {path}', file=sys.stderr)
         sys.exit(1)
-    after_end = after + len(END)
+    after_end = after + len(end_marker)
     new_text = (text[:before]
-                + BEGIN + '\n'
+                + begin_marker + '\n'
                 + generated
-                + END
+                + end_marker
                 + text[after_end:])
     if new_text == text:
         print(f'  {path.name}: unchanged')
@@ -163,10 +196,11 @@ def main():
     apps = load_csv(APP_CSV)
 
     changed = False
-    changed |= rewrite(BUILD_ALL_YML, generate_incr(core, apps))
+    changed |= rewrite(BUILD_ALL_YML, generate_incr(core, apps), BEGIN, END)
+    changed |= rewrite(AGGREGATOR_XML, generate_aggregator(core, apps), AGG_BEGIN, AGG_END)
 
     if changed:
-        print('Workflow files updated — stage them before committing.')
+        print('Files updated — stage them before committing.')
     else:
         print('Nothing changed.')
 

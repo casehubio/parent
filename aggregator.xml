@@ -30,27 +30,32 @@
   </description>
 
   <modules>
+    <!-- BEGIN GENERATED -->
     <!-- Core modules (build/modules-core.csv) -->
     <module>../platform</module>
     <module>../worker</module>
     <module>../ledger</module>
-    <module>../eidos</module>
-    <module>../neocortex</module>
     <module>../connectors</module>
-    <module>../iot</module>
-    <module>../work</module>
-    <module>../qhorus</module>
+    <module>../neocortex</module>
+    <module>../eidos</module>
     <module>../desiredstate</module>
-    <!-- pages: yarn-only, not a Maven module -->
-    <module>../engine</module>
     <module>../ras</module>
+    <module>../qhorus</module>
+    <module>../work</module>
+    <module>../engine</module>
+    <!-- pages: yarn-only, not a Maven module -->
+    <module>../agency</module>
+    <module>../casehub-langchain4j</module>
+    <!-- casehub-mosaic: yarn-only, not a Maven module -->
     <module>../workers</module>
     <module>../claudony</module>
     <module>../ops</module>
+    <module>../iot</module>
+    <module>../chat-app</module>
 
     <!-- Application modules (build/modules-applications.csv) -->
     <module>../openclaw</module>
-    <!-- <module>../devtown</module> temporarily excluded: corrupt pom.xml on active branch -->
+    <module>../devtown</module>
     <module>../aml</module>
     <module>../clinical</module>
     <module>../life</module>
@@ -59,6 +64,7 @@
     <module>../fsitrading</module>
     <module>../quarkmind</module>
     <module>../scaffold</module>
+    <!-- END GENERATED -->
   </modules>
 
   <profiles>
