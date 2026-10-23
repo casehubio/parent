@@ -21,6 +21,16 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 
+# Module name → GitHub repo slug (when different from casehubio/{name})
+REPO_OVERRIDE = {
+    'pages': 'casehubio/casehub-pages',
+    'worker': 'casehubio/casehub-worker',
+    'desiredstate': 'casehubio/casehub-desiredstate',
+    'ras': 'casehubio/casehub-ras',
+    'ops': 'casehubio/casehub-ops',
+    'flow': 'mdproctor/flow',
+}
+
 # Local path overrides: name → path relative to parent repo root's parent directory
 LOCAL_PATH_OVERRIDE = {
     'pages': '../pages',          # cloned from casehub-pages but lives at ../pages
@@ -82,22 +92,27 @@ parent_sha = sha_from_file('parent') or subprocess.run(
     capture_output=True, text=True, check=True
 ).stdout.strip()
 
+def repo_url(name):
+    slug = REPO_OVERRIDE.get(name, f'casehubio/{name}')
+    return f'https://github.com/{slug}.git'
+
 shas = {'parent': parent_sha}
+repos = {'parent': repo_url('parent')}
 for name in core + apps:
     s = sha(name)
     if s:
         shas[name.replace('-', '_')] = s
+    repos[name] = repo_url(name)
 
 mode = 'CI' if (ROOT / '.build-shas').exists() else 'local'
-print(f'Syncing casehub-all ({mode} mode) — {len(shas)} SHAs')
+print(f'Syncing casehub-all ({mode} mode) — {len(shas)} SHAs, {len(repos)} repos')
 
-# GitHub repository dispatch limits client_payload to 10 top-level properties.
-# Nest all SHAs under a single 'shas' key to stay within the limit.
 payload = {
     'event_type': 'ecosystem-build-succeeded',
     'client_payload': {
         'trigger': os.environ.get('TRIGGER', 'local'),
         'shas': shas,
+        'repos': repos,
     }
 }
 

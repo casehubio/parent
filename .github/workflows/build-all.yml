@@ -325,8 +325,8 @@ jobs:
         id: neocortex
         continue-on-error: true
         env:
-          CUR: ${{ steps.shas.outputs.sha_neural_text }}
-          PRV: ${{ steps.prev.outputs.sha_neural_text }}
+          CUR: ${{ steps.shas.outputs.sha_neocortex }}
+          PRV: ${{ steps.prev.outputs.sha_neocortex }}
           CUR_PLATFORM: ${{ steps.shas.outputs.sha_platform }}
           PRV_PLATFORM: ${{ steps.prev.outputs.sha_platform }}
           SKIP_TESTS: ${{ inputs.skip_tests }}
