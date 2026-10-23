@@ -32,8 +32,8 @@ PRIVATE = {'quarkmind', 'flow'}
 SUBDIR = {'drafthouse': 'server'}
 # Repos using yarn instead of maven
 YARN = {'pages'}
-# Repos excluded from the Maven aggregator (yarn-only builds)
-NON_MAVEN = {'pages', 'casehub-mosaic'}
+# Repos excluded from the Maven aggregator (no longer needed — yarn is Maven-driven)
+NON_MAVEN = set()
 
 
 def load_csv(path):

@@ -43,10 +43,10 @@
     <module>../qhorus</module>
     <module>../work</module>
     <module>../engine</module>
-    <!-- pages: yarn-only, not a Maven module -->
+    <module>../pages</module>
     <module>../agency</module>
     <module>../casehub-langchain4j</module>
-    <!-- casehub-mosaic: yarn-only, not a Maven module -->
+    <module>../casehub-mosaic</module>
     <module>../workers</module>
     <module>../claudony</module>
     <module>../ops</module>
