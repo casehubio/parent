@@ -3360,14 +3360,14 @@ Banned dependency detected:
     <repository>
       <id>central</id>
       <url>https://repo.maven.apache.org/maven2</url>
-      <releases><enabled>true</enabled></releases>
+      <releases><enabled>false</enabled></releases>
       <snapshots><enabled>false</enabled></snapshots>
     </repository>
     <repository>
       <id>github</id>
       <name>casehubio GitHub Packages</name>
       <url>https://maven.pkg.github.com/casehubio/*</url>
-      <releases><enabled>true</enabled></releases>
+      <releases><enabled>false</enabled></releases>
       <snapshots><enabled>true</enabled></snapshots>
     </repository>
     <repository>
