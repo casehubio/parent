@@ -485,6 +485,7 @@
       "casehub-neocortex-rag-testing",
       "casehub-neocortex-rag-tracking",
       "casehub-neocortex-schema-generator",
+      "casehub-neocortex-session-testing",
       "casehub-neocortex-sqlite-support",
       "casehub-neocortex-summarisation",
       "casehub-neocortex-thing-api",
@@ -845,6 +846,7 @@
       "casehub-platform-graphql",
       "casehub-platform-graphql-generator",
       "casehub-platform-oidc",
+      "casehub-platform-simulation-config",
       "casehub-platform-subscriptions-inmem",
       "casehub-platform-testing",
       "casehub-qhorus",
@@ -1141,7 +1143,6 @@
   },
   "casehub-flow": {
     "depends_on": [
-      "casehub-blocks-ui-npm",
       "casehub-engine",
       "casehub-engine-actor-state",
       "casehub-engine-flow",
@@ -1153,6 +1154,7 @@
       "casehub-engine-scheduler-quartz",
       "casehub-engine-schema",
       "casehub-engine-work-adapter",
+      "casehub-mosaic-npm",
       "casehub-ops-service",
       "casehub-pages-npm",
       "casehub-platform",
