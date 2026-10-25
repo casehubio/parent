@@ -9,7 +9,7 @@ eidos,platform,ledger
 desiredstate,platform,eidos,engine,neocortex,ras,work,worker
 ras,platform,engine
 qhorus,platform,ledger,connectors,eidos
-work,platform,ledger,engine,qhorus
+work,platform,ledger,qhorus
 engine,platform,ledger,connectors,eidos,neocortex,qhorus,work,worker
 pages
 agency,platform,ledger,neocortex,eidos,engine,qhorus,work,worker
