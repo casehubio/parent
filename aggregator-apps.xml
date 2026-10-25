@@ -32,7 +32,8 @@
     <module>../quarkmind</module>
     <module>../scaffold</module>
 
-    <!-- Core modules with app dependencies (iot→life, chat-app→life, ops→iot) -->
+    <!-- Core modules that are apps or depend on apps -->
+    <module>../claudony</module>
     <module>../iot</module>
     <module>../chat-app</module>
     <module>../ops</module>

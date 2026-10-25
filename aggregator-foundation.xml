@@ -37,7 +37,6 @@
     <module>../casehub-langchain4j</module>
     <module>../casehub-mosaic</module>
     <module>../workers</module>
-    <module>../claudony</module>
     <!-- END GENERATED -->
   </modules>
 </project>
