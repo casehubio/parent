@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Group 1 — Core Libraries: depend only on platform, independent of each other.
+  Can run in parallel with Group 2 after platform completes.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>io.casehub</groupId>
+  <artifactId>casehub-aggregator-g1-core-libs</artifactId>
+  <version>0.3</version>
+  <packaging>pom</packaging>
+
+  <name>CaseHub :: G1 Core Libraries</name>
+
+  <modules>
+    <module>../worker</module>
+    <module>../ledger</module>
+    <module>../connectors</module>
+    <module>../neocortex</module>
+    <module>../pages</module>
+  </modules>
+</project>

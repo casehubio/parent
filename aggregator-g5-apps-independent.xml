@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Group 5 — Independent Apps: no inter-app dependencies.
+  Depends on G4. All modules can build in parallel.
+  After life→openclaw decoupling, life moves here too.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>io.casehub</groupId>
+  <artifactId>casehub-aggregator-g5-apps-independent</artifactId>
+  <version>0.3</version>
+  <packaging>pom</packaging>
+
+  <name>CaseHub :: G5 Independent Apps</name>
+
+  <modules>
+    <module>../claudony</module>
+    <module>../openclaw</module>
+    <module>../soc</module>
+    <module>../desiredstate</module>
+    <module>../life</module>
+    <module>../iot</module>
+    <module>../chat-app</module>
+  </modules>
+</project>

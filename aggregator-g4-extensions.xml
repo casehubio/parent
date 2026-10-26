@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Group 4 — Extensions: ras, agency, langchain4j, mosaic, workers.
+  Depends on G3 (engine, work). Modules are mostly independent of each other.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>io.casehub</groupId>
+  <artifactId>casehub-aggregator-g4-extensions</artifactId>
+  <version>0.3</version>
+  <packaging>pom</packaging>
+
+  <name>CaseHub :: G4 Extensions</name>
+
+  <modules>
+    <module>../ras</module>
+    <module>../agency</module>
+    <module>../casehub-langchain4j</module>
+    <module>../casehub-mosaic</module>
+    <module>../workers</module>
+  </modules>
+</project>
