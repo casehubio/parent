@@ -5,7 +5,7 @@ openclaw,platform,ledger,engine,pages,casehub-mosaic,qhorus
 devtown,platform,ledger,connectors,engine,agency,life,neocortex,qhorus,work,worker
 aml,platform,ledger,engine,agency,eidos,life,neocortex,qhorus,work
 clinical,platform,ledger,connectors,engine,agency,eidos,life,neocortex,qhorus,work,worker
-life,platform,ledger,connectors,engine,neocortex,openclaw,qhorus,work
+life,platform,ledger,connectors,engine,neocortex,qhorus,work
 drafthouse,parent,qhorus
 soc,platform,ledger,desiredstate,eidos,engine,neocortex,qhorus,ras,work,worker
 fsitrading,platform,ledger,desiredstate,engine,agency,eidos,neocortex,ops,qhorus,ras,work,worker
