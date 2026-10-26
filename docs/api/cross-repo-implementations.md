@@ -203,6 +203,18 @@ the interface and every implementation found across the platform.
 | persistence-memory | `InMemoryChannelMembershipStore` |
 | runtime | `JpaChannelMembershipStore` |
 
+## ChannelProtocol
+
+| Repo | Implementation |
+|------|---------------|
+| agency-core | `ConversationProtocol` |
+| agency-core | `JudgmentProtocol` |
+| agency-core | `NegotiationProtocol` |
+| runtime-core | `ContributionRequiredProtocol` |
+| runtime-core | `RequestResponseProtocol` |
+| runtime-core | `RoundRobinProtocol` |
+| runtime-core | `TaskCompletionProtocol` |
+
 ## ChannelStore
 
 | Repo | Implementation |
@@ -372,6 +384,13 @@ the interface and every implementation found across the platform.
 |------|---------------|
 | runtime | `VertxEventDispatcher` |
 | runtime-spring | `SpringEventDispatcher` |
+
+## EventSource
+
+| Repo | Implementation |
+|------|---------------|
+| agency-core | `SwarmEventSource` |
+| desiredstate | `IoTEventSource` |
 
 ## ExclusionPolicy
 
