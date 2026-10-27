@@ -246,6 +246,7 @@
       "casehub-connectors-email-ref",
       "casehub-connectors-email-spi",
       "casehub-connectors-github-client",
+      "casehub-connectors-health-spi",
       "casehub-connectors-location-ref",
       "casehub-connectors-location-spi",
       "casehub-connectors-project-ref",
