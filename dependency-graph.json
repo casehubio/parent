@@ -1,6 +1,7 @@
 {
   "casehub-platform": {
     "depends_on": [
+      "casehub-coordination-core",
       "casehub-eidos-api",
       "casehub-neocortex-memory-api",
       "casehub-pages-push",
@@ -707,7 +708,9 @@
       "casehub-platform-api",
       "casehub-platform-expression",
       "casehub-platform-schema-generator",
+      "casehub-platform-yaml-core",
       "casehub-platform-yaml-jackson",
+      "casehub-platform-yaml-step-runtime",
       "casehub-qhorus",
       "casehub-qhorus-api",
       "casehub-qhorus-testing",
