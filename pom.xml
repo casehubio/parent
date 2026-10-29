@@ -34,7 +34,7 @@
     <quarkus.platform.version>3.39.3</quarkus.platform.version>
     <maven.compiler.release>21</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <surefire-plugin.version>3.2.5</surefire-plugin.version>
+    <surefire-plugin.version>3.5.5</surefire-plugin.version>
     <compiler-plugin.version>3.13.0</compiler-plugin.version>
     <cloudevents.version>4.0.1</cloudevents.version>
     <assertj.version>3.27.7</assertj.version>
