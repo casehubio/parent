@@ -3417,6 +3417,16 @@ Banned dependency detected:
     </repository>
   </repositories>
 
+  <pluginRepositories>
+    <pluginRepository>
+      <id>github</id>
+      <name>casehubio GitHub Packages</name>
+      <url>https://maven.pkg.github.com/casehubio/*</url>
+      <releases><enabled>false</enabled></releases>
+      <snapshots><enabled>true</enabled></snapshots>
+    </pluginRepository>
+  </pluginRepositories>
+
   <scm>
     <connection>scm:git:https://github.com/casehubio/parent.git</connection>
     <developerConnection>scm:git:https://github.com/casehubio/parent.git</developerConnection>
