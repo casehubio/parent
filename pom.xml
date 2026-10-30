@@ -44,6 +44,8 @@
     <json-schema-validator.version>1.5.4</json-schema-validator.version>
     <langchain4j.version>1.19.0</langchain4j.version>
     <rest-assured.version>6.0.1</rest-assured.version>
+    <serverlessworkflow.version>7.35.3.Final</serverlessworkflow.version>
+    <quarkus-mcp-server.version>1.11.1</quarkus-mcp-server.version>
   </properties>
 
   <dependencyManagement>
@@ -144,6 +146,37 @@
         <groupId>io.cloudevents</groupId>
         <artifactId>cloudevents-json-jackson</artifactId>
         <version>${cloudevents.version}</version>
+      </dependency>
+
+      <!-- Serverless Workflow BOM — single version across work, engine, iot, aml, life -->
+      <dependency>
+        <groupId>io.serverlessworkflow</groupId>
+        <artifactId>serverlessworkflow-bom</artifactId>
+        <version>${serverlessworkflow.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
+      <!-- Quarkus MCP Server (Quarkiverse) — used by qhorus and claudony -->
+      <dependency>
+        <groupId>io.quarkiverse.mcp</groupId>
+        <artifactId>quarkus-mcp-server-core</artifactId>
+        <version>${quarkus-mcp-server.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.quarkiverse.mcp</groupId>
+        <artifactId>quarkus-mcp-server-http</artifactId>
+        <version>${quarkus-mcp-server.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.quarkiverse.mcp</groupId>
+        <artifactId>quarkus-mcp-server-core-deployment</artifactId>
+        <version>${quarkus-mcp-server.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.quarkiverse.mcp</groupId>
+        <artifactId>quarkus-mcp-server-http-deployment</artifactId>
+        <version>${quarkus-mcp-server.version}</version>
       </dependency>
 
       <!-- ================================================================ -->
