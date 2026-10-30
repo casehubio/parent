@@ -1,22 +1,23 @@
-# name,dep1,dep2,...  (order = build order)
-# deps reflect actual pom.xml cross-repo dependencies as of 2026-09-17
-platform,parent
-worker,parent,platform
-ledger,parent,platform
-connectors,parent,platform
-neocortex,platform
-eidos,platform,ledger
-desiredstate,platform,eidos,engine,neocortex,ras,work,worker
-ras,platform,engine
-qhorus,platform,ledger,connectors,eidos
-work,platform,ledger,qhorus
-engine,platform,ledger,connectors,eidos,neocortex,qhorus,work,worker
-pages
-agency,platform,ledger,neocortex,eidos,engine,qhorus,work,worker
-casehub-langchain4j,platform,ledger,neocortex,engine
-casehub-mosaic,pages,engine,work,qhorus,ledger,agency
-workers,platform,engine,worker
-claudony,platform,ledger,engine,qhorus,work,worker
-ops,platform,ledger,desiredstate,eidos,engine,iot,qhorus,ras,work,agency
-iot,platform,ledger,connectors,engine,life,neocortex,ras,work,worker
-chat-app,platform,qhorus,life
+# name,dep1,dep2,...  (deps reflect actual pom.xml cross-repo dependencies as of 2026-10-30)
+parent
+platform
+worker,platform
+ledger,platform
+connectors,platform
+neocortex,connectors,eidos,platform
+eidos,ledger,platform
+desiredstate,eidos,engine,neocortex,platform,ras,work,worker
+ras,engine,platform
+qhorus,connectors,eidos,ledger,pages,platform
+work,ledger,platform,qhorus
+engine,connectors,eidos,ledger,neocortex,platform,qhorus,work,worker
+pages,platform
+agency,eidos,engine,ledger,neocortex,platform,qhorus,work,worker
+casehub-langchain4j,engine,ledger,neocortex,platform
+casehub-mosaic,agency,neocortex,pages,platform
+workers,engine,platform,worker
+claudony,eidos,engine,ledger,platform,qhorus,work,worker
+ops,agency,desiredstate,eidos,engine,ledger,platform,qhorus,ras,work
+iot,casehub-mosaic,connectors,desiredstate,engine,ledger,neocortex,pages,platform,ras,work,worker
+chat-app,casehub-mosaic,pages,platform,qhorus
+drafthouse,agency,eidos,pages,platform,qhorus,work

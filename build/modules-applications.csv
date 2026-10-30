@@ -1,13 +1,10 @@
-# name,dep1,dep2,...  (order = build order)
-# repos under mdproctor/ (not casehubio/): flow
-# deps reflect actual pom.xml cross-repo dependencies as of 2026-09-17
-openclaw,platform,ledger,engine,pages,casehub-mosaic,qhorus
-devtown,platform,ledger,connectors,engine,agency,life,neocortex,qhorus,work,worker
-aml,platform,ledger,engine,agency,eidos,life,neocortex,qhorus,work
-clinical,platform,ledger,connectors,engine,agency,eidos,life,neocortex,qhorus,work,worker
-life,platform,ledger,connectors,engine,neocortex,qhorus,work
-drafthouse,parent,qhorus
-soc,platform,ledger,desiredstate,eidos,engine,neocortex,qhorus,ras,work,worker
-fsitrading,platform,ledger,desiredstate,engine,agency,eidos,neocortex,ops,qhorus,ras,work,worker
-quarkmind,platform,ledger,connectors,engine,agency,eidos,life,neocortex,qhorus
-scaffold,platform,engine,life,work
+# name,dep1,dep2,...  (deps reflect actual pom.xml cross-repo dependencies as of 2026-10-30)
+openclaw,casehub-mosaic,engine,ledger,pages,platform,qhorus
+devtown,agency,casehub-mosaic,connectors,eidos,engine,ledger,neocortex,pages,platform,qhorus,work,worker
+aml,agency,casehub-mosaic,eidos,engine,ledger,neocortex,pages,platform,qhorus,work
+clinical,agency,casehub-mosaic,connectors,eidos,engine,ledger,neocortex,pages,platform,qhorus,work,worker
+life,connectors,engine,ledger,neocortex,platform,qhorus,work
+soc,desiredstate,eidos,engine,ledger,neocortex,pages,platform,qhorus,ras,work,worker
+fsitrading,agency,casehub-mosaic,desiredstate,eidos,engine,ledger,neocortex,ops,pages,platform,qhorus,ras,work,worker
+quarkmind,agency,casehub-mosaic,connectors,eidos,engine,ledger,neocortex,pages,platform,qhorus
+scaffold,casehub-mosaic,engine,ops,pages,platform,work
