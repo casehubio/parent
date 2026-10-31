@@ -1,7 +1,19 @@
 # Messaging vs Notifications — When to Use What
 
-The platform has two communication systems that serve different purposes.
-This document explains when to use each one.
+The platform has two communication systems with fundamentally different
+philosophies. They are complementary, not competing.
+
+**Qhorus** is structured and specific. Messages carry protocol semantics —
+commands create obligations, acknowledgements are tracked, commitments
+have lifecycles. The rigour exists because agent coordination demands it:
+agents need to know what was asked, who committed, and whether it was
+fulfilled.
+
+**Platform notifications** are laissez-faire. "Here's something that
+happened." The recipient can read it, dismiss it, maybe reply. No
+obligation, no protocol, no enforced response. Loose coupling between
+sender and recipient — appropriate for informing humans who will decide
+what to do in their own time.
 
 ## Qhorus Channels (agent-to-agent messaging)
 
@@ -73,10 +85,13 @@ configurable delivery channels.
 - **Inbox:** `InAppNotificationDeliverer` persists to `NotificationStore`.
   Real persistence, not ephemeral.
 - **Engagement tracking:** OPENED, CLICKED, DISMISSED, REPLIED, CONVERTED.
-  This is user engagement metrics — not protocol acknowledgement.
+  OPENED and DISMISSED are wired today; REPLIED and CONVERTED are declared
+  but not yet connected. When wired, REPLIED will carry a metadata value —
+  enabling optional response capture without protocol obligation.
 - **No obligation tracking.** A notification does not create a commitment.
-  If you need "did they act on it?", use qhorus COMMAND + commitment
-  lifecycle instead.
+  Even when REPLIED is wired, it captures a response — it does not enforce
+  one. If you need "did they act on it?" with enforced lifecycle tracking,
+  use qhorus COMMAND + CommitmentState instead.
 
 ### When to use platform notifications
 
@@ -86,14 +101,29 @@ configurable delivery channels.
 - System/agent observers need fire-and-forget CDI events
 - The event source is not within a qhorus channel
 
-## They Do Not Overlap
+## Complementary, Not Competing
+
+Even when both systems support "acknowledgement," they mean different
+things:
+
+- **Qhorus commitment**: "Agent acknowledged the command and committed
+  to fulfilling it." Enforced lifecycle — the system tracks whether the
+  obligation is met, declined, or expired.
+- **Notification reply**: "Human responded to the notification with a
+  value." No enforcement — the response is recorded but nothing happens
+  if they don't reply.
+
+The difference is intent: qhorus enforces protocol obligations between
+coordinating agents. Notifications inform humans who act at their own
+discretion.
 
 | Concern | Qhorus | Platform notifications |
 |---------|--------|-----------------------|
+| Philosophy | Structured, protocol-enforced | Laissez-faire, informational |
 | Scope | Per-case, per-channel | Cross-cutting, any event source |
 | Participants | Agents within a case | Humans, agents, systems |
 | Persistence | Channel message log | Inbox (USER) or ephemeral (NON_USER) |
-| Acknowledgement | Protocol-level (CommitmentState) | Engagement-level (OPENED/CLICKED) |
+| Acknowledgement | Protocol-level (CommitmentState) | Engagement-level (OPENED/REPLIED) |
 | Delivery routing | Channel semantic determines behavior | Subscription + preference matching |
 | Engine access | `CaseChannelProvider` SPI | Not used by engine directly |
 
