@@ -5,6 +5,37 @@ Running notes, one section per repo. Brief by design. Add to it as each repo is 
 Severity: **S1** exploitable / data loss · **S2** real bug · **S3** design or hygiene.
 Status: `open` · `confirmed` (reproduced) · `issue #N` · `fixed`.
 
+## Working context (read first after a context reset)
+
+**Brief from owner.** Review each CaseHub repo for code quality, design, end-user ease of use, bugs and potential issues, plus market positioning. Platform is the base everything builds on. Owner codes mainly in Java. Keep these notes brief and accumulate per repo.
+
+**Process per repo.**
+1. Clone or locate, record commit in the review log.
+2. Read CLAUDE.md, then the largest and most security- or integrity-critical sources first.
+3. Check every cross-repo theme (T1..) and the "carry into downstream repos" questions from earlier repos.
+4. Add a repo section here: strengths, findings table, carry-over answers, not-yet-reviewed, new carry-forward questions.
+5. Commit and push this file to branch `claude/optimistic-archimedes-slr7c2` on `casehubio/parent`. Owner chose to push findings in full (2026-11-14) despite the repo being public.
+6. Report in chat: verdict, top findings, positioning, open questions.
+
+**Environment facts.**
+- Local clones: `/home/user/platform`, `/home/user/parent`, `/home/user/casehub-ops`, `/home/user/casehub-desiredstate`, `/home/user/scaffold`; read-only clone `/home/user/casehubio/ledger`.
+- Other repos: `list_repos` then `add_repo` (read access works for public repos; clone lands under `/home/user/casehubio/<name>`).
+- Builds do not run here: `casehub-parent` POM resolves from GitHub Packages, unavailable offline. All reviews so far are static reads. Say so in each report.
+- No PRs or issues unless the owner asks.
+
+**Owner context and corrections so far.**
+- BOM lives in `casehub-parent`; do not report "no BOM".
+- Onboarding is in progress and is playbook-led (`platform/playbooks`). Report gaps as "entry point missing", not "no onboarding".
+- Identity is delegable via `casehub-platform-oidc` (Quarkus OIDC, so Keycloak works). Built-in `authn` is a deliberate optional path. Authz has no external adapter yet.
+- Owner has not yet answered the open questions at the bottom.
+
+**Repo map (one line each, extend as reviewed).**
+- **platform** (~98k lines, 241 modules): SPIs + defaults for identity, tenancy, ACL, preferences, notifications, registry, agents/LLM backends, MCP exposure, YAML playbooks, simulation. Pattern: `-core` POJO, Quarkus wiring, generated Spring.
+- **ledger** (~23k lines): append-only audit log on platform. `LedgerEntry` JPA JOINED base; consumers subclass (`casehub-work`, `casehub-qhorus`). Merkle frontier per subject, attestations, EigenTrust scores, pseudonymised actors, retention, KMS signers.
+- **desiredstate**, **ops**, **scaffold**: cloned, not reviewed. Others (work, qhorus, engine, eidos, connectors, ...) not cloned.
+
+**Suggested order.** desiredstate, then work and qhorus (ledger consumers; check L1, L3), engine, ops, scaffold.
+
 ## Review log
 
 | Repo | Date | Commit | Method | Depth |
