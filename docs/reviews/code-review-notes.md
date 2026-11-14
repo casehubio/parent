@@ -47,7 +47,7 @@ Status: `open` · `confirmed` (reproduced) · `issue #N` · `fixed`.
 | ledger | 2026-11-14 | 11018f8 | static read, not built | core deep (hashing, Merkle, save path, signing, erasure, retention, API); trust maths, KMS signers, examples sampled or skipped |
 | work | 2026-11-14 | adccdbc | static read, not built | lifecycle service, REST lifecycle API, tenancy/RLS, ledger integration deep; queues, ai, issue-tracker, flow, federation, progress, mongodb not read |
 | qhorus | 2026-11-14 | 86adf50 | static read, not built | identity/tenancy, ledger integration, erasure, sender/ACL path, cluster filter deep; message/commitment/watchdog logic, gateway, A2A detail, compliance-report, slack, push, graphql not read |
-| neocortex | 2026-11-14 | 4af2ac6 | static read, not built | FIRST PASS ONLY (123k lines, 89 modules): tenant isolation in RAG/Qdrant, exposed APIs, ONNX wrapper, carry-over greps. Cognition, mindmap, Bayes inference, CBR, corpus pipeline, memory backends not read |
+| neocortex | 2026-11-14 | 4af2ac6 | static read, not built | Two passes. Read: RAG/Qdrant tenancy, exposed APIs, ONNX wrapper, `CognitionCore`, mood, appraisal (`EmotionMapper`, LLM appraisal), regulation prompt, CAPS settler, memory retriever, Bayes provenance, eval/quality docs, repo-wide greps. Still unread: strategy learning, goals, narrative, user/mental models, belief revision internals, mind-map consolidation phases, `CognitiveDerivationEngine`, CBR algorithms, corpus/knowledge pipeline, memory backends in detail |
 
 ## Cross-repo themes
 
@@ -72,6 +72,8 @@ Patterns found once that are likely to recur. Check each in every repo.
 - **T18 Quarkus/Spring hand-copies.** Logic duplicated across the two stacks rather than shared in a core.
 - **T19 Bean displacement side effects.** A module's non-default bean or higher-priority `@Alternative` silently replacing another repo's implementation app-wide. Check every `implements <other repo SPI>` and every `@Priority`.
 - **T20 Bypassing an upstream pipeline.** Consumer re-implements a write path (own sequence, own hash) instead of calling the owner's service.
+- **T21 Stale copy after extraction.** Code moved to a new module but left behind in the old one under the same class names (P11, N7).
+- **T22 Licence files.** No `LICENSE`/`NOTICE` in any of the nine repos checked; only the parent POM declares Apache 2.0. Neocortex carries 33 ASF-headed files that refer to a NOTICE file.
 - **T14 Onboarding.** README, quick start, stability tiers. BOM lives in `casehub-parent`; each repo's README/guide should say so.
 
 ## platform
@@ -249,30 +251,46 @@ Strengths: honest javadoc on its own security boundary; channel `allowed_writers
 
 ## neocortex
 
-First pass only. Largest repo so far and the cleanest on the themes checked.
+Two passes. Largest repo (123k lines, 89 modules) and the most original.
 
-Strengths: README (211 lines) explains why each capability exists; tenant id passed explicitly and filtered in every Qdrant query, plus `TenantGuard.assertTenant` on entry; exposed APIs use `@ContextParam("tenancyId")` (the pattern ledger/work/qhorus should copy); no `CurrentPrincipal` or `LedgerEntryRepository` beans of its own; ONNX wrapper closes resources on every failure path; only one module with no tests.
+**What the cognitive side is.** A single-agent cognitive pipeline run as a phased tick (FOUNDATION, SOURCE, DERIVED, TERMINAL): PAD mood with time-based decay toward a baseline; drives (curiosity, competence, affiliation, autonomy); appraisal via Scherer stimulus-evaluation checks mapped to OCC-style emotions and Frijda action tendencies, projected to PAD via the ALMA table; emotion regulation using Gross's process model plus social regulation, chosen by an LLM; a CAPS (Mischel and Shoda) recurrent network settled by spreading activation with oscillation detection and cognitive distortions; BDI extraction for user/mental models; goals, narrative, strategy learning, mood-congruent memory retrieval; a mind-map knowledge graph with confidence origins and decay; Bayesian networks (junction tree) for evidence fusion. Rule-based where theory gives rules, LLM sub-calls where it does not, with keyword fallbacks.
+
+Strengths: explicit tenant ids, filtered in every Qdrant query; APIs use `@ContextParam("tenancyId")`; README explains why; `MoodOrchestrator` uses an injected `Clock` and elapsed-time decay (double ticks are safe); `CapsSettler` is clean and numerically careful; ONNX wrapper closes resources on every failure path; feature flag per subsystem; a cognitive journal and pipeline trace for observability; eval artefacts are checked in.
 
 ### Findings
 
 | ID | Sev | Theme | Where | Note | Status |
 |---|---|---|---|---|---|
-| N1 | S2 | T1 | `corpus-management` `CorpusApi` | Full re-index ("delete collection and rebuild") and single-entry re-index are exposed mutations with no role restriction. | open |
-| N2 | S3 | T1 | `rag-core` `TenantGuard.of` | Null principal yields a no-op guard. Should fail closed or be explicit (`TenantGuard.none()`). | open |
-| N3 | S3 | T12 | platform `CLAUDE.md` vs neocortex | Platform CLAUDE.md still documents `memory-inmem/jpa/sqlite/mem0/graphiti` as platform modules; they live here now. | open |
-| N4 | S3 | | naming | `tenantId` (3,590 uses) here vs `tenancyId` everywhere else. 221 files under `io.quarkmind.*` (`inference-bayes`) inside a casehub repo. | open |
-| N5 | S3 | | `OnnxInferenceModel` | Single `sessionLock` serialises all inference per model; ONNX Runtime sessions allow concurrent `run`. Throughput cap, not a bug. | open |
-| N6 | S3 | | scope | 89 modules covering inference, RAG, CBR, memory, corpus, mind maps, Bayesian networks and a cognitive architecture (emotion regulation, drives, narrative). Very wide for one repo; hard to state a stability contract. | open |
+| N7 | S2 | T21 | `mindmap-intelligence` vs `inference-bayes` | 33 classes with identical names under `io.quarkmind.*` in both modules, with different content (`BayesInstance` 390 vs 1,442 lines). `mindmap-intelligence` depends on `inference-bayes`, so both are on the classpath and load order decides which wins. | open |
+| N8 | S2 | | `CognitionCore` | Per-tick state in instance fields (`lastAgentId`, `lastTenantId`, `lastDescriptor`, `lastBriefing`, ...) used later for prompt rendering and mind-map lookups, while every method takes `agentId`/`tenantId` and some maps are keyed per agent. If one core serves more than one agent or tenant concurrently, state bleeds across them. Contract is undocumented. Same pattern: `CognitiveMemoryRetriever.setTickContext`. | open |
+| N9 | S2 | | `MoodOrchestrator.record` | Appends to a plain `ArrayDeque` with no lock while `tick` drains it under a lock; `currentMood` and timestamps are unsynchronised. Signals can be lost or the deque corrupted. | open |
+| N10 | S2 | T17 | cognition orchestrators | Agent state lives in 48 in-process `ConcurrentHashMap`s. Only `UserModelOrchestrator` evicts; only `InnerLifeOrchestrator` restores. Mood, drives, goals reset on restart, are not shared across nodes, and grow without bound. | open |
+| N11 | S3 | T16 | state keys | `agentId + ":" + tenantId` in some orchestrators, `agentId + "|" + tenantId` in others. Agent ids contain colons, so keys can collide. `lastMoodDelta` is keyed by agent only. Fallback tenant is the literal `"default"`. | open |
+| N12 | S3 | | `CognitionCore` | 1,255 lines; four telescoping constructors (up to 18 parameters) plus about ten setter-injected volatile collaborators; inline fully qualified names; `safeRun` swallows every subsystem failure with one generic warning. | open |
+| N13 | S3 | T2 | 8 classes | Hand-rolled JSON extraction (`extractDouble`, `extractJsonString`, first `{` to last `}`) for LLM output, with Jackson already used 68 times elsewhere. A parse miss in `appraiseMood` is silent. | open |
+| N14 | S3 | | `EmotionMapper` | Thresholds are inline literals, not in the documented config records. `mapTendencies` has no relevance gate and treats missing novelty (default 0) as low novelty, emitting INTERRUPTION at intensity 1.0. Uses `Instant.now()` rather than a clock. | check |
+| N15 | S3 | | `EmotionRegulationGenerationPhase` | Reads `manor.regulation.social.enabled` through static `ConfigProvider` in a constructor: an application's config namespace inside the library, bypassing the config records. | open |
+| N16 | S2 | | regulation strategies | `DELIBERATE_PROVOCATION` ("intentionally provoke an emotional response in another person for strategic purposes") and `CO_REGULATION` target other parties, enabled by default. With human counterparts this is emotional influence by design; needs an explicit policy gate, audit entry and default-off for human targets. EU AI Act Art. 5 is relevant given ledger's compliance pitch. | open |
+| N17 | S3 | | docs | 146 of 157 cognition source files have no class-level javadoc; the design lives in 171 specs and 30 research notes with 2 ADRs. `architecture-justification.md` covers only RAG/inference and cites secondary blogs. | open |
+| N18 | S3 | | evaluation | Evals are LLM-judged scores on pipeline traces. One checked-in case (`cross-tick-drives`) scores 5/5 with empty trajectories. No human-rated or baseline-compared study yet. | open |
+| N1 | S2 | T1 | `CorpusApi` | Destructive re-index mutations exposed with no role restriction. | open |
+| N2 | S3 | T1 | `TenantGuard.of` | Null principal yields a no-op guard. | open |
+| N3 | S3 | T12 | platform `CLAUDE.md` | Still lists memory backends as platform modules. | open |
+| N4 | S3 | | naming | `tenantId` (3,590 uses) vs `tenancyId` elsewhere; 221 files under `io.quarkmind.*`. | open |
+| N5 | S3 | | `OnnxInferenceModel` | One lock serialises all inference per model. | open |
+| N6 | S3 | | scope | Production retrieval and research-grade cognition share one repo and one version. | open |
 
-### Carry-over answers
+Checked and cleared: agent sessions are keyed and pooled by the platform `SessionPipeline`, so the 22 `openSession` calls without `close` are not leaks.
 
-- T15: not present in the three exposed APIs; tenant via `@ContextParam`.
-- T19/T20: none found.
-- 48 `synchronized` uses outside tests; not examined.
+### Not yet reviewed
 
-### Not yet reviewed (most of the repo)
+Strategy learning, goal proposal, narrative, user/mental model orchestrators, belief revision internals, mind-map consolidation phases, `CognitiveDerivationEngine` (1,159 lines), CBR algorithms, corpus and knowledge pipeline, memory backends (JPA, SQLite, Mem0, Graphiti) in detail, 48 `synchronized` uses.
 
-`cognition` (19k), `mindmap-intelligence` (16k), `inference-bayes` (12k), `corpus-management`, `cognitive-index`, `knowledge-pipeline`, `memory-*` backends (qdrant store is 1,364 lines), `caps-engine`, `cbr-algorithms`, `entity-token`, LLM prompt construction and output parsing (check prompt injection and T5), `memory-mem0`/`graphiti` HTTP clients (T11).
+### Carry into downstream repos
+
+- How does agency/engine instantiate `CognitionCore`: one per agent, or shared? (N8)
+- Is any cognition state persisted by the consumer? (N10)
+- Are regulation strategies ever applied to human counterparts? (N16)
 
 ## Cross-cutting conclusions (update as repos are added)
 
@@ -291,7 +309,9 @@ Strengths: README (211 lines) explains why each capability exists; tenant id pas
 - Ledger: the accountability story (Art. 12/22 snapshots, PROV export, pseudonymised erasure, Merkle proofs) is the strongest differentiator seen so far. Closest comparisons are transparency logs (Trillian, Rekor) and ledger databases (immudb, Azure SQL Ledger). Its edge is being embedded and domain-aware; its claim only holds once L1 to L5 are closed.
 - Work: competes with the human-task parts of Camunda/Flowable/jBPM (WS-HumanTask lineage) and with Temporal-style "wait for signal". Edge: embedded in the app transaction, agent-or-human assignee, ledger-backed audit. Table stakes still missing: enforcement of who may claim and complete (W1, W2).
 - Qhorus: agent-to-agent messaging with commitments, channel governance and ledger-backed transcripts. Neighbours: A2A protocol implementations, AutoGen/CrewAI group chat, Slack-style agent buses. Edge: typed speech acts with commitments and an auditable record. Weak point: participants self-identify (Q2).
-- Neocortex: local ONNX inference + hybrid RAG + CBR on the JVM is a real gap next to LangChain4j. The cognitive-architecture modules are research-grade and unusual; they are a differentiator only if kept clearly separate from the production-grade retrieval pieces.
+- Neocortex retrieval: local ONNX inference + hybrid RAG + CBR on the JVM fills a real gap beside LangChain4j. Solid, conventional, sellable today.
+- Neocortex cognition: I know of no other open implementation that combines appraisal theory, a CAPS personality network, Gross-model regulation, drives, BDI user models and mood-congruent retrieval in one running pipeline, on any stack. Nearest relatives: academic cognitive architectures (Soar, ACT-R, CLARION, LIDA), affective-computing engines (ALMA, GAMYGDALA, FAtiMA), and LLM agent work (Generative Agents memory/reflection; MemGPT/Letta, Mem0, Zep on memory only; persona prompting). Those are either pre-LLM and rule-bound, or LLM-native with no psychological model. Bridging the two is the original contribution.
+- To make the "ground-breaking" claim hold: (1) evidence beyond LLM self-scoring, i.e. ablations and human ratings against a persona-prompt baseline; (2) durable, per-agent state (N8 to N10), since a mind that resets on restart undercuts the premise; (3) a published safety position on affective influence (N16); (4) separate the stable retrieval modules from the research modules so each can be judged on its own terms; (5) a short paper or technical report, because the audience for this is researchers as much as developers.
 
 ## Open questions
 
