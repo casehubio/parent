@@ -40,9 +40,10 @@ Status: `open` · `confirmed` (reproduced) · `issue #N` · `fixed`.
 - **neocortex** (~123k lines, 89 modules): AI reasoning layer. ONNX inference, hybrid RAG on Qdrant, CBR, memory backends (moved here from platform), corpus management, mind maps, Bayesian inference, cognition. Read-only clone `/home/user/casehubio/neocortex`.
 - **connectors** (~47k lines, 75 modules): outbound `Connector` SPI, inbound webhooks, capability platforms (bank, commerce, travel, calendar, contacts, document, chat, mobile, voice, web) with reference and provider implementations, GraphQL/MCP APIs. Read-only clone `/home/user/casehubio/connectors`.
 - **eidos** (~21k lines): agent identity. `AgentDescriptor`, `AgentRegistry` (JPA/in-memory), vocabularies, capability and disposition health, prompt rendering, org model, eval harness. Read-only clone `/home/user/casehubio/eidos`.
+- **engine** (~128k lines, 51 modules): CMMN-style blackboard case engine. Reactor, layered case context, bindings/goals/milestones, workers (function, SWF, playbook, agent, ReAct, A2A, human, sub-case), planning, recovery, routing, stigmergy, evolution; REST/GraphQL/MCP API with `@AclCheck`. Read-only clone `/home/user/casehubio/engine`.
 - **desiredstate**, **ops**, **scaffold**: cloned, not reviewed. Others (work, qhorus, engine, eidos, connectors, ...) not cloned.
 
-**Build order** (from `parent/build/modules-core.csv` dependencies; the file says row order is build order but rows are not topologically sorted, e.g. desiredstate is listed before engine and ras): platform; worker, ledger, connectors, pages; eidos; neocortex, qhorus; work; engine; ras, agency, workers, claudony; desiredstate; ops. Reviewed: platform, ledger, work, qhorus, neocortex, connectors. Reviewed also: eidos. Next per owner: engine. For engine, first establish which playbook runner and evaluator wiring it uses (P32, P41) and whether it supplies an expression engine (P33). worker and pages still unreviewed. Follow the owner's stated order; check this list before suggesting one.
+**Build order** (from `parent/build/modules-core.csv` dependencies; the file says row order is build order but rows are not topologically sorted, e.g. desiredstate is listed before engine and ras): platform; worker, ledger, connectors, pages; eidos; neocortex, qhorus; work; engine; ras, agency, workers, claudony; desiredstate; ops. Reviewed: platform, ledger, work, qhorus, neocortex, connectors. Reviewed also: eidos, engine (first pass). Engine deserves further passes (planning, routing/trust, stigmergy, work adapter). For engine, first establish which playbook runner and evaluator wiring it uses (P32, P41) and whether it supplies an expression engine (P33). worker and pages still unreviewed. Follow the owner's stated order; check this list before suggesting one.
 
 ## Review log
 
@@ -55,6 +56,7 @@ Status: `open` · `confirmed` (reproduced) · `issue #N` · `fixed`.
 | neocortex | 2026-11-14 | 4af2ac6 | static read, not built | Five passes (adds inner life, gut feeling, personality evolution, mind-map extractor, DTW, hypothesis tracker; goals, user model, derivation engine, Qdrant CBR store, Mem0/Graphiti keys, zip integrity, knowledge pipeline). Read: strategy learning, belief revision, consolidation scheduler, CBR scorer and JPA store, corpus stores, ingestion, federation walker, plus RAG/Qdrant tenancy, exposed APIs, ONNX wrapper, `CognitionCore`, mood, appraisal (`EmotionMapper`, LLM appraisal), regulation prompt, CAPS settler, memory retriever, Bayes provenance, eval/quality docs, repo-wide greps. Still unread: strategy learning, goals, narrative, user/mental models, belief revision internals, mind-map consolidation phases, `CognitiveDerivationEngine`, CBR algorithms, corpus/knowledge pipeline, memory backends in detail |
 | connectors | 2026-11-14 | 83b07fd | static read, not built | core SPI, HTTP helper, webhook router, Slack/Twilio/Gmail inbound, web fetch and images, bank (TrueLayer) payments and consent, confirmation gating, connector GraphQL APIs (identity only), voice provisioner, repo-wide greps. Not read: voice engine internals (11k lines), Discord gateway, chat IRC/Signal/Teams, calendar/contacts/document/travel/commerce providers, email inbound, notification bridge |
 | eidos | 2026-11-14 | 5c93420 | static read, not built | JPA registry, query API, render pipeline (structure, prompts, visibility), capability and disposition health, vocab (MBTI sample), in-memory org registry, eval outline, carry-over greps. Not read: `CdiVocabularyRegistry` (679 lines), capability resolver/matching, annotation processors, descriptor YAML preprocessing, eval judges in detail, org annotations |
+| engine | 2026-11-14 | 6c28a48 | static read, not built | FIRST PASS (128k lines, 51 modules). Read: README, reactor, case REST API and service, ACL filter and health check, core dispatch handler (rules, budget), instance cache and evaluation serializer, failure-recovery coordinator, worker execution orchestrator (part), playbook integration (`PlaybookWorkerFunctionProvider`, `StepFileCallableDispatcher`), ledger capture wiring, system principal, test bean-exclusion lists, evolution API surface. Not read: planning (HTN/DAG, 10k), stigmergy/swarm, routing and trust, goal formation/revision, CBR retrieval, context layers, milestones, signals, sub-cases, judgment, schedulers, persistence, work adapter, A2A, ReAct, annotations/codegen/generator, Spring modules |
 
 ## Cross-repo themes
 
@@ -80,7 +82,7 @@ Patterns found once that are likely to recur. Check each in every repo.
 - **T19 Bean displacement side effects.** A module's non-default bean or higher-priority `@Alternative` silently replacing another repo's implementation app-wide. Check every `implements <other repo SPI>` and every `@Priority`.
 - **T20 Bypassing an upstream pipeline.** Consumer re-implements a write path (own sequence, own hash) instead of calling the owner's service.
 - **T21 Stale copy after extraction.** Code moved to a new module but left behind in the old one under the same class names (P11, N7).
-- **T22 Licence files.** No `LICENSE`/`NOTICE` in any of the nine repos checked; only the parent POM declares Apache 2.0. Neocortex carries 33 ASF-headed files that refer to a NOTICE file.
+- **T22 Licence files.** Only engine has a `LICENSE` file; none of the other repos checked do; only the parent POM declares Apache 2.0. Neocortex carries 33 ASF-headed files that refer to a NOTICE file.
 - **T23 Declared but unenforced control.** A safety annotation or policy type exists but nothing on the classpath turns it into behaviour (C1; compare P16 circuit breaker).
 - **T14 Onboarding.** README, quick start, stability tiers. BOM lives in `casehub-parent`; each repo's README/guide should say so.
 
@@ -476,6 +478,50 @@ Strengths: cleanest repo so far on the carry-over themes. Tenant explicit in eve
 - Does engine use `AgentSelector` with trust ranking, and whose trust scores (L2 says they are forgeable)?
 - Does engine pass `tenancyId` from the principal into `AgentQuery`?
 
+## engine
+
+First pass. 128k lines, 51 modules. A CMMN-style case engine built as a blackboard: a case holds a layered context (semantic, episodic, working), bindings fire workers when context conditions hold, goals and milestones are evaluated against context, and workers can be functions, Serverless Workflow, playbooks, LangChain4j agents, ReAct loops, A2A agents, humans (via work) or sub-cases. On top: a planning layer (HTN/DAG), three-level failure recovery with plan adaptation, trust-weighted agent routing, CBR retrieval of past cases, stigmergy/swarm coordination, and a gated self-improvement loop ("evolution").
+
+Strengths:
+- **The API edge is done right, and is the model for the other repos.** `EngineCaseApi` takes tenant via `@ContextParam("tenancyId")`, declares `@AclCheck(resourceType, action, resourceIdParam)` per operation, and the service repeats the check (`requireCaseAccess`) with actor and tenant from `CurrentPrincipal`. Starting a case grants ACLs from the definition's `authorization` block.
+- Bindings and goals evaluate expressions with the context as data (JQ by default), not by text substitution; no P33 here.
+- Durable by design: event log, scheduler-backed worker execution (Quartz or db-scheduler), input hash per execution, `loadOrRestoreCaseInstance`, event-log replay. This is the durability the playbook interpreter lacks.
+- Per-case serialised evaluation with quiescence and signal-settlement tracking; dispatch budgets per case and external.
+- Failure recovery classifies TRANSIENT / REASONING / FUNDAMENTAL and escalates from retry, to excluding the agent and patching the local plan (versioned), to goal decomposition, to a triage handler.
+- System identity is a qualified bean (`@EngineSystem SystemCurrentPrincipal`), not a priority contest.
+- Real README with concepts and a quick start. Has a LICENSE file (the only reviewed repo that does).
+
+### Findings
+
+| ID | Sev | Theme | Where | Note | Status |
+|---|---|---|---|---|---|
+| G1 | S1 | T17 | `CaseInstanceCache` / `CaseInstanceCacheImpl` | Interface has `put`, `get`, `clear`, `getAll` and no remove. Every case started, with its full context, stays in a `ConcurrentHashMap` for the life of the JVM. | open |
+| G2 | S1 | | cache + `CaseEvaluationSerializer` + reactor | Live case state and per-case serialisation are JVM-local. `signal`, `query` and friends throw "Case instance not found" unless the case is in this node's cache. Effectively single-node (or needs sticky routing); I found no clustering statement in the docs. | open |
+| G3 | S2 | | `AclEnforcementHealthCheck` | Probes with `canAccess("__probe__", rid, null)` at startup. The in-memory and JPA providers call `action.deniedBy()`, so a real ACL provider would throw NPE during boot. REST tests exclude the real provider and use fakes, which is why it would not show. | check |
+| G4 | S2 | T8 | `CaseService.listCases` | Fetches a page, then filters by ACL, so pages come back short; `total` is the filtered page size and `hasMore` is computed from it. One ACL lookup per row. | open |
+| G5 | S2 | | `CaseContextChangedEventHandler.evaluateAndDispatch` | Any exception in rule evaluation, dispatch, goals or observations is caught and logged. The case stays RUNNING with nothing scheduled and no fault event. 28 catch-log-continue blocks across the handlers. | open |
+| G6 | S1 | T20 | playbooks in engine | Engine runs playbook workers through `new PlaybookCompiler()` (no plugin registry) to Serverless Workflow. Only the compiler's 20 built-in step types are accepted; shaped and generated plugin steps (voice, connectors, any `@McpDomain` operation) fail with "Unknown step type". So the playbooks that run in the test runner and the playbooks engine accepts are different languages (P21, P41). | open |
+| G7 | S2 | T23 | `yaml-cbr` `StepFileCallableDispatcher` | The bridge that does run plugin steps (`casehub:step-file`) builds a fourth evaluator with no scope and no expression engine (P32), passes step parameters unresolved and `services = null`, treats an unknown action as success, logs step failures and carries on, and runs on the common pool. | open |
+| G8 | S2 | T19 | test `application.properties` across modules | Composition needs long `quarkus.arc.exclude-types` and `selected-alternatives` lists, dummy connector credentials, and comments such as "both are `@DefaultBean`, ARC cannot resolve". Evidence that classpath activation does not compose; every application will need its own list. | open |
+| G9 | S2 | T19 | ledger capture | Engine writes case and worker-decision entries through `LedgerEntryRepository.save` (correct, delegates to ledger's pipeline). But engine depends on work and qhorus, whose repository beans compete for that type (W3, Q5). Which one engine's entries go through in a composed app is decided by exclusion lists. | check |
+| G10 | S3 | | `rules()` | CBR retrieval runs on every context change. Bindings cut by the dispatch budget are dropped and only reconsidered on the next context change. Plan items for the case are reloaded per evaluation. | open |
+| G11 | S3 | T3 | `SystemCurrentPrincipal` | Background identity is `system`, default tenant, cross-tenant admin. | open |
+| G12 | S3 | T11 | `A2AClient` | Message send has no request timeout (the agent-card fetch has 5 s). | open |
+| G13 | S3 | T18 | `MvelExpressionEngine` | Engine carries its own MVEL engine alongside platform's. | open |
+| G14 | S3 | | hygiene | `CaseContextChangedEventHandler` is 1,569 lines with 40 collaborators; `RuntimeBeans` 1,427; 489 inline fully qualified `io.casehub` names; 38 `synchronized`. No tests in the Spring modules. | open |
+
+### Carry-over answers
+
+- **P32/P33/P41 (which playbook runner):** engine uses the compiler path for workers and a degraded interpreter for step files (G6, G7). Neither wires an execution scope. Engine's own conditions are safe (data-bound JQ).
+- **T15:** clean at the engine API. Worker and agent identities inside a case are definition-supplied.
+- **E-carry (trust ranking):** engine has trust-weighted routing (`TrustScoreAgentTrustProvider`, `TrustWeightedImplementationRoutingStrategy`, `EngineAwareAgentSelector`). Not yet read; L2 (forgeable attestations) feeds it.
+- **P12:** engine is the first consumer that enforces ACLs; with the default no-op provider it logs "permissive".
+- **W1/W9:** work adapter not yet read.
+
+### Not yet reviewed
+
+Planning (HTN/DAG), stigmergy and swarm provisioning, routing and trust, goal formation and revision, CBR retrieval service, context layers (`WritableLayerImpl`), milestones and SLAs, signals and sub-cases, judgment and escalation, schedulers, persistence modules, work adapter, A2A, ReAct, evolution loop, annotations/codegen/generator, Spring modules.
+
 ## Cross-cutting conclusions (update as repos are added)
 
 1. **Identity is asserted, not authenticated, at every API edge** (L1, L2, W1, Q1, Q2). One fix pattern: actor and tenant from `CurrentPrincipal` only, via `@ContextParam`; request-supplied actor only for a trusted-service role.
@@ -483,6 +529,8 @@ Strengths: cleanest repo so far on the carry-over themes. Tenant explicit in eve
 3. **`CurrentPrincipal` and `LedgerEntryRepository` resolution depends on which jars are present.** Needs one documented precedence table and a composition test in an app that includes everything.
 4. **Erasure and retention both mutate or delete hashed data without verification knowing** (L8, L10, W5, Q8). Verification needs a defined model for tombstones and pruned ranges.
 6. **Safety controls exist as types but are not wired** (C1 confirmation, P16 circuit breaker, N40 journal to ledger). Each needs an end-to-end test proving the control fires.
+8. **Playbooks are three languages today** (interpreter in the test runner; compiler in engine; step-file bridge), with the plugin-step vocabulary available only in the first (P21, P32, P41, G6, G7). The "every API is a step" strategy depends on making engine's path accept plugin steps.
+9. **Engine's API edge is the reference implementation** (`@ContextParam` tenant, `@AclCheck`, service-level re-check). Ledger, work, qhorus and neocortex's corpus API should adopt it.
 7. **Agent-reachable tools lack an egress policy** (C2, C3, C8; P7 process execution). One shared URL/host policy and budget would cover them.
 5. **Canonical hash input is ambiguous** (L3, Q3). Needs a versioned, length-prefixed encoding before data accumulates.
 
@@ -505,8 +553,13 @@ Strengths: cleanest repo so far on the carry-over themes. Tenant explicit in eve
 - To make the "ground-breaking" claim hold: (1) evidence beyond LLM self-scoring, i.e. ablations and human ratings against a persona-prompt baseline; (2) durable, per-agent state (N8 to N10), since a mind that resets on restart undercuts the premise; (3) a published safety position on affective influence (N16); (4) separate the stable retrieval modules from the research modules so each can be judged on its own terms, and drop or justify the MBTI-style typology (N32); (5) a short paper or technical report, because the audience for this is researchers as much as developers.
 - Connectors: the capability platforms (bank, commerce, travel, calendar, documents, voice) are what let agents act in the world, which is where MCP servers and tool marketplaces (Composio, Zapier, Arcade, Pipedream) compete. CaseHub's angle is typed SPIs with consent tiers, confirmation and simulation built in, plus local voice. That angle only holds if confirmation actually fires (C1) and egress is bounded (C2).
 - Eidos: "agent identity" as a structured, queryable, vocabulary-grounded descriptor with health and behavioural contracts. Neighbours: A2A agent cards, AGNTCY/OASF agent schemas, MCP server metadata, agent registries in CrewAI/AutoGen (name + role + backstory strings). Eidos is richer than all of them on capability semantics (graded matching, epistemic domains, exclusions, learned exclusions) and is the only one that treats the descriptor as a testable behavioural contract. That is a strong, defensible position. The personality vocabularies are the weakest part for an enterprise audience (E1, E2); capability and compliance are the strongest.
+- Engine: this is the product. Nearest neighbours by category: Camunda/Flowable CMMN (case management, but human-centric and model-driven), Temporal (durable execution, code-first, no goals), LangGraph/CrewAI/AutoGen (agent orchestration, little durability, governance or human tasks), Drools/blackboard lineage (reactive rules). Engine's combination, goal-driven blackboard + durable execution + human tasks + agents as workers + self-healing plans + audit ledger, is not something any one of those offers. The claim to lead with is "case management for mixed human and agent work, with accountability", not "agent framework".
+- Engine risk for that claim: single-node state (G1, G2) is the first thing an enterprise architect will probe, before any feature.
 
 ## Open questions
+
+- Engine: is multi-node operation a goal, and if so via sticky routing, a distributed cache, or stateless reload per event?
+- Engine: should playbook workers accept plugin steps (pass the plugin registry to the compiler), or is the compiler dialect intentionally narrower?
 
 - Connectors: is confirmation meant to be enforced by the calling layer (engine/agency) rather than by decorators?
 
