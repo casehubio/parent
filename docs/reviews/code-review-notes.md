@@ -57,7 +57,7 @@ Status: `open` · `confirmed` (reproduced) · `issue #N` · `fixed`.
 | neocortex | 2026-11-14 | 4af2ac6 | static read, not built | Five passes (adds inner life, gut feeling, personality evolution, mind-map extractor, DTW, hypothesis tracker; goals, user model, derivation engine, Qdrant CBR store, Mem0/Graphiti keys, zip integrity, knowledge pipeline). Read: strategy learning, belief revision, consolidation scheduler, CBR scorer and JPA store, corpus stores, ingestion, federation walker, plus RAG/Qdrant tenancy, exposed APIs, ONNX wrapper, `CognitionCore`, mood, appraisal (`EmotionMapper`, LLM appraisal), regulation prompt, CAPS settler, memory retriever, Bayes provenance, eval/quality docs, repo-wide greps. Still unread: strategy learning, goals, narrative, user/mental models, belief revision internals, mind-map consolidation phases, `CognitiveDerivationEngine`, CBR algorithms, corpus/knowledge pipeline, memory backends in detail |
 | connectors | 2026-11-14 | 83b07fd | static read, not built | core SPI, HTTP helper, webhook router, Slack/Twilio/Gmail inbound, web fetch and images, bank (TrueLayer) payments and consent, confirmation gating, connector GraphQL APIs (identity only), voice provisioner, repo-wide greps. Not read: voice engine internals (11k lines), Discord gateway, chat IRC/Signal/Teams, calendar/contacts/document/travel/commerce providers, email inbound, notification bridge |
 | eidos | 2026-11-14 | 5c93420 | static read, not built | JPA registry, query API, render pipeline (structure, prompts, visibility), capability and disposition health, vocab (MBTI sample), in-memory org registry, eval outline, carry-over greps. Not read: `CdiVocabularyRegistry` (679 lines), capability resolver/matching, annotation processors, descriptor YAML preprocessing, eval judges in detail, org annotations |
-| engine | 2026-11-14 | 6c28a48 | static read, not built | FIRST PASS (128k lines, 51 modules). Read: README, reactor, case REST API and service, ACL filter and health check, core dispatch handler (rules, budget), instance cache and evaluation serializer, failure-recovery coordinator, worker execution orchestrator (part), playbook integration (`PlaybookWorkerFunctionProvider`, `StepFileCallableDispatcher`), ledger capture wiring, system principal, test bean-exclusion lists, evolution API surface. Not read: planning (HTN/DAG, 10k), stigmergy/swarm, routing and trust, goal formation/revision, CBR retrieval, context layers, milestones, signals, sub-cases, judgment, schedulers, persistence, work adapter, A2A, ReAct, annotations/codegen/generator, Spring modules |
+| engine | 2026-11-14 | 6c28a48 | static read, not built | Three passes (128k lines, 51 modules): spine, CBR, then routing/trust, action gates, work adapter, planning, stigmergy, evolution surface. Read: README, reactor, case REST API and service, ACL filter and health check, core dispatch handler (rules, budget), instance cache and evaluation serializer, failure-recovery coordinator, worker execution orchestrator (part), playbook integration (`PlaybookWorkerFunctionProvider`, `StepFileCallableDispatcher`), ledger capture wiring, system principal, test bean-exclusion lists, evolution API surface. Not read: planning (HTN/DAG, 10k), stigmergy/swarm, routing and trust, goal formation/revision, CBR retrieval, context layers, milestones, signals, sub-cases, judgment, schedulers, persistence, work adapter, A2A, ReAct, annotations/codegen/generator, Spring modules |
 
 ## Cross-repo themes
 
@@ -537,6 +537,30 @@ What weakens the claim today:
 
 To make it a headline: (1) ship one real adapter and ensemble analyser (even simple substitution and majority-vote on steps) so the default is not a no-op; (2) fix N25 and add a minimum-support rule for success rates from small k; (3) publish a with/without-CBR comparison on one domain; (4) add a per-decision explanation view ("chosen because 4 of 5 similar cases succeeded with this worker") since explainability is the edge over embedding memory; (5) define case-base maintenance and erasure.
 
+### Engine second pass (2026-11-14): routing and trust, action gates, work adapter, planning, stigmergy, evolution
+
+What these are:
+- **Routing:** composable signal providers (trust, experience/CBR, goal, personality, workload) feed agent, human-task and implementation routing. Trust uses a maturity model per capability: BOOTSTRAP (too few observations), QUALIFIED, BORDERLINE (within a margin of the threshold), EXCLUDED; "all borderline" escalates to human oversight; quality floors per dimension; fallback binding.
+- **Action gates:** a chained `ActionRiskClassifier` returns `Autonomous` or `GateRequired(reason, reversible, candidateGroups, expiresIn, scope, quorum)` for a planned action; most restrictive wins; a classifier error fails safe to `GateRequired`. A gate becomes a WorkItem (multi-instance when a quorum is set) and the case waits.
+- **Planning:** GOAP planner over capabilities with preconditions and effects producing a dependency DAG, with CBR contingencies attached; LLM decomposition; adaptive strategy; replanning that blacklists the failed action; deeper decomposition and forward-replan revision.
+- **Stigmergy:** swarm coordination through shared state, with detection of signal consensus, coordination storms and interest convergence, team and role tracking, budgeted swarm provisioning, eviction per case.
+- **Evolution:** a gated self-improvement loop, including a `code-evolution` domain: research, hypotheses, improvement cases, stage gates through a conductor inbox, budget enforcer, circuit breaker, regression evaluation by health-score delta, rollback policy, and a structural deny list that stops it modifying its own safety machinery.
+
+Assessment: this is the most ambitious layer in CaseHub and the code read is careful (sealed decisions, fail-safe gate on classifier error, explicit budgets and deny lists). Risk-classified action gates with quorum approval are a better human-in-the-loop design than anything in the agent frameworks I know.
+
+| ID | Sev | Theme | Where | Note | Status |
+|---|---|---|---|---|---|
+| G21 | S2 | T23 | action gates vs platform confirmation | Engine's `ActionRiskClassifier`/`ActionGate` and platform's `@RequiresConfirmation`/`OperationConfirmationProvider` (used by connectors for payments, checkout, deletes) are unconnected; engine references neither. C1 stays open: nothing turns a connector's confirmation annotation into an engine gate. Natural fix: a risk classifier that reads the step's confirmation/consent tier, and a confirmation provider backed by action gates. | open |
+| G22 | S2 | T1 | `ChainedActionRiskClassifier` | With no classifiers registered the decision is `Autonomous`. Fail-safe applies to errors, not to absence. | open |
+| G23 | S2 | | `TrustWeightedImplementationRoutingStrategy.score` | A BOOTSTRAP candidate scores its workload score (1.0 when idle); a QUALIFIED one scores `trust x 0.6 + workload x 0.4`, below 1.0 unless trust is perfect. An unknown idle agent outranks a proven one, and a fresh identity resets to BOOTSTRAP (whitewashing). `bootstrapEscalationRequired` defaults to false. | check |
+| G24 | S3 | | `TrustRoutingPolicy.isBorderline` | Symmetric band: with defaults a score of 0.70 to 0.80 is "borderline" and excluded, so the effective bar is above 0.80. Worth stating in docs. | open |
+| G25 | S2 | T1 | `GatePolicy.effectiveMode` | A stage with no configured mode defaults to `AUTO`. For a loop that can propose code changes the safe default is `GATED`. | open |
+| G26 | S3 | | `CodeEvolutionDenyPatternProvider` | Protection of the safety machinery is a deny list of 28 name fragments. New or renamed safety classes are unprotected until added; an allow list of modifiable areas is the stronger shape. | open |
+| G27 | S3 | | `GoapDecompositionStrategy` | Five distinct failure causes throw the same message ("GOAP decomposition produced no plan"). "Open world" state sets every unknown precondition to false. | open |
+| G28 | S3 | | work adapter | Engine creates WorkItems as `createdBy("casehub-engine")` with tenant from the request; completion flows back through work's lifecycle, so W1/W2 (anyone can complete as anyone) apply to gate approvals and human tasks. | open |
+
+Carry-over update: L2 (movable trust scores) now has three consumers: routing (G23), attestation gating, and CBR retain (G18).
+
 ### Carry-over answers
 
 - **P32/P33/P41 (which playbook runner):** engine uses the compiler path for workers and a degraded interpreter for step files (G6, G7). Neither wires an execution scope. Engine's own conditions are safe (data-bound JQ).
@@ -547,7 +571,7 @@ To make it a headline: (1) ship one real adapter and ensemble analyser (even sim
 
 ### Not yet reviewed
 
-Planning (HTN/DAG), stigmergy and swarm provisioning, routing and trust, goal formation and revision, CBR retrieval service, context layers (`WritableLayerImpl`), milestones and SLAs, signals and sub-cases, judgment and escalation, schedulers, persistence modules, work adapter, A2A, ReAct, evolution loop, annotations/codegen/generator, Spring modules.
+Goal formation and revision (LLM strategies), context layers (`WritableLayerImpl`), milestones and SLAs, signals and sub-cases, judgment and escalation, schedulers, persistence modules, A2A and ReAct handlers in detail, the evolution loop's internals, annotations/codegen/generator, Spring modules.
 
 ## Cross-cutting conclusions (update as repos are added)
 
@@ -555,6 +579,8 @@ Planning (HTN/DAG), stigmergy and swarm provisioning, routing and trust, goal fo
 2. **The ledger write path has four implementations** (ledger x2, work, qhorus) with different guarantees. Ledger should own one `append` service; consumers should only supply subclass fields.
 3. **`CurrentPrincipal` and `LedgerEntryRepository` resolution depends on which jars are present.** Needs one documented precedence table and a composition test in an app that includes everything.
 4. **Erasure and retention both mutate or delete hashed data without verification knowing** (L8, L10, W5, Q8). Verification needs a defined model for tombstones and pruned ranges.
+10. **W1/W2 is now the highest-leverage fix in the codebase.** Engine's human-in-the-loop (action gates, quorum approvals, judgments) is delivered as WorkItems, and work does not check who claims or completes them (G28).
+11. **Autonomy needs one governance statement.** Self-set goals, belief revision, personality change, unprompted contact (neocortex), swarm provisioning and self-improvement including code (engine) are each bounded in code but explained nowhere together; two defaults are open (G22, G25).
 6. **Safety controls exist as types but are not wired** (C1 confirmation, P16 circuit breaker, N40 journal to ledger). Each needs an end-to-end test proving the control fires.
 8. **Playbooks are three languages today** (interpreter in the test runner; compiler in engine; step-file bridge), with the plugin-step vocabulary available only in the first (P21, P32, P41, G6, G7). The "every API is a step" strategy depends on making engine's path accept plugin steps.
 9. **Engine's API edge is the reference implementation** (`@ContextParam` tenant, `@AclCheck`, service-level re-check). Ledger, work, qhorus and neocortex's corpus API should adopt it.
