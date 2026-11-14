@@ -33,9 +33,10 @@ Status: `open` · `confirmed` (reproduced) · `issue #N` · `fixed`.
 - **platform** (~98k lines, 241 modules): SPIs + defaults for identity, tenancy, ACL, preferences, notifications, registry, agents/LLM backends, MCP exposure, YAML playbooks, simulation. Pattern: `-core` POJO, Quarkus wiring, generated Spring.
 - **ledger** (~23k lines): append-only audit log on platform. `LedgerEntry` JPA JOINED base; consumers subclass (`casehub-work`, `casehub-qhorus`). Merkle frontier per subject, attestations, EigenTrust scores, pseudonymised actors, retention, KMS signers.
 - **work** (~40k lines): human/agent task layer. `WorkItemService` lifecycle, stores (JPA, memory, Mongo), optional Postgres RLS via `TenantAwareStore`, timers/expiry, queues, ledger adapter (`ledger/`), qhorus and flow adapters. Read-only clone `/home/user/casehubio/work`.
+- **qhorus** (~45k lines): agent/human messaging mesh. Channels, messages, commitments, watchdog, gateway/delivery, A2A endpoint, cluster relay, own ledger repository and `MessageLedgerEntry`. Read-only clone `/home/user/casehubio/qhorus`.
 - **desiredstate**, **ops**, **scaffold**: cloned, not reviewed. Others (work, qhorus, engine, eidos, connectors, ...) not cloned.
 
-**Suggested order.** qhorus (check W3, W4, W6), engine, desiredstate, ops, scaffold.
+**Suggested order.** engine (how it composes work + qhorus + ledger), desiredstate, ops, scaffold.
 
 ## Review log
 
@@ -44,6 +45,7 @@ Status: `open` · `confirmed` (reproduced) · `issue #N` · `fixed`.
 | platform | 2026-11-14 | d9805fd | static read, not built | foundations deep, rest sampled |
 | ledger | 2026-11-14 | 11018f8 | static read, not built | core deep (hashing, Merkle, save path, signing, erasure, retention, API); trust maths, KMS signers, examples sampled or skipped |
 | work | 2026-11-14 | adccdbc | static read, not built | lifecycle service, REST lifecycle API, tenancy/RLS, ledger integration deep; queues, ai, issue-tracker, flow, federation, progress, mongodb not read |
+| qhorus | 2026-11-14 | 86adf50 | static read, not built | identity/tenancy, ledger integration, erasure, sender/ACL path, cluster filter deep; message/commitment/watchdog logic, gateway, A2A detail, compliance-report, slack, push, graphql not read |
 
 ## Cross-repo themes
 
@@ -208,6 +210,49 @@ Strengths: real README with a clear pitch; 10-state lifecycle with guarded trans
 - Does engine call `completeFromSystem` / lifecycle ops with an actor it authenticated? (W1, W9)
 - Anyone else updating a persisted ledger entry? (W5)
 
+## qhorus
+
+Strengths: honest javadoc on its own security boundary; channel `allowed_writers` policy and rate limiter exist; frontier read `ForUpdate`; tombstone design for message erasure keeps the original digest; 280 runtime tests.
+
+### Findings
+
+| ID | Sev | Theme | Where | Note | Status |
+|---|---|---|---|---|---|
+| Q1 | S1 | T1,T3 | `TenancyContextFilter`, `QhorusInboundCurrentPrincipal` | Tenant comes from unauthenticated `X-Tenancy-ID` header; actor is always `anonymous`. Documented, but it is the default. Outside a request it silently falls back to the default tenant. | open |
+| Q2 | S1 | T15 | `MessageService`, `A2AChannelBackend.receive`, `A2AResource` | Sender is self-declared; `allowed_writers` and rate limits are checked against that string. Actor type comes from caller header `x-qhorus-actor-type`, which also gates pseudonymisation (L11). | open |
+| Q3 | S1 | T16 | `MessageLedgerEntry.domainContentBytes` | Pipe-joins free-text `content`, `target`, `topic`, `reasoning` with no escaping. L3 is directly exploitable here since message content is arbitrary. | open |
+| Q4 | S2 | T16 | `MessageLedgerEntry` | Persisted but not hashed: `routingOriginalTarget`, `routingSelectedAgent`, `routingStrategy`, `routingCandidateCount`, `correctsMessageId`. | open |
+| Q5 | S1 | T19,T20 | `QhorusLedgerEntryRepository` | Third copy of the ledger save pipeline, also a non-default `LedgerEntryRepository` bean. Lacks agent signing and enrichers. With work's bean (W3) on the same classpath, injection of `LedgerEntryRepository` is ambiguous or order-dependent. Confirm how combined apps resolve it. | open |
+| Q6 | S2 | T20 | `QhorusSequenceAllocator` | Allocates in `REQUIRES_NEW`, keyed by subject only. A rolled-back outer transaction leaves a gap; ledger `inclusionProof` indexes by `seq - 1` (L8) and breaks. No tenancy in the key. | open |
+| Q7 | S2 | | `QhorusLedgerEntryRepository.save` | `synchronized`: single-JVM only (qhorus has a `cluster` module), pins virtual threads, and releases before the transaction commits. 11 `synchronized` uses in runtime/cluster. | open |
+| Q8 | S1 | | `MessageContentErasureService` | Nulls `content` and signature on a hashed entry. Ledger `verify` has no tombstone handling, so the channel fails verification permanently after one erasure. `em.find` has no tenant check. Tombstone always written to the default tenant (same as L10). | open |
+| Q9 | S2 | T1,T2 | `cluster` `InternalSecretFilter` | If no secret is configured, `/internal/*` is open. Plain `equals` compare. | open |
+| Q10 | S3 | T13,T14 | repo-wide | README is badges only. No tests in `runtime-spring`, `connector-backend-core`, `notification-bridge-core`, `websocket-observer-spring`. `runtime-core` (9.6k lines) has 4 test files of its own. | open |
+
+### Carry-over answers
+
+- W3/W4: yes, qhorus ships its own repository bean and its own pipeline copy (Q5). Four write-path implementations now exist: ledger Quarkus, ledger Spring, work, qhorus.
+- W6: `QhorusInboundCurrentPrincipal` is a plain `@ApplicationScoped` bean, so OIDC (100) and work's principal (150) both displace it. Precedence across repos: Mock (default) < qhorus (plain bean) < OIDC 100 < work 150 < test fixture 200.
+- W5: qhorus also mutates a persisted entry (Q8).
+- P13/L11: actor type from caller header (Q2).
+
+### Not yet reviewed
+
+`MessageService` flow, `CommitmentService`, `WatchdogEvaluationService`, `ChannelGateway`/delivery, `LedgerWriteService`, `MessageLedgerEntryRepository`, A2A protocol detail, agent-card signing, compliance-report, slack, push, webhook observer, graphql, cache, mesh.
+
+### Carry into downstream repos
+
+- Which app combines work + qhorus + ledger, and what does it do about the repository beans? (Q5)
+- Does engine or claudony rely on `allowed_writers` as a security control? (Q2)
+
+## Cross-cutting conclusions (update as repos are added)
+
+1. **Identity is asserted, not authenticated, at every API edge** (L1, L2, W1, Q1, Q2). One fix pattern: actor and tenant from `CurrentPrincipal` only, via `@ContextParam`; request-supplied actor only for a trusted-service role.
+2. **The ledger write path has four implementations** (ledger x2, work, qhorus) with different guarantees. Ledger should own one `append` service; consumers should only supply subclass fields.
+3. **`CurrentPrincipal` and `LedgerEntryRepository` resolution depends on which jars are present.** Needs one documented precedence table and a composition test in an app that includes everything.
+4. **Erasure and retention both mutate or delete hashed data without verification knowing** (L8, L10, W5, Q8). Verification needs a defined model for tombstones and pruned ranges.
+5. **Canonical hash input is ambiguous** (L3, Q3). Needs a versioned, length-prefixed encoding before data accumulates.
+
 ## Positioning notes
 
 - Differentiators: one-annotation multi-surface exposure; simulation; accountability primitives (confirmation, consent tiers, DID, signing).
@@ -216,8 +261,11 @@ Strengths: real README with a clear pitch; 10-state lifecycle with guarded trans
 
 - Ledger: the accountability story (Art. 12/22 snapshots, PROV export, pseudonymised erasure, Merkle proofs) is the strongest differentiator seen so far. Closest comparisons are transparency logs (Trillian, Rekor) and ledger databases (immudb, Azure SQL Ledger). Its edge is being embedded and domain-aware; its claim only holds once L1 to L5 are closed.
 - Work: competes with the human-task parts of Camunda/Flowable/jBPM (WS-HumanTask lineage) and with Temporal-style "wait for signal". Edge: embedded in the app transaction, agent-or-human assignee, ledger-backed audit. Table stakes still missing: enforcement of who may claim and complete (W1, W2).
+- Qhorus: agent-to-agent messaging with commitments, channel governance and ledger-backed transcripts. Neighbours: A2A protocol implementations, AutoGen/CrewAI group chat, Slack-style agent buses. Edge: typed speech acts with commitments and an auditable record. Weak point: participants self-identify (Q2).
 
 ## Open questions
+
+- Qhorus: are agents expected to authenticate (agent cards, DIDs) before posting, and where is that enforced?
 
 - Work: is the lifecycle API expected to sit behind a trusted gateway that injects the actor? If not, W1/W2 are the top fix.
 - Work: was `TenantScopedPrincipal` priority 150 meant to beat OIDC?
