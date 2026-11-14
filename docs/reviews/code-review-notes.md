@@ -25,6 +25,7 @@ Status: `open` · `confirmed` (reproduced) · `issue #N` · `fixed`.
 
 **Owner context and corrections so far.**
 - BOM lives in `casehub-parent`; do not report "no BOM".
+- Owner regards playbooks as a primary, unique differentiator (powerful, type safe, less code than Java). Reviewed; see platform section. Agreed on power and brevity; type safety and uniqueness are partial.
 - Onboarding is in progress and is playbook-led (`platform/playbooks`). Report gaps as "entry point missing", not "no onboarding".
 - Identity is delegable via `casehub-platform-oidc` (Quarkus OIDC, so Keycloak works). Built-in `authn` is a deliberate optional path. Authz has no external adapter yet.
 - Owner has not yet answered the open questions at the bottom.
@@ -118,6 +119,31 @@ Strengths: framework-neutral cores with thin Quarkus/Spring wiring; consistent s
   - Authz: Keycloak Authorization Services considered and rejected in `2026-06-01-acl-design.md` (runtime dependency). OpenFGA/SpiceDB researched there, no adapter built. ACL SPI is pluggable, so an adapter is possible.
   - So: P1, P2, P5–P8, P12 are independent of IdP choice. Fail-open default (P12) still applies when `oidc` is present but no ACL backend is.
 - **Open:** nothing in platform verifies `authn`-issued JWTs and there is no JWKS endpoint; which component validates them?
+
+### Playbooks (reviewed 2026-11-14 at owner's prompt)
+
+Owner's position: playbooks are an extensive and unique differentiator: very powerful, type safe, less code than Java.
+
+What it is: `yaml-core` meta-language (variables with prefixed sources, `if`, `forEach`, typed CSV data, parameterised modules with outputs) plus a step language in `yaml-step-runtime`: one step = `step-type subject: params`, 13 ordered decorators (`if`, `forEach`, `loop`, `on-error`, `timeout`, `retry`, `semaphore`, `delay`, `signal`, `transform`, ...), structural steps (`block`, `if/then/else`, `match/cases` with guards, `parallel`, `concurrent`, `race`, `try/catch/finally`, `barrier`, `quorum`, `select`), coordination primitives (channel, semaphore, latch, signal, state machine, correlation scope, deadline), invoke bindings (MCP, script, process, agent, REST, GraphQL), agent sessions and pools with structured output. Steps come from `@Plugin` records, MCP tools, scripts with schema files, YAML step definitions, and any `@McpDomain` operation via generated plugins. Tests are themselves playbooks (`.test.yaml`) with simulation.
+
+Assessment:
+- **Power: agree.** The coordination vocabulary (quorum, race, barrier, correlation, deadlines, semaphores) and agent sessions as first-class steps go beyond Serverless Workflow, Step Functions, Argo, GitHub Actions and Kestra. Auto-exposing every domain operation and MCP tool as a step is distinctive.
+- **Less code than Java: agree for orchestration.** The three-reviewer parallel example is about 20 lines. Step implementations are still Java, which is the right split.
+- **Type safe: partly.** Checked before run: step names against the registry, structure, some cross-references; a composed JSON Schema gives editors parameter names, types and enums. Checked at run time: step inputs and outputs against their declarations (`ValidatingAction`), which is stronger than most YAML workflow tools. Not checked: `${...}` expressions and data flow between steps. A `capture` is not typed from the step's declared outputs, so `${result.totl}` fails at run time. Conditions are MVEL/JQ strings. The guide says parameter types are checked at parse time; in the code that check runs at execution. "Schema-checked with runtime contracts" is accurate today; "type safe" needs static data-flow checking, which is achievable because outputs are already declared, and would be a real first among YAML workflow languages.
+- **Unique: partly.** Typed-plugin YAML orchestration exists (Kestra is the closest, with traction; also Serverless Workflow, Conductor, Windmill). The unique part is the combination: coordination primitives + agent sessions + domain operations as steps + simulation + tests in the same language.
+
+Findings:
+
+| ID | Sev | Theme | Where | Note | Status |
+|---|---|---|---|---|---|
+| P21 | S2 | T20 | execution paths | Three: interpreter (`StructuralStepEvaluator` + `DecoratorChain`, about 1,700 lines, what the runner and tests use), compiler to Serverless Workflow (`playbook-compiler`, 1,400 lines, used for validation), durable primitives (`coordination-core`, 1,150 lines, 2 tests). They do not accept the same language. | open |
+| P22 | S2 | T14 | `playbooks/` `catalog-parsing-gate.test.yaml` | The gate test expects 3 shipped examples to fail compilation (`modules`, `rest`, `08-structured-output`). Onboarding material includes playbooks one of the paths rejects. Only 4 `.test.yaml` files for 76 examples. | open |
+| P23 | S3 | T14 | example playbooks | Two file shapes (header + `---` + bare step list vs top-level `steps:`/`pools:`), mixed `camelCase` and `kebab-case` keys, JSON Schema embedded as a string in YAML. Several example steps are demo-only (`click`, `chan-produce`, `pipeline-consume`). | open |
+| P24 | S2 | T12 | `yaml-language-guide.md` "Schema type safety" | Claims parse-time parameter type checks; `Walker` checks names and structure, types are validated in `ValidatingAction` at execution. | open |
+| P25 | S2 | | interpreter | No durability: a playbook run does not survive a restart. This is the main axis on which Temporal, Step Functions and Kestra will be compared. | open |
+| P26 | S2 | T5 | playbook trust model | `process`, `script`, `rest` and MVEL expressions make a playbook equivalent to code (P2, P7). Fine for developer-authored playbooks; needs a stated policy before tenants or agents author them. | open |
+
+Positioning suggestions: lead with coordination + agents + tests-in-language, not with "YAML workflows"; add static data-flow typing and then claim type safety; pick one execution path as canonical and state durability plans; consider the name clash with Ansible playbooks.
 
 ### Not yet reviewed
 
