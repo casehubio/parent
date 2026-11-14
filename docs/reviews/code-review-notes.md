@@ -44,7 +44,7 @@ Status: `open` · `confirmed` (reproduced) · `issue #N` · `fixed`.
 - **engine** (~128k lines, 51 modules): CMMN-style blackboard case engine. Reactor, layered case context, bindings/goals/milestones, workers (function, SWF, playbook, agent, ReAct, A2A, human, sub-case), planning, recovery, routing, stigmergy, evolution; REST/GraphQL/MCP API with `@AclCheck`. Read-only clone `/home/user/casehubio/engine`.
 - **desiredstate**, **ops**, **scaffold**: cloned, not reviewed. Others (work, qhorus, engine, eidos, connectors, ...) not cloned.
 
-**Build order** (from `parent/build/modules-core.csv` dependencies; the file says row order is build order but rows are not topologically sorted, e.g. desiredstate is listed before engine and ras): platform; worker, ledger, connectors, pages; eidos; neocortex, qhorus; work; engine; ras, agency, workers, claudony; desiredstate; ops. Reviewed: platform, ledger, work, qhorus, neocortex, connectors. Reviewed also: eidos, engine (first pass). Engine deserves further passes (planning, routing/trust, stigmergy, work adapter). For engine, first establish which playbook runner and evaluator wiring it uses (P32, P41) and whether it supplies an expression engine (P33). worker and pages still unreviewed. Follow the owner's stated order; check this list before suggesting one.
+**Build order** (from `parent/build/modules-core.csv` dependencies; the file says row order is build order but rows are not topologically sorted, e.g. desiredstate is listed before engine and ras): platform; worker, ledger, connectors, pages; eidos; neocortex, qhorus; work; engine; ras, agency, workers, claudony; desiredstate; ops. Reviewed: platform, ledger, work, qhorus, neocortex, connectors. Reviewed also: eidos, engine (four passes). Remaining repos cloned and unreviewed: desiredstate, ops, scaffold. Not cloned: worker, pages, workers, agency, claudony, ras, and the applications. For engine, first establish which playbook runner and evaluator wiring it uses (P32, P41) and whether it supplies an expression engine (P33). worker and pages still unreviewed. Follow the owner's stated order; check this list before suggesting one.
 
 ## Review log
 
@@ -57,7 +57,7 @@ Status: `open` · `confirmed` (reproduced) · `issue #N` · `fixed`.
 | neocortex | 2026-11-14 | 4af2ac6 | static read, not built | Five passes (adds inner life, gut feeling, personality evolution, mind-map extractor, DTW, hypothesis tracker; goals, user model, derivation engine, Qdrant CBR store, Mem0/Graphiti keys, zip integrity, knowledge pipeline). Read: strategy learning, belief revision, consolidation scheduler, CBR scorer and JPA store, corpus stores, ingestion, federation walker, plus RAG/Qdrant tenancy, exposed APIs, ONNX wrapper, `CognitionCore`, mood, appraisal (`EmotionMapper`, LLM appraisal), regulation prompt, CAPS settler, memory retriever, Bayes provenance, eval/quality docs, repo-wide greps. Still unread: strategy learning, goals, narrative, user/mental models, belief revision internals, mind-map consolidation phases, `CognitiveDerivationEngine`, CBR algorithms, corpus/knowledge pipeline, memory backends in detail |
 | connectors | 2026-11-14 | 83b07fd | static read, not built | core SPI, HTTP helper, webhook router, Slack/Twilio/Gmail inbound, web fetch and images, bank (TrueLayer) payments and consent, confirmation gating, connector GraphQL APIs (identity only), voice provisioner, repo-wide greps. Not read: voice engine internals (11k lines), Discord gateway, chat IRC/Signal/Teams, calendar/contacts/document/travel/commerce providers, email inbound, notification bridge |
 | eidos | 2026-11-14 | 5c93420 | static read, not built | JPA registry, query API, render pipeline (structure, prompts, visibility), capability and disposition health, vocab (MBTI sample), in-memory org registry, eval outline, carry-over greps. Not read: `CdiVocabularyRegistry` (679 lines), capability resolver/matching, annotation processors, descriptor YAML preprocessing, eval judges in detail, org annotations |
-| engine | 2026-11-14 | 6c28a48 | static read, not built | Three passes (128k lines, 51 modules): spine, CBR, then routing/trust, action gates, work adapter, planning, stigmergy, evolution surface. Read: README, reactor, case REST API and service, ACL filter and health check, core dispatch handler (rules, budget), instance cache and evaluation serializer, failure-recovery coordinator, worker execution orchestrator (part), playbook integration (`PlaybookWorkerFunctionProvider`, `StepFileCallableDispatcher`), ledger capture wiring, system principal, test bean-exclusion lists, evolution API surface. Not read: planning (HTN/DAG, 10k), stigmergy/swarm, routing and trust, goal formation/revision, CBR retrieval, context layers, milestones, signals, sub-cases, judgment, schedulers, persistence, work adapter, A2A, ReAct, annotations/codegen/generator, Spring modules |
+| engine | 2026-11-14 | 6c28a48 | static read, not built | Four passes (128k lines, 51 modules): spine, CBR, routing/trust + gates + planning + stigmergy + evolution surface, then context/persistence/ReAct/goal formation. Read: README, reactor, case REST API and service, ACL filter and health check, core dispatch handler (rules, budget), instance cache and evaluation serializer, failure-recovery coordinator, worker execution orchestrator (part), playbook integration (`PlaybookWorkerFunctionProvider`, `StepFileCallableDispatcher`), ledger capture wiring, system principal, test bean-exclusion lists, evolution API surface. Not read: planning (HTN/DAG, 10k), stigmergy/swarm, routing and trust, goal formation/revision, CBR retrieval, context layers, milestones, signals, sub-cases, judgment, schedulers, persistence, work adapter, A2A, ReAct, annotations/codegen/generator, Spring modules |
 
 ## Cross-repo themes
 
@@ -561,6 +561,23 @@ Assessment: this is the most ambitious layer in CaseHub and the code read is car
 
 Carry-over update: L2 (movable trust scores) now has three consumers: routing (G23), attestation gating, and CBR retain (G18).
 
+### Engine third pass (2026-11-14): context layers, goal formation, milestones, persistence, ReAct
+
+Read: `WritableLayerImpl` (part), `GoalFormationEvaluator`, `MilestoneSLAOrchestrator`, `JpaCaseInstanceRepository` (save, find, update), `ReActWorkerFunctionHandler`. Checked for `@Version` across persistence.
+
+Good: context layers use read/write locks, versions and freezing; state change and event-log append happen in one transaction; milestone status is derived from the event log; SLA and worker paths fall back to the repository on a cache miss; ReAct has an explicit tool list per worker (other workers or local functions), a cycle bound, and emits each cycle (reasoning, tool calls, token usage) as an event; engine goal formation is opt-in, capped (max goals, max per reflection, cooldown) and has an `autoApprove` switch.
+
+| ID | Sev | Theme | Where | Note | Status |
+|---|---|---|---|---|---|
+| G29 | S2 | T7 | engine persistence | No `@Version` on any entity in `persistence-jpa-common`/`persistence-hibernate`. `updateStateAndAppendEvent` loads the row and overwrites state and the full context snapshot. `CaseInstance.version` exists but is not used as a lock. Two writers to one case silently lose an update; compounds G2. The whole context is rewritten on each state change. | open |
+| G30 | S2 | | cache fallback inconsistency | `MilestoneSLAOrchestrator` and worker execution restore a case from the repository when it is not cached; `CaseHubReactor.signal/query` and `DefaultRecoveryCoordinator.handleFailure` do not (throw, or return false). After a restart, which operations work depends on the path. | open |
+| G31 | S2 | | ReAct tools vs action gates | A ReAct tool that wraps another worker calls `runtime.execute(workerName, args)` directly inside the loop. I did not find the risk classifier on that path, so an action that would be gated when dispatched by a binding may run ungated when an agent calls it as a tool. | check |
+| G32 | S3 | | `ReActWorkerFunctionHandler` | All tool parameters are declared as strings, losing the capability's types. The only budget is `maxCycles`; no token or cost ceiling per loop. | open |
+| G33 | S3 | | `GoalFormationEvaluator` | With `autoApprove` off, a proposal is written to the event log and nothing else: no WorkItem or gate asks a human to approve it, so proposals are either automatic or inert. `lastFormationTime` grows per agent and tenant with no eviction. | open |
+| G34 | S3 | | `WritableLayerImpl.get` | Returns live nested maps and lists; a caller can mutate them without the lock or a version bump. | open |
+
+Engine review status: spine, CBR, routing/trust, gates, work adapter, planning (GOAP), stigmergy (surface), evolution (surface), context, persistence, ReAct read. Still unread: goal revision and abandonment, signals and sub-cases in detail, judgment, schedulers, A2A handler, annotations/codegen/generator (about 9k lines), Spring modules, examples.
+
 ### Carry-over answers
 
 - **P32/P33/P41 (which playbook runner):** engine uses the compiler path for workers and a degraded interpreter for step files (G6, G7). Neither wires an execution scope. Engine's own conditions are safe (data-bound JQ).
@@ -571,7 +588,7 @@ Carry-over update: L2 (movable trust scores) now has three consumers: routing (G
 
 ### Not yet reviewed
 
-Goal formation and revision (LLM strategies), context layers (`WritableLayerImpl`), milestones and SLAs, signals and sub-cases, judgment and escalation, schedulers, persistence modules, A2A and ReAct handlers in detail, the evolution loop's internals, annotations/codegen/generator, Spring modules.
+See the status line at the end of the third pass above.
 
 ## Cross-cutting conclusions (update as repos are added)
 
