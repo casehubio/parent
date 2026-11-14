@@ -27,6 +27,7 @@ Status: `open` · `confirmed` (reproduced) · `issue #N` · `fixed`.
 - BOM lives in `casehub-parent`; do not report "no BOM".
 - Playbook naming is settled by the owner after research; do not re-raise the Ansible clash.
 - Playbook steps are a designed surface (shaped plugins, `@GeneratePlugin` controls), not just generated RPC; connectors has its own `playbooks` module with voice and multi-domain examples.
+- Owner hopes CBR is a strong differentiator. Reviewed end to end (neocortex toolkit + engine integration); see engine section. Agreed; weakest link is the no-op Reuse step.
 - Owner regards playbooks as a primary, unique differentiator (powerful, type safe, less code than Java). Reviewed; see platform section. Agreed on power and brevity; type safety and uniqueness are partial.
 - Onboarding is in progress and is playbook-led (`platform/playbooks`). Report gaps as "entry point missing", not "no onboarding".
 - Identity is delegable via `casehub-platform-oidc` (Quarkus OIDC, so Keycloak works). Built-in `authn` is a deliberate optional path. Authz has no external adapter yet.
@@ -509,6 +510,32 @@ Strengths:
 | G12 | S3 | T11 | `A2AClient` | Message send has no request timeout (the agent-card fetch has 5 s). | open |
 | G13 | S3 | T18 | `MvelExpressionEngine` | Engine carries its own MVEL engine alongside platform's. | open |
 | G14 | S3 | | hygiene | `CaseContextChangedEventHandler` is 1,569 lines with 40 collaborators; `RuntimeBeans` 1,427; 489 inline fully qualified `io.casehub` names; 38 `synchronized`. No tests in the Spring modules. | open |
+
+### CBR across CaseHub (reviewed 2026-11-14 at owner's prompt)
+
+Owner's position: CBR is hoped to be a strong differentiator.
+
+How it fits together: neocortex supplies the toolkit (schemas, similarity, stores, decay, diversity, rerank, outcome-driven confidence). Engine wires it into execution through a per-definition `CbrConfig` (features extracted from case context by JQ or lambda, weights, top-k, minimum similarity, scope and temporal decay, cross-type, retrieval timing):
+- **Retrieve:** automatically on case start or on each context change (`CbrRetrievalService`), bounded per-case cache.
+- **Reuse:** retrieved plan traces go through `CbrPlanAdapter` and an ensemble analyser, then flow as `RetrievedExperience` into agent routing (`ExperienceSignalProvider`: per-worker success rate on similar cases, with a reason string), human-task routing (`CbrHumanTaskRoutingStrategy`), implementation routing, judgment, the worker's own context (agents see what worked before), plan execution, playbook selection, and the case context (`cbrEnsemble`).
+- **Revise:** outcomes adjust stored case confidence with a learning rate; supersession.
+- **Retain:** `CbrCaseRetainObserver` at case close builds a plan trace from plan items (binding, capability, worker, outcome) plus features, outcome label and the producing agent's trust score.
+Also used in desiredstate (fault policy, situation recompiler) and neocortex cognition (strategy evidence, personality transitions).
+
+Assessment: **agree this is a differentiator, and the integration is the differentiating part.** I know of no workflow engine, case-management product or agent framework with case-based planning in the execution loop. Agent-memory products (Letta, Mem0, Zep) and research systems (Reflexion, ExpeL, Voyager's skill library) store experience as text or embeddings; this stores structured, typed cases with plan traces and returns a per-feature similarity breakdown and a stated reason for each routing nudge. "The system improves with every closed case and can show why it chose this worker" is a claim regulated buyers can use.
+
+What weakens the claim today:
+
+| ID | Sev | Theme | Where | Note | Status |
+|---|---|---|---|---|---|
+| G15 | S2 | T23 | `CbrPlanAdapter`, ensemble analyser | The Reuse step has no real implementation in the repos read: defaults are `NoOpCbrPlanAdapter` and `NoOpCbrPlanEnsembleAnalyzer`; the only others are tracking decorators. Adaptation is the hard part of CBR and is left to each application. A fallback outcome-vote consensus exists. | open |
+| G16 | S3 | | `GoalAwarePlaybookSelector` | Score per goal is `similarity x quality x horizonWeight`; the goal's content never enters, so every candidate gets the same multiplier and ranking is by similarity x quality. "Goal-aware" is nominal. `MindMapGoalDistanceCalculator` exists and looks like the missing input. | check |
+| G17 | S2 | | ranking inputs | Engine inherits N25 (a sparse case matching one feature scores 1.0) and N26 (JPA store scores every live case in Java, here potentially on every context change). Retain skips features that fail to evaluate, which produces exactly the sparse cases N25 over-ranks. | open |
+| G18 | S2 | | trust in CBR | Retain stamps each case with the producing agent's trust score and stores can weight by trust; trust scores are movable through the ledger attestation API (L2). | open |
+| G19 | S3 | | `CbrCaseRetainObserver` | Every closed case is retained with entity id `case-retain`; no deduplication or case-base maintenance beyond age and trust purgers; problem text and features can carry personal data with no per-person erasure path (N35). Producer is "first successful worker". | open |
+| G20 | S3 | | evidence | No measurement that CBR improves outcomes (routing accuracy, time to resolution, success rate with and without). Examples exist (`cbr-ensemble-*`). | open |
+
+To make it a headline: (1) ship one real adapter and ensemble analyser (even simple substitution and majority-vote on steps) so the default is not a no-op; (2) fix N25 and add a minimum-support rule for success rates from small k; (3) publish a with/without-CBR comparison on one domain; (4) add a per-decision explanation view ("chosen because 4 of 5 similar cases succeeded with this worker") since explainability is the edge over embedding memory; (5) define case-base maintenance and erasure.
 
 ### Carry-over answers
 
