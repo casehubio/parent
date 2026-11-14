@@ -143,6 +143,20 @@ Findings:
 | P25 | S2 | | interpreter | No durability: a playbook run does not survive a restart. This is the main axis on which Temporal, Step Functions and Kestra will be compared. | open |
 | P26 | S2 | T5 | playbook trust model | `process`, `script`, `rest` and MVEL expressions make a playbook equivalent to code (P2, P7). Fine for developer-authored playbooks; needs a stated policy before tenants or agents author them. | open |
 
+Owner's follow-up: "every API we build is a potential plugin step". Checked 2026-11-14:
+- True by design: `graphql-generator` can emit a `@Plugin` record per `@McpDomain` operation. About 600 `@PlatformQuery`/`@PlatformMutation` operations exist across the repos read (work 116, qhorus 137, connectors 134, platform ~100, neocortex 66, ops 29, ledger 22).
+- Potential, not yet actual: `-AgeneratePlugins` defaults to false and is switched on in one module (`connectors/graphql`). Three `@GeneratePlugin` uses, all in platform.
+- Consequence for typing: operation signatures are Java types, so step inputs and outputs are already known at build time. Static data-flow typing of playbooks can be derived from them rather than hand-declared.
+
+| ID | Sev | Theme | Where | Note | Status |
+|---|---|---|---|---|---|
+| P27 | S2 | T3 | `GraphQLResolverProcessor` plugin generation | Generated step calls `api.method(args)` and skips `@ContextParam` parameters when building the argument list. Operations that take `@ContextParam("tenancyId")` (work, ledger, neocortex style) would get no tenant, or not compile. Works for connectors because they read identity from the security context. | check |
+| P28 | S2 | T9 | generated plugin steps | Steps call the SPI object directly, not the generated REST/GraphQL resource that carries `@RolesAllowed`. Role checks, confirmation and the acting identity of a playbook run are undefined. Every API-edge finding (L1, L2, W1, W2, Q2, N1, C1) becomes reachable in bulk from a playbook. | open |
+| P29 | S3 | | `derivePluginName` | Step name is last domain segment + method (`work/lifecycle` gives `lifecycle-claim`). Different domains ending in the same segment collide, and the registry keeps the first silently. | open |
+| P30 | S3 | | `GraphQLResolverProcessor` | One 2,969-line class emitting Java with `println`; the Spring generators use JavaPoet. Central to the strategy, hardest file to change safely. | open |
+
+If every API is a step, API design is language design: naming, error style (no `"Error: ..."` strings, N31), idempotency (steps get retried), versioning and deprecation all become part of the playbook language contract.
+
 Positioning suggestions: lead with coordination + agents + tests-in-language, not with "YAML workflows"; add static data-flow typing and then claim type safety; pick one execution path as canonical and state durability plans; consider the name clash with Ansible playbooks.
 
 ### Not yet reviewed
