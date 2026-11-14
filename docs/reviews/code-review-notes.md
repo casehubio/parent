@@ -42,6 +42,7 @@ Status: `open` · `confirmed` (reproduced) · `issue #N` · `fixed`.
 - **connectors** (~47k lines, 75 modules): outbound `Connector` SPI, inbound webhooks, capability platforms (bank, commerce, travel, calendar, contacts, document, chat, mobile, voice, web) with reference and provider implementations, GraphQL/MCP APIs. Read-only clone `/home/user/casehubio/connectors`.
 - **eidos** (~21k lines): agent identity. `AgentDescriptor`, `AgentRegistry` (JPA/in-memory), vocabularies, capability and disposition health, prompt rendering, org model, eval harness. Read-only clone `/home/user/casehubio/eidos`.
 - **engine** (~128k lines, 51 modules): CMMN-style blackboard case engine. Reactor, layered case context, bindings/goals/milestones, workers (function, SWF, playbook, agent, ReAct, A2A, human, sub-case), planning, recovery, routing, stigmergy, evolution; REST/GraphQL/MCP API with `@AclCheck`. Read-only clone `/home/user/casehubio/engine`.
+- **agency** (~47k lines, 25 modules): orchestration patterns, org topologies, autonomy budgets and graduation, deliberation, governance, YAML/annotation pattern surfaces, engine adapter, speech. Clone at `/home/user/casehubio/agency`.
 - **desiredstate**, **ops**, **scaffold**: cloned, not reviewed. Others (work, qhorus, engine, eidos, connectors, ...) not cloned.
 
 **Build order** (from `parent/build/modules-core.csv` dependencies; the file says row order is build order but rows are not topologically sorted, e.g. desiredstate is listed before engine and ras): platform; worker, ledger, connectors, pages; eidos; neocortex, qhorus; work; engine; ras, agency, workers, claudony; desiredstate; ops. Reviewed: platform, ledger, work, qhorus, neocortex, connectors. Reviewed also: eidos, engine (four passes). Remaining repos cloned and unreviewed: desiredstate, ops, scaffold. Not cloned: worker, pages, workers, agency, claudony, ras, and the applications. For engine, first establish which playbook runner and evaluator wiring it uses (P32, P41) and whether it supplies an expression engine (P33). worker and pages still unreviewed. Follow the owner's stated order; check this list before suggesting one.
@@ -58,6 +59,7 @@ Status: `open` · `confirmed` (reproduced) · `issue #N` · `fixed`.
 | connectors | 2026-11-14 | 83b07fd | static read, not built | core SPI, HTTP helper, webhook router, Slack/Twilio/Gmail inbound, web fetch and images, bank (TrueLayer) payments and consent, confirmation gating, connector GraphQL APIs (identity only), voice provisioner, repo-wide greps. Not read: voice engine internals (11k lines), Discord gateway, chat IRC/Signal/Teams, calendar/contacts/document/travel/commerce providers, email inbound, notification bridge |
 | eidos | 2026-11-14 | 5c93420 | static read, not built | JPA registry, query API, render pipeline (structure, prompts, visibility), capability and disposition health, vocab (MBTI sample), in-memory org registry, eval outline, carry-over greps. Not read: `CdiVocabularyRegistry` (679 lines), capability resolver/matching, annotation processors, descriptor YAML preprocessing, eval judges in detail, org annotations |
 | engine | 2026-11-14 | 6c28a48 | static read, not built | Four passes (128k lines, 51 modules): spine, CBR, routing/trust + gates + planning + stigmergy + evolution surface, then context/persistence/ReAct/goal formation. Read: README, reactor, case REST API and service, ACL filter and health check, core dispatch handler (rules, budget), instance cache and evaluation serializer, failure-recovery coordinator, worker execution orchestrator (part), playbook integration (`PlaybookWorkerFunctionProvider`, `StepFileCallableDispatcher`), ledger capture wiring, system principal, test bean-exclusion lists, evolution API surface. Not read: planning (HTN/DAG, 10k), stigmergy/swarm, routing and trust, goal formation/revision, CBR retrieval, context layers, milestones, signals, sub-cases, judgment, schedulers, persistence, work adapter, A2A, ReAct, annotations/codegen/generator, Spring modules |
+| agency | 2026-11-14 | d76df37 | static read, not built | One pass: execution driver, structured invoker, engine adapter, topologies (graduated), budgets, governance (vouch, LLM routing, triage), negotiation rules, mediation, YAML and annotation governance surface, default beans. |
 
 ## Cross-repo themes
 
@@ -590,6 +592,46 @@ Engine review status: spine, CBR, routing/trust, gates, work adapter, planning (
 
 See the status line at the end of the third pass above.
 
+## agency
+
+First pass (owner: "the most important layer, bringing agentic AI to the org"). ~47k main lines, 25 modules, commit d76df37. `agency-core` (24.6k) holds orchestration (ExecutionModel = routing + activation + aggregation + judgment + termination; patterns supervisor/debate/loop/parallel/voting/conditional/sequence/HTN; topologies centralised/hierarchical/hive/hybrid/graduated/distributed; multi-swarm with conflict mediation; autonomy budgets; degradation), deliberation (conversation and negotiation protocols, judgment, coalition formation), governance (trust and CBR routing, vouching, attestation intents, LLM triage), perception, social memory hygiene, prompt optimisation. `agentic-yaml` (4k) declares patterns in YAML; `annotations` is the Java peer; `engine-adapter*` runs patterns as engine workers with checkpoint/resume; `speech-*` (12k) is voice; `summarisation-*`.
+
+Strengths:
+- Best code quality of the reviewed repos: small classes (largest 431 lines), sealed result types everywhere (`InvocationResult`, `RiskDecision`, `BudgetGrant`, `TriageDecision`, `MediationResult`), constructor-injected POJOs, policies composed not inherited.
+- `ExecutionModel` is the right abstraction: every named pattern is a choice of five policies, so a new pattern is configuration. Cleaner than CrewAI/AutoGen/LangGraph, where patterns are separate code paths.
+- LLM is consistently advisory inside a deterministic envelope: trust filter first, LLM chooses among eligible, choice validated against the eligible set, fallback to classifier (`LlmAgentRoutingStrategy`); triage and mediation fail closed to Abandon on parse or agent error.
+- One correct structured-output helper (`StructuredAgentInvoker`: string-aware JSON extraction, typed errors, cost metadata).
+- Patterns run inside durable engine cases with checkpoint and resume (`PatternWorkerFunctionHandler`, `CheckpointingListener`, `ResumableDriver`), with timeout and cancel. This is what the agent frameworks lack.
+- Autonomy is a budgeted, graduated quantity (`AutonomyBudgetPool` with reserve fraction, `DecisionScope` STIMULUS_DRIVEN -> TASK_ADAPTATION -> FULL_AUTONOMY, cascade to lowest scope on degradation). The concept is the differentiator for "agents in an org".
+- Tests: 33.6k lines in `agency/` exercise core; engine-adapter has checkpoint and resume integration tests (earlier note of "0 tests" for engine-adapter-core was wrong: its tests live in `engine-adapter`).
+- `docs/yaml-coverage.md` is an honest living matrix of what is YAML-expressible.
+
+### Findings
+
+| ID | Sev | Theme | Where | Note | Status |
+|---|---|---|---|---|---|
+| A1 | S1 | T-declared-unenforced | `agentic-yaml` `GovernanceSpec`, `PatternDefinition.governance()`; `annotations` `@OversightGate/@TrustRouted/@CbrRouted/@Attestation` | Governance on a pattern is parsed and validated but nothing reads it. No main code calls `.governance()`; the pattern compiler ignores it. A YAML author who writes `governance: oversight: ... candidateGroups: [senior-reviewers]` gets no gate, no trust routing, no attestation. Coverage doc marks these "Done" (its "Done" = spec + tests). | open |
+| A2 | S1 | same | `annotations/deployment` | `AgencyAnnotationsProcessor` has one `@BuildStep` (feature name). `PatternAnnotationStep`, `GovernanceAnnotationStep`, `CustomizeAnnotationStep` are plain classes never invoked from a build step. The whole annotation surface (`@Supervisor`, `@Debate`, ..., governance) is inert in an application. | open |
+| A3 | S2 | autonomy | `GraduationState`, `GraduatedTopology.executeGraduated`, `HybridTopology`, `CentralisedTopology` | Autonomy is earned by not being scope-gated, not by outcome quality. Every non-`ScopeGated` outcome is `SUCCESS`; `FeedbackSignal.FAILURE` is never emitted in main code. Once the window is 80% success each further feedback upgrades a level, so `windowSize + 1` decisions reach FULL_AUTONOMY. No link to ledger trust scores, judgments or case outcomes. | open |
+| A4 | S2 | autonomy | `GraduationState` | `scopeFloor` acts as a ceiling, is one field for all agents, and is never cleared: after a cascade no agent can be promoted again for the life of the object. Signal lists grow without bound (`CopyOnWriteArrayList`, window read by `subList`). State is in memory only: earned autonomy resets on restart, and is not written to the ledger. | open |
+| A5 | S2 | T1/Q2 | `deliberation/*/protocol/*Rules`, qhorus `SuggestedAction` | Protocol violations (non-participant sender, proposer accepting own proposal, round limit) produce `DispatchAdvisory` with LOG/ESCALATE/INVESTIGATE/REROUTE; nothing rejects the message. Combined with self-declared senders in qhorus (Q2), a negotiation or coalition outcome can be decided by a party not in it. | open |
+| A6 | S2 | T-fail-open | `AgencyBeans` | `NoOpAttestationIntentWriter` is the default: vouches and lifecycle attestations are silently dropped unless a writer is supplied. Also NoOp reflection stores, semantic integrity checker, thread summary store. No startup warning seen. | open |
+| A7 | S2 | robustness | `AbstractExecutionDriver` | Per-execution state in instance fields; agents dispatched sequentially even for parallel/voting; `await().indefinitely()` per agent (bounded only when run through the engine adapter's timeout); listener exceptions not isolated. | open |
+| A8 | S3 | budget | `AutonomyBudgetPool` and callers | All three direct callers (`SwarmRoutingStrategy`, `CollectiveReasoningAggregation`, `SwarmProvisioningAdvisorImpl`) acquire with `RESERVED`, so the reserve fraction never constrains them. Tokens are recorded after the call, so the limit is exceeded by one call's worth; check-then-act on tokens. Pool is per topology instance, in memory, not per tenant or per org unit. | open |
+| A9 | S3 | T2 | `agentic-yaml` `CallerConfigRegistry` and registries | YAML guards and title/scope expressions use MVEL (P2, unsandboxed). Fine for classpath YAML; a risk the moment patterns are tenant-authored. | open |
+| A10 | S3 | prompt | `LlmAgentRoutingStrategy`, `LlmConflictMediator`, `LlmTriageHandler` | Case context, beliefs and failure detail are appended to prompts unbounded and undelimited. Agent-authored text reaches the mediator and triage prompts (N23 class). Output validation limits the damage for routing; mediation `updatedConclusion` is free text. | open |
+| A11 | S3 | layering | `StructuredAgentInvoker` | Lives above neocortex, which hand-rolls JSON parsing; does not use platform `ResponseFormat`. Belongs in platform agent-api. | open |
+| A12 | S3 | docs | `README.md`, repo root | README is 35 lines ("reusable building blocks") for the layer the owner calls most important; no end-to-end example of an org unit with agents, oversight and budget. No LICENSE (T22). | open |
+| A13 | S3 | concurrency | `GraduatedTopology` | `configure()` assigns `cascadeThreshold` and `loopPriorities` instance fields; a topology instance shared across cases is overwritten by the last `configure`. | open |
+
+### Carry-over answers
+- G21/C1 (who enforces confirmation and gates): not agency today. Agency declares oversight (A1, A2) but enforcement still rests on engine's `ActionRiskClassifier` path only.
+- L2 (movable trust): vouching adds another writer of ENDORSED attestations; gated by `VouchEligibility`, dropped by default (A6).
+- Tenancy: `tenancyId` passed explicitly in coalition, attestation, social memory; absent from budgets and graduation state.
+
+### Not yet reviewed
+Hierarchical/hive/distributed topology internals, multi-swarm bus and BJT escalation networks, pattern compiler detail, conversation projections, perception (rag, narrative), prompt optimiser internals, social memory hygiene scoring, speech (sherpa, ws), summarisation, Spring modules.
+
 ## Cross-cutting conclusions (update as repos are added)
 
 1. **Identity is asserted, not authenticated, at every API edge** (L1, L2, W1, Q1, Q2). One fix pattern: actor and tenant from `CurrentPrincipal` only, via `@ContextParam`; request-supplied actor only for a trusted-service role.
@@ -603,6 +645,8 @@ See the status line at the end of the third pass above.
 9. **Engine's API edge is the reference implementation** (`@ContextParam` tenant, `@AclCheck`, service-level re-check). Ledger, work, qhorus and neocortex's corpus API should adopt it.
 7. **Agent-reachable tools lack an egress policy** (C2, C3, C8; P7 process execution). One shared URL/host policy and budget would cover them.
 5. **Canonical hash input is ambiguous** (L3, Q3). Needs a versioned, length-prefixed encoding before data accumulates.
+
+12. **Agency declares governance that nothing executes** (A1, A2), and graduated autonomy is not tied to evidence (A3, A4). The org-level promise needs: governance specs compiled into engine gates and trust routing; autonomy changes driven by ledger trust and judgments, persisted and attested.
 
 ## Positioning notes
 
@@ -626,7 +670,13 @@ See the status line at the end of the third pass above.
 - Engine: this is the product. Nearest neighbours by category: Camunda/Flowable CMMN (case management, but human-centric and model-driven), Temporal (durable execution, code-first, no goals), LangGraph/CrewAI/AutoGen (agent orchestration, little durability, governance or human tasks), Drools/blackboard lineage (reactive rules). Engine's combination, goal-driven blackboard + durable execution + human tasks + agents as workers + self-healing plans + audit ledger, is not something any one of those offers. The claim to lead with is "case management for mixed human and agent work, with accountability", not "agent framework".
 - Engine risk for that claim: single-node state (G1, G2) is the first thing an enterprise architect will probe, before any feature.
 
+- Agency: the category is "organisational operating model for agents" rather than an agent framework. Neighbours: CrewAI/AutoGen/LangGraph (patterns, no org model, no durability), Microsoft Agent Framework and Google ADK (patterns + enterprise hosting), Salesforce Agentforce and ServiceNow (agents inside one vendor's org model). Agency's edge: policy-composed patterns, graduated and budgeted autonomy, trust-weighted routing, negotiation and coalition protocols, all on a durable case engine with a ledger. No neighbour has graduated autonomy as a first-class runtime concept. The edge is real only once A1 to A4 are closed, because "declared oversight that does not fire" is the first thing a risk officer will test.
+
 ## Open questions
+
+- Agency: is pattern-level `governance:` meant to compile into engine action gates and `TrustRoutingPolicyProvider`, and is that work scheduled? Is the annotations module known to be unwired?
+- Agency: should graduation be driven by ledger trust and judgment outcomes, and should scope changes be attested?
+- Agency: are protocol advisories meant to stay advisory, with enforcement in qhorus channel governance?
 
 - Engine: is multi-node operation a goal, and if so via sticky routing, a distributed cache, or stateless reload per event?
 - Engine: should playbook workers accept plugin steps (pass the plugin registry to the compiler), or is the compiler dialect intentionally narrower?
