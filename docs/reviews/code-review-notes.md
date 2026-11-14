@@ -35,9 +35,10 @@ Status: `open` · `confirmed` (reproduced) · `issue #N` · `fixed`.
 - **work** (~40k lines): human/agent task layer. `WorkItemService` lifecycle, stores (JPA, memory, Mongo), optional Postgres RLS via `TenantAwareStore`, timers/expiry, queues, ledger adapter (`ledger/`), qhorus and flow adapters. Read-only clone `/home/user/casehubio/work`.
 - **qhorus** (~45k lines): agent/human messaging mesh. Channels, messages, commitments, watchdog, gateway/delivery, A2A endpoint, cluster relay, own ledger repository and `MessageLedgerEntry`. Read-only clone `/home/user/casehubio/qhorus`.
 - **neocortex** (~123k lines, 89 modules): AI reasoning layer. ONNX inference, hybrid RAG on Qdrant, CBR, memory backends (moved here from platform), corpus management, mind maps, Bayesian inference, cognition. Read-only clone `/home/user/casehubio/neocortex`.
+- **connectors** (~47k lines, 75 modules): outbound `Connector` SPI, inbound webhooks, capability platforms (bank, commerce, travel, calendar, contacts, document, chat, mobile, voice, web) with reference and provider implementations, GraphQL/MCP APIs. Read-only clone `/home/user/casehubio/connectors`.
 - **desiredstate**, **ops**, **scaffold**: cloned, not reviewed. Others (work, qhorus, engine, eidos, connectors, ...) not cloned.
 
-**Build order** (from `parent/build/modules-core.csv` dependencies; the file says row order is build order but rows are not topologically sorted, e.g. desiredstate is listed before engine and ras): platform; worker, ledger, connectors, pages; eidos; neocortex, qhorus; work; engine; ras, agency, workers, claudony; desiredstate; ops. Reviewed: platform, ledger, work, qhorus, neocortex (first pass). Not yet: worker, connectors, pages, eidos (all upstream of engine), then engine. Follow the owner's stated order; check this list before suggesting one.
+**Build order** (from `parent/build/modules-core.csv` dependencies; the file says row order is build order but rows are not topologically sorted, e.g. desiredstate is listed before engine and ras): platform; worker, ledger, connectors, pages; eidos; neocortex, qhorus; work; engine; ras, agency, workers, claudony; desiredstate; ops. Reviewed: platform, ledger, work, qhorus, neocortex, connectors. Not yet: worker, pages, eidos (upstream of engine), then engine. Follow the owner's stated order; check this list before suggesting one.
 
 ## Review log
 
@@ -48,6 +49,7 @@ Status: `open` · `confirmed` (reproduced) · `issue #N` · `fixed`.
 | work | 2026-11-14 | adccdbc | static read, not built | lifecycle service, REST lifecycle API, tenancy/RLS, ledger integration deep; queues, ai, issue-tracker, flow, federation, progress, mongodb not read |
 | qhorus | 2026-11-14 | 86adf50 | static read, not built | identity/tenancy, ledger integration, erasure, sender/ACL path, cluster filter deep; message/commitment/watchdog logic, gateway, A2A detail, compliance-report, slack, push, graphql not read |
 | neocortex | 2026-11-14 | 4af2ac6 | static read, not built | Five passes (adds inner life, gut feeling, personality evolution, mind-map extractor, DTW, hypothesis tracker; goals, user model, derivation engine, Qdrant CBR store, Mem0/Graphiti keys, zip integrity, knowledge pipeline). Read: strategy learning, belief revision, consolidation scheduler, CBR scorer and JPA store, corpus stores, ingestion, federation walker, plus RAG/Qdrant tenancy, exposed APIs, ONNX wrapper, `CognitionCore`, mood, appraisal (`EmotionMapper`, LLM appraisal), regulation prompt, CAPS settler, memory retriever, Bayes provenance, eval/quality docs, repo-wide greps. Still unread: strategy learning, goals, narrative, user/mental models, belief revision internals, mind-map consolidation phases, `CognitiveDerivationEngine`, CBR algorithms, corpus/knowledge pipeline, memory backends in detail |
+| connectors | 2026-11-14 | 83b07fd | static read, not built | core SPI, HTTP helper, webhook router, Slack/Twilio/Gmail inbound, web fetch and images, bank (TrueLayer) payments and consent, confirmation gating, connector GraphQL APIs (identity only), voice provisioner, repo-wide greps. Not read: voice engine internals (11k lines), Discord gateway, chat IRC/Signal/Teams, calendar/contacts/document/travel/commerce providers, email inbound, notification bridge |
 
 ## Cross-repo themes
 
@@ -74,6 +76,7 @@ Patterns found once that are likely to recur. Check each in every repo.
 - **T20 Bypassing an upstream pipeline.** Consumer re-implements a write path (own sequence, own hash) instead of calling the owner's service.
 - **T21 Stale copy after extraction.** Code moved to a new module but left behind in the old one under the same class names (P11, N7).
 - **T22 Licence files.** No `LICENSE`/`NOTICE` in any of the nine repos checked; only the parent POM declares Apache 2.0. Neocortex carries 33 ASF-headed files that refer to a NOTICE file.
+- **T23 Declared but unenforced control.** A safety annotation or policy type exists but nothing on the classpath turns it into behaviour (C1; compare P16 circuit breaker).
 - **T14 Onboarding.** README, quick start, stability tiers. BOM lives in `casehub-parent`; each repo's README/guide should say so.
 
 ## platform
@@ -319,12 +322,53 @@ Narrative and mental-model internals, social-norm detection, most individual con
 - Is any cognition state persisted by the consumer? (N10)
 - Are regulation strategies ever applied to human counterparts? (N16)
 
+## connectors
+
+47k lines, 75 modules. Two generations side by side: the original send-only `Connector` SPI (Slack, Teams, Twilio, WhatsApp, email) and a newer family of capability "platforms" (`bank`, `commerce`, `travel`, `calendar`, `contacts`, `document`, `health`, `location`, `project`, `mobile`, `chat`, `voice`, `web`), each as `-spi` / `-ref` / provider modules.
+
+Strengths: webhook module is the best security code seen so far (constant-time compare, 5-minute replay window, proper JSON parsing, 200-on-reject to avoid probing, sanitised security log); Twilio, Slack command and Discord interaction endpoints all verify signatures; connector APIs take the user from the authenticated principal (no T15); `HttpHelper` sets connect and request timeouts; OAuth state is single-use with expiry; payment code uses `BigDecimal` minor units with a precision guard, an idempotency key, a PISP consent check and a hosted bank authorisation page; voice provisioner pins SHA-256 checksums for every native library and model and refuses anything unlisted; only one module without tests.
+
+### Findings
+
+| ID | Sev | Theme | Where | Note | Status |
+|---|---|---|---|---|---|
+| C1 | S1 | T23 | `@RequiresConfirmation` on `PaymentInitiation.initiatePayment`, `Checkout`, document and contact delete | No connectors POM runs the confirmation generator, and no cloned repo depends on the confirmation module. The generator emits a CDI `@Decorator`, but these capability objects are created with `new` (`new TrueLayerPaymentInitiation(...)`, inner `ShopifyCheckout`), so a decorator cannot intercept them. The gate looks inert. Bank-side authorisation still applies to TrueLayer payments. | open |
+| C2 | S1 | | `web` `DefaultWebPlatform.DefaultFetch` | Agent-facing URL fetch with no scheme or host restriction, following redirects: reaches localhost, internal services and cloud metadata. Body is unbounded and returned to the caller. | open |
+| C3 | S1 | | `DefaultFetch` | Every stored session cookie is re-added against the target URI (`add(uri, cookie)`), so cookies captured for one site are sent to every site fetched. | open |
+| C4 | S1 | T2 | `GmailPushInboundConnector.validateJwt` | Decodes the JWT payload and checks issuer, audience, expiry. The signature is never verified, so the token can be forged. If no audience is configured, validation is skipped entirely. | open |
+| C5 | S2 | T3 | `WebhookRequest.tenancyId()` | Tenant read from an `x-tenancy-id` header on the provider's request. Providers do not send it and their signatures do not cover it. Tenant should come from a mapping of the verified payload (Slack `team_id`, Twilio account, mailbox). Gmail messages get a null tenant. | open |
+| C6 | S2 | | webhook delivery | No dedupe on provider event id, so replays inside the window and provider retries deliver twice. Handlers run inline before the 200, which invites those retries. Any exception returns 200 and the event is lost. | open |
+| C7 | S2 | T3 | `bank-truelayer`, `bank-spi` | No tenancy anywhere; consent and tokens keyed by user id alone. Access and refresh tokens stored in plain columns. Token exchange omits `redirect_uri` although the auth request sends it. Pending OAuth states are in-process and never purged if abandoned. Unknown payment status maps to AUTHORIZATION_REQUIRED. | open |
+| C8 | S2 | | `WebImageProcessor` | Downloads every `<img>` on a fetched page and sends each to a vision model. Attacker-controlled HTML sets the count, so cost and time are unbounded (and each download is another C2 request). | open |
+| C9 | S2 | T11 | 9 provider clients | No request timeout: TrueLayer client and consent service, Microsoft Graph and Drive, Amadeus, Gmail history and watch, Twilio WhatsApp, Slack command. | open |
+| C10 | S3 | T2 | `HttpHelper` | Logs the full URL and response body on failure; Slack and Teams webhook URLs are credentials. `jsonEscape` misses control characters. `send` returns a bare boolean, no retry. Destination URL is not checked against the provider's host. | open |
+| C11 | S3 | | `SlackInboundConnector` | Answers the `url_verification` challenge before checking the signature. | open |
+| C12 | S3 | T12,T14 | README | Describes five outbound connectors, `io.casehubio` group id, `casehub-connectors-core`, `0.2-SNAPSHOT`. None of the capability platforms, voice or web are mentioned. | open |
+| C13 | S3 | T18 | module layout | Four Slack modules (`connectors-api` Slack, `webhook` Slack inbound, `chat-slack`, `slack-bot`) and two Discord ones, with signature code duplicated. Old and new SPI families overlap with no stated migration path. | open |
+
+### Carry-over answers
+
+- T15: clean. T19/T20: none. N31: connectors also use extra `@ContextParam` keys (`httpHeaders`, `queryParams`, `requestUrl`), so the generated REST layer must support more keys than the MCP dispatcher I read; N31 probably affects MCP only.
+- P8: connectors' own webhook code does not share platform's weaknesses.
+
+### Not yet reviewed
+
+Voice engine internals, Discord gateway, IRC/Signal/Teams chat, calendar/contacts/document/travel/commerce providers, email inbound, notification bridge, mesh bridge.
+
+### Carry into downstream repos
+
+- Does any app wire the confirmation module, and does it wrap capability objects? (C1)
+- Who exposes `web.fetch` to agents, and with what URL policy? (C2, C3)
+- How do engine/claudony map inbound provider events to tenants? (C5)
+
 ## Cross-cutting conclusions (update as repos are added)
 
 1. **Identity is asserted, not authenticated, at every API edge** (L1, L2, W1, Q1, Q2). One fix pattern: actor and tenant from `CurrentPrincipal` only, via `@ContextParam`; request-supplied actor only for a trusted-service role.
 2. **The ledger write path has four implementations** (ledger x2, work, qhorus) with different guarantees. Ledger should own one `append` service; consumers should only supply subclass fields.
 3. **`CurrentPrincipal` and `LedgerEntryRepository` resolution depends on which jars are present.** Needs one documented precedence table and a composition test in an app that includes everything.
 4. **Erasure and retention both mutate or delete hashed data without verification knowing** (L8, L10, W5, Q8). Verification needs a defined model for tombstones and pruned ranges.
+6. **Safety controls exist as types but are not wired** (C1 confirmation, P16 circuit breaker, N40 journal to ledger). Each needs an end-to-end test proving the control fires.
+7. **Agent-reachable tools lack an egress policy** (C2, C3, C8; P7 process execution). One shared URL/host policy and budget would cover them.
 5. **Canonical hash input is ambiguous** (L3, Q3). Needs a versioned, length-prefixed encoding before data accumulates.
 
 ## Positioning notes
@@ -344,8 +388,11 @@ Narrative and mental-model internals, social-norm detection, most individual con
 - Neocortex Bayes: `inference-bayes` is a full Bayesian toolkit (junction-tree inference, PC and hill-climbing structure learning, influence diagrams, causal and counterfactual engine, calibration, explanation traces, hypothesis tracking), used for theory of mind. Open Java options are thin (UnBBayes, Jayes; SMILE is commercial; pgmpy is Python). It sits under `io.quarkmind` and would stand as its own library.
 - The combination nobody else has: cognition whose every belief change, goal, regulation choice and personality shift is written to a tamper-evident ledger. Both halves exist in CaseHub; they are not connected (N40).
 - To make the "ground-breaking" claim hold: (1) evidence beyond LLM self-scoring, i.e. ablations and human ratings against a persona-prompt baseline; (2) durable, per-agent state (N8 to N10), since a mind that resets on restart undercuts the premise; (3) a published safety position on affective influence (N16); (4) separate the stable retrieval modules from the research modules so each can be judged on its own terms, and drop or justify the MBTI-style typology (N32); (5) a short paper or technical report, because the audience for this is researchers as much as developers.
+- Connectors: the capability platforms (bank, commerce, travel, calendar, documents, voice) are what let agents act in the world, which is where MCP servers and tool marketplaces (Composio, Zapier, Arcade, Pipedream) compete. CaseHub's angle is typed SPIs with consent tiers, confirmation and simulation built in, plus local voice. That angle only holds if confirmation actually fires (C1) and egress is bounded (C2).
 
 ## Open questions
+
+- Connectors: is confirmation meant to be enforced by the calling layer (engine/agency) rather than by decorators?
 
 - Qhorus: are agents expected to authenticate (agent cards, DIDs) before posting, and where is that enforced?
 
