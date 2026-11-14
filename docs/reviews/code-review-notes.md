@@ -39,9 +39,10 @@ Status: `open` · `confirmed` (reproduced) · `issue #N` · `fixed`.
 - **qhorus** (~45k lines): agent/human messaging mesh. Channels, messages, commitments, watchdog, gateway/delivery, A2A endpoint, cluster relay, own ledger repository and `MessageLedgerEntry`. Read-only clone `/home/user/casehubio/qhorus`.
 - **neocortex** (~123k lines, 89 modules): AI reasoning layer. ONNX inference, hybrid RAG on Qdrant, CBR, memory backends (moved here from platform), corpus management, mind maps, Bayesian inference, cognition. Read-only clone `/home/user/casehubio/neocortex`.
 - **connectors** (~47k lines, 75 modules): outbound `Connector` SPI, inbound webhooks, capability platforms (bank, commerce, travel, calendar, contacts, document, chat, mobile, voice, web) with reference and provider implementations, GraphQL/MCP APIs. Read-only clone `/home/user/casehubio/connectors`.
+- **eidos** (~21k lines): agent identity. `AgentDescriptor`, `AgentRegistry` (JPA/in-memory), vocabularies, capability and disposition health, prompt rendering, org model, eval harness. Read-only clone `/home/user/casehubio/eidos`.
 - **desiredstate**, **ops**, **scaffold**: cloned, not reviewed. Others (work, qhorus, engine, eidos, connectors, ...) not cloned.
 
-**Build order** (from `parent/build/modules-core.csv` dependencies; the file says row order is build order but rows are not topologically sorted, e.g. desiredstate is listed before engine and ras): platform; worker, ledger, connectors, pages; eidos; neocortex, qhorus; work; engine; ras, agency, workers, claudony; desiredstate; ops. Reviewed: platform, ledger, work, qhorus, neocortex, connectors. Owner's order from here: eidos, then engine. For engine, first establish which playbook runner and evaluator wiring it uses (P32, P41) and whether it supplies an expression engine (P33). worker and pages still unreviewed. Follow the owner's stated order; check this list before suggesting one.
+**Build order** (from `parent/build/modules-core.csv` dependencies; the file says row order is build order but rows are not topologically sorted, e.g. desiredstate is listed before engine and ras): platform; worker, ledger, connectors, pages; eidos; neocortex, qhorus; work; engine; ras, agency, workers, claudony; desiredstate; ops. Reviewed: platform, ledger, work, qhorus, neocortex, connectors. Reviewed also: eidos. Next per owner: engine. For engine, first establish which playbook runner and evaluator wiring it uses (P32, P41) and whether it supplies an expression engine (P33). worker and pages still unreviewed. Follow the owner's stated order; check this list before suggesting one.
 
 ## Review log
 
@@ -53,6 +54,7 @@ Status: `open` · `confirmed` (reproduced) · `issue #N` · `fixed`.
 | qhorus | 2026-11-14 | 86adf50 | static read, not built | identity/tenancy, ledger integration, erasure, sender/ACL path, cluster filter deep; message/commitment/watchdog logic, gateway, A2A detail, compliance-report, slack, push, graphql not read |
 | neocortex | 2026-11-14 | 4af2ac6 | static read, not built | Five passes (adds inner life, gut feeling, personality evolution, mind-map extractor, DTW, hypothesis tracker; goals, user model, derivation engine, Qdrant CBR store, Mem0/Graphiti keys, zip integrity, knowledge pipeline). Read: strategy learning, belief revision, consolidation scheduler, CBR scorer and JPA store, corpus stores, ingestion, federation walker, plus RAG/Qdrant tenancy, exposed APIs, ONNX wrapper, `CognitionCore`, mood, appraisal (`EmotionMapper`, LLM appraisal), regulation prompt, CAPS settler, memory retriever, Bayes provenance, eval/quality docs, repo-wide greps. Still unread: strategy learning, goals, narrative, user/mental models, belief revision internals, mind-map consolidation phases, `CognitiveDerivationEngine`, CBR algorithms, corpus/knowledge pipeline, memory backends in detail |
 | connectors | 2026-11-14 | 83b07fd | static read, not built | core SPI, HTTP helper, webhook router, Slack/Twilio/Gmail inbound, web fetch and images, bank (TrueLayer) payments and consent, confirmation gating, connector GraphQL APIs (identity only), voice provisioner, repo-wide greps. Not read: voice engine internals (11k lines), Discord gateway, chat IRC/Signal/Teams, calendar/contacts/document/travel/commerce providers, email inbound, notification bridge |
+| eidos | 2026-11-14 | 5c93420 | static read, not built | JPA registry, query API, render pipeline (structure, prompts, visibility), capability and disposition health, vocab (MBTI sample), in-memory org registry, eval outline, carry-over greps. Not read: `CdiVocabularyRegistry` (679 lines), capability resolver/matching, annotation processors, descriptor YAML preprocessing, eval judges in detail, org annotations |
 
 ## Cross-repo themes
 
@@ -440,6 +442,40 @@ Voice engine internals, Discord gateway, IRC/Signal/Teams chat, calendar/contact
 - Who exposes `web.fetch` to agents, and with what URL policy? (C2, C3)
 - How do engine/claudony map inbound provider events to tenants? (C5)
 
+## eidos
+
+21k lines. Agent identity: a structured `AgentDescriptor` (slot, capabilities with epistemic domains, disposition, goals, constraints), a registry with vocabulary-aware capability matching, capability and disposition health, system-prompt rendering in three formats, an organisational model, and an evaluation harness.
+
+Strengths: cleanest repo so far on the carry-over themes. Tenant explicit in every SPI and taken from the principal at the API edge; read-only exposed API that filters private goals and constraints; sealed result types (`CapabilityStatus`, `DispositionStatus`, `AgentSelection`); thresholds are per-tenant preferences, not constants; the LLM pass in rendering is confined to disposition and goal narratives, while constraints and objectives are rendered structurally and cached by content hash; A2A card excludes private items; vocabularies are URI-identified with cross-vocabulary equivalence and subsumption (SKOS/XKOS style) and graded capability matching; eval uses structured-output judges; no `CurrentPrincipal` or ledger-repository beans of its own.
+
+### Findings
+
+| ID | Sev | Theme | Where | Note | Status |
+|---|---|---|---|---|---|
+| E1 | S2 | T22 | `eidos-vocab` | Ships vocabularies named after proprietary instruments: MBTI, DiSC, Belbin, SDI, Enneagram. The MBTI terms use the 16Personalities role names (Architect, Logician, Commander, ...). No trademark notice or disclaimer anywhere in the repo. Legal exposure for a public Apache-licensed project; at minimum rename to neutral terms or add attribution and non-affiliation notices. | open |
+| E2 | S3 | | `MbtiTypeTerm`, `JungianFunctionTerm`, disposition evolution | The 0.35/0.20 function weights are cited to "Myers & Briggs (1962)" but are design choices. This is where neocortex's typology (N32, N43) originates. Big Five and SVO vocabularies also exist; defaulting to those would be easier to defend. | open |
+| E3 | S2 | | `JpaAgentRegistry.find` | `JOIN FETCH a.capabilities c` combined with a filter on `c` returns descriptors whose capability list contains only the matching rows (standard JPA fetch-join pitfall). Callers then see a truncated descriptor. | check |
+| E4 | S3 | T7 | `JpaAgentRegistry.register` | Delete then insert with `em.clear()` in between (detaches the caller's entities); concurrent registers of the same agent race to a unique violation; events fire before commit. | open |
+| E5 | S3 | | `EidosAgentApi` | `filterPrivate` removes private goals and constraints but returns `briefing`, `templates`, `providerConfigs` and `extensionData` to any caller in the tenant. No role. `getAgent` returns null (200) for a missing agent. `findAgents` with no parameters lists everything, unpaginated. | check |
+| E6 | S3 | | `DefaultDispositionHealth.probe` | Compares normalised effective weights against un-normalised base weights (`effective(aux) >= dominant.weight()`); correct only if the base profile sums to 1. Any non-empty activation history reports `Drifted`, so `Aligned` is effectively "never used". | check |
+| E7 | S3 | T3 | `DefaultCapabilityHealth` | `ActorCapacityView.getCapacity(agentId)` has no tenant (platform SPI limitation). | open |
+| E8 | S3 | T10 | org model | `InMemoryOrgRegistry` is the only `OrgRegistry` in this repo (desiredstate adds a bridge); org structure is lost on restart unless re-declared. Key is `tenancy:id` (T16). | open |
+| E9 | S3 | T12,T14 | README | Seven lines; links to `docs/DESIGN.md`, which does not exist. | open |
+
+### Carry-over answers
+
+- T15, T19, T20: clean. Ledger is used only for compliance attestations and trust scores in agent selection.
+- N32/N43 trace back to E2.
+
+### Not yet reviewed
+
+`CdiVocabularyRegistry`, `CapabilityResolver` and match degrees, annotation processors, descriptor YAML preprocessing, template registry, eval judges in detail, org annotations and `OrgStructure` DSL.
+
+### Carry into engine
+
+- Does engine use `AgentSelector` with trust ranking, and whose trust scores (L2 says they are forgeable)?
+- Does engine pass `tenancyId` from the principal into `AgentQuery`?
+
 ## Cross-cutting conclusions (update as repos are added)
 
 1. **Identity is asserted, not authenticated, at every API edge** (L1, L2, W1, Q1, Q2). One fix pattern: actor and tenant from `CurrentPrincipal` only, via `@ContextParam`; request-supplied actor only for a trusted-service role.
@@ -468,6 +504,7 @@ Voice engine internals, Discord gateway, IRC/Signal/Teams chat, calendar/contact
 - The combination nobody else has: cognition whose every belief change, goal, regulation choice and personality shift is written to a tamper-evident ledger. Both halves exist in CaseHub; they are not connected (N40).
 - To make the "ground-breaking" claim hold: (1) evidence beyond LLM self-scoring, i.e. ablations and human ratings against a persona-prompt baseline; (2) durable, per-agent state (N8 to N10), since a mind that resets on restart undercuts the premise; (3) a published safety position on affective influence (N16); (4) separate the stable retrieval modules from the research modules so each can be judged on its own terms, and drop or justify the MBTI-style typology (N32); (5) a short paper or technical report, because the audience for this is researchers as much as developers.
 - Connectors: the capability platforms (bank, commerce, travel, calendar, documents, voice) are what let agents act in the world, which is where MCP servers and tool marketplaces (Composio, Zapier, Arcade, Pipedream) compete. CaseHub's angle is typed SPIs with consent tiers, confirmation and simulation built in, plus local voice. That angle only holds if confirmation actually fires (C1) and egress is bounded (C2).
+- Eidos: "agent identity" as a structured, queryable, vocabulary-grounded descriptor with health and behavioural contracts. Neighbours: A2A agent cards, AGNTCY/OASF agent schemas, MCP server metadata, agent registries in CrewAI/AutoGen (name + role + backstory strings). Eidos is richer than all of them on capability semantics (graded matching, epistemic domains, exclusions, learned exclusions) and is the only one that treats the descriptor as a testable behavioural contract. That is a strong, defensible position. The personality vocabularies are the weakest part for an enterprise audience (E1, E2); capability and compliance are the strongest.
 
 ## Open questions
 
