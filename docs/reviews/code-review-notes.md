@@ -25,6 +25,8 @@ Status: `open` · `confirmed` (reproduced) · `issue #N` · `fixed`.
 
 **Owner context and corrections so far.**
 - BOM lives in `casehub-parent`; do not report "no BOM".
+- Playbook naming is settled by the owner after research; do not re-raise the Ansible clash.
+- Playbook steps are a designed surface (shaped plugins, `@GeneratePlugin` controls), not just generated RPC; connectors has its own `playbooks` module with voice and multi-domain examples.
 - Owner regards playbooks as a primary, unique differentiator (powerful, type safe, less code than Java). Reviewed; see platform section. Agreed on power and brevity; type safety and uniqueness are partial.
 - Onboarding is in progress and is playbook-led (`platform/playbooks`). Report gaps as "entry point missing", not "no onboarding".
 - Identity is delegable via `casehub-platform-oidc` (Quarkus OIDC, so Keycloak works). Built-in `authn` is a deliberate optional path. Authz has no external adapter yet.
@@ -155,9 +157,22 @@ Owner's follow-up: "every API we build is a potential plugin step". Checked 2026
 | P29 | S3 | | `derivePluginName` | Step name is last domain segment + method (`work/lifecycle` gives `lifecycle-claim`). Different domains ending in the same segment collide, and the registry keeps the first silently. | open |
 | P30 | S3 | | `GraphQLResolverProcessor` | One 2,969-line class emitting Java with `println`; the Spring generators use JavaPoet. Central to the strategy, hardest file to change safely. | open |
 
+Owner correction (2026-11-14): not "just a step". The step surface is designed, not merely generated. Checked in `connectors/voice-pipeline-steps`, `connectors/playbooks` (8 voice and multi-domain playbooks, each with a `.test.yaml`; missed in the first connectors pass) and `@GeneratePlugin`:
+- Shaping tools: scalar shorthand (`tts-synthesise: some text`), verb-subject form (`speaker register:`, `audio join:`), `absorbSiblings` so related keys sit beside the step, routing parameter (`platform: ref`), services injected into `@Execute` by type, binary values passed between steps by reference (`${sample.audio-data}`) where the REST form needs base64, streaming steps for fused pipelines, and `@GeneratePlugin(name, subject, absorb, capability, accessor, optionalParams, exclude)` to tune generated ones.
+- Result: playbooks such as the joint-account voice confirmation and dinner booking read like a script of the business flow. Agreed this is a real differentiator: one API signature cannot be ideal for REST, GraphQL, MCP and YAML at once, and the hand-shaped layer resolves that for playbooks.
+
+| ID | Sev | Theme | Where | Note | Status |
+|---|---|---|---|---|---|
+| P31 | S3 | | shaped plugins, e.g. `SpeakerPlugin` | The pleasant surface costs schema precision: one record with `operation` plus all-optional fields, required-ness enforced by hand at run time (`'name' is required`). The editor schema cannot say that `register` needs `name`. A per-subject variant model would keep both. | open |
+| C14 | S2 | | `SpeakerPlugin.extractFromWav` | Assumes a 44-byte header and 16-bit mono 16 kHz PCM. Other sample rates, stereo or extended headers yield a wrong embedding with no error, in code used to gate an authorisation. | open |
+| C15 | S2 | | voice playbooks 06/07 | Speaker identification (default threshold 0.8) is shown as the gate for a payment authorisation, with the "speakers" produced by TTS. Synthetic or cloned speech is the known weakness of voice biometrics; present it as one factor, not the authoriser. | open |
+| C16 | S3 | | `ConnectorVoiceApi` | Audio travels as base64 in query parameters on the REST form (`audioBase64`), so it hits URL limits and access logs. `VoiceCapability.valueOf(...)` on user input gives a 500. | open |
+
+Naming: owner has researched "playbook" and found it used well beyond Ansible; no better name was found. Decision stands; do not re-raise. (Supporting: the term is already used for agent instructions elsewhere, e.g. Google's conversational agents and Devin.) Only suggestion: always qualify as "CaseHub Playbooks" in docs and search metadata.
+
 If every API is a step, API design is language design: naming, error style (no `"Error: ..."` strings, N31), idempotency (steps get retried), versioning and deprecation all become part of the playbook language contract.
 
-Positioning suggestions: lead with coordination + agents + tests-in-language, not with "YAML workflows"; add static data-flow typing and then claim type safety; pick one execution path as canonical and state durability plans; consider the name clash with Ansible playbooks.
+Positioning suggestions: lead with coordination + agents + tests-in-language, not with "YAML workflows"; add static data-flow typing and then claim type safety; pick one execution path as canonical and state durability plans.
 
 ### Not yet reviewed
 
