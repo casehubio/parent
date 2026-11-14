@@ -34,9 +34,10 @@ Status: `open` · `confirmed` (reproduced) · `issue #N` · `fixed`.
 - **ledger** (~23k lines): append-only audit log on platform. `LedgerEntry` JPA JOINED base; consumers subclass (`casehub-work`, `casehub-qhorus`). Merkle frontier per subject, attestations, EigenTrust scores, pseudonymised actors, retention, KMS signers.
 - **work** (~40k lines): human/agent task layer. `WorkItemService` lifecycle, stores (JPA, memory, Mongo), optional Postgres RLS via `TenantAwareStore`, timers/expiry, queues, ledger adapter (`ledger/`), qhorus and flow adapters. Read-only clone `/home/user/casehubio/work`.
 - **qhorus** (~45k lines): agent/human messaging mesh. Channels, messages, commitments, watchdog, gateway/delivery, A2A endpoint, cluster relay, own ledger repository and `MessageLedgerEntry`. Read-only clone `/home/user/casehubio/qhorus`.
+- **neocortex** (~123k lines, 89 modules): AI reasoning layer. ONNX inference, hybrid RAG on Qdrant, CBR, memory backends (moved here from platform), corpus management, mind maps, Bayesian inference, cognition. Read-only clone `/home/user/casehubio/neocortex`.
 - **desiredstate**, **ops**, **scaffold**: cloned, not reviewed. Others (work, qhorus, engine, eidos, connectors, ...) not cloned.
 
-**Suggested order.** engine (how it composes work + qhorus + ledger), desiredstate, ops, scaffold.
+**Build order** (from `parent/build/modules-core.csv` dependencies; the file says row order is build order but rows are not topologically sorted, e.g. desiredstate is listed before engine and ras): platform; worker, ledger, connectors, pages; eidos; neocortex, qhorus; work; engine; ras, agency, workers, claudony; desiredstate; ops. Reviewed: platform, ledger, work, qhorus, neocortex (first pass). Not yet: worker, connectors, pages, eidos (all upstream of engine), then engine. Follow the owner's stated order; check this list before suggesting one.
 
 ## Review log
 
@@ -46,6 +47,7 @@ Status: `open` · `confirmed` (reproduced) · `issue #N` · `fixed`.
 | ledger | 2026-11-14 | 11018f8 | static read, not built | core deep (hashing, Merkle, save path, signing, erasure, retention, API); trust maths, KMS signers, examples sampled or skipped |
 | work | 2026-11-14 | adccdbc | static read, not built | lifecycle service, REST lifecycle API, tenancy/RLS, ledger integration deep; queues, ai, issue-tracker, flow, federation, progress, mongodb not read |
 | qhorus | 2026-11-14 | 86adf50 | static read, not built | identity/tenancy, ledger integration, erasure, sender/ACL path, cluster filter deep; message/commitment/watchdog logic, gateway, A2A detail, compliance-report, slack, push, graphql not read |
+| neocortex | 2026-11-14 | 4af2ac6 | static read, not built | FIRST PASS ONLY (123k lines, 89 modules): tenant isolation in RAG/Qdrant, exposed APIs, ONNX wrapper, carry-over greps. Cognition, mindmap, Bayes inference, CBR, corpus pipeline, memory backends not read |
 
 ## Cross-repo themes
 
@@ -245,6 +247,33 @@ Strengths: honest javadoc on its own security boundary; channel `allowed_writers
 - Which app combines work + qhorus + ledger, and what does it do about the repository beans? (Q5)
 - Does engine or claudony rely on `allowed_writers` as a security control? (Q2)
 
+## neocortex
+
+First pass only. Largest repo so far and the cleanest on the themes checked.
+
+Strengths: README (211 lines) explains why each capability exists; tenant id passed explicitly and filtered in every Qdrant query, plus `TenantGuard.assertTenant` on entry; exposed APIs use `@ContextParam("tenancyId")` (the pattern ledger/work/qhorus should copy); no `CurrentPrincipal` or `LedgerEntryRepository` beans of its own; ONNX wrapper closes resources on every failure path; only one module with no tests.
+
+### Findings
+
+| ID | Sev | Theme | Where | Note | Status |
+|---|---|---|---|---|---|
+| N1 | S2 | T1 | `corpus-management` `CorpusApi` | Full re-index ("delete collection and rebuild") and single-entry re-index are exposed mutations with no role restriction. | open |
+| N2 | S3 | T1 | `rag-core` `TenantGuard.of` | Null principal yields a no-op guard. Should fail closed or be explicit (`TenantGuard.none()`). | open |
+| N3 | S3 | T12 | platform `CLAUDE.md` vs neocortex | Platform CLAUDE.md still documents `memory-inmem/jpa/sqlite/mem0/graphiti` as platform modules; they live here now. | open |
+| N4 | S3 | | naming | `tenantId` (3,590 uses) here vs `tenancyId` everywhere else. 221 files under `io.quarkmind.*` (`inference-bayes`) inside a casehub repo. | open |
+| N5 | S3 | | `OnnxInferenceModel` | Single `sessionLock` serialises all inference per model; ONNX Runtime sessions allow concurrent `run`. Throughput cap, not a bug. | open |
+| N6 | S3 | | scope | 89 modules covering inference, RAG, CBR, memory, corpus, mind maps, Bayesian networks and a cognitive architecture (emotion regulation, drives, narrative). Very wide for one repo; hard to state a stability contract. | open |
+
+### Carry-over answers
+
+- T15: not present in the three exposed APIs; tenant via `@ContextParam`.
+- T19/T20: none found.
+- 48 `synchronized` uses outside tests; not examined.
+
+### Not yet reviewed (most of the repo)
+
+`cognition` (19k), `mindmap-intelligence` (16k), `inference-bayes` (12k), `corpus-management`, `cognitive-index`, `knowledge-pipeline`, `memory-*` backends (qdrant store is 1,364 lines), `caps-engine`, `cbr-algorithms`, `entity-token`, LLM prompt construction and output parsing (check prompt injection and T5), `memory-mem0`/`graphiti` HTTP clients (T11).
+
 ## Cross-cutting conclusions (update as repos are added)
 
 1. **Identity is asserted, not authenticated, at every API edge** (L1, L2, W1, Q1, Q2). One fix pattern: actor and tenant from `CurrentPrincipal` only, via `@ContextParam`; request-supplied actor only for a trusted-service role.
@@ -262,6 +291,7 @@ Strengths: honest javadoc on its own security boundary; channel `allowed_writers
 - Ledger: the accountability story (Art. 12/22 snapshots, PROV export, pseudonymised erasure, Merkle proofs) is the strongest differentiator seen so far. Closest comparisons are transparency logs (Trillian, Rekor) and ledger databases (immudb, Azure SQL Ledger). Its edge is being embedded and domain-aware; its claim only holds once L1 to L5 are closed.
 - Work: competes with the human-task parts of Camunda/Flowable/jBPM (WS-HumanTask lineage) and with Temporal-style "wait for signal". Edge: embedded in the app transaction, agent-or-human assignee, ledger-backed audit. Table stakes still missing: enforcement of who may claim and complete (W1, W2).
 - Qhorus: agent-to-agent messaging with commitments, channel governance and ledger-backed transcripts. Neighbours: A2A protocol implementations, AutoGen/CrewAI group chat, Slack-style agent buses. Edge: typed speech acts with commitments and an auditable record. Weak point: participants self-identify (Q2).
+- Neocortex: local ONNX inference + hybrid RAG + CBR on the JVM is a real gap next to LangChain4j. The cognitive-architecture modules are research-grade and unusual; they are a differentiator only if kept clearly separate from the production-grade retrieval pieces.
 
 ## Open questions
 
