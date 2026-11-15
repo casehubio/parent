@@ -46,7 +46,7 @@ Status: `open` · `confirmed` (reproduced) · `issue #N` · `fixed`.
 - **agency** (~47k lines, 25 modules): orchestration patterns, org topologies, autonomy budgets and graduation, deliberation, governance, YAML/annotation pattern surfaces, engine adapter, speech. Clone at `/home/user/casehubio/agency`.
 - **desiredstate** (~37k lines, 47 modules): generic reconciliation runtime, four authoring surfaces, Terraform/Ansible bridges, org-unit reconciliation. Clone at `/home/user/casehub-desiredstate`.
 - **ops** (~20k lines, 11 modules): desiredstate domains (K8s apps, agent topology, infra, compliance, Podman, claudony) plus 9 MCP/REST APIs. Labelled research. Clone at `/home/user/casehub-ops`.
-- **scaffold** (2.2k lines): deployable app embedding engine + ops with a web console; package `io.casehub.flow`. Clone at `/home/user/scaffold`. Not cloned: worker, pages, workers, claudony, ras, applications. Others (work, qhorus, engine, eidos, connectors, ...) not cloned.
+- **scaffold** (2.2k lines): deployable app embedding engine + ops with a web console; package `io.casehub.flow`. Clone at `/home/user/scaffold`. Not cloned: worker, workers, claudony, ras, applications. Also cloned: `casehubio/examples` (99b6d72), `casehub-pages`, `casehub-mosaic`. Others (work, qhorus, engine, eidos, connectors, ...) not cloned.
 
 **Build order** (from `parent/build/modules-core.csv` dependencies; the file says row order is build order but rows are not topologically sorted, e.g. desiredstate is listed before engine and ras): platform; worker, ledger, connectors, pages; eidos; neocortex, qhorus; work; engine; ras, agency, workers, claudony; desiredstate; ops. Reviewed: platform, ledger, work, qhorus, neocortex, connectors. Reviewed also: eidos, engine (four passes). Remaining repos cloned and unreviewed: desiredstate, ops, scaffold. Not cloned: worker, pages, workers, agency, claudony, ras, and the applications. For engine, first establish which playbook runner and evaluator wiring it uses (P32, P41) and whether it supplies an expression engine (P33). worker and pages still unreviewed. Follow the owner's stated order; check this list before suggesting one.
 
@@ -66,6 +66,7 @@ Status: `open` · `confirmed` (reproduced) · `issue #N` · `fixed`.
 | desiredstate | 2026-11-15 | e690fdd | static read, not built | One pass: reconciliation loop, plan approval gate, step and parallel executors, Terraform and Ansible bridges, bridge state wiring, eidos org policies. |
 | ops | 2026-11-15 | d787b63 | static read, not built | One pass: the 9 API classes, approval authoriser and evaluator, cluster service and K8s client registry, compliance module, LLM trigger evaluator, self-maintenance. |
 | scaffold | 2026-11-15 | 131e902 | static read, not built | Quick pass: REST resources, auth config, embedded approval service, app loader, README. |
+| pages | 2026-11-15 | 6602b4d | static read, not built | One pass: README, sink scan (innerHTML, unsafeHTML, new Function, postMessage), iframe plugin, backend data/relay/SQL, terminal, dev auth, playbook control resource, panel registry, mosaic dependency shape. |
 
 ## Cross-repo themes
 
@@ -743,6 +744,41 @@ Quick pass, commit 131e902. 2.2k main lines, one backend module plus a web conso
 - S3 **SC4**: README is the Quarkus starter text under the title "flow" with badge links to `casehubio/flow`; Java package is `io.casehub.flow`. This is the first thing a new user runs and it explains nothing about CaseHub. `AppLoader.parse` swallows all exceptions and returns empty.
 - Not reviewed: web UI, catalogue service, demo seed script.
 
+## pages (casehub-pages)
+
+First pass, commit 6602b4d (owner: mosaic builds on this). TypeScript monorepo, ~90k lines of non-test TS in 32 packages plus ~12k Java in `backend/` (data relay and query, push, layout, MCP, playbook runtime, terminal, dev auth), IntelliJ plugin, LSP. A page is a recursive component tree (layouts, charts, tables, forms, hosted Web Components) bound by reference to datasets in a reactive pipeline; authored via TypeScript DSL or YAML. Clones: `/home/user/casehubio/casehub-pages`, `/home/user/casehubio/casehub-mosaic` (13475e1, not reviewed, ~50 domain components).
+
+Strengths:
+- Best README and only complete licence set of all repos (LICENSE + Apache text). Capabilities table, getting started, guides.
+- Clear architecture: data defined once and bound by reference; one event model (snapshot/append/replace/remove) for HTTP, WebSocket and generated sources; cross-filtering; everything is a `Component` node.
+- Test volume exceeds source in the core packages (pages-runtime 20k test vs 10k, pages-data 20k vs 10k, yaml-core 12.8k vs 10.9k).
+- **`backend/data` is the best-secured API edge outside engine**: `@Authenticated`, tenant from JWT claim, per-tenant cache. `SqlQueryBuilder` validates columns against an allow-list, quotes identifiers and binds values. `RelayClient` checks scheme, optional host allow-list, blocks loopback/site-local/link-local and disables redirects (better than connectors C2).
+- `cross-parser-test` module checks Java/TypeScript parser parity for the shared YAML core.
+- Real developer tooling: LSP, IntelliJ plugin, builder with grid editing, step viewer.
+
+### Findings
+
+| ID | Sev | Theme | Where | Note | Status |
+|---|---|---|---|---|---|
+| PG1 | S1 | RCE | `backend/terminal-runtime` `TerminalResource` (`/api/terminals`), `TerminalWebSocket` (`/ws/terminal/{id}/...`) | No authentication on either. Create a tmux session in any working directory, send keystrokes, read output: a shell on the server for anyone who reaches the port. FIFO at a predictable `/tmp` path. Must be authenticated, role-gated and off by default. | open |
+| PG2 | S1 | T-authz | `backend/playbook-runtime` `PlaybookControlResource` (`/playbook/*`), `ActivationResource`, `PlaybookLibraryResource` | No authentication. `/playbook/start` accepts YAML in the request and runs it with REST and GraphQL dispatchers (server-side requests without the relay's target validation) and a caller-supplied `callbackUrl` + `callbackToken`. One global orchestrator: a single playbook state shared by all users and tenants. | open |
+| PG3 | S1 | XSS | `pages-runtime/src/content.ts`, `pages-viz` `PagesMetric`, `yaml-core/src/expression/js-expression-engine.ts` | `renderHtml` assigns `props.content` to `innerHTML`; `renderMarkdown` assigns `marked.parse()` output unsanitised (marked does not sanitise); JS expressions compile with `new Function` + `with`. README says YAML pages can be "stored in a database". Whoever can author or influence a page (or data bound into html/markdown) runs script in every viewer's session. A sanitiser exists only in `pages-aria`. Needs a trust model: sanitise by default, JS expressions only for bundled pages. | open |
+| PG4 | S1 | isolation | `pages-viz` `PagesIframePlugin`, `pages-iframe-api` `BrowserComponentBus`, `pages-data` post-message sources | README: "iframe-isolated microfrontends ... sandboxed". The iframe has no `sandbox` attribute and loads same-origin (`/pages/component/{id}/index.html`), so it has full access to the parent. Messages are posted with target `*`; no listener checks `event.origin` or `event.source`. Any frame can inject a dataset or a filter. | open |
+| PG5 | S2 | auth | `backend/auth` `DevAuthResource` | Issues a signed JWT for any name and any roles. Guarded by `@UnlessBuildProfile("prod")`: present in every profile not literally named prod (staging, demo). Should be opt-in by an explicit dev flag. | open |
+| PG6 | S2 | SSRF | `backend/data` `RelayClient` | Good baseline; gaps: resolves the host for the check and again for the request (DNS rebinding), misses any-local and IPv6 unique-local, forwards arbitrary method and headers, no response size limit, allow-list optional. | open |
+| PG7 | S2 | layering | `platform/notifications` -> `casehub-pages-push`; `pages/backend` -> `casehub-platform-yaml-core`, simulation | Repo-level dependency cycle between platform and pages. README claims "Foundation tier, zero upstream CaseHub dependencies", which holds for the npm packages only. Push should move to platform or the pages backend should split. | open |
+| PG8 | S2 | playbooks | `backend/playbook*` (5k Java), `packages/yaml-core` (10.9k TS) | A fourth playbook executor (UI scenario playbooks: navigate/wait/assert/graphql/rest/simulate) and a TypeScript port of yaml-core. Adds to P32/G6/G7. Parity test exists for parsing, not for execution semantics. | open |
+| PG9 | S2 | extension API | `pages-runtime/src/panel-registry.ts`; mosaic `package.json` files | The extension point mosaic depends on is a module-global `Map<string,string>`: no collision check, no props schema, no version, and two bundled copies of pages-runtime give two registries (panel silently missing). Mosaic depends on pages packages with `*` ranges and `portal:` links; pages root version is 0.0.0. No API contract between the two. | open |
+| PG10 | S3 | hygiene | repo root | `test-results/`, `test-completions/`, both `yarn.lock` and `package-lock.json` committed; mosaic root has eight screenshot PNGs. | open |
+
+### For mosaic (not reviewed; ~50 components incl. `approval-gate`, `audit-trail-viewer`, `gdpr-erasure-action`, `agent-personality-workbench`)
+- Mosaic is the UI of the controls. It inherits PG3/PG4 for every panel that shows agent- or user-authored text (conversations, narratives, audit trails): one unsanitised markdown render exposes the approver's session.
+- An approval button is only as strong as the API behind it (W1/W2, O3, D1). The UI must not be the place a check lives.
+- Before mosaic grows: versioned panel contract (PG9), default-sanitised content components, origin-checked message bus, and a statement of which package versions mosaic supports.
+
+### Not yet reviewed
+pages-runtime site/activation internals, pages-data pipeline, pages-builder, pages-aria, LSP, graph packages, push protocol and stores, MCP backend, data-json app catalogue, layout store, IntelliJ plugin, all of mosaic.
+
 ## Cross-cutting conclusions (update as repos are added)
 
 1. **Identity is asserted, not authenticated, at every API edge** (L1, L2, W1, Q1, Q2). One fix pattern: actor and tenant from `CurrentPrincipal` only, via `@ContextParam`; request-supplied actor only for a trusted-service role.
@@ -762,6 +798,8 @@ Quick pass, commit 131e902. 2.2k main lines, one backend module plus a web conso
 13. **Approval gates are bypassed or forgotten on secondary paths** (D1, D4; compare G31 ReAct tools). Every control needs a test that tries each execution path, not only the main one.
 
 14. **The outermost layers are the least protected** (O1 to O6, SC1). Engine checks at its API edge; ops and scaffold, which sit in front of it and can change what runs on a cluster, check nothing. The deployable app needs a default-deny HTTP policy and the ops APIs need engine's pattern.
+
+15. **The UI layer needs a content trust model before mosaic builds on it** (PG3, PG4, PG9). Agent output is untrusted text; it will be rendered next to approval buttons.
 
 ## Positioning notes
 
@@ -791,7 +829,11 @@ Quick pass, commit 131e902. 2.2k main lines, one backend module plus a web conso
 
 - Ops: continuous compliance competes with Vanta, Drata, Secureframe (evidence collection via hundreds of SaaS integrations, auditor workflow) and with policy engines (OPA/Kyverno, Chef InSpec, OpenSCAP). The CaseHub angle, posture as a reconciled desired state with every evidence check on a tamper-evident ledger and remediation as a governed case, is distinct and fits the EU AI Act / DORA "continuous" language. Today it is a skeleton (O9): the value is in the control catalogues and collectors, which do not exist yet. Agent-fleet deployment (the stated primary target) has no direct competitor and is the better first proof.
 
+- Pages: neighbours are low-code/internal-tool builders (Retool, Appsmith, Budibase, Tooljet), dashboarding (Grafana, Superset, the Dashbuilder lineage this resembles), and microfrontend shells. Distinct points: declarative component tree shared by a TypeScript DSL and YAML, one reactive data and event bus, hosted Web Components, and tooling (LSP, IDE plugin, builder). With mosaic it becomes the operator console for agents: approvals, audit trails, org diagrams, agent workbenches. That console is what makes the governance story visible to a buyer; no agent framework ships one. Its credibility depends on the UI being safe to show untrusted agent output (PG3, PG4).
+
 ## Open questions
+
+- Pages: who may author pages and markdown/html content at runtime (trusted developers only, or tenant users)? Are the terminal and playbook-control modules meant for dev use only (PG1, PG2)? Is the platform <-> pages dependency cycle intended (PG7)?
 
 - Ops: are the `Ops*Api` classes expected to sit behind a gateway, or should they adopt engine's `@AclCheck` pattern (O1, O2)? Is the `actorId` override on approve meant for a trusted-service caller only (O3)?
 
