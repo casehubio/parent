@@ -67,6 +67,7 @@ Status: `open` · `confirmed` (reproduced) · `issue #N` · `fixed`.
 | ops | 2026-11-15 | d787b63 | static read, not built | One pass: the 9 API classes, approval authoriser and evaluator, cluster service and K8s client registry, compliance module, LLM trigger evaluator, self-maintenance. |
 | scaffold | 2026-11-15 | 131e902 | static read, not built | Quick pass: REST resources, auth config, embedded approval service, app loader, README. |
 | pages | 2026-11-15 | 6602b4d | static read, not built | One pass: README, sink scan (innerHTML, unsafeHTML, new Function, postMessage), iframe plugin, backend data/relay/SQL, terminal, dev auth, playbook control resource, panel registry, mosaic dependency shape. |
+| mosaic | 2026-11-15 | 13475e1 | static read, not built | One pass: sink scan, markdown renderer, approval gate, work-item-detail actions, GDPR erasure request, fetch/credential usage across components, README. |
 
 ## Cross-repo themes
 
@@ -779,13 +780,45 @@ Strengths:
 ### Not yet reviewed
 pages-runtime site/activation internals, pages-data pipeline, pages-builder, pages-aria, LSP, graph packages, push protocol and stores, MCP backend, data-json app catalogue, layout store, IntelliJ plugin, all of mosaic.
 
+## mosaic (casehub-mosaic)
+
+First pass, commit 13475e1. ~75k non-test TS lines, 44k test; 66 components + 10 packages (Lit Web Components), VS Code and IntelliJ plugins, 18-line Java app. The domain UI for the Java layers: work item inbox/detail/workbench, approval gate, notification inbox, channel activity and conversation viewers, audit trail, trust panels, org/HTN/SWF/case diagrams, agent catalogue/profile/personality workbench, evolution config, desired-state graph, reconciliation status, compliance summary, GDPR erasure action, 2D agent avatar.
+
+Strengths:
+- One component per concern with a consistent contract (properties in, `{topic}:selected` events out, `registerPanel`); generic shells (`split-workbench`, `list-pane`, `detail-pane`) reused by domain wrappers.
+- Accessibility is designed in: ARIA roles, live-region `announce()`, keyboard shortcuts, progressbar semantics on quorum.
+- **`channel-activity/markdown.ts` is the right pattern**: `marked` then DOMPurify with tag and attribute allow-lists. This is what pages lacks (PG3).
+- `approval-gate` sends only `{outcome, resolution}`; it does not put the approver's identity in the request, and requires confirmation with a reason by default.
+- README documents every component with tag, package and purpose. Tests are substantial for the busiest components (channel-activity 6.3k, work-item-inbox 2k, notification-inbox 2.6k).
+
+### Findings
+
+| ID | Sev | Theme | Where | Note | Status |
+|---|---|---|---|---|---|
+| M1 | S1 | T-attribution (W1) | `work-item-detail.ts` (claim, start, reject, suspend, resume, cancel, release, accept/decline delegation) | Every lifecycle call puts the acting identity in the URL from a component property: `/claim?claimant=${identity.userId}`, `/start?actor=...`. This is the client half of W1/W2: UI and API agree that the caller names the actor. Value is not URI-encoded (a user id containing `&` adds parameters). `approval-gate` does not do this, so the two paths to completing a gate differ. | open |
+| M2 | S1 | auth | all components (104 `fetch` calls in 41 files) | No request carries credentials: no `Authorization` header, no `credentials` option, no shared client. Pages attaches a bearer token from `sessionStorage` in its own data calls; mosaic components call raw `fetch(endpoint + ...)`. Against an authenticated backend these calls fail; they work only where the API is open (W1, O1, SC1). Only `case-explorer` accepts an injectable `fetchFn`. | open |
+| M3 | S1 | XSS | `document-workbench/src/document-diff.ts` | `marked.parse(content)` assigned to `innerHTML` with no sanitiser, and `err.message` interpolated into `innerHTML`. Documents here are the things agents and contributors write. The sanitising renderer in channel-activity is not shared. | open |
+| M4 | S2 | T-ambient-tenancy | `audit-trail-viewer` (`?tenancyId=`), `notification-inbox` (subscription, mute bodies), `agent-relationship-editor` (`tenancy-id` default `default`) | Tenant is sent by the client from an identity property. Harmless only if every server ignores it. | open |
+| M5 | S2 | privacy | `channel-activity/markdown.ts` | Allow-list includes `img` with `src`, and `target` without forcing `rel=noopener`. An agent message can embed a remote image whose URL carries data from the conversation (exfiltration by render) and learns the viewer's IP. Proxy or block remote images. | open |
+| M6 | S2 | design | components | No shared API client: 41 files build URLs by string concatenation, each with its own error handling and response-shape guessing (`raw.item ?? raw`). One typed client (auth, encoding, errors, tenancy from token) would fix M1, M2, M4 in one place. | open |
+| M7 | S2 | control UX | `approval-gate` | "Already decided" and quorum state are computed from properties supplied by the host; fine as display, but the component trusts `history`/`quorum.voters` it is given and offers no way to show the server's authoritative decision record (ledger entry id, who was authenticated). For a governance UI the receipt matters. | open |
+| M8 | S3 | tests | `packages/agent-avatar-2d` (12.7k lines, 717 test), `document-workbench` (3.6k, 418), `work-item-detail` (1.8k, 346) | Largest package and two control-relevant components are thinly tested. | open |
+| M9 | S3 | hygiene | repo root | Eight screenshot PNGs committed at root; no LICENSE (T22); pages dependency ranges `*` (PG9). | open |
+
+### Carry-over answers
+- PG3: partly answered. Mosaic sanitises channel messages but not documents; pages' own html/markdown components remain unsanitised.
+- W1/W2: confirmed end to end. The client supplies the actor and the server accepts it.
+
+### Not yet reviewed
+agent-viewer, agent-avatar-2d, graph stencils, notification inbox internals, evolution and personality workbenches, trust components, gdpr-erasure-action beyond its request, plugins, lsp-schemas, mosaic-schema generation.
+
 ## Cross-cutting conclusions (update as repos are added)
 
 1. **Identity is asserted, not authenticated, at every API edge** (L1, L2, W1, Q1, Q2). One fix pattern: actor and tenant from `CurrentPrincipal` only, via `@ContextParam`; request-supplied actor only for a trusted-service role.
 2. **The ledger write path has four implementations** (ledger x2, work, qhorus) with different guarantees. Ledger should own one `append` service; consumers should only supply subclass fields.
 3. **`CurrentPrincipal` and `LedgerEntryRepository` resolution depends on which jars are present.** Needs one documented precedence table and a composition test in an app that includes everything.
 4. **Erasure and retention both mutate or delete hashed data without verification knowing** (L8, L10, W5, Q8). Verification needs a defined model for tombstones and pruned ranges.
-10. **W1/W2 is now the highest-leverage fix in the codebase.** Engine's human-in-the-loop (action gates, quorum approvals, judgments) is delivered as WorkItems, and work does not check who claims or completes them (G28).
+10. **W1/W2 is now the highest-leverage fix in the codebase.** Engine's human-in-the-loop (action gates, quorum approvals, judgments) is delivered as WorkItems, and work does not check who claims or completes them (G28). Confirmed from the UI side (M1): mosaic sends `?actor=` / `?claimant=` from a client property.
 11. **Autonomy needs one governance statement.** Self-set goals, belief revision, personality change, unprompted contact (neocortex), swarm provisioning and self-improvement including code (engine) are each bounded in code but explained nowhere together; two defaults are open (G22, G25).
 6. **Safety controls exist as types but are not wired** (C1 confirmation, P16 circuit breaker, N40 journal to ledger). Each needs an end-to-end test proving the control fires.
 8. **Playbooks are three languages today** (interpreter in the test runner; compiler in engine; step-file bridge), with the plugin-step vocabulary available only in the first (P21, P32, P41, G6, G7). The "every API is a step" strategy depends on making engine's path accept plugin steps.
@@ -832,6 +865,8 @@ pages-runtime site/activation internals, pages-data pipeline, pages-builder, pag
 - Pages: neighbours are low-code/internal-tool builders (Retool, Appsmith, Budibase, Tooljet), dashboarding (Grafana, Superset, the Dashbuilder lineage this resembles), and microfrontend shells. Distinct points: declarative component tree shared by a TypeScript DSL and YAML, one reactive data and event bus, hosted Web Components, and tooling (LSP, IDE plugin, builder). With mosaic it becomes the operator console for agents: approvals, audit trails, org diagrams, agent workbenches. That console is what makes the governance story visible to a buyer; no agent framework ships one. Its credibility depends on the UI being safe to show untrusted agent output (PG3, PG4).
 
 ## Open questions
+
+- Mosaic: how are component requests meant to be authenticated (cookie session, host-patched fetch, or a client to be written) (M2)? Should work-item actions stop sending `actor`/`claimant` once work derives it from the principal (M1)?
 
 - Pages: who may author pages and markdown/html content at runtime (trusted developers only, or tenant users)? Are the terminal and playbook-control modules meant for dev use only (PG1, PG2)? Is the platform <-> pages dependency cycle intended (PG7)?
 
