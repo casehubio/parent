@@ -46,7 +46,7 @@ Status: `open` · `confirmed` (reproduced) · `issue #N` · `fixed`.
 - **agency** (~47k lines, 25 modules): orchestration patterns, org topologies, autonomy budgets and graduation, deliberation, governance, YAML/annotation pattern surfaces, engine adapter, speech. Clone at `/home/user/casehubio/agency`.
 - **desiredstate** (~37k lines, 47 modules): generic reconciliation runtime, four authoring surfaces, Terraform/Ansible bridges, org-unit reconciliation. Clone at `/home/user/casehub-desiredstate`.
 - **ops** (~20k lines, 11 modules): desiredstate domains (K8s apps, agent topology, infra, compliance, Podman, claudony) plus 9 MCP/REST APIs. Labelled research. Clone at `/home/user/casehub-ops`.
-- **scaffold** (2.2k lines): deployable app embedding engine + ops with a web console; package `io.casehub.flow`. Clone at `/home/user/scaffold`. Not cloned: worker, workers, claudony, ras, applications. Also cloned: `casehubio/examples` (99b6d72), `casehub-pages`, `casehub-mosaic`. Others (work, qhorus, engine, eidos, connectors, ...) not cloned.
+- **scaffold** (2.2k lines): deployable app embedding engine + ops with a web console; package `io.casehub.flow`. Clone at `/home/user/scaffold`. Not cloned: worker, workers, ras, applications. Claudony cloned. Also cloned: `casehubio/examples` (99b6d72), `casehub-pages`, `casehub-mosaic`. Others (work, qhorus, engine, eidos, connectors, ...) not cloned.
 
 **Build order** (from `parent/build/modules-core.csv` dependencies; the file says row order is build order but rows are not topologically sorted, e.g. desiredstate is listed before engine and ras): platform; worker, ledger, connectors, pages; eidos; neocortex, qhorus; work; engine; ras, agency, workers, claudony; desiredstate; ops. Reviewed: platform, ledger, work, qhorus, neocortex, connectors. Reviewed also: eidos, engine (four passes). Remaining repos cloned and unreviewed: desiredstate, ops, scaffold. Not cloned: worker, pages, workers, agency, claudony, ras, and the applications. For engine, first establish which playbook runner and evaluator wiring it uses (P32, P41) and whether it supplies an expression engine (P33). worker and pages still unreviewed. Follow the owner's stated order; check this list before suggesting one.
 
@@ -68,6 +68,7 @@ Status: `open` · `confirmed` (reproduced) · `issue #N` · `fixed`.
 | scaffold | 2026-11-15 | 131e902 | static read, not built | Quick pass: REST resources, auth config, embedded approval service, app loader, README. |
 | pages | 2026-11-15 | 6602b4d | static read, not built | One pass: README, sink scan (innerHTML, unsafeHTML, new Function, postMessage), iframe plugin, backend data/relay/SQL, terminal, dev auth, playbook control resource, panel registry, mosaic dependency shape. |
 | mosaic | 2026-11-15 | 13475e1 | static read, not built | One pass: sink scan, markdown renderer, approval gate, work-item-detail actions, GDPR erasure request, fetch/credential usage across components, README. |
+| claudony | 2026-11-15 | a47e6ac | static read, not built | One pass: auth mechanism and config, API key service, terminal WebSocket, worker command builder, tmux agent session, MCP tools, role usage. |
 
 ## Cross-repo themes
 
@@ -812,6 +813,37 @@ Strengths:
 ### Not yet reviewed
 agent-viewer, agent-avatar-2d, graph stencils, notification inbox internals, evolution and personality workbenches, trust components, gdpr-erasure-action beyond its request, plugins, lsp-schemas, mosaic-schema generation.
 
+## claudony
+
+First pass, commit a47e6ac. ~13k main Java lines (app 5.5k, casehub 6.8k, core 0.6k), 23k test; web UI (xterm.js, Lit, mosaic channel-activity). Runs Claude Code CLI sessions in tmux on one machine and exposes them through a browser workspace (terminals, channels, case browser, inbox). `casehub/` makes those sessions CaseHub workers: provisioner, agent pools, fleet of peer nodes, budgets, mesh messaging. Two modes from one binary: server (owns tmux, WebSocket streaming, REST) and agent (local MCP endpoint for a controller Claude). Clone: `/home/user/casehubio/claudony`.
+
+Strengths:
+- **Security posture is deliberate, the best of the deployable apps**: binds to localhost by default; passkeys via the Quarkus WebAuthn extension (not hand-rolled); path policy requires authentication on `/api/*`, `/ws/*`, `/app/*`; API key compared in constant time; cookie encryption key generated to a 0600 file; auth rate limiter; invite tokens with TTL.
+- Worker launch is explicit about agent permissions: `--permission-mode`, `--tools`, `--allowedTools`, `--disallowedTools`, `--add-dir` come from per-provider config; arguments are single-quote escaped correctly (`shellQuote`).
+- tmux `send-keys -l` (literal) used throughout, with a test for it.
+- Tests are about twice the main code.
+
+### Findings
+
+| ID | Sev | Theme | Where | Note | Status |
+|---|---|---|---|---|---|
+| CL1 | S1 | injection | `casehub/fleet/TmuxAgentSession.query`, `TmuxService.sendKeys` | A prompt is delivered by typing `prompt + "\n"` into the session's terminal. Nothing strips newlines or control characters. A prompt assembled from case data (emails, messages, documents) with embedded newlines becomes several separately submitted inputs, and in the Claude Code TUI a line starting with `!` is a shell command and `/` a slash command. That path bypasses the configured permission mode. Not tested here; needs a test with hostile case content. Bracketed paste or a file/stdin hand-off would close it. | open |
+| CL2 | S2 | contract | `TmuxAgentSession.query` | Emits `InvocationComplete` immediately with zero tokens, cost and duration, and no text. Callers of the platform `AgentSession` contract (engine workers, agency patterns, budgets, judgment) see a finished, free, empty turn before the agent has started. Results come back out of band (MCP, channels). The mismatch should be explicit in the type, not hidden behind the shared interface. | open |
+| CL3 | S2 | budget | `WorkerCommandBuilder.budgetReportingPrompt`, MCP `report_cost` | Cost accounting depends on the agent choosing to call `report_cost` because a system-prompt line asks it to. Budgets built on this are advisory (compare A8). Claude Code's own usage output or API-side metering would be authoritative. | open |
+| CL4 | S2 | authz | `ApiKeyAuthMechanism`, all `Claudony*Api`, `TerminalWebSocket` | Two roles are assigned (`user` for the agent key and passkey users, `fleet` for peers) but nothing checks them: no `@RolesAllowed`, and the path policy is only `authenticated`. A peer holding the fleet key can open any terminal and call every API, including "Generate a fleet key". | open |
+| CL5 | S3 | secrets | `ApiKeyService` | Generated API key is printed in a WARN banner (ends up in log files and aggregators); key file is written before its permissions are tightened. One shared key for all agents. | open |
+| CL6 | S3 | web | `TerminalWebSocket`, config | No Origin check on the WebSocket upgrade and no CSRF configuration; protection rests on the session cookie's SameSite default. `/q/*` is open. Add an explicit Origin allow-list since the socket is a shell. FIFO at a predictable `/tmp/claudony-<conn>.pipe`. | open |
+| CL7 | S3 | duplication | `core/TmuxService`, `TerminalWebSocket` vs pages `backend/terminal*` | Pages carries a copy of this terminal stack without the authentication (PG1). One module, owned here, with auth mandatory. | open |
+| CL8 | S3 | docs | repo root | README is the title and two badges. No LICENSE. CLAUDE.md holds the description and still names Quarkus 3.32.2 (parent is 3.39.3). | open |
+| CL9 | S3 | design | product shape | Driving a vendor TUI by keystrokes and screen capture is brittle against CLI updates; single machine; one vendor. An SDK/headless path (stream-json) alongside tmux would give real results, usage and completion (fixes CL2, CL3). | open |
+
+### Carry-over answers
+- T19 (agent permissions): the only repo where agent tool permissions are a first-class, per-provider setting.
+- Ops `claudony/` module provisions these as a desired-state domain; not cross-checked.
+
+### Not yet reviewed
+`casehub/fleet` (72 files: pools, scaling, scripts, budgets), provisioner and lineage, inbox, case browser, peer registry and mesh, expiry policies, push, web UI, agent-mode iTerm2/clipboard integration.
+
 ## Cross-cutting conclusions (update as repos are added)
 
 1. **Identity is asserted, not authenticated, at every API edge** (L1, L2, W1, Q1, Q2). One fix pattern: actor and tenant from `CurrentPrincipal` only, via `@ContextParam`; request-supplied actor only for a trusted-service role.
@@ -864,7 +896,11 @@ agent-viewer, agent-avatar-2d, graph stencils, notification inbox internals, evo
 
 - Pages: neighbours are low-code/internal-tool builders (Retool, Appsmith, Budibase, Tooljet), dashboarding (Grafana, Superset, the Dashbuilder lineage this resembles), and microfrontend shells. Distinct points: declarative component tree shared by a TypeScript DSL and YAML, one reactive data and event bus, hosted Web Components, and tooling (LSP, IDE plugin, builder). With mosaic it becomes the operator console for agents: approvals, audit trails, org diagrams, agent workbenches. That console is what makes the governance story visible to a buyer; no agent framework ships one. Its credibility depends on the UI being safe to show untrusted agent output (PG3, PG4).
 
+- Claudony: neighbours are remote/managed coding-agent products (Claude Code on the web and remote control, Cursor background agents, Devin, OpenHands) and tmux-based session managers for coding agents. What is different: a session is a governed CaseHub worker with lineage, channels, commitments, a human inbox and a ledger, on hardware the user owns. It is also the most convincing demo in the ecosystem, because the agents do real work. Constraint: it drives one vendor's terminal UI.
+
 ## Open questions
+
+- Claudony: is keystroke delivery of prompts intended long term, or is a headless/SDK path planned (CL1, CL2, CL9)? Should fleet peers be restricted to a peer API (CL4)?
 
 - Mosaic: how are component requests meant to be authenticated (cookie session, host-patched fetch, or a client to be written) (M2)? Should work-item actions stop sending `actor`/`claimant` once work derives it from the principal (M1)?
 
