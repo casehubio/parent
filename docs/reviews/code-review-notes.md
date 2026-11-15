@@ -46,7 +46,7 @@ Status: `open` · `confirmed` (reproduced) · `issue #N` · `fixed`.
 - **agency** (~47k lines, 25 modules): orchestration patterns, org topologies, autonomy budgets and graduation, deliberation, governance, YAML/annotation pattern surfaces, engine adapter, speech. Clone at `/home/user/casehubio/agency`.
 - **desiredstate** (~37k lines, 47 modules): generic reconciliation runtime, four authoring surfaces, Terraform/Ansible bridges, org-unit reconciliation. Clone at `/home/user/casehub-desiredstate`.
 - **ops** (~20k lines, 11 modules): desiredstate domains (K8s apps, agent topology, infra, compliance, Podman, claudony) plus 9 MCP/REST APIs. Labelled research. Clone at `/home/user/casehub-ops`.
-- **scaffold** (2.2k lines): deployable app embedding engine + ops with a web console; package `io.casehub.flow`. Clone at `/home/user/scaffold`. Not cloned: worker, workers, ras, applications. Claudony cloned. Also cloned: `casehubio/examples` (99b6d72), `casehub-pages`, `casehub-mosaic`. Others (work, qhorus, engine, eidos, connectors, ...) not cloned.
+- **scaffold** (2.2k lines): deployable app embedding engine + ops with a web console; package `io.casehub.flow`. Clone at `/home/user/scaffold`. Not cloned: worker, workers, applications. Claudony and ras cloned. Also cloned: `casehubio/examples` (99b6d72), `casehub-pages`, `casehub-mosaic`. Others (work, qhorus, engine, eidos, connectors, ...) not cloned.
 
 **Build order** (from `parent/build/modules-core.csv` dependencies; the file says row order is build order but rows are not topologically sorted, e.g. desiredstate is listed before engine and ras): platform; worker, ledger, connectors, pages; eidos; neocortex, qhorus; work; engine; ras, agency, workers, claudony; desiredstate; ops. Reviewed: platform, ledger, work, qhorus, neocortex, connectors. Reviewed also: eidos, engine (four passes). Remaining repos cloned and unreviewed: desiredstate, ops, scaffold. Not cloned: worker, pages, workers, agency, claudony, ras, and the applications. For engine, first establish which playbook runner and evaluator wiring it uses (P32, P41) and whether it supplies an expression engine (P33). worker and pages still unreviewed. Follow the owner's stated order; check this list before suggesting one.
 
@@ -69,6 +69,7 @@ Status: `open` · `confirmed` (reproduced) · `issue #N` · `fixed`.
 | pages | 2026-11-15 | 6602b4d | static read, not built | One pass: README, sink scan (innerHTML, unsafeHTML, new Function, postMessage), iframe plugin, backend data/relay/SQL, terminal, dev auth, playbook control resource, panel registry, mosaic dependency shape. |
 | mosaic | 2026-11-15 | 13475e1 | static read, not built | One pass: sink scan, markdown renderer, approval gate, work-item-detail actions, GDPR erasure request, fetch/credential usage across components, README. |
 | claudony | 2026-11-15 | a47e6ac | static read, not built | One pass: auth mechanism and config, API key service, terminal WebSocket, worker command builder, tmux agent session, MCP tools, role usage. |
+| ras | 2026-11-15 | c179222 | static read, not built | One pass: engine, case trigger, trigger claim sequence, feedback tuning strategy and job, feedback state, missed-detection endpoint. |
 
 ## Cross-repo themes
 
@@ -844,6 +845,39 @@ Strengths:
 ### Not yet reviewed
 `casehub/fleet` (72 files: pools, scaling, scripts, budgets), provisioner and lineage, inbox, case browser, peer registry and mesh, expiry policies, push, web UI, agent-mode iTerm2/clipboard integration.
 
+## ras (casehub-ras)
+
+First pass, commit c179222. ~9k main Java lines, 18.5k test. "Reticular Activating System": observes CloudEvents, routes them to detection strategies ("ganglia": expression rules, naive Bayes, Java switch, Drools CEP), accumulates detections per (situation, correlation key, tenant), combines them with a chain mode (and/or/threshold/sequence/count/streak/rate), and on trigger starts a case or notifies. Feedback loop: case outcome labels feed precision/noise/recall statistics, suppression after dismissals, and automatic tuning of thresholds and Bayes priors. Clone: `/home/user/casehubio/casehub-ras`.
+
+Strengths:
+- Small, focused, well-typed: sealed `ChainMode`, `TriggerAction`, `TriggerMode`, `GanglionDescriptor`; YAML situation definitions.
+- **The only repo that handles multi-node correctly at its critical point**: optimistic versions on the situation store with bounded retry, and `tryClaimTrigger` before firing so two nodes do not both start the case; claim is reset on failure.
+- Event-time handling (reorder buffer, flush job), expiry job, replay runner for testing definitions against recorded streams.
+- Metrics throughout (routed, filtered, race lost, trigger timers, drift gauges).
+- Tests are twice the main code. Drools session persistence via drools-reliability with orphan cleanup.
+- Quality loop is a real idea: per-ganglion attribution of outcomes, drift classification (over/under sensitive), `BOTH_DRIFTING` blocks auto-tuning.
+
+### Findings
+
+| ID | Sev | Theme | Where | Note | Status |
+|---|---|---|---|---|---|
+| R1 | S1 | bug / safety | `DefaultTuningStrategy.adjustThreshold`, `FeedbackUpdateJob` (every 5 min) | The threshold only ever moves up, by `learningRate * (noiseRate - limit)`, and the job re-applies that on every run using the same retention-window statistics, with no new outcomes needed. A burst of noise closures (10 minimum) ratchets the threshold to its cap of 1.0 within hours, i.e. the detector stops firing for that tenant. `UNDER_SENSITIVE` is classified but nothing lowers the threshold. Needs: adjust once per new evidence, a floor/ceiling per situation, and a downward path. | open |
+| R2 | S1 | T-authz / attribution | `MissedDetectionResource` (`/api/ras/feedback/missed`) | No authentication; `tenancyId` and `reportedBy` come from the request body. Anyone can file missed-detection reports for any tenant, which moves recall, flips drift to `BOTH_DRIFTING` (disabling tuning) and pollutes per-ganglion statistics. | open |
+| R3 | S2 | governance | feedback loop as a whole | Whoever can close cases with a "noise" label controls suppression (cooldown) and tuning for a detector. In a SOC or AML setting, silencing alerts is the attacker's goal. Outcome labels need an authorised actor, tuning changes need a ledger entry and ideally an approval for decreases in sensitivity. None of the tuning is written to the ledger. | open |
+| R4 | S2 | state | `FeedbackState` | Threshold and prior overrides live in two `ConcurrentHashMap`s: lost on restart, different on each node. A tuned detector reverts silently; two replicas apply different thresholds to the same tenant. | open |
+| R5 | S2 | tenancy | `RasEngine.extractTenancyId`, `DefaultCaseTrigger.fire` | Tenant is the `tenancyid` CloudEvent extension, trusted as given. The case is started with `hub.startCase(inputData)`; the tenant is only a key in the input map, so the case's actual tenant is whatever the engine resolves on the async observer thread. Needs checking against engine's system principal behaviour (G23). | open |
+| R6 | S2 | delivery | `RasEngine.onCloudEvent` (`@ObservesAsync`), `SituationEvaluator` | Events are at-most-once: an exception is logged and counted, the event is gone. Between a successful `startCase` and the post-fire save there is no idempotency key, so a crash there can produce a duplicate case on retry of a later event. | open |
+| R7 | S2 | T-fail-open | `RasEngine` event filter | A filter that throws is treated as pass-through. For a filter used to exclude events (e.g. by tenant or source) the safe default is to drop. | open |
+| R8 | S3 | docs / build | `ras-llm/`, README | `ras-llm` is a module in the reactor and in the README ("LlmGanglion — narrative detection") but contains only a `pom.xml`. README design-spec link points to a `docs/superpowers/` path. No LICENSE. | open |
+| R9 | S3 | expressions | YAML definitions | Correlation keys, filters and dynamic case data are platform expressions (MVEL/JQ); same P2 caveat if definitions are ever tenant-authored. | open |
+
+### Carry-over answers
+- D3/G2 (single node): ras shows the pattern the others need: versioned store plus an explicit claim before a side effect.
+- Used by desiredstate (`ras-adapter`), ops scaling and adaptation, engine situation response.
+
+### Not yet reviewed
+`SituationEvaluator` in full, chain mode evaluation, `NaiveBayesGanglion` maths, Drools ganglion and session store, JPA stores, replay runner, YAML provider, registry.
+
 ## Cross-cutting conclusions (update as repos are added)
 
 1. **Identity is asserted, not authenticated, at every API edge** (L1, L2, W1, Q1, Q2). One fix pattern: actor and tenant from `CurrentPrincipal` only, via `@ContextParam`; request-supplied actor only for a trusted-service role.
@@ -865,6 +899,8 @@ Strengths:
 14. **The outermost layers are the least protected** (O1 to O6, SC1). Engine checks at its API edge; ops and scaffold, which sit in front of it and can change what runs on a cluster, check nothing. The deployable app needs a default-deny HTTP policy and the ops APIs need engine's pattern.
 
 15. **The UI layer needs a content trust model before mosaic builds on it** (PG3, PG4, PG9). Agent output is untrusted text; it will be rendered next to approval buttons.
+
+16. **Self-tuning needs the same governance as self-improvement** (R1, R3, R4; compare A3, N-autonomy, engine evolution loop). Any loop that changes its own sensitivity must be bounded, durable, attributable and recorded.
 
 ## Positioning notes
 
@@ -898,7 +934,11 @@ Strengths:
 
 - Claudony: neighbours are remote/managed coding-agent products (Claude Code on the web and remote control, Cursor background agents, Devin, OpenHands) and tmux-based session managers for coding agents. What is different: a session is a governed CaseHub worker with lineage, channels, commitments, a human inbox and a ledger, on hardware the user owns. It is also the most convincing demo in the ecosystem, because the agents do real work. Constraint: it drives one vendor's terminal UI.
 
+- Ras: neighbours are CEP and stream processors (Drools Fusion, Flink CEP, Esper), alert correlation in SIEM/AIOps (Splunk ES, Elastic, PagerDuty, Moogsoft-style), and event-driven automation (Event-Driven Ansible, StackStorm). Distinct: detection is pluggable and mixed (rules, Bayes, CEP, later LLM), the unit of response is a governed case rather than an alert or a script, and case outcomes feed back into detector quality with per-detector attribution. That closed loop (detect, act through a case, learn from the outcome) is uncommon and fits SOC, AML and ops well. It is credible only when the learning cannot silence the detector (R1, R3).
+
 ## Open questions
+
+- Ras: is automatic threshold tuning meant to be one step per new batch of outcomes (R1)? Who is allowed to label an outcome as noise (R3)? Is `ras-llm` planned or dropped (R8)?
 
 - Claudony: is keystroke delivery of prompts intended long term, or is a headless/SDK path planned (CL1, CL2, CL9)? Should fleet peers be restricted to a peer API (CL4)?
 
