@@ -44,7 +44,8 @@ Status: `open` · `confirmed` (reproduced) · `issue #N` · `fixed`.
 - **engine** (~128k lines, 51 modules): CMMN-style blackboard case engine. Reactor, layered case context, bindings/goals/milestones, workers (function, SWF, playbook, agent, ReAct, A2A, human, sub-case), planning, recovery, routing, stigmergy, evolution; REST/GraphQL/MCP API with `@AclCheck`. Read-only clone `/home/user/casehubio/engine`.
 - **agency** (~47k lines, 25 modules): orchestration patterns, org topologies, autonomy budgets and graduation, deliberation, governance, YAML/annotation pattern surfaces, engine adapter, speech. Clone at `/home/user/casehubio/agency`.
 - **desiredstate** (~37k lines, 47 modules): generic reconciliation runtime, four authoring surfaces, Terraform/Ansible bridges, org-unit reconciliation. Clone at `/home/user/casehub-desiredstate`.
-- **ops**, **scaffold**: cloned, not reviewed. Others (work, qhorus, engine, eidos, connectors, ...) not cloned.
+- **ops** (~20k lines, 11 modules): desiredstate domains (K8s apps, agent topology, infra, compliance, Podman, claudony) plus 9 MCP/REST APIs. Labelled research. Clone at `/home/user/casehub-ops`.
+- **scaffold**: cloned, not reviewed. Others (work, qhorus, engine, eidos, connectors, ...) not cloned.
 
 **Build order** (from `parent/build/modules-core.csv` dependencies; the file says row order is build order but rows are not topologically sorted, e.g. desiredstate is listed before engine and ras): platform; worker, ledger, connectors, pages; eidos; neocortex, qhorus; work; engine; ras, agency, workers, claudony; desiredstate; ops. Reviewed: platform, ledger, work, qhorus, neocortex, connectors. Reviewed also: eidos, engine (four passes). Remaining repos cloned and unreviewed: desiredstate, ops, scaffold. Not cloned: worker, pages, workers, agency, claudony, ras, and the applications. For engine, first establish which playbook runner and evaluator wiring it uses (P32, P41) and whether it supplies an expression engine (P33). worker and pages still unreviewed. Follow the owner's stated order; check this list before suggesting one.
 
@@ -62,6 +63,7 @@ Status: `open` · `confirmed` (reproduced) · `issue #N` · `fixed`.
 | engine | 2026-11-14 | 6c28a48 | static read, not built | Four passes (128k lines, 51 modules): spine, CBR, routing/trust + gates + planning + stigmergy + evolution surface, then context/persistence/ReAct/goal formation. Read: README, reactor, case REST API and service, ACL filter and health check, core dispatch handler (rules, budget), instance cache and evaluation serializer, failure-recovery coordinator, worker execution orchestrator (part), playbook integration (`PlaybookWorkerFunctionProvider`, `StepFileCallableDispatcher`), ledger capture wiring, system principal, test bean-exclusion lists, evolution API surface. Not read: planning (HTN/DAG, 10k), stigmergy/swarm, routing and trust, goal formation/revision, CBR retrieval, context layers, milestones, signals, sub-cases, judgment, schedulers, persistence, work adapter, A2A, ReAct, annotations/codegen/generator, Spring modules |
 | agency | 2026-11-14 | d76df37 | static read, not built | Two passes: execution driver, structured invoker, engine adapter, topologies (graduated), budgets, governance (vouch, LLM routing, triage), negotiation rules, mediation, YAML and annotation governance surface, default beans. Second: scope enforcement, hierarchical, multi-swarm, pattern compiler, judgment dispatch, speech-ws, prompt optimisation, memory hygiene. |
 | desiredstate | 2026-11-15 | e690fdd | static read, not built | One pass: reconciliation loop, plan approval gate, step and parallel executors, Terraform and Ansible bridges, bridge state wiring, eidos org policies. |
+| ops | 2026-11-15 | d787b63 | static read, not built | One pass: the 9 API classes, approval authoriser and evaluator, cluster service and K8s client registry, compliance module, LLM trigger evaluator, self-maintenance. |
 
 ## Cross-repo themes
 
@@ -692,6 +694,42 @@ Strengths:
 ### Not yet reviewed
 `TransitionPlanner` internals, `CrossDomainCompositionEngine`, `LifecycleManager`, `CaseTransitionExecutor` (engine-adapter), work-adapter, annotations/YAML/TS compilers, plugin runtime and shell primitive, cty codec, persistence, examples, Spring modules.
 
+## ops
+
+First pass, commit d787b63. ~20.5k main lines, 11 modules. Domain implementations of the desiredstate SPI quad: `service/` (9.7k: K8s provisioning, application lifecycle, approvals, CVE, scaling, case descriptors, 9 `@McpDomain` APIs), `deployment/` (agent topology, the primary target), `infra/`, `compliance/`, `container/` (Podman), `claudony/`, thin `app/` and `runtime/` image. README labels every domain "Research"; severities below assume it will be exposed as shipped.
+
+Strengths:
+- Risk-based approval is a coherent design: `K8sApprovalEvaluator` classifies by node type, action and namespace (namespace delete = CRITICAL, deployment delete = HIGH), threshold HIGH, plan persisted, approval delivered as a WorkItem, roles per risk tier.
+- Compliance has the right shape: control = node, evidence collector -> ledger entry, stale or failing evidence = DRIFTED, so posture is a reconciliation target and each check is an audit record.
+- `LlmTriggerEvaluator` validates the LLM's choice against the catalogue and treats unknown output as reject (same safe pattern as agency routing).
+- Test volume exceeds main (service 12k, deployment 6.6k, topology-tests 4.9k with live-instance profile).
+- README is honest about maturity.
+
+### Findings
+
+| ID | Sev | Theme | Where | Note | Status |
+|---|---|---|---|---|---|
+| O1 | S1 | T-authz | `service/api/Ops*Api` (9 classes) | No `@RolesAllowed`, `@AclCheck` or equivalent on any operation. `@ContextParam("tenancyId")` is used on create/list in three classes only. Shipped `application.properties` has no HTTP auth policy. Every operation is callable by any caller that reaches the port, over REST and MCP. | open |
+| O2 | S1 | T-tenancy | `OpsApplicationApi`, `OpsDeploymentApi`, `OpsClusterApi` | Object access by id with no tenant comparison. `listApplications` selects all tenants. Get, update (`servicesJson`, i.e. what gets deployed), delete, deploy and rollback take the tenant from the stored entity, not the caller. Cluster get/delete/test likewise. | open |
+| O3 | S1 | T-attribution | `OpsApprovalApi.approve/reject` | `actorId` is an optional request parameter that overrides the principal; roles are still taken from the real principal. A caller with the role can record an approval under any name via `completeFromSystem`. Unknown plan -> risk LOW -> no role needed. | open |
+| O4 | S1 | T-fail-open | `ConfigDrivenApprovalAuthorizer` | Role lists default to empty, and empty means authorised, for CRITICAL too. `runtime/` sets them; `app/` and any embedder do not. LOW and MEDIUM never need a role. | open |
+| O5 | S1 | TLS | `ClusterReferenceEntity.trustCerts`, `K8sClientRegistry.register` | `trustCerts` defaults to true (entity field and the two-arg `register`), which disables certificate verification on the cluster API connection that carries the bearer token. | open |
+| O6 | S2 | SSRF / secrets | `OpsClusterApi.registerCluster`, `K8sClientRegistry` | A caller supplies `apiUrl` and `credentialRef` freely. Any resolvable credential ref can be paired with any URL, so a stored token can be sent to a caller-chosen host. Needs ref ownership by tenant and a host policy. | open |
+| O7 | S2 | T-ambient-tenancy | `rest/TenancyFilter` | Tenant from `X-Tenancy-ID` header, default `default`; property set on the request and not read anywhere in main code. Dead but misleading; remove or replace with principal. | open |
+| O8 | S2 | bug | `K8sClientRegistry.register` | Re-registering a cluster keeps the existing client and only replaces metadata, so a changed URL or credential does not take effect until a 401 refresh. | open |
+| O9 | S2 | maturity | `compliance/` | 1,074 lines. Four collectors, all local file checks (file exists, config hash, certificate expiry, log directory). No control catalogue ships (only two test YAMLs); SOC2/GDPR/EU AI Act/DORA/NIS2 are labels a user must supply. Evidence hash input is pipe-joined with free-text `detail` (L3). | open |
+| O10 | S2 | design | `Ops*Api` | API classes use `EntityManager` directly, return JPA entities (including `credentialRef`, `tenancyId`), mutate without `@Transactional` in the API class, and return null for not-found in some methods and throw in others. `ClusterService.testConnectivity` is a stub returning UNKNOWN. | open |
+| O11 | S3 | autonomy | `SelfMaintenanceMonitor` | The service can deploy a replacement of itself from an image ref; guarded by a flag and bootstrap phase only, no approval gate or signature check on the image. | open |
+| O12 | S3 | state | `ApplicationLifecycleService.activeLoops`, registries | Active-loop tracking and client registry are in memory; `StartupRecoveryService` exists (not read). Inherits D3 single-node assumption. | open |
+| O13 | S3 | docs | repo root | No LICENSE (T22). README lists an `iot` module that is not in this repo. | open |
+
+### Carry-over answers
+- D1/D2: ops does not use the Terraform/Ansible bridges; `infra/` has its own standalone backend. So "augments Terraform" is not yet demonstrated anywhere in code.
+- Engine's API edge pattern (`@AclCheck`, tenant from context, service re-check) is not followed here; ops is the furthest from it of all reviewed repos.
+
+### Not yet reviewed
+`deployment/` (agent topology provisioner, targets, drift, trust routing provider), `container/` Podman client and provisioner, `claudony/`, `infra/` compiler and provisioner, K8s handlers and watch manager, case descriptors, scaling, CVE, bootstrap, topology compiler, startup recovery.
+
 ## Cross-cutting conclusions (update as repos are added)
 
 1. **Identity is asserted, not authenticated, at every API edge** (L1, L2, W1, Q1, Q2). One fix pattern: actor and tenant from `CurrentPrincipal` only, via `@ContextParam`; request-supplied actor only for a trusted-service role.
@@ -736,7 +774,11 @@ Strengths:
 
 - Desiredstate: neighbours are Kubernetes controllers/Crossplane (reconciliation, K8s-only), Terraform/Pulumi/OpenTofu (plan/apply, no continuous loop), Ansible, and Flux/Argo (GitOps). The distinct idea is reconciliation as a domain-neutral primitive with human gates, fault escalation and CBR, applied to agent fleets and org structure as well as infrastructure. "Continuous compliance posture" (ops) rests on it. The Terraform bridge is the credibility test: it must hold state (D2) and detect in-place drift (D8) before the "augments Terraform" claim can be shown to an infra team.
 
+- Ops: continuous compliance competes with Vanta, Drata, Secureframe (evidence collection via hundreds of SaaS integrations, auditor workflow) and with policy engines (OPA/Kyverno, Chef InSpec, OpenSCAP). The CaseHub angle, posture as a reconciled desired state with every evidence check on a tamper-evident ledger and remediation as a governed case, is distinct and fits the EU AI Act / DORA "continuous" language. Today it is a skeleton (O9): the value is in the control catalogues and collectors, which do not exist yet. Agent-fleet deployment (the stated primary target) has no direct competitor and is the better first proof.
+
 ## Open questions
+
+- Ops: are the `Ops*Api` classes expected to sit behind a gateway, or should they adopt engine's `@AclCheck` pattern (O1, O2)? Is the `actorId` override on approve meant for a trusted-service caller only (O3)?
 
 - Desiredstate: is the type-filtered resync meant to skip plan approval (D1)? Is the bridge state store intentionally unwired pending a JPA store (D2)? Is multi-replica operation expected (D3)?
 
