@@ -43,7 +43,8 @@ Status: `open` · `confirmed` (reproduced) · `issue #N` · `fixed`.
 - **eidos** (~21k lines): agent identity. `AgentDescriptor`, `AgentRegistry` (JPA/in-memory), vocabularies, capability and disposition health, prompt rendering, org model, eval harness. Read-only clone `/home/user/casehubio/eidos`.
 - **engine** (~128k lines, 51 modules): CMMN-style blackboard case engine. Reactor, layered case context, bindings/goals/milestones, workers (function, SWF, playbook, agent, ReAct, A2A, human, sub-case), planning, recovery, routing, stigmergy, evolution; REST/GraphQL/MCP API with `@AclCheck`. Read-only clone `/home/user/casehubio/engine`.
 - **agency** (~47k lines, 25 modules): orchestration patterns, org topologies, autonomy budgets and graduation, deliberation, governance, YAML/annotation pattern surfaces, engine adapter, speech. Clone at `/home/user/casehubio/agency`.
-- **desiredstate**, **ops**, **scaffold**: cloned, not reviewed. Others (work, qhorus, engine, eidos, connectors, ...) not cloned.
+- **desiredstate** (~37k lines, 47 modules): generic reconciliation runtime, four authoring surfaces, Terraform/Ansible bridges, org-unit reconciliation. Clone at `/home/user/casehub-desiredstate`.
+- **ops**, **scaffold**: cloned, not reviewed. Others (work, qhorus, engine, eidos, connectors, ...) not cloned.
 
 **Build order** (from `parent/build/modules-core.csv` dependencies; the file says row order is build order but rows are not topologically sorted, e.g. desiredstate is listed before engine and ras): platform; worker, ledger, connectors, pages; eidos; neocortex, qhorus; work; engine; ras, agency, workers, claudony; desiredstate; ops. Reviewed: platform, ledger, work, qhorus, neocortex, connectors. Reviewed also: eidos, engine (four passes). Remaining repos cloned and unreviewed: desiredstate, ops, scaffold. Not cloned: worker, pages, workers, agency, claudony, ras, and the applications. For engine, first establish which playbook runner and evaluator wiring it uses (P32, P41) and whether it supplies an expression engine (P33). worker and pages still unreviewed. Follow the owner's stated order; check this list before suggesting one.
 
@@ -60,6 +61,7 @@ Status: `open` · `confirmed` (reproduced) · `issue #N` · `fixed`.
 | eidos | 2026-11-14 | 5c93420 | static read, not built | JPA registry, query API, render pipeline (structure, prompts, visibility), capability and disposition health, vocab (MBTI sample), in-memory org registry, eval outline, carry-over greps. Not read: `CdiVocabularyRegistry` (679 lines), capability resolver/matching, annotation processors, descriptor YAML preprocessing, eval judges in detail, org annotations |
 | engine | 2026-11-14 | 6c28a48 | static read, not built | Four passes (128k lines, 51 modules): spine, CBR, routing/trust + gates + planning + stigmergy + evolution surface, then context/persistence/ReAct/goal formation. Read: README, reactor, case REST API and service, ACL filter and health check, core dispatch handler (rules, budget), instance cache and evaluation serializer, failure-recovery coordinator, worker execution orchestrator (part), playbook integration (`PlaybookWorkerFunctionProvider`, `StepFileCallableDispatcher`), ledger capture wiring, system principal, test bean-exclusion lists, evolution API surface. Not read: planning (HTN/DAG, 10k), stigmergy/swarm, routing and trust, goal formation/revision, CBR retrieval, context layers, milestones, signals, sub-cases, judgment, schedulers, persistence, work adapter, A2A, ReAct, annotations/codegen/generator, Spring modules |
 | agency | 2026-11-14 | d76df37 | static read, not built | Two passes: execution driver, structured invoker, engine adapter, topologies (graduated), budgets, governance (vouch, LLM routing, triage), negotiation rules, mediation, YAML and annotation governance surface, default beans. Second: scope enforcement, hierarchical, multi-swarm, pattern compiler, judgment dispatch, speech-ws, prompt optimisation, memory hygiene. |
+| desiredstate | 2026-11-15 | e690fdd | static read, not built | One pass: reconciliation loop, plan approval gate, step and parallel executors, Terraform and Ansible bridges, bridge state wiring, eidos org policies. |
 
 ## Cross-repo themes
 
@@ -650,6 +652,46 @@ Status after second pass: still unread are hive/distributed internals, BJT netwo
 ### Not yet reviewed
 Hierarchical/hive/distributed topology internals, multi-swarm bus and BJT escalation networks, pattern compiler detail, conversation projections, perception (rag, narrative), prompt optimiser internals, social memory hygiene scoring, speech (sherpa, ws), summarisation, Spring modules.
 
+## desiredstate
+
+First pass, commit e690fdd. ~37k main lines, 47 modules. Generic desired-state runtime: goal compiler -> immutable graph -> diff against actual -> four-phase plan (remove, suspend, resume, add; BFS layers) -> executor (simple, parallel, or case-backed via engine) -> fault and drift policy -> CloudEvents. Surfaces: annotations, YAML, TypeScript DSL, YAML plugins. Bridges: Terraform (go-plugin gRPC, no Terraform CLI) and Ansible. `eidos/` module reconciles organisational units. No REST/MCP surface of its own (library; ops exposes it).
+
+Strengths:
+- Clean, well-named domain model: sealed results everywhere (`ProvisionResult`, `StepOutcome`, `DriftDecision`, `GateDecision`, `RevertCondition`), immutable graph with CAS updates, pruning before growing, explicit lifecycle state machine.
+- Four authoring surfaces compile to one `GraphDescriptor`; build-time validation in the Quarkus extensions.
+- Fault handling is a real design: threshold tiers with pluggable count store, review nodes as graph mutations, CBR retrieve/adapt for faults and situations, outcome tracking.
+- Terraform bridge speaks the provider protocol directly (v5/v6, mTLS, cty msgpack) with SHA-256 and GPG verification and a zip-slip guard. Rare in Java and a real asset.
+- **Org autonomy is enforced here** (unlike agency's `DecisionScope`, A14): `selfDetermination` drives human gating (<0.3), plan approval, bottom-up proposals (>=0.5), topology change (>0.7) and drift exemption.
+- Tests are substantial (runtime 10k lines, yaml 3.3k, terraform 2.8k); TCK contract tests for bridge providers.
+- OTel spans throughout.
+
+### Findings
+
+| ID | Sev | Theme | Where | Note | Status |
+|---|---|---|---|---|---|
+| D1 | S1 | T-declared-unenforced | `ReconciliationLoop.TenantLoop.reconcileTypes` | The per-type resync path plans and executes with no reference to `approvalGate`. It is the default periodic path when a router is present and no resync override is set. A plan awaiting human approval (or rejected) is executed by the next type resync. | open |
+| D2 | S1 | state | `BridgeRecorder`, `BridgeDiscovery`, `NoOpBridgeOutputStateStore` | Both wiring paths build `BridgeProvisioner` and `BridgeActualStateAdapter` with the two-arg constructor, i.e. the no-op state store. For Terraform, `read` with empty prior state returns nothing -> NotFound -> ABSENT -> provision (create) -> output state discarded. As wired, each cycle would create the resource again. The only real store is in-memory and is never wired. Not run; verify with a real provider. | open |
+| D3 | S1 | concurrency | `ReconciliationLoop.TenantLoop` | Nothing serialises cycles for a tenant. `reconcile` runs from the event stream, the debounce scheduler, start and rollback; `reconcileTypes` from a scheduler pool sized to the number of distinct intervals. Two cycles can provision the same node. No leader election or lock anywhere, so two replicas double-provision (same class as engine G2). | open |
+| D4 | S2 | durability | `PlanApprovalGate` | Pending plans live in a `ConcurrentHashMap`; lost on restart (the approval WorkItem remains, orphaned). After a rejection the pending entry is removed and nothing remembers it: the next cycle computes the same plan and appears to submit it again, every cycle. An approved plan is executed as stored, without re-reading actual state (desired version is checked, actual is not). | open |
+| D5 | S2 | bug | `AnsibleProcess.execute` | Reads stdout with `readAllBytes()` before `waitFor(timeout)`. A hung playbook blocks forever; the timeout is unreachable. | open |
+| D6 | S2 | tenancy | `TenantProviderRegistry` | "Per-tenant process isolation" keys the pool on the hash of credentials resolved from one `credentialRef`; `tenancyId` is not passed to the resolver. All tenants share one provider process and one cloud identity unless the resolver is ambient-tenant-aware. | open |
+| D7 | S2 | events | `StateEvent`, `TenantLoop.start` | `StateEvent` has no tenant; every tenant loop subscribes to the same merged stream and reconciles on any batch. On stream failure the subscription ends with a log line and is not re-established: that tenant silently falls back to resync only. | open |
+| D8 | S2 | drift | `TerraformBridgeProvider.doReadState` | Drift = plan has errors or requires replace. In-place attribute drift (the common case) is reported as present. | open |
+| D9 | S3 | supply chain | `ProviderRegistryClient`, `GpgSignatureVerifier` | Signing keys come from the same registry response and `trustedKeyIds` defaults to empty; missing signing data downgrades to the response's own shasum with a warning; match is on key id not fingerprint; cached binaries are not re-verified; no size limit. `binaryPath` executes any path from config. | open |
+| D10 | S3 | injection | `PlaybookGenerator` | Node spec values are written into a playbook; Ansible evaluates Jinja in values, so a spec value containing a `lookup('pipe', ...)` expression runs a command on the controller. Matters if specs are ever tenant-authored. | open |
+| D11 | S3 | design | `ReconciliationLoop` | 1,357 lines, three telescoping constructors up to 20 parameters plus a builder, half the collaborators nullable, fully qualified names inline. The one god class in an otherwise tidy repo. | open |
+| D12 | S3 | robustness | `ParallelTransitionExecutor` | On layer timeout it calls `shutdownNow()` then `close()`, which waits for tasks: a provisioner that ignores interrupt blocks the cycle. Timed-out steps are recorded Failed though they may complete. | open |
+| D13 | S3 | policy | `eidos/` `OrgDriftPolicy`, `OrgPlanApprovalPolicy`, `OrgGoalCompiler` | Thresholds 0.3 / 0.5 / 0.7 are literals in four classes. `OrgDriftPolicy`'s last three branches all return reconcile. Exemptions are `Never` revert. Approval depends on the gate D1 bypasses. | open |
+| D14 | S3 | T-deser | `GraphSerializer` | Stored graph JSON carries class names resolved with `Class.forName`. Fine while the table is trusted; needs an allow-list if graphs are ever imported. | open |
+| D15 | S3 | docs | `README.md` | 9 lines. No LICENSE (T22). CLAUDE.md is the real documentation. | open |
+
+### Carry-over answers
+- T fail-open defaults: `NoOpHumanNodeHandler` and `NoOpPendingApprovalHandler` skip or fail (correct, fail-closed). `NoOpPlanApprovalPolicy` auto-approves (expected default).
+- Autonomy: two unconnected scales now exist: org-unit `selfDetermination` (enforced here) and agent `DecisionScope` (agency, unenforced).
+
+### Not yet reviewed
+`TransitionPlanner` internals, `CrossDomainCompositionEngine`, `LifecycleManager`, `CaseTransitionExecutor` (engine-adapter), work-adapter, annotations/YAML/TS compilers, plugin runtime and shell primitive, cty codec, persistence, examples, Spring modules.
+
 ## Cross-cutting conclusions (update as repos are added)
 
 1. **Identity is asserted, not authenticated, at every API edge** (L1, L2, W1, Q1, Q2). One fix pattern: actor and tenant from `CurrentPrincipal` only, via `@ContextParam`; request-supplied actor only for a trusted-service role.
@@ -665,6 +707,8 @@ Hierarchical/hive/distributed topology internals, multi-swarm bus and BJT escala
 5. **Canonical hash input is ambiguous** (L3, Q3). Needs a versioned, length-prefixed encoding before data accumulates.
 
 12. **Agency models its controls and stops one step short of enforcing them** (A1, A2, A14, A15): pattern governance is not compiled, annotations are not wired, decision scope is never checked, human judges cannot be dispatched. Graduated autonomy therefore has no runtime effect. Needed: a real `AgentCapabilityGuard` called on every agent action; governance specs compiled into engine gates and trust routing; a WorkItem-backed judgment dispatcher; autonomy changes driven by ledger trust and judgments, persisted and attested.
+
+13. **Approval gates are bypassed or forgotten on secondary paths** (D1, D4; compare G31 ReAct tools). Every control needs a test that tries each execution path, not only the main one.
 
 ## Positioning notes
 
@@ -690,7 +734,11 @@ Hierarchical/hive/distributed topology internals, multi-swarm bus and BJT escala
 
 - Agency: the category is "organisational operating model for agents" rather than an agent framework. Neighbours: CrewAI/AutoGen/LangGraph (patterns, no org model, no durability), Microsoft Agent Framework and Google ADK (patterns + enterprise hosting), Salesforce Agentforce and ServiceNow (agents inside one vendor's org model). Agency's edge: policy-composed patterns, graduated and budgeted autonomy, trust-weighted routing, negotiation and coalition protocols, all on a durable case engine with a ledger. No neighbour has graduated autonomy as a first-class runtime concept. The edge is real only once A1 to A4 are closed, because "declared oversight that does not fire" is the first thing a risk officer will test.
 
+- Desiredstate: neighbours are Kubernetes controllers/Crossplane (reconciliation, K8s-only), Terraform/Pulumi/OpenTofu (plan/apply, no continuous loop), Ansible, and Flux/Argo (GitOps). The distinct idea is reconciliation as a domain-neutral primitive with human gates, fault escalation and CBR, applied to agent fleets and org structure as well as infrastructure. "Continuous compliance posture" (ops) rests on it. The Terraform bridge is the credibility test: it must hold state (D2) and detect in-place drift (D8) before the "augments Terraform" claim can be shown to an infra team.
+
 ## Open questions
+
+- Desiredstate: is the type-filtered resync meant to skip plan approval (D1)? Is the bridge state store intentionally unwired pending a JPA store (D2)? Is multi-replica operation expected (D3)?
 
 - Agency: is pattern-level `governance:` meant to compile into engine action gates and `TrustRoutingPolicyProvider`, and is that work scheduled? Is the annotations module known to be unwired?
 - Agency: should graduation be driven by ledger trust and judgment outcomes, and should scope changes be attested?
