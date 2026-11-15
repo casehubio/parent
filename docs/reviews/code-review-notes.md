@@ -45,7 +45,7 @@ Status: `open` · `confirmed` (reproduced) · `issue #N` · `fixed`.
 - **agency** (~47k lines, 25 modules): orchestration patterns, org topologies, autonomy budgets and graduation, deliberation, governance, YAML/annotation pattern surfaces, engine adapter, speech. Clone at `/home/user/casehubio/agency`.
 - **desiredstate** (~37k lines, 47 modules): generic reconciliation runtime, four authoring surfaces, Terraform/Ansible bridges, org-unit reconciliation. Clone at `/home/user/casehub-desiredstate`.
 - **ops** (~20k lines, 11 modules): desiredstate domains (K8s apps, agent topology, infra, compliance, Podman, claudony) plus 9 MCP/REST APIs. Labelled research. Clone at `/home/user/casehub-ops`.
-- **scaffold**: cloned, not reviewed. Others (work, qhorus, engine, eidos, connectors, ...) not cloned.
+- **scaffold** (2.2k lines): deployable app embedding engine + ops with a web console; package `io.casehub.flow`. Clone at `/home/user/scaffold`. Not cloned: worker, pages, workers, claudony, ras, applications. Others (work, qhorus, engine, eidos, connectors, ...) not cloned.
 
 **Build order** (from `parent/build/modules-core.csv` dependencies; the file says row order is build order but rows are not topologically sorted, e.g. desiredstate is listed before engine and ras): platform; worker, ledger, connectors, pages; eidos; neocortex, qhorus; work; engine; ras, agency, workers, claudony; desiredstate; ops. Reviewed: platform, ledger, work, qhorus, neocortex, connectors. Reviewed also: eidos, engine (four passes). Remaining repos cloned and unreviewed: desiredstate, ops, scaffold. Not cloned: worker, pages, workers, agency, claudony, ras, and the applications. For engine, first establish which playbook runner and evaluator wiring it uses (P32, P41) and whether it supplies an expression engine (P33). worker and pages still unreviewed. Follow the owner's stated order; check this list before suggesting one.
 
@@ -64,6 +64,7 @@ Status: `open` · `confirmed` (reproduced) · `issue #N` · `fixed`.
 | agency | 2026-11-14 | d76df37 | static read, not built | Two passes: execution driver, structured invoker, engine adapter, topologies (graduated), budgets, governance (vouch, LLM routing, triage), negotiation rules, mediation, YAML and annotation governance surface, default beans. Second: scope enforcement, hierarchical, multi-swarm, pattern compiler, judgment dispatch, speech-ws, prompt optimisation, memory hygiene. |
 | desiredstate | 2026-11-15 | e690fdd | static read, not built | One pass: reconciliation loop, plan approval gate, step and parallel executors, Terraform and Ansible bridges, bridge state wiring, eidos org policies. |
 | ops | 2026-11-15 | d787b63 | static read, not built | One pass: the 9 API classes, approval authoriser and evaluator, cluster service and K8s client registry, compliance module, LLM trigger evaluator, self-maintenance. |
+| scaffold | 2026-11-15 | 131e902 | static read, not built | Quick pass: REST resources, auth config, embedded approval service, app loader, README. |
 
 ## Cross-repo themes
 
@@ -730,6 +731,17 @@ Strengths:
 ### Not yet reviewed
 `deployment/` (agent topology provisioner, targets, drift, trust routing provider), `container/` Podman client and provisioner, `claudony/`, `infra/` compiler and provisioner, K8s handlers and watch manager, case descriptors, scaling, CVE, bootstrap, topology compiler, startup recovery.
 
+## scaffold
+
+Quick pass, commit 131e902. 2.2k main lines, one backend module plus a web console (Quinoa). Deployable Quarkus app that embeds engine and ops and exposes `/api/scaffold/*` (cases, topology, catalogue, deployments, approvals, reconciliation) with `Embedded*` services (in-process) or REST clients to a remote ops.
+
+- Good: resources take actor and tenant from `CurrentPrincipal` (better than ops); service interfaces with embedded and remote implementations; health checks; tests larger than main (3.1k).
+- S1 **SC1**: no auth policy for `/api/**` in `application.properties` (only a permit rule for static files) and no role annotations; inherits O1 to O4 because it calls the ops API classes in-process.
+- S2 **SC2**: `EmbeddedApprovalService.listPendingApprovals(tenancyId)` ignores the tenant; `getApproval(id)` has no tenant check.
+- S2 **SC3**: `EmbeddedApprovalService` calls `opsApprovalApi.approve(approvalId, actorId)` with a `String`; ops at d787b63 declares `approve(UUID, Optional<String>)`. Looks like API drift between the two repos' heads (not built, so unconfirmed).
+- S3 **SC4**: README is the Quarkus starter text under the title "flow" with badge links to `casehubio/flow`; Java package is `io.casehub.flow`. This is the first thing a new user runs and it explains nothing about CaseHub. `AppLoader.parse` swallows all exceptions and returns empty.
+- Not reviewed: web UI, catalogue service, demo seed script.
+
 ## Cross-cutting conclusions (update as repos are added)
 
 1. **Identity is asserted, not authenticated, at every API edge** (L1, L2, W1, Q1, Q2). One fix pattern: actor and tenant from `CurrentPrincipal` only, via `@ContextParam`; request-supplied actor only for a trusted-service role.
@@ -747,6 +759,8 @@ Strengths:
 12. **Agency models its controls and stops one step short of enforcing them** (A1, A2, A14, A15): pattern governance is not compiled, annotations are not wired, decision scope is never checked, human judges cannot be dispatched. Graduated autonomy therefore has no runtime effect. Needed: a real `AgentCapabilityGuard` called on every agent action; governance specs compiled into engine gates and trust routing; a WorkItem-backed judgment dispatcher; autonomy changes driven by ledger trust and judgments, persisted and attested.
 
 13. **Approval gates are bypassed or forgotten on secondary paths** (D1, D4; compare G31 ReAct tools). Every control needs a test that tries each execution path, not only the main one.
+
+14. **The outermost layers are the least protected** (O1 to O6, SC1). Engine checks at its API edge; ops and scaffold, which sit in front of it and can change what runs on a cluster, check nothing. The deployable app needs a default-deny HTTP policy and the ops APIs need engine's pattern.
 
 ## Positioning notes
 
