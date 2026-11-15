@@ -27,6 +27,7 @@ Status: `open` · `confirmed` (reproduced) · `issue #N` · `fixed`.
 - BOM lives in `casehub-parent`; do not report "no BOM".
 - Playbook naming is settled by the owner after research; do not re-raise the Ansible clash.
 - Playbook steps are a designed surface (shaped plugins, `@GeneratePlugin` controls), not just generated RPC; connectors has its own `playbooks` module with voice and multi-domain examples.
+- Owner (2026-11-15): "the playbook level is the start of it all coming together". My reading: playbooks are the integration surface across layers (platform steps, connector capability steps, engine playbook workers, agency pattern YAML, desiredstate YAML and plugin steps, scaffold catalogue). Seams found: three runners (P32, G6, G7), plugin generation off by default (P41), agency YAML is a separate dialect with governance unread (A1), desiredstate plugins do reuse the platform step runtime (the model to follow).
 - Owner hopes CBR is a strong differentiator. Reviewed end to end (neocortex toolkit + engine integration); see engine section. Agreed; weakest link is the no-op Reuse step.
 - Owner regards playbooks as a primary, unique differentiator (powerful, type safe, less code than Java). Reviewed; see platform section. Agreed on power and brevity; type safety and uniqueness are partial.
 - Onboarding is in progress and is playbook-led (`platform/playbooks`). Report gaps as "entry point missing", not "no onboarding".
