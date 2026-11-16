@@ -177,6 +177,34 @@ Pick one execution path as canonical and state durability plans (item 10). An en
 
 `GraphQLResolverProcessor` (P30) is 2,969 lines emitting Java with `println`, while the Spring generators use JavaPoet. It is central to the "every API is a step" strategy and the hardest file to change safely. If step count scales to 600 operations, the generator must be reliable. Consider migrating to JavaPoet or a template engine before scaling.
 
+## Repo routing
+
+Which repo each finding and work item lands in. Items that appear in multiple columns need coordination across sessions.
+
+| Step | Platform | Connectors | Engine | Agency | Work |
+|---|---|---|---|---|---|
+| 1. Canonical runner + inert features | P32, P34, P35, P36, P40 | | | | |
+| 2. Decorator semantics | P38, P39 | | | | |
+| 3. Trust model | P26, P42 | | | | |
+| 4. Canonical form | P23, P24, P40 | | | | |
+| 5. Rules headers + lint | existing levels | | | | |
+| 6. Types + validator + generator | P27, P30, P31, P37 | | G7 | | |
+| 7. Engine accepts plugin steps | | | G6 | | |
+| 8. Governance decorators | P28 | C1 | G21 | A1, A2 | W1, W2 |
+
+**By repo:**
+
+- **Platform** (steps 1–6): nearly all language work lives here. The canonical runner, decorator fixes, trust model, canonical form, levels infrastructure, type system, generator and validator MCP tool. This is the critical path — nothing downstream moves until the platform runner and decorator semantics are solid.
+- **Engine** (steps 6–7): wire `ExecutionScope` and expression engine into the step-file bridge (G7); accept plugin steps on the compiler path (G6) so engine can run the same playbooks as the platform interpreter. Blocked on platform step 1.
+- **Connectors** (step 8): confirmation must actually fire (C1). The `@RequiresConfirmation` annotation needs a working generator or a risk classifier that reads the step's confirmation tier. Blocked on engine gates (G21) and platform governance decorators (item 5).
+- **Agency** (step 8): pattern governance specs (A1) and annotation processors (A2) must compile into engine gates and trust routing. Blocked on engine gates and platform governance decorators.
+- **Work** (step 8): W1/W2 — lifecycle API must derive actor and claimant from the authenticated principal, not from request parameters. This is the prerequisite for governance decorators meaning anything at runtime (tension 6). Can start independently.
+
+**Cross-cutting** items that do not belong to one repo:
+- Durability decision (item 10): architectural, affects what "one semantics" means for platform vs engine.
+- Positioning (lead with coordination + agents + tests): affects docs, README and marketing across all repos.
+- Levels that span layers: a single business scenario runs through platform → connectors → engine → agency → ops. The level definitions live in platform, but the layer-specific tests live in each repo.
+
 ## Order of work
 
 1. Canonical runner in main code; finish or remove the declared-but-inert features (item 7).
@@ -187,3 +215,5 @@ Pick one execution path as canonical and state durability plans (item 10). An en
 6. Typed captures, shaped plugin schemas (P31), generator fixes (P27, P30), and the validation MCP tool; then the authoring metric.
 7. Engine path accepts plugin steps; add engine, agency and ops levels.
 8. Governance decorators and negative twins at every level that has a gate. Requires W1/W2 fix in work (tension 6).
+
+Steps 1–5 are platform-only. Step 6 starts touching the generator (platform) and engine. Steps 7–8 fan out. Work on W1/W2 can start in parallel with any platform step.
