@@ -205,11 +205,11 @@ Which repo each finding and work item lands in. Items that appear in multiple co
 
 **By repo:**
 
-- **Platform** (WS-1 to WS-6): nearly all language work lives here. The canonical runner, decorator fixes, trust model, canonical form, levels infrastructure, type system, generator and validator MCP tool. This is the critical path — nothing downstream moves until the platform runner and decorator semantics are solid.
-- **Engine** (WS-6 to WS-7): wire `ExecutionScope` and expression engine into the step-file bridge (G7); accept plugin steps on the compiler path (G6) so engine can run the same playbooks as the platform interpreter. Blocked on platform WS-1.
-- **Connectors** (WS-8): confirmation must actually fire (C1). The `@RequiresConfirmation` annotation needs a working generator or a risk classifier that reads the step's confirmation tier. Blocked on engine gates (G21) and platform governance decorators (LD-5).
-- **Agency** (WS-8): pattern governance specs (A1) and annotation processors (A2) must compile into engine gates and trust routing. Blocked on engine gates and platform governance decorators.
-- **Work** (WS-8): W1/W2 — lifecycle API must derive actor and claimant from the authenticated principal, not from request parameters. This is the prerequisite for governance decorators meaning anything at runtime (TN-6). Can start independently.
+- **Platform** (WS-1 to WS-6) — casehubio/platform#827: nearly all language work lives here. The canonical runner, decorator fixes, trust model, canonical form, levels infrastructure, type system, generator and validator MCP tool. This is the critical path — nothing downstream moves until the platform runner and decorator semantics are solid.
+- **Engine** (WS-6 to WS-7) — casehubio/engine#1322: wire `ExecutionScope` and expression engine into the step-file bridge (G7); accept plugin steps on the compiler path (G6) so engine can run the same playbooks as the platform interpreter. Blocked on platform WS-1.
+- **Connectors** (WS-8) — casehubio/connectors#256: confirmation must actually fire (C1). The `@RequiresConfirmation` annotation needs a working generator or a risk classifier that reads the step's confirmation tier. Blocked on engine gates (G21) and platform governance decorators (LD-5).
+- **Agency** (WS-8) — casehubio/agency#476: pattern governance specs (A1) and annotation processors (A2) must compile into engine gates and trust routing. Blocked on engine gates and platform governance decorators.
+- **Work** (WS-8) — casehubio/work#423: W1/W2 — lifecycle API must derive actor and claimant from the authenticated principal, not from request parameters. This is the prerequisite for governance decorators meaning anything at runtime (TN-6). Can start independently.
 
 **Cross-cutting** items that do not belong to one repo:
 - Durability decision (LD-10): architectural, affects what "one semantics" means for platform vs engine.
