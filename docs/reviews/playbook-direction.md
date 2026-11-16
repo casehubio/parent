@@ -192,26 +192,30 @@ Pick one execution path as canonical and state durability plans (LD-10). An ente
 
 Which repo each finding and work item lands in. Items that appear in multiple columns need coordination across sessions.
 
-| Step | Issue | Platform | Connectors | Engine | Agency | Work |
+| Step | Platform | Engine | Pages | Connectors | Agency | Work |
 |---|---|---|---|---|---|---|
-| WS-1 Canonical runner + inert features | #541 | P32, P34, P35, P36, P40 | | | | |
-| WS-2 Decorator semantics | #542 | P38, P39 | | | | |
-| WS-3 Trust model | #543 | P26, P42 | | | | |
-| WS-4 Canonical form | #544 | P23, P24, P40 | | | | |
-| WS-5 Rules headers + lint | #545 | existing levels | | | | |
-| WS-6 Types + validator + generator | #546 | P27, P30, P31, P37 | | G7 | | |
-| WS-7 Engine accepts plugin steps | #547 | | | G6 | | |
-| WS-8 Governance decorators | #548 | P28 | C1 | G21 | A1, A2 | W1, W2 |
+| WS-1 Canonical runner + inert features | P32, P34, P35, P36, P40 | | track | | | |
+| WS-2 Decorator semantics | P38, P39 | | track | | | |
+| WS-3 Trust model | P26, P42 | | | | | |
+| WS-4 Canonical form | P23, P24, P40 | | track | | | |
+| WS-5 Rules headers + lint | existing levels | | | | | |
+| WS-6 Types + validator + generator | P27, P30, P31, P37 | G7 | track | | | |
+| WS-7 Engine accepts plugin steps | | G6 | | | | |
+| WS-8 Governance decorators | P28 | G21 | | C1 | A1, A2 | W1, W2 |
+
+("track" = pages TypeScript port must stay in sync with the platform change)
 
 **By repo:**
 
 - **Platform** (WS-1 to WS-6) — casehubio/platform#827: nearly all language work lives here. The canonical runner, decorator fixes, trust model, canonical form, levels infrastructure, type system, generator and validator MCP tool. This is the critical path — nothing downstream moves until the platform runner and decorator semantics are solid.
 - **Engine** (WS-6 to WS-7) — casehubio/engine#1322: wire `ExecutionScope` and expression engine into the step-file bridge (G7); accept plugin steps on the compiler path (G6) so engine can run the same playbooks as the platform interpreter. Blocked on platform WS-1.
+- **Pages** (WS-1, WS-2, WS-4, WS-6) — casehubio/casehub-pages#669: TypeScript port of yaml-core must track platform language changes and pass the conformance levels. Cross-parser-test extended to cover execution semantics. Blocked on platform landing each change first.
 - **Connectors** (WS-8) — casehubio/connectors#256: confirmation must actually fire (C1). The `@RequiresConfirmation` annotation needs a working generator or a risk classifier that reads the step's confirmation tier. Blocked on engine gates (G21) and platform governance decorators (LD-5).
 - **Agency** (WS-8) — casehubio/agency#476: pattern governance specs (A1) and annotation processors (A2) must compile into engine gates and trust routing. Blocked on engine gates and platform governance decorators.
 - **Work** (WS-8) — casehubio/work#423: W1/W2 — lifecycle API must derive actor and claimant from the authenticated principal, not from request parameters. This is the prerequisite for governance decorators meaning anything at runtime (TN-6). Can start independently.
 
-**Cross-cutting** items that do not belong to one repo:
+**Cross-cutting** (stays on parent):
+- **#548** WS-8 Governance decorators — coordinates connectors, agency, work, engine and platform.
 - Durability decision (LD-10): architectural, affects what "one semantics" means for platform vs engine.
 - Positioning (lead with coordination + agents + tests): affects docs, README and marketing across all repos.
 - Levels that span layers: a single business scenario runs through platform → connectors → engine → agency → ops. The level definitions live in platform, but the layer-specific tests live in each repo.
@@ -231,38 +235,38 @@ WS-1 to WS-5 are platform-only. WS-6 starts touching the generator (platform) an
 
 ## Cross-reference: findings → direction → issues
 
-Every playbook-related finding from `code-review-notes.md`, the direction item that addresses it, the work step where it is delivered, and the GitHub issue (blank until created).
+Every playbook-related finding from `code-review-notes.md`, the direction item that addresses it, the work step where it is delivered, and the repo issue that tracks it.
 
-| Finding | Summary | Direction | Work step | Issue |
+| Finding | Summary | Direction | Work step | Repo issue |
 |---|---|---|---|---|
-| P21 | Three execution paths, different languages | LD-1 | WS-1 | #541 |
-| P22 | Gate test expects shipped examples to fail; 4 tests for 76 examples | — | WS-5 | #545 |
-| P23 | Two file shapes, mixed key case | — | WS-4 | #544 |
-| P24 | Guide claims parse-time type checks; code checks at runtime | LD-3 | WS-4 | #544 |
-| P25 | No durability — playbook doesn't survive restart | LD-10 | cross-cutting | #540 |
-| P26 | Trust model — playbook equivalent to code | LD-9 | WS-3 | #543 |
-| P27 | Generated steps skip @ContextParam tenancyId | LD-3 | WS-6 | #546 |
-| P28 | Generated steps bypass @RolesAllowed | LD-5 | WS-8 | #548 |
-| P29 | Step name collision from derivePluginName | LD-6 | WS-6 | #546 |
-| P30 | GraphQLResolverProcessor: 2,969 lines of println | — | WS-6 | #546 |
-| P31 | Shaped plugins: all-optional fields, runtime-only required | LD-3 | WS-6 | #546 |
-| P32 | Only runner is in test module, no ExecutionScope | LD-1 | WS-1 | #541 |
-| P33 | Template-then-evaluate conditions (injection, Norway) | LD-4 | WS-1 | #541 |
-| P34 | on-error handler never runs | LD-7 | WS-1 | #541 |
-| P35 | transform is a no-op | LD-7 | WS-1 | #541 |
-| P36 | capture only works for top-level steps | LD-7 | WS-1 | #541 |
-| P37 | @Plugin records: missing @Required not rejected, type coercion | LD-3 | WS-6 | #546 |
-| P38 | Timeout blocks forever if step ignores interruption | LD-8 | WS-2 | #542 |
-| P39 | Decorator robustness (loop cap, retry all, no fail-fast, etc.) | LD-8 | WS-2 | #542 |
-| P40 | Guide vs code mismatches (guard names, bare refs, undocumented) | LD-7 | WS-1, WS-4 | #541, #544 |
-| P41 | Compiler has own registry with different names and syntax | LD-1 | WS-7 | #547 |
-| P42 | env() and systemProperty() as sources | LD-9 | WS-3 | #543 |
-| G6 | Engine uses PlaybookCompiler with no plugin registry | LD-1 | WS-7 | #547 |
-| G7 | StepFileCallableDispatcher: no scope, unknown action = success | LD-1 | WS-6 | #546 |
-| G21 | Engine action gates not connected to platform confirmation | LD-5 | WS-8 | #548 |
-| PG8 | Fourth executor (pages scenario) + TypeScript port | LD-1 | WS-7 | #547 |
-| C1 | @RequiresConfirmation is inert — no generator runs it | LD-5 | WS-8 | #548 |
-| A1 | Pattern governance parsed but nothing reads it | LD-5 | WS-8 | #548 |
-| A2 | Annotation processors not wired from build steps | LD-5 | WS-8 | #548 |
-| W1 | Lifecycle API: actor/claimant from request, not principal | — | WS-8 | #548 |
-| W2 | No check that claimant is in candidateUsers/Groups | — | WS-8 | #548 |
+| P21 | Three execution paths, different languages | LD-1 | WS-1 | platform#827 |
+| P22 | Gate test expects shipped examples to fail; 4 tests for 76 examples | — | WS-5 | platform#827 |
+| P23 | Two file shapes, mixed key case | — | WS-4 | platform#827 |
+| P24 | Guide claims parse-time type checks; code checks at runtime | LD-3 | WS-4 | platform#827 |
+| P25 | No durability — playbook doesn't survive restart | LD-10 | cross-cutting | parent#540 |
+| P26 | Trust model — playbook equivalent to code | LD-9 | WS-3 | platform#827 |
+| P27 | Generated steps skip @ContextParam tenancyId | LD-3 | WS-6 | platform#827 |
+| P28 | Generated steps bypass @RolesAllowed | LD-5 | WS-8 | parent#548 |
+| P29 | Step name collision from derivePluginName | LD-6 | WS-6 | platform#827 |
+| P30 | GraphQLResolverProcessor: 2,969 lines of println | — | WS-6 | platform#827 |
+| P31 | Shaped plugins: all-optional fields, runtime-only required | LD-3 | WS-6 | platform#827 |
+| P32 | Only runner is in test module, no ExecutionScope | LD-1 | WS-1 | platform#827 |
+| P33 | Template-then-evaluate conditions (injection, Norway) | LD-4 | WS-1 | platform#827 |
+| P34 | on-error handler never runs | LD-7 | WS-1 | platform#827 |
+| P35 | transform is a no-op | LD-7 | WS-1 | platform#827 |
+| P36 | capture only works for top-level steps | LD-7 | WS-1 | platform#827 |
+| P37 | @Plugin records: missing @Required not rejected, type coercion | LD-3 | WS-6 | platform#827 |
+| P38 | Timeout blocks forever if step ignores interruption | LD-8 | WS-2 | platform#827 |
+| P39 | Decorator robustness (loop cap, retry all, no fail-fast, etc.) | LD-8 | WS-2 | platform#827 |
+| P40 | Guide vs code mismatches (guard names, bare refs, undocumented) | LD-7 | WS-1, WS-4 | platform#827 |
+| P41 | Compiler has own registry with different names and syntax | LD-1 | WS-7 | engine#1322 |
+| P42 | env() and systemProperty() as sources | LD-9 | WS-3 | platform#827 |
+| G6 | Engine uses PlaybookCompiler with no plugin registry | LD-1 | WS-7 | engine#1322 |
+| G7 | StepFileCallableDispatcher: no scope, unknown action = success | LD-1 | WS-6 | engine#1322 |
+| G21 | Engine action gates not connected to platform confirmation | LD-5 | WS-8 | parent#548 |
+| PG8 | Fourth executor (pages scenario) + TypeScript port | LD-1 | — | pages#669 |
+| C1 | @RequiresConfirmation is inert — no generator runs it | LD-5 | WS-8 | connectors#256 |
+| A1 | Pattern governance parsed but nothing reads it | LD-5 | WS-8 | agency#476 |
+| A2 | Annotation processors not wired from build steps | LD-5 | WS-8 | agency#476 |
+| W1 | Lifecycle API: actor/claimant from request, not principal | — | WS-8 | work#423 |
+| W2 | No check that claimant is in candidateUsers/Groups | — | WS-8 | work#423 |
