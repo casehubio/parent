@@ -184,9 +184,9 @@ Claim type safety only after static data-flow checking is implemented (LD-3). To
 
 Pick one execution path as canonical and state durability plans (LD-10). An enterprise buyer compares against Temporal and Step Functions; they will ask about restarts in the first conversation.
 
-## Generator quality
+## Generator quality (tech debt, not blocking)
 
-`GraphQLResolverProcessor` (P30) is 2,969 lines emitting Java with `println`, while the Spring generators use JavaPoet. It is central to the "every API is a step" strategy and the hardest file to change safely. If step count scales to 600 operations, the generator must be reliable. Consider migrating to JavaPoet or a template engine before scaling.
+`GraphQLResolverProcessor` (P30) is 2,969 lines emitting Java with `println`, while the Spring generators use JavaPoet. It is central to the "every API is a step" strategy and the hardest file to change safely. The specific bugs (P27 @ContextParam, P29 name collision) can be fixed in the existing code without a rewrite. A full migration to JavaPoet or a template engine is tracked as tech debt — high-risk churn that doesn't deliver user-facing value. Do it when the generator needs a structural change, not before.
 
 ## Repo routing
 
@@ -198,8 +198,9 @@ Which repo each finding and work item lands in. Items that appear in multiple co
 | WS-2 Decorator semantics | P38, P39 | | track | | | |
 | WS-3 Trust model | P26, P42 | | | | | |
 | WS-4 Canonical form | P23, P24, P40 | | track | | | |
-| WS-5 Rules headers + lint | existing levels | | | | | |
-| WS-6 Types + validator + generator | P27, P30, P31, P37 | G7 | track | | | |
+| WS-5 Rules headers + lint (mutation deferred) | existing levels | | | | | |
+| WS-6a Generator fixes + plugin validation | P27, P29, P37 | G7 | | | | |
+| WS-6b Validator MCP tool + shaped schemas + metric | P31 | | track | | | |
 | WS-7 Engine accepts plugin steps | | G6 | | | | |
 | WS-8 Governance decorators | P28 | G21 | | C1 | A1, A2 | W1, W2 |
 
@@ -224,14 +225,15 @@ Which repo each finding and work item lands in. Items that appear in multiple co
 
 **WS-1** Canonical runner in main code; finish or remove the declared-but-inert features (LD-7).
 **WS-2** Specify and fix decorator semantics (LD-8). Each decorator gets a stated contract, a conformance test, and either a fix or a documented limitation.
-**WS-3** Trust model decision (LD-9): who may author, what steps and sources are available per tier. Prerequisite for the validator MCP tool in WS-6.
+**WS-3** Trust model decision (LD-9): an ADR stating who may author at each trust tier, what steps and sources are available, what egress is permitted. Scale S — the implementation (catalogue filtering) lives in WS-6b. Prerequisite for WS-6b.
 **WS-4** Canonical form: one file shape, one key case, reconcile the guide against the code.
-**WS-5** Rules headers, the lint and the mutation check on the existing platform levels.
-**WS-6** Typed captures, shaped plugin schemas (P31), generator fixes (P27, P30), and the validation MCP tool; then the authoring metric.
+**WS-5** Rules headers and lint on the existing platform levels. Mutation checking deferred until the language and test shapes are stable (WS-1 through WS-4).
+**WS-6a** Generator fixes (P27, P29) and plugin validation (P37). Concrete bugs, verifiable. P30 (generator rewrite) tracked as tech debt, not blocking.
+**WS-6b** Validator MCP tool, shaped plugin schemas (P31), and the authoring metric. Design-heavy, depends on WS-3 trust model.
 **WS-7** Engine path accepts plugin steps; add engine, agency and ops levels.
 **WS-8** Governance decorators and negative twins at every level that has a gate. Requires W1/W2 fix in work (TN-6).
 
-WS-1 to WS-5 are platform-only. WS-6 starts touching the generator (platform) and engine. WS-7 and WS-8 fan out. Work on W1/W2 can start in parallel with any platform step.
+WS-1 to WS-5 are platform-only. WS-6a is platform + engine. WS-6b is platform (design-heavy). WS-7 and WS-8 fan out. Work on W1/W2 can start in parallel with any platform step.
 
 ## Cross-reference: findings → direction → issues
 
@@ -245,24 +247,24 @@ Every playbook-related finding from `code-review-notes.md`, the direction item t
 | P24 | Guide claims parse-time type checks; code checks at runtime | LD-3 | WS-4 | platform#827 |
 | P25 | No durability — playbook doesn't survive restart | LD-10 | cross-cutting | parent#540 |
 | P26 | Trust model — playbook equivalent to code | LD-9 | WS-3 | platform#827 |
-| P27 | Generated steps skip @ContextParam tenancyId | LD-3 | WS-6 | platform#827 |
+| P27 | Generated steps skip @ContextParam tenancyId | LD-3 | WS-6a | platform#827 |
 | P28 | Generated steps bypass @RolesAllowed | LD-5 | WS-8 | parent#548 |
-| P29 | Step name collision from derivePluginName | LD-6 | WS-6 | platform#827 |
-| P30 | GraphQLResolverProcessor: 2,969 lines of println | — | WS-6 | platform#827 |
-| P31 | Shaped plugins: all-optional fields, runtime-only required | LD-3 | WS-6 | platform#827 |
+| P29 | Step name collision from derivePluginName | LD-6 | WS-6a | platform#827 |
+| P30 | GraphQLResolverProcessor: 2,969 lines of println | — | tech debt | platform#827 |
+| P31 | Shaped plugins: all-optional fields, runtime-only required | LD-3 | WS-6b | platform#827 |
 | P32 | Only runner is in test module, no ExecutionScope | LD-1 | WS-1 | platform#827 |
 | P33 | Template-then-evaluate conditions (injection, Norway) | LD-4 | WS-1 | platform#827 |
 | P34 | on-error handler never runs | LD-7 | WS-1 | platform#827 |
 | P35 | transform is a no-op | LD-7 | WS-1 | platform#827 |
 | P36 | capture only works for top-level steps | LD-7 | WS-1 | platform#827 |
-| P37 | @Plugin records: missing @Required not rejected, type coercion | LD-3 | WS-6 | platform#827 |
+| P37 | @Plugin records: missing @Required not rejected, type coercion | LD-3 | WS-6a | platform#827 |
 | P38 | Timeout blocks forever if step ignores interruption | LD-8 | WS-2 | platform#827 |
 | P39 | Decorator robustness (loop cap, retry all, no fail-fast, etc.) | LD-8 | WS-2 | platform#827 |
 | P40 | Guide vs code mismatches (guard names, bare refs, undocumented) | LD-7 | WS-1, WS-4 | platform#827 |
 | P41 | Compiler has own registry with different names and syntax | LD-1 | WS-7 | engine#1322 |
 | P42 | env() and systemProperty() as sources | LD-9 | WS-3 | platform#827 |
 | G6 | Engine uses PlaybookCompiler with no plugin registry | LD-1 | WS-7 | engine#1322 |
-| G7 | StepFileCallableDispatcher: no scope, unknown action = success | LD-1 | WS-6 | engine#1322 |
+| G7 | StepFileCallableDispatcher: no scope, unknown action = success | LD-1 | WS-6a | engine#1322 |
 | G21 | Engine action gates not connected to platform confirmation | LD-5 | WS-8 | parent#548 |
 | PG8 | Fourth executor (pages scenario) + TypeScript port | LD-1 | — | pages#669 |
 | C1 | @RequiresConfirmation is inert — no generator runs it | LD-5 | WS-8 | connectors#256 |
