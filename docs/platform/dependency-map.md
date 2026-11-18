@@ -131,6 +131,7 @@ casehub-parent              (BOM — publish first; all others import it)
 | `casehub-engine-ledger` | `claudony` | `casehub` | lineage queries |
 | `casehub-engine-ledger` | `devtown` | `app` | trust-weighted agent routing — activates `TrustWeightedAgentStrategy` + `WorkerDecisionEventCapture` |
 | `casehub-platform-config` | `devtown` | `app` | YAML-backed preference provider for trust routing policies (`trust-routing.yaml`) |
+| `casehub-ledger-api` | `casehub-eidos` | `org-runtime` | `AttestationRelevanceFactor`, `LedgerAttestationEnricher` SPI implementations — org-proximity trust weighting (eidos#248, ledger#231) |
 | `casehub-eidos-api` | `casehub-engine` | `engine-api` | optional capability probe — `AgentDescriptor` on `Worker`; `CapabilityHealth.probe()` in `WorkOrchestrator` |
 | `casehub-eidos-api` | `casehub-engine` | `engine-api` / `runtime` | write-path SPI calls: `AgentGraphStore.recordTask()`, `recordOutcome()` from `WorkOrchestrator` (eidos#32) |
 | `casehub-platform-api` | `casehub-neocortex` | `rag` | `CurrentPrincipal`, `TenancyConstants` — tenant-scoped corpus isolation |
