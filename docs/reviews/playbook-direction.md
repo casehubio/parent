@@ -47,15 +47,21 @@ Decide: one file shape, one key case (kebab-case matches YAML convention), one g
 
 ## Levels and layers
 
-Two axes. One business scenario runs through all five layers so the learner watches the same story grow.
+Two axes. One business scenario runs through all five layers so the learner watches the same story grow. Each layer is scoped to its own repo — the examples live in the repo that owns the capability.
 
-| Layer | The level adds | Needed first |
-|---|---|---|
-| Platform | Steps, captures, flow control, coordination, agent sessions | One runner in main code; LD-7 and LD-8 |
-| Connectors | A real-world action with confirmation | Confirmation that fires |
-| Engine | The playbook as a durable worker in a case, with a human task | Plugin steps accepted on the engine path |
-| Agency | A debate or vote as a step, with oversight | Patterns exposed as steps; governance compiled |
-| Ops | Deployment through desired state with approval | Step generation on for ops; approval on every path |
+**Progressive refinement:** a lower layer introduces a simple approach; a higher layer replaces it with something more sophisticated using its own capabilities. The reader sees the same problem solved at increasing levels of power:
+
+| Layer | Repo | The level adds | Replaces from below | Needed first |
+|---|---|---|---|---|
+| Platform | platform | Steps, captures, flow control, coordination, agent sessions | — (foundation) | One runner in main code; LD-7 and LD-8 |
+| Connectors | connectors | A real-world action with confirmation | Platform's simulated action becomes a real connector call with consent | Confirmation that fires |
+| Engine | engine | The playbook as a durable worker in a case, with a human task | Platform's ephemeral run becomes a durable case-bound worker | Plugin steps accepted on the engine path |
+| Agency | agency | A debate or vote as a step, with oversight | Engine's single-agent worker becomes a multi-agent pattern with governance | Patterns exposed as steps; governance compiled |
+| Ops | ops | Deployment through desired state with approval | Agency's decision becomes an approved, reconciled state change | Step generation on for ops; approval on every path |
+
+For example: platform level N might have a step that simulates sending a payment. Connectors replaces that with a real TrueLayer payment step with confirmation. Engine wraps it in a durable case with a human approval gate. Agency adds a multi-agent review before the approval. Ops deploys the whole flow with desired-state reconciliation.
+
+Each layer's examples live in its own repo and extend from the layer below. The `builds-on` header in each example names the upstream level it refines.
 
 Each example has:
 
