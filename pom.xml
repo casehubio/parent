@@ -3384,11 +3384,19 @@ Banned dependency detected:
               <phase>none</phase>
               <goals><goal>exec</goal></goals>
               <configuration>
-                <executable>bash</executable>
+                <executable>python3</executable>
                 <arguments>
                   <argument>-c</argument>
-                  <argument>test -f "$0" &amp;&amp; python3 "$0" "$1" || echo "strip-internal-deps.py not found — skipping (old artifact)"</argument>
-                  <argument>${project.basedir}/src/main/webui/.casehub-packages/scripts/strip-internal-deps.py</argument>
+                  <argument>import json,sys;from pathlib import Path;d=Path(sys.argv[1])
+if not d.is_dir():print('No packages dir — skipping strip');sys.exit(0)
+c=0
+for p in sorted(d.glob('*/package.json')):
+ pkg=json.load(open(p));ch=False
+ for k in ('dependencies','peerDependencies','devDependencies'):
+  rm=[n for n in pkg.get(k,{}) if n.startswith('@casehubio/')]
+  for n in rm:del pkg[k][n];ch=True
+ if ch:json.dump(pkg,open(p,'w'),indent=2);open(p,'a').write('\n');c+=1
+print(f'Stripped internal deps from {c} packages')</argument>
                   <argument>${project.basedir}/src/main/webui/.casehub-packages/packages</argument>
                 </arguments>
               </configuration>
