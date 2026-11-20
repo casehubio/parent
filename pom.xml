@@ -3384,8 +3384,10 @@ Banned dependency detected:
               <phase>none</phase>
               <goals><goal>exec</goal></goals>
               <configuration>
-                <executable>python3</executable>
+                <executable>bash</executable>
                 <arguments>
+                  <argument>-c</argument>
+                  <argument>test -f "$0" &amp;&amp; python3 "$0" "$1" || echo "strip-internal-deps.py not found — skipping (old artifact)"</argument>
                   <argument>${project.basedir}/src/main/webui/.casehub-packages/scripts/strip-internal-deps.py</argument>
                   <argument>${project.basedir}/src/main/webui/.casehub-packages/packages</argument>
                 </arguments>
