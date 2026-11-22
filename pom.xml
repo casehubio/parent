@@ -3313,6 +3313,17 @@
         <version>${casehub.version}</version>
       </dependency>
 
+      <!-- Annotation processor path version alignment.
+           go-offline resolves managed version (4.0.5 from Quarkus BOM),
+           but annotation processor paths ignore dependencyManagement and
+           resolve the natural version (4.0.6). Aligning to 4.0.6 ensures
+           go-offline downloads the version annotation processors actually use. -->
+      <dependency>
+        <groupId>org.jctools</groupId>
+        <artifactId>jctools-core</artifactId>
+        <version>4.0.6</version>
+      </dependency>
+
     </dependencies>
   </dependencyManagement>
 
