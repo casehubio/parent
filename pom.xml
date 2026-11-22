@@ -43,6 +43,7 @@
     <jackson3.version>3.0.3</jackson3.version>
     <json-schema-validator.version>1.5.4</json-schema-validator.version>
     <langchain4j.version>1.19.0</langchain4j.version>
+    <jctools.version>4.0.6</jctools.version>
     <rest-assured.version>6.0.1</rest-assured.version>
     <serverlessworkflow.version>7.35.3.Final</serverlessworkflow.version>
     <quarkus-mcp-server.version>1.11.1</quarkus-mcp-server.version>
@@ -3321,7 +3322,7 @@
       <dependency>
         <groupId>org.jctools</groupId>
         <artifactId>jctools-core</artifactId>
-        <version>4.0.6</version>
+        <version>${jctools.version}</version>
       </dependency>
 
     </dependencies>
