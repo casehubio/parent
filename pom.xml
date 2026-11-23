@@ -45,7 +45,7 @@
     <langchain4j.version>1.19.0</langchain4j.version>
     <jctools.version>4.0.6</jctools.version>
     <rest-assured.version>6.0.1</rest-assured.version>
-    <serverlessworkflow.version>7.35.3.Final</serverlessworkflow.version>
+    <serverlessworkflow.version>7.35.4.Final</serverlessworkflow.version>
     <quarkus-mcp-server.version>1.11.1</quarkus-mcp-server.version>
   </properties>
 
