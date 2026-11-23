@@ -29,3 +29,6 @@ __pycache__/
 .worktrees
 .worktrees/
 .claude/
+
+# IntelliJ IDE
+*.iml
