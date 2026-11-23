@@ -41,7 +41,7 @@
     <quarkus-quinoa.version>2.8.3</quarkus-quinoa.version>
     <spring-boot.version>4.1.1</spring-boot.version>
     <jackson3.version>3.0.3</jackson3.version>
-    <json-schema-validator.version>1.5.4</json-schema-validator.version>
+    <json-schema-validator.version>2.0.8</json-schema-validator.version>
     <langchain4j.version>1.19.0</langchain4j.version>
     <jctools.version>4.0.6</jctools.version>
     <rest-assured.version>6.0.1</rest-assured.version>
@@ -87,7 +87,7 @@
         <version>${jackson3.version}</version>
       </dependency>
 
-      <!-- json-schema-validator — work uses 1.5.4, MCP SDK pulls 3.0.0, serverlessworkflow pulls 2.0.0 -->
+      <!-- json-schema-validator 2.0.x (Jackson 2) — MCP SDK pulls 3.0.0 (Jackson 3), serverlessworkflow pulls 2.0.0 -->
       <dependency>
         <groupId>com.networknt</groupId>
         <artifactId>json-schema-validator</artifactId>
