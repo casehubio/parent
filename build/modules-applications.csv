@@ -7,4 +7,5 @@ life,connectors,engine,ledger,neocortex,platform,qhorus,work
 soc,desiredstate,eidos,engine,ledger,neocortex,pages,platform,qhorus,ras,work,worker
 fsitrading,agency,casehub-mosaic,desiredstate,eidos,engine,ledger,neocortex,ops,pages,platform,qhorus,ras,work,worker
 quarkmind,agency,casehub-mosaic,connectors,eidos,engine,ledger,neocortex,pages,platform,qhorus
+distributions,connectors,platform
 scaffold,casehub-mosaic,engine,neocortex,ops,pages,platform,work

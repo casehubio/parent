@@ -51,6 +51,7 @@ jobs:
             casehubio/life \
             casehubio/drafthouse \
             casehubio/soc \
+            casehubio/distributions \
             casehubio/fsitrading \
             mdproctor/quarkmind \
             mdproctor/flow)

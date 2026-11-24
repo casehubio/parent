@@ -2225,6 +2225,14 @@
         <version>${casehub.version}</version>
       </dependency>
 <!-- ================================================================ -->
+      <!-- casehub-distributions                                            -->
+      <!-- ================================================================ -->
+      <dependency>
+        <groupId>io.casehub</groupId>
+        <artifactId>casehub-distributions-mcp-server</artifactId>
+        <version>${casehub.version}</version>
+      </dependency>
+<!-- ================================================================ -->
       <!-- casehub-iot                                                      -->
       <!-- ================================================================ -->
       <dependency>
