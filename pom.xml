@@ -3461,6 +3461,14 @@ print(f'Stripped internal deps from {c} packages')</argument>
       <releases><enabled>false</enabled></releases>
       <snapshots><enabled>true</enabled></snapshots>
     </repository>
+    <!-- org.mvel:mvel3 3.0.0-SNAPSHOT (platform/expression-core) is only published here -->
+    <repository>
+      <id>jboss-snapshots</id>
+      <name>JBoss Nexus Snapshots</name>
+      <url>https://repository.jboss.org/nexus/repository/snapshots/</url>
+      <releases><enabled>false</enabled></releases>
+      <snapshots><enabled>true</enabled></snapshots>
+    </repository>
   </repositories>
 
   <pluginRepositories>
