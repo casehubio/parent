@@ -2,55 +2,29 @@
 
 Org-level parent POM and BOM for the [casehubio](https://github.com/casehubio) ecosystem, plus tooling for full-stack local builds and CI/CD.
 
-## Build status
+## Quick start
 
-**Foundation**
+```bash
+git clone https://github.com/casehubio/parent.git
+cd parent
+./build-all.sh --skip-tests
+```
 
-| Repository | Status |
-|:-----------|:------:|
-| [casehub-parent](https://github.com/casehubio/parent) | [![casehub-parent](https://github.com/casehubio/parent/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/parent/actions/workflows/publish.yml) |
-| [casehub-platform](https://github.com/casehubio/platform) | [![casehub-platform](https://github.com/casehubio/platform/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/platform/actions/workflows/publish.yml) |
-| [casehub-worker](https://github.com/casehubio/casehub-worker) | [![casehub-worker](https://github.com/casehubio/casehub-worker/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/casehub-worker/actions/workflows/publish.yml) |
-| [casehub-ledger](https://github.com/casehubio/ledger) | [![casehub-ledger](https://github.com/casehubio/ledger/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/ledger/actions/workflows/publish.yml) |
-| [casehub-connectors](https://github.com/casehubio/connectors) | [![casehub-connectors](https://github.com/casehubio/connectors/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/connectors/actions/workflows/publish.yml) |
-| [casehub-agency](https://github.com/casehubio/agency) | [![casehub-agency](https://github.com/casehubio/agency/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/agency/actions/workflows/publish.yml) |
-| [casehub-work](https://github.com/casehubio/work) | [![casehub-work](https://github.com/casehubio/work/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/work/actions/workflows/publish.yml) |
-| [casehub-qhorus](https://github.com/casehubio/qhorus) | [![casehub-qhorus](https://github.com/casehubio/qhorus/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/qhorus/actions/workflows/publish.yml) |
-| [casehub-pages](https://github.com/casehubio/casehub-pages) | [![casehub-pages](https://github.com/casehubio/casehub-pages/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/casehubio/casehub-pages/actions/workflows/ci.yml) |
-| [casehub-mosaic](https://github.com/mdproctor/casehub-mosaic) | [![casehub-mosaic](https://github.com/mdproctor/casehub-mosaic/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/mdproctor/casehub-mosaic/actions/workflows/ci.yml) |
-| [casehub-eidos](https://github.com/casehubio/eidos) | [![casehub-eidos](https://github.com/casehubio/eidos/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/eidos/actions/workflows/publish.yml) |
-| [casehub-neocortex](https://github.com/casehubio/neocortex) | [![casehub-neocortex](https://github.com/casehubio/neocortex/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/neocortex/actions/workflows/publish.yml) |
-| [casehub-iot](https://github.com/casehubio/iot) | [![casehub-iot](https://github.com/casehubio/iot/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/iot/actions/workflows/publish.yml) |
-| [casehub-desiredstate](https://github.com/casehubio/casehub-desiredstate) | [![casehub-desiredstate](https://github.com/casehubio/casehub-desiredstate/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/casehub-desiredstate/actions/workflows/publish.yml) |
-| [casehub-ras](https://github.com/casehubio/casehub-ras) | [![casehub-ras](https://github.com/casehubio/casehub-ras/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/casehub-ras/actions/workflows/publish.yml) |
-| [casehub-ops](https://github.com/casehubio/casehub-ops) | [![casehub-ops](https://github.com/casehubio/casehub-ops/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/casehub-ops/actions/workflows/publish.yml) |
-| [casehub-engine](https://github.com/casehubio/engine) | [![casehub-engine](https://github.com/casehubio/engine/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/engine/actions/workflows/publish.yml) |
+This fetches the last verified-green SHAs from [casehub-all](https://github.com/casehubio/casehub-all) (the org-wide CI), clones all 30+ repos at those exact commits, and builds them in a single Maven aggregate reactor. The SHAs are a known-good combination — guaranteed to compile and pass tests together.
 
-**Integration**
+Takes ~15 min on a fresh machine (mostly downloading dependencies).
 
-| Repository | Status |
-|:-----------|:------:|
-| [casehub-workers](https://github.com/casehubio/workers) | [![casehub-workers](https://github.com/casehubio/workers/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/workers/actions/workflows/publish.yml) |
-| [casehub-claudony](https://github.com/casehubio/claudony) | [![casehub-claudony](https://github.com/casehubio/claudony/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/casehubio/claudony/actions/workflows/ci.yml) |
-| [casehub-openclaw](https://github.com/casehubio/openclaw) | [![casehub-openclaw](https://github.com/casehubio/openclaw/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/openclaw/actions/workflows/publish.yml) |
-| [casehub-chat-app](https://github.com/casehubio/chat-app) | [![casehub-chat-app](https://github.com/casehubio/chat-app/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/chat-app/actions/workflows/publish.yml) |
-| [casehub-scaffold](https://github.com/casehubio/scaffold) | [![casehub-scaffold](https://github.com/casehubio/scaffold/actions/workflows/maven.yml/badge.svg?branch=main)](https://github.com/casehubio/scaffold/actions/workflows/maven.yml) |
-| [casehub-langchain4j](https://github.com/casehubio/casehub-langchain4j) | [![casehub-langchain4j](https://github.com/casehubio/casehub-langchain4j/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/casehub-langchain4j/actions/workflows/publish.yml) |
+**Prerequisites:** Java 21+, Maven 3.8+, Git. Run `./build-all.sh --help` to check.
 
-**Applications**
+**Options:**
 
-| Repository | Status |
-|:-----------|:------:|
-| [casehub-devtown](https://github.com/casehubio/devtown) | [![casehub-devtown](https://github.com/casehubio/devtown/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/devtown/actions/workflows/publish.yml) |
-| [casehub-aml](https://github.com/casehubio/aml) | [![casehub-aml](https://github.com/casehubio/aml/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/aml/actions/workflows/publish.yml) |
-| [casehub-clinical](https://github.com/casehubio/clinical) | [![casehub-clinical](https://github.com/casehubio/clinical/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/clinical/actions/workflows/publish.yml) |
-| [casehub-life](https://github.com/casehubio/life) | [![casehub-life](https://github.com/casehubio/life/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/life/actions/workflows/publish.yml) |
-| [casehub-drafthouse](https://github.com/casehubio/drafthouse) | [![casehub-drafthouse](https://github.com/casehubio/drafthouse/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/drafthouse/actions/workflows/publish.yml) |
-| [casehub-quarkmind](https://github.com/casehubio/quarkmind) | [![casehub-quarkmind](https://github.com/casehubio/quarkmind/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/casehubio/quarkmind/actions/workflows/ci.yml) |
-| [casehub-soc](https://github.com/casehubio/soc) | [![casehub-soc](https://github.com/casehubio/soc/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/soc/actions/workflows/publish.yml) |
-| [casehub-distributions](https://github.com/casehubio/distributions) | [![casehub-distributions](https://github.com/casehubio/distributions/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/distributions/actions/workflows/publish.yml) |
-
-> Full detail: [Build Status Dashboard](https://github.com/casehubio/parent/actions/workflows/dashboard.yml) &nbsp;|&nbsp; [PR Dashboard](https://github.com/casehubio/parent/actions/workflows/pr-dashboard.yml) &nbsp;|&nbsp; [▶ Run Full Stack Build](https://github.com/casehubio/parent/actions/workflows/full-stack-build.yml)
+| Flag | What it does |
+|------|-------------|
+| `--skip-tests` | Compile only, no tests |
+| `--head` | Use latest HEAD of each repo instead of verified SHAs |
+| `--incremental` | Per-repo change detection (only rebuild what changed) |
+| `--local` | Build from current checkout (no git fetch) |
+| `-T 1C` | Multi-threaded Maven (extra Maven args pass through) |
 
 ---
 
@@ -350,3 +324,55 @@ The PAT needs `read:packages` scope for consuming artifacts and `write:packages`
 In CI, `GITHUB_TOKEN` is used automatically — no PAT setup required.
 
 For local development where you are actively changing multiple projects simultaneously, use `build-all.sh` rather than relying on GitHub Packages — it builds everything from source and installs to your local `.m2`.
+
+---
+
+## Build status
+
+**Foundation**
+
+| Repository | Status |
+|:-----------|:------:|
+| [casehub-parent](https://github.com/casehubio/parent) | [![casehub-parent](https://github.com/casehubio/parent/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/parent/actions/workflows/publish.yml) |
+| [casehub-platform](https://github.com/casehubio/platform) | [![casehub-platform](https://github.com/casehubio/platform/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/platform/actions/workflows/publish.yml) |
+| [casehub-worker](https://github.com/casehubio/casehub-worker) | [![casehub-worker](https://github.com/casehubio/casehub-worker/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/casehub-worker/actions/workflows/publish.yml) |
+| [casehub-ledger](https://github.com/casehubio/ledger) | [![casehub-ledger](https://github.com/casehubio/ledger/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/ledger/actions/workflows/publish.yml) |
+| [casehub-connectors](https://github.com/casehubio/connectors) | [![casehub-connectors](https://github.com/casehubio/connectors/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/connectors/actions/workflows/publish.yml) |
+| [casehub-agency](https://github.com/casehubio/agency) | [![casehub-agency](https://github.com/casehubio/agency/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/agency/actions/workflows/publish.yml) |
+| [casehub-work](https://github.com/casehubio/work) | [![casehub-work](https://github.com/casehubio/work/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/work/actions/workflows/publish.yml) |
+| [casehub-qhorus](https://github.com/casehubio/qhorus) | [![casehub-qhorus](https://github.com/casehubio/qhorus/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/qhorus/actions/workflows/publish.yml) |
+| [casehub-pages](https://github.com/casehubio/casehub-pages) | [![casehub-pages](https://github.com/casehubio/casehub-pages/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/casehubio/casehub-pages/actions/workflows/ci.yml) |
+| [casehub-mosaic](https://github.com/mdproctor/casehub-mosaic) | [![casehub-mosaic](https://github.com/mdproctor/casehub-mosaic/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/mdproctor/casehub-mosaic/actions/workflows/ci.yml) |
+| [casehub-eidos](https://github.com/casehubio/eidos) | [![casehub-eidos](https://github.com/casehubio/eidos/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/eidos/actions/workflows/publish.yml) |
+| [casehub-neocortex](https://github.com/casehubio/neocortex) | [![casehub-neocortex](https://github.com/casehubio/neocortex/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/neocortex/actions/workflows/publish.yml) |
+| [casehub-iot](https://github.com/casehubio/iot) | [![casehub-iot](https://github.com/casehubio/iot/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/iot/actions/workflows/publish.yml) |
+| [casehub-desiredstate](https://github.com/casehubio/casehub-desiredstate) | [![casehub-desiredstate](https://github.com/casehubio/casehub-desiredstate/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/casehub-desiredstate/actions/workflows/publish.yml) |
+| [casehub-ras](https://github.com/casehubio/casehub-ras) | [![casehub-ras](https://github.com/casehubio/casehub-ras/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/casehub-ras/actions/workflows/publish.yml) |
+| [casehub-ops](https://github.com/casehubio/casehub-ops) | [![casehub-ops](https://github.com/casehubio/casehub-ops/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/casehub-ops/actions/workflows/publish.yml) |
+| [casehub-engine](https://github.com/casehubio/engine) | [![casehub-engine](https://github.com/casehubio/engine/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/engine/actions/workflows/publish.yml) |
+
+**Integration**
+
+| Repository | Status |
+|:-----------|:------:|
+| [casehub-workers](https://github.com/casehubio/workers) | [![casehub-workers](https://github.com/casehubio/workers/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/workers/actions/workflows/publish.yml) |
+| [casehub-claudony](https://github.com/casehubio/claudony) | [![casehub-claudony](https://github.com/casehubio/claudony/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/casehubio/claudony/actions/workflows/ci.yml) |
+| [casehub-openclaw](https://github.com/casehubio/openclaw) | [![casehub-openclaw](https://github.com/casehubio/openclaw/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/openclaw/actions/workflows/publish.yml) |
+| [casehub-chat-app](https://github.com/casehubio/chat-app) | [![casehub-chat-app](https://github.com/casehubio/chat-app/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/chat-app/actions/workflows/publish.yml) |
+| [casehub-scaffold](https://github.com/casehubio/scaffold) | [![casehub-scaffold](https://github.com/casehubio/scaffold/actions/workflows/maven.yml/badge.svg?branch=main)](https://github.com/casehubio/scaffold/actions/workflows/maven.yml) |
+| [casehub-langchain4j](https://github.com/casehubio/casehub-langchain4j) | [![casehub-langchain4j](https://github.com/casehubio/casehub-langchain4j/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/casehub-langchain4j/actions/workflows/publish.yml) |
+
+**Applications**
+
+| Repository | Status |
+|:-----------|:------:|
+| [casehub-devtown](https://github.com/casehubio/devtown) | [![casehub-devtown](https://github.com/casehubio/devtown/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/devtown/actions/workflows/publish.yml) |
+| [casehub-aml](https://github.com/casehubio/aml) | [![casehub-aml](https://github.com/casehubio/aml/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/aml/actions/workflows/publish.yml) |
+| [casehub-clinical](https://github.com/casehubio/clinical) | [![casehub-clinical](https://github.com/casehubio/clinical/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/clinical/actions/workflows/publish.yml) |
+| [casehub-life](https://github.com/casehubio/life) | [![casehub-life](https://github.com/casehubio/life/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/life/actions/workflows/publish.yml) |
+| [casehub-drafthouse](https://github.com/casehubio/drafthouse) | [![casehub-drafthouse](https://github.com/casehubio/drafthouse/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/drafthouse/actions/workflows/publish.yml) |
+| [casehub-quarkmind](https://github.com/casehubio/quarkmind) | [![casehub-quarkmind](https://github.com/casehubio/quarkmind/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/casehubio/quarkmind/actions/workflows/ci.yml) |
+| [casehub-soc](https://github.com/casehubio/soc) | [![casehub-soc](https://github.com/casehubio/soc/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/soc/actions/workflows/publish.yml) |
+| [casehub-distributions](https://github.com/casehubio/distributions) | [![casehub-distributions](https://github.com/casehubio/distributions/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/casehubio/distributions/actions/workflows/publish.yml) |
+
+> Full detail: [Build Status Dashboard](https://github.com/casehubio/parent/actions/workflows/dashboard.yml) &nbsp;|&nbsp; [PR Dashboard](https://github.com/casehubio/parent/actions/workflows/pr-dashboard.yml) &nbsp;|&nbsp; [CI Dashboard](https://casehub.org/casehub-all/)
