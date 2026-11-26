@@ -3464,7 +3464,7 @@ print(f'Stripped internal deps from {c} packages')</argument>
     <repository>
       <id>casehub-public</id>
       <name>CaseHub Public Packages</name>
-      <url>https://packages.casehub.org/maven</url>
+      <url>https://casehub.org/packages/maven</url>
       <releases><enabled>true</enabled></releases>
       <snapshots><enabled>true</enabled></snapshots>
     </repository>
