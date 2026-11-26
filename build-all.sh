@@ -30,9 +30,9 @@ Clones all casehubio repos (or updates existing), then builds the full
 ecosystem in dependency order. Incremental by default.
 
 Modes:
-  (default)          Incremental — clone/update, detect changes, build changed
-  --aggregate        Single Maven reactor via aggregator.xml (fastest for clean setup)
-  --no-cache         Ignore incremental cache, rebuild everything
+  (default)          Verified SHAs from casehub-all + single Maven reactor (safest)
+  --incremental      Per-repo incremental — only rebuild repos whose HEAD changed
+  --no-cache         Force full rebuild (ignore incremental cache)
   --local            Build from current checkout (no git fetch/reset)
 
 Options:
@@ -150,9 +150,9 @@ ecosystem in dependency order. Incremental by default — only rebuilds
 repos whose HEAD changed since the last successful run.
 
 Modes:
-  (default)          Incremental — clone/update, detect changes, build changed
-  --aggregate        Single Maven reactor via aggregator.xml (fastest for clean setup)
-  --no-cache         Ignore incremental cache, rebuild everything
+  (default)          Verified SHAs from casehub-all + single Maven reactor (safest)
+  --incremental      Per-repo incremental — only rebuild repos whose HEAD changed
+  --no-cache         Force full rebuild (ignore incremental cache)
   --local            Build from current checkout (no git fetch/reset)
 
 Options:
@@ -172,7 +172,7 @@ HELP
 NO_CACHE=false
 SKIP_TESTS=false
 LOCAL=false
-AGGREGATE=false
+AGGREGATE=true
 MVN_ARGS=()
 for arg in "$@"; do
   case "$arg" in
@@ -180,7 +180,7 @@ for arg in "$@"; do
     --no-cache)      NO_CACHE=true ;;
     --skip-tests)    SKIP_TESTS=true; MVN_ARGS+=("-DskipTests") ;;
     --local)         LOCAL=true ;;
-    --aggregate)     AGGREGATE=true ;;
+    --incremental)   AGGREGATE=false ;;
     --head)          USE_HEAD=true ;;
     *)               MVN_ARGS+=("$arg") ;;
   esac
