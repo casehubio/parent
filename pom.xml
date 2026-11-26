@@ -47,6 +47,7 @@
     <rest-assured.version>6.0.1</rest-assured.version>
     <serverlessworkflow.version>7.35.4.Final</serverlessworkflow.version>
     <quarkus-mcp-server.version>1.11.1</quarkus-mcp-server.version>
+    <mvel3.version>3.0.0-alpha2</mvel3.version>
   </properties>
 
   <dependencyManagement>
@@ -92,6 +93,13 @@
         <groupId>com.networknt</groupId>
         <artifactId>json-schema-validator</artifactId>
         <version>${json-schema-validator.version}</version>
+      </dependency>
+
+      <!-- MVEL 3 expression engine — used by platform expression modules -->
+      <dependency>
+        <groupId>org.mvel</groupId>
+        <artifactId>mvel3</artifactId>
+        <version>${mvel3.version}</version>
       </dependency>
 
       <!-- REST Assured 6.0 — overrides Quarkus BOM's 5.5 (incompatible with Groovy 5) -->
