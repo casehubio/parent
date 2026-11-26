@@ -38,6 +38,7 @@ Modes:
 Options:
   --skip-tests       Pass -DskipTests to Maven
   --head             Clone/checkout HEAD of each repo (default: verified SHAs from casehub-all)
+  --revision=<sha>   Use a specific casehub-all commit for submodule SHAs
   --help, -h         Show this help
 
 Extra Maven args: ./build-all.sh --skip-tests -T 1C
@@ -158,6 +159,7 @@ Modes:
 Options:
   --skip-tests       Pass -DskipTests to Maven
   --head             Clone/checkout HEAD of each repo (default: verified SHAs from casehub-all)
+  --revision=<sha>   Use a specific casehub-all commit for submodule SHAs
   --help, -h         Show this help and check prerequisites
 
 Extra Maven args can be passed directly:
@@ -182,6 +184,7 @@ for arg in "$@"; do
     --local)         LOCAL=true ;;
     --incremental)   AGGREGATE=false ;;
     --head)          USE_HEAD=true ;;
+    --revision=*)    REVISION="${arg#--revision=}" ;;
     *)               MVN_ARGS+=("$arg") ;;
   esac
 done
@@ -239,7 +242,12 @@ fi
 # ── Fetch verified SHAs from casehub-all (if --verified) ─────────────────────
 declare -A VERIFIED_SHA
 if [ "${USE_HEAD:-false}" != true ]; then
-  echo ""; echo "==> Fetching verified SHAs from casehub-all (use --head to skip)..."
+  REVISION="${REVISION:-HEAD}"
+  if [ "$REVISION" = "HEAD" ]; then
+    echo ""; echo "==> Fetching verified SHAs from casehub-all main (use --head to skip)..."
+  else
+    echo ""; echo "==> Fetching SHAs from casehub-all revision $REVISION..."
+  fi
   CASEHUB_ALL_SHAS=$(git ls-remote --refs https://github.com/casehubio/casehub-all.git HEAD 2>/dev/null | head -1 | cut -f1)
   if [ -n "$CASEHUB_ALL_SHAS" ]; then
     while IFS= read -r line; do
@@ -254,7 +262,12 @@ if [ "${USE_HEAD:-false}" != true ]; then
   # Simpler approach: clone casehub-all sparsely for submodule SHAs
   if [ ${#VERIFIED_SHA[@]} -eq 0 ]; then
     TMPDIR=$(mktemp -d)
-    git clone --depth=1 --filter=blob:none --no-checkout https://github.com/casehubio/casehub-all.git "$TMPDIR/casehub-all" 2>/dev/null
+    if [ "$REVISION" = "HEAD" ]; then
+      git clone --depth=1 --filter=blob:none --no-checkout https://github.com/casehubio/casehub-all.git "$TMPDIR/casehub-all" 2>/dev/null
+    else
+      git clone --filter=blob:none --no-checkout https://github.com/casehubio/casehub-all.git "$TMPDIR/casehub-all" 2>/dev/null
+      git -C "$TMPDIR/casehub-all" checkout "$REVISION" 2>/dev/null
+    fi
     if [ -d "$TMPDIR/casehub-all" ]; then
       while IFS=$'\t' read -r info path; do
         sha=$(echo "$info" | awk '{print $3}')
