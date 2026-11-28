@@ -3350,6 +3350,12 @@
         <version>${jctools.version}</version>
       </dependency>
 
+      <dependency>
+        <groupId>org.mvel</groupId>
+        <artifactId>mvel3</artifactId>
+        <version>3.0.0-SNAPSHOT</version>
+      </dependency>
+
     </dependencies>
   </dependencyManagement>
 
